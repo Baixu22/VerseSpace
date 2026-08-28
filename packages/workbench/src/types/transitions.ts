@@ -33,6 +33,7 @@ export type Transition =
 			reason: string;
 	  }
 	| { type: "enqueue_goal"; goalId: string }
+	| { type: "dequeue_goal"; goalId: string }
 	| { type: "mark_stale"; goalId: string; reason: string }
 	| { type: "request_verification"; cpId: string }
 	| { type: "refresh_context"; wsId: string }

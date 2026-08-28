@@ -1,0 +1,93 @@
+name: Release Workbench
+
+# Builds the compiled workbench binaries for every release target and attaches
+# them to the GitHub Release for the pushed `workbench-v*` tag.
+#
+# Tag shape note: the legacy Helmor publish.yml still triggers on `v*` tags, so
+# workbench releases use the `workbench-v*` prefix to stay independent of the
+# frozen legacy release flow (ADR-0003).
+
+on:
+  push:
+    tags:
+      - "workbench-v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-workbench-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows-x64
+            os: windows-latest
+            bun-target: bun-windows-x64
+            artifact: workbench-windows-x64.exe
+          - target: linux-x64
+            os: ubuntu-latest
+            bun-target: bun-linux-x64
+            artifact: workbench-linux-x64
+          - target: macos-arm64
+            os: macos-latest
+            bun-target: bun-darwin-arm64
+            artifact: workbench-macos-arm64
+          - target: macos-x64
+            os: macos-latest
+            bun-target: bun-darwin-x64
+            artifact: workbench-macos-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.2"
+
+      - name: Install dependencies
+        shell: bash
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        shell: bash
+        run: cd packages/workbench && bun test
+
+      - name: Build binary
+        shell: bash
+        run: |
+          cd packages/workbench
+          bun run scripts/build-single.ts "${{ matrix.bun-target }}" "${{ matrix.artifact }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: workbench-${{ matrix.target }}
+          path: packages/workbench/dist/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  release:
+    name: Attach binaries to release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/workbench-*
+          fail_on_unmatched_files: true

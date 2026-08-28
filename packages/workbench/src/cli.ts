@@ -68,12 +68,18 @@ export function buildProgram(): Command {
 				await goalAdd(title, options, command);
 			},
 		);
-	goal.command("list").description("list all goals").action(goalList);
+	goal
+		.command("list")
+		.description("list all goals")
+		.action((_options, command) => goalList(command));
 	goal
 		.command("show <id>")
 		.description("show one goal in detail")
-		.action(goalShow);
-	goal.command("cancel <id>").description("cancel a goal").action(goalCancel);
+		.action((id, _options, command) => goalShow(id, command));
+	goal
+		.command("cancel <id>")
+		.description("cancel a goal")
+		.action((id, _options, command) => goalCancel(id, command));
 
 	const decision = program
 		.command("decision")
@@ -108,11 +114,11 @@ export function buildProgram(): Command {
 	iface
 		.command("list")
 		.description("list registered interfaces")
-		.action(interfaceList);
+		.action((_options, command) => interfaceList(command));
 	iface
 		.command("check")
 		.description("check all interfaces for hash drift (exit 1 on drift)")
-		.action(interfaceCheck);
+		.action((_options, command) => interfaceCheck(command));
 
 	const ws = program.command("ws").description("manage workspots");
 	ws.command("create <id>")
@@ -131,7 +137,9 @@ export function buildProgram(): Command {
 				await wsCreate(id, options, command);
 			},
 		);
-	ws.command("list").description("list workspots").action(wsList);
+	ws.command("list")
+		.description("list workspots")
+		.action((_options, command) => wsList(command));
 	ws.command("reassign <id>")
 		.description("reassign a workspot (--task goal-id, --temporary borrows it)")
 		.option("--task <goal-id>", "new goal for this workspot")
@@ -148,7 +156,9 @@ export function buildProgram(): Command {
 				await wsReassign(id, options, command);
 			},
 		);
-	ws.command("status <id>").description("show one workspot").action(wsStatus);
+	ws.command("status <id>")
+		.description("show one workspot")
+		.action((id, _options, command) => wsStatus(id, command));
 
 	const checkpoint = program
 		.command("checkpoint")
@@ -194,19 +204,29 @@ export function buildProgram(): Command {
 		.description(
 			"dispatch a ready goal to an idle workspot (creates the git worktree)",
 		)
-		.action(dispatchCommand);
+		.action(
+			(
+				goalId: string,
+				workspotId?: string,
+				_options?: unknown,
+				command?: Command,
+			) =>
+				// commander always passes declared operands + (options, command),
+				// filling absent optional operands with undefined
+				dispatchCommand(goalId, workspotId, command as Command),
+		);
 	program
 		.command("queue")
 		.description("show the execution queue")
-		.action(queueCommand);
+		.action((_options, command) => queueCommand(command));
 	program
 		.command("status")
 		.description("global status overview")
-		.action(statusCommand);
+		.action((_options, command) => statusCommand(command));
 	program
 		.command("map")
 		.description("render the goal DAG as text")
-		.action(mapCommand);
+		.action((_options, command) => mapCommand(command));
 	program
 		.command("log")
 		.description("show the event stream (--tail N)")
@@ -215,7 +235,7 @@ export function buildProgram(): Command {
 	program
 		.command("sync")
 		.description("run one Runtime cycle")
-		.action(syncCommand);
+		.action((_options, command) => syncCommand(command));
 	program
 		.command("watch")
 		.description("watch the blackboard and run the Runtime loop on changes")
@@ -225,7 +245,7 @@ export function buildProgram(): Command {
 		.description(
 			"run consistency checks over the blackboard (exit 1 on errors)",
 		)
-		.action(doctorCommand);
+		.action((_options, command) => doctorCommand(command));
 
 	const config = program
 		.command("config")

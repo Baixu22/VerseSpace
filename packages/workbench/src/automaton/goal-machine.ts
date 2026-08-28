@@ -132,5 +132,15 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 				break;
 		}
 	}
+
+	// queue consistency: entries whose goal is no longer ready are drained
+	// (dispatch dequeues too, but a goal that completes/cancels while queued
+	// would otherwise linger forever)
+	for (const goalId of snapshot.executionQueue) {
+		const goal = byId.get(goalId);
+		if (goal && goal.status !== "ready") {
+			transitions.push({ type: "dequeue_goal", goalId });
+		}
+	}
 	return transitions;
 }

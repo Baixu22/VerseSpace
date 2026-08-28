@@ -1,13 +1,28 @@
 {
-	"name": "workbench",
+	"name": "@baixu22/workbench",
 	"description": "Workbench — CLI + filesystem state manager for AI-assisted development.",
-	"version": "0.0.0",
-	"private": true,
+	"version": "0.1.0",
 	"type": "module",
+	"license": "MIT",
 	"bin": {
-		"workbench": "./src/index.ts"
+		"workbench": "./dist/workbench.js"
+	},
+	"files": [
+		"dist/workbench.js",
+		"README.md",
+		"CHANGELOG.md"
+	],
+	"engines": {
+		"bun": ">=1.3.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Baixu22/VerseSpace.git",
+		"directory": "packages/workbench"
 	},
 	"scripts": {
+		"build": "bun run scripts/build.ts",
+		"build:all": "bun run scripts/build.ts --all",
 		"dev": "bun run src/index.ts",
 		"test": "bun test",
 		"typecheck": "bunx tsc --noEmit"

@@ -18,6 +18,8 @@ function describeTransition(t: Transition): string {
 			return `workspot_status: ${t.wsId} ${t.from} → ${t.to}（${t.reason}）`;
 		case "enqueue_goal":
 			return `enqueue_goal: ${t.goalId}`;
+		case "dequeue_goal":
+			return `dequeue_goal: ${t.goalId}`;
 		case "request_verification":
 			return `request_verification: ${t.cpId}`;
 		case "refresh_context":

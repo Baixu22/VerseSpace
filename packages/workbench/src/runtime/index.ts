@@ -167,6 +167,11 @@ async function applyTransition(
 			await event(bb, "enqueue_goal", transition);
 			return true;
 		}
+		case "dequeue_goal": {
+			await bb.state.queue.dequeue(transition.goalId);
+			await event(bb, "dequeue_goal", transition);
+			return true;
+		}
 		case "checkpoint_lifecycle": {
 			const verified = (await bb.checkpoints.scanZone("verified")).find(
 				(cp) => cp.id === transition.cpId,
