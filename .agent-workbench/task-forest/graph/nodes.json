@@ -336,11 +336,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "按 checkpoint 的验证策略（test/type-check/build/human-review/缺省 skipped）在对应 worktree 内受控执行命令：超时控制、exit code 判定、失败输出截断归档。",
     "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-08-28T11:12:11.445317Z"
   },
   "TF-0008": {
     "acceptance_criteria": [
@@ -1715,11 +1715,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "test / type-check / build / human-review / 缺省 skipped 五种策略；human-review 直接返回 needs_human 交给人。",
     "title": "验证策略分发",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:12:11.445317Z"
   },
   "TF-0038": {
     "acceptance_criteria": [],
@@ -1759,11 +1759,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "spawn 子进程在工位 worktree 内执行：exit code 判定（expectedExitCode 默认 0）、可配置超时（默认 5 分钟）到点强杀、失败输出截断归档进 checkpoint。",
     "title": "受控子进程执行",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:12:11.445317Z"
   },
   "TF-0039": {
     "acceptance_criteria": [

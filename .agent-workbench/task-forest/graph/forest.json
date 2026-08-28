@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T11:08:22.902904Z",
+  "generated_at": "2026-08-28T11:12:11.861971Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2111,7 +2111,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -2131,11 +2131,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "按 checkpoint 的验证策略（test/type-check/build/human-review/缺省 skipped）在对应 worktree 内受控执行命令：超时控制、exit code 判定、失败输出截断归档。",
       "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T11:12:11.445317Z"
     },
     "TF-0008": {
       "acceptance_criteria": [
@@ -3601,7 +3601,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "low",
@@ -3621,11 +3621,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "test / type-check / build / human-review / 缺省 skipped 五种策略；human-review 直接返回 needs_human 交给人。",
       "title": "验证策略分发",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:12:11.445317Z"
     },
     "TF-0038": {
       "acceptance_criteria": [],
@@ -3648,7 +3648,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3668,11 +3668,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "spawn 子进程在工位 worktree 内执行：exit code 判定（expectedExitCode 默认 0）、可配置超时（默认 5 分钟）到点强杀、失败输出截断归档进 checkpoint。",
       "title": "受控子进程执行",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:12:11.445317Z"
     },
     "TF-0039": {
       "acceptance_criteria": [
@@ -4511,13 +4511,11 @@
       "TF-0052",
       "TF-0053",
       "TF-0054",
-      "TF-0007",
+      "TF-0008",
       "TF-0018",
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0037",
-      "TF-0038",
       "TF-0039",
       "TF-0040",
       "TF-0041",
@@ -4527,8 +4525,7 @@
       "TF-0009",
       "TF-0010",
       "TF-0011",
-      "TF-0012",
-      "TF-0008"
+      "TF-0012"
     ],
     "blocked": [],
     "by_status": {
@@ -4541,6 +4538,7 @@
         "TF-0004",
         "TF-0005",
         "TF-0006",
+        "TF-0007",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,13 +4558,14 @@
         "TF-0033",
         "TF-0034",
         "TF-0035",
-        "TF-0036"
+        "TF-0036",
+        "TF-0037",
+        "TF-0038"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0007",
         "TF-0008",
         "TF-0009",
         "TF-0010",
@@ -4576,8 +4575,6 @@
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0037",
-        "TF-0038",
         "TF-0039",
         "TF-0040",
         "TF-0041",
@@ -4604,7 +4601,6 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0007",
       "TF-0008",
       "TF-0009",
       "TF-0010",
@@ -4614,8 +4610,6 @@
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0037",
-      "TF-0038",
       "TF-0039",
       "TF-0040",
       "TF-0041",
@@ -4639,10 +4633,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 25,
+    "done_count": 28,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 30,
+    "open_count": 27,
     "review_needed_count": 0
   },
   "tree_edges": [

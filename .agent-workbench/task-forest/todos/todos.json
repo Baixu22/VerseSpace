@@ -385,26 +385,26 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.9,
+    "confidence": 0.85,
     "context_tags": [
       "workbench",
       "mvp",
-      "verification"
+      "runtime"
     ],
     "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0007",
+    "difficulty": "high",
+    "id": "TF-0008",
     "kind": "milestone",
-    "next_action": "五种策略行为符合骨架定义",
+    "next_action": "workbench sync 一条命令跑通完整循环，无变化时返回空转移",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "让 checkpoint 的『已验证』状态有真实执行背书，而不是 agent 自述。",
+    "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）"
+    "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）"
   },
   {
     "alignment": {
@@ -526,68 +526,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "风险：Windows 原子 rename 覆盖语义差异"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.95,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "verification"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0037",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "验证策略分发"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "verification"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0038",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "受控子进程执行"
   },
   {
     "alignment": {
@@ -909,38 +847,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0007"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "runtime"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0008",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0007",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）"
   }
 ]
