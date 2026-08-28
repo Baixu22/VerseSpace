@@ -53,5 +53,13 @@ export const checkpointSchema = z.object({
 	blackboardEffects: blackboardEffectsSchema.optional(),
 	unblocks: z.array(unblockEntrySchema).default([]),
 	ephemeralGoal: z.string().optional(),
+	/** Archived outcome of the last verification run (milestone 6 executor). */
+	verificationResult: z
+		.object({
+			status: z.string(),
+			output: z.string().optional(),
+			at: z.string(),
+		})
+		.optional(),
 });
 export type Checkpoint = z.infer<typeof checkpointSchema>;

@@ -1,6 +1,26 @@
 import { Command } from "commander";
+import {
+	checkpointCreate,
+	checkpointList,
+	checkpointReview,
+} from "./commands/checkpoint";
+import { configSet, queueCommand } from "./commands/config";
+import { decisionAdd } from "./commands/decision";
+import { goalAdd, goalCancel, goalList, goalShow } from "./commands/goal";
 import { initCommand } from "./commands/init";
+import {
+	interfaceCheck,
+	interfaceList,
+	interfaceRegister,
+} from "./commands/interface";
 import { notImplemented } from "./commands/not-implemented";
+import {
+	logCommand,
+	mapCommand,
+	statusCommand,
+	syncCommand,
+} from "./commands/sync";
+import { wsCreate, wsList, wsReassign, wsStatus } from "./commands/ws";
 import type { GlobalOptions } from "./output";
 import { WORKBENCH_VERSION } from "./version";
 
@@ -29,72 +49,145 @@ export function buildProgram(): Command {
 	const goal = program.command("goal").description("manage goals");
 	goal
 		.command("add <title>")
-		.description("add a goal")
-		.action(pending("goal add"));
-	goal
-		.command("list")
-		.description("list all goals")
-		.action(pending("goal list"));
+		.description("add a goal (--depends-on g1,g2, repeatable --acceptance)")
+		.option(
+			"--depends-on <ids>",
+			"comma-separated goal ids this goal depends on",
+		)
+		.option(
+			"--acceptance <assertion>",
+			"acceptance criterion (repeatable)",
+			(v: string, prev: string[] = []) => [...prev, v],
+		)
+		.action(
+			async (
+				title: string,
+				options: { dependsOn?: string; acceptance?: string[] },
+				command: Command,
+			) => {
+				await goalAdd(title, options, command);
+			},
+		);
+	goal.command("list").description("list all goals").action(goalList);
 	goal
 		.command("show <id>")
 		.description("show one goal in detail")
-		.action(pending("goal show"));
-	goal
-		.command("cancel <id>")
-		.description("cancel a goal")
-		.action(pending("goal cancel"));
+		.action(goalShow);
+	goal.command("cancel <id>").description("cancel a goal").action(goalCancel);
 
 	const decision = program
 		.command("decision")
 		.description("record architecture decisions");
 	decision
 		.command("add <title>")
-		.description("add a decision (--rationale)")
-		.action(pending("decision add"));
+		.description("add a decision (--rationale required, --author optional)")
+		.option("--rationale <text>", "why this decision was made")
+		.option("--author <name>", "decision author", "human")
+		.action(
+			async (
+				title: string,
+				options: { rationale?: string; author?: string },
+				command: Command,
+			) => {
+				await decisionAdd(title, options, command);
+			},
+		);
 
 	const iface = program
 		.command("interface")
 		.description("manage the interface registry");
 	iface
 		.command("register <path>")
-		.description("register an interface file (--key)")
-		.action(pending("interface register"));
+		.description("register an interface file (--key required)")
+		.option("--key <key>", "registry key, e.g. core/api")
+		.action(
+			async (path: string, options: { key?: string }, command: Command) => {
+				await interfaceRegister(path, options, command);
+			},
+		);
 	iface
 		.command("list")
 		.description("list registered interfaces")
-		.action(pending("interface list"));
+		.action(interfaceList);
 	iface
 		.command("check")
-		.description("check all interfaces for hash drift")
-		.action(pending("interface check"));
+		.description("check all interfaces for hash drift (exit 1 on drift)")
+		.action(interfaceCheck);
 
 	const ws = program.command("ws").description("manage workspots");
 	ws.command("create <id>")
-		.description("create a workspot (--task, --branch)")
-		.action(pending("ws create"));
-	ws.command("list").description("list workspots").action(pending("ws list"));
+		.description(
+			"create a workspot (--task goal-id, --branch, --worktree path)",
+		)
+		.option("--task <goal-id>", "primary goal for this workspot")
+		.option("--branch <branch>", "git branch this workspot holds")
+		.option("--worktree <path>", "worktree path (default worktrees/<id>)")
+		.action(
+			async (
+				id: string,
+				options: { task?: string; branch?: string; worktree?: string },
+				command: Command,
+			) => {
+				await wsCreate(id, options, command);
+			},
+		);
+	ws.command("list").description("list workspots").action(wsList);
 	ws.command("reassign <id>")
-		.description("reassign a workspot (--task, --temporary)")
-		.action(pending("ws reassign"));
-	ws.command("status <id>")
-		.description("show one workspot")
-		.action(pending("ws status"));
+		.description("reassign a workspot (--task goal-id, --temporary borrows it)")
+		.option("--task <goal-id>", "new goal for this workspot")
+		.option(
+			"--temporary",
+			"borrow the workspot instead of reassigning its primary task",
+		)
+		.action(
+			async (
+				id: string,
+				options: { task?: string; temporary?: boolean },
+				command: Command,
+			) => {
+				await wsReassign(id, options, command);
+			},
+		);
+	ws.command("status <id>").description("show one workspot").action(wsStatus);
 
 	const checkpoint = program
 		.command("checkpoint")
 		.description("manage checkpoints");
 	checkpoint
 		.command("create")
-		.description("create a checkpoint interactively")
-		.action(pending("checkpoint create"));
+		.description(
+			"drop a draft checkpoint into staging (--goal, --assertion, --workspot)",
+		)
+		.option("--goal <goal-id>", "goal this checkpoint belongs to")
+		.option("--assertion <text>", "what this checkpoint asserts")
+		.option("--workspot <id>", "workspot that produced the work")
+		.option("--strategy <name>", "test | type-check | build | human-review")
+		.option("--command <cmd>", "override the strategy's default command")
+		.option("--timeout <seconds>", "verification timeout")
+		.action(checkpointCreate);
 	checkpoint
 		.command("list")
 		.description("list checkpoints (--staging | --verified | --failed)")
-		.action(pending("checkpoint list"));
+		.option("--staging", "list only the staging zone")
+		.option("--verified", "list only the verified zone")
+		.option("--failed", "list only the failed zone")
+		.action(checkpointList);
 	checkpoint
 		.command("review <id>")
-		.description("review a checkpoint awaiting human review")
-		.action(pending("checkpoint review"));
+		.description(
+			"review a checkpoint awaiting human review (--approve | --reject)",
+		)
+		.option("--approve", "accept the checkpoint into the verified zone")
+		.option("--reject", "reject the checkpoint into the failed zone")
+		.action(
+			async (
+				id: string,
+				options: { approve?: boolean; reject?: boolean },
+				command: Command,
+			) => {
+				await checkpointReview(id, options, command);
+			},
+		);
 
 	program
 		.command("dispatch <goal-id> [workspot-id]")
@@ -103,23 +196,24 @@ export function buildProgram(): Command {
 	program
 		.command("queue")
 		.description("show the execution queue")
-		.action(pending("queue"));
+		.action(queueCommand);
 	program
 		.command("status")
 		.description("global status overview")
-		.action(pending("status"));
+		.action(statusCommand);
 	program
 		.command("map")
 		.description("render the goal DAG as text")
-		.action(pending("map"));
+		.action(mapCommand);
 	program
 		.command("log")
 		.description("show the event stream (--tail N)")
-		.action(pending("log"));
+		.option("--tail <n>", "number of recent events", "20")
+		.action(logCommand);
 	program
 		.command("sync")
 		.description("run one Runtime cycle")
-		.action(pending("sync"));
+		.action(syncCommand);
 	program
 		.command("watch")
 		.description("run the watcher loop")
@@ -134,8 +228,8 @@ export function buildProgram(): Command {
 		.description("inspect and edit workbench.yaml");
 	config
 		.command("set <key> <value>")
-		.description("set a config value")
-		.action(pending("config set"));
+		.description("set a config value, e.g. scheduler.policy auto")
+		.action(configSet);
 
 	return program;
 }
