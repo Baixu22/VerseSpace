@@ -1,5 +1,7 @@
 import { Command } from "commander";
+import { initCommand } from "./commands/init";
 import { notImplemented } from "./commands/not-implemented";
+import type { GlobalOptions } from "./output";
 import { WORKBENCH_VERSION } from "./version";
 
 const pending = notImplemented;
@@ -16,7 +18,13 @@ export function buildProgram(): Command {
 	program
 		.command("init")
 		.description("initialize the .workbench/ directory")
-		.action(pending("init"));
+		.option("--project <dir>", "project root to initialize in", ".")
+		.action(async (options: { project: string }, command: Command) => {
+			await initCommand(
+				options.project,
+				command.optsWithGlobals() as GlobalOptions,
+			);
+		});
 
 	const goal = program.command("goal").description("manage goals");
 	goal
