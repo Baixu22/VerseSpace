@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T11:05:10.112256Z",
+  "generated_at": "2026-08-28T11:08:22.902904Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2057,7 +2057,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -2077,11 +2077,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "按工位的 context_needs 从 Blackboard 查询目标、验收条件、决策、接口、最近事件，渲染 .agent-context.md；支持单工位与全量刷新。",
       "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T11:08:22.582483Z"
     },
     "TF-0007": {
       "acceptance_criteria": [
@@ -3504,7 +3504,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3524,11 +3524,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "读取工位的 context_needs，查询目标/验收/决策/接口/最近事件，字符串模板拼装 Markdown；文件头声明自动生成、列出契约目录约束与 checkpoint 落点提示。",
       "title": ".agent-context.md 模板渲染",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:08:22.582483Z"
     },
     "TF-0036": {
       "acceptance_criteria": [
@@ -3554,7 +3554,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "low",
@@ -3574,11 +3574,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "全工位刷新入口；用快照测试锁定模板形状防止无意漂移。",
       "title": "generateAll 全工位刷新与快照测试",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:08:22.582483Z"
     },
     "TF-0037": {
       "acceptance_criteria": [],
@@ -4511,14 +4511,11 @@
       "TF-0052",
       "TF-0053",
       "TF-0054",
-      "TF-0006",
       "TF-0007",
       "TF-0018",
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0035",
-      "TF-0036",
       "TF-0037",
       "TF-0038",
       "TF-0039",
@@ -4543,6 +4540,7 @@
         "TF-0003",
         "TF-0004",
         "TF-0005",
+        "TF-0006",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,13 +4558,14 @@
         "TF-0031",
         "TF-0032",
         "TF-0033",
-        "TF-0034"
+        "TF-0034",
+        "TF-0035",
+        "TF-0036"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0006",
         "TF-0007",
         "TF-0008",
         "TF-0009",
@@ -4577,8 +4576,6 @@
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0035",
-        "TF-0036",
         "TF-0037",
         "TF-0038",
         "TF-0039",
@@ -4607,7 +4604,6 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0006",
       "TF-0007",
       "TF-0008",
       "TF-0009",
@@ -4618,8 +4614,6 @@
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0035",
-      "TF-0036",
       "TF-0037",
       "TF-0038",
       "TF-0039",
@@ -4645,10 +4639,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 22,
+    "done_count": 25,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 33,
+    "open_count": 30,
     "review_needed_count": 0
   },
   "tree_edges": [

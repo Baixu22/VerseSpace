@@ -389,37 +389,6 @@
     "context_tags": [
       "workbench",
       "mvp",
-      "agent-integration"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0006",
-    "kind": "milestone",
-    "next_action": "生成文件头标注『自动生成，请勿手动编辑』",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把 Blackboard 信息翻译给任意 Agent（Claude Code/Codex/Copilot），是『不侵入 Agent、利用项目指令机制』集成方式的落点。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
       "verification"
     ],
     "desired_outcomes": [],
@@ -557,68 +526,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "风险：Windows 原子 rename 覆盖语义差异"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "agent-integration"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0035",
-    "kind": "task",
-    "next_action": "生成内容包含任务、验收、决策、接口路径、约束五要素",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": ".agent-context.md 模板渲染"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "agent-integration"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0036",
-    "kind": "task",
-    "next_action": "快照测试通过",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "generateAll 全工位刷新与快照测试"
   },
   {
     "alignment": {
@@ -1013,7 +920,6 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0006",
       "TF-0007"
     ],
     "confidence": 0.85,
@@ -1026,7 +932,7 @@
     "difficulty": "high",
     "id": "TF-0008",
     "kind": "milestone",
-    "next_action": "先完成依赖：TF-0006, TF-0007",
+    "next_action": "先完成依赖：TF-0007",
     "priority": 1,
     "progress": 0.0,
     "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
