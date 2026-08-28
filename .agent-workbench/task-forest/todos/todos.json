@@ -1,0 +1,1696 @@
+[
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "scheduler"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0044",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "scheduler.tick 与三种调度策略"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "scheduler",
+      "git"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0045",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "dispatch 落地与 CLI 派发命令"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "watcher"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0046",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "文件监听与防抖循环"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "watcher"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0047",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "watch 进程生命周期管理"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "quality",
+      "doctor"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0048",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "doctor 全量一致性体检"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "quality",
+      "testing"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0049",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "容错与并发写入测试"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "release"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0050",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "changesets 接入与 npm 发布链路"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.8,
+    "context_tags": [
+      "workbench",
+      "release",
+      "build"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0051",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "构建产物：单文件二进制 + npm 双形态"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "release",
+      "ci"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0052",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "发行流水线扩展"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "release",
+      "docs"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0053",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "README、docs 与示例项目"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "release",
+      "v0.1.0"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0054",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "v0.1.0 发行验收清单"
+  },
+  {
+    "alignment": {
+      "fit": "aligned",
+      "fit_confidence": 0.9,
+      "user_goal": "将当前 Helmor 项目改造成 Workbench 全新架构，任务规划覆盖 MVP，并保证具备完成一个发行版的能力",
+      "validation_plan": [
+        "proposal-apply 后 validate 通过",
+        "按里程碑推进并持续 export HTML 检查可见进度",
+        "MVP 收口时用端到端集成测试验收手动闭环"
+      ],
+      "why_not_enough": "任务森林只保证结构与进度可追踪，不保证执行质量；MVP 划线、存量处置与基座策略等决策节点仍需用户逐项确认",
+      "why_this_task": "仓库已具备 bun workspace、sidecar 独立包模板、helmor-cli 命令组织、git worktree 操作参考与完整 changesets/CI 发行链路，改造条件成熟；骨架文档已给出模块边界、类型契约与实现顺序"
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "architecture",
+      "mvp"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0001",
+    "kind": "global_task",
+    "next_action": "MVP：init → 添加目标 → 工位开发 → 落 checkpoint → workbench sync 验证 的手动闭环可用",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "得到一个不依赖任何编辑器、零数据库、git 可直接追踪的 AI 协作元结构管理工具，作为 Helmor 的下一代架构基座；MVP 达成『手动模式可用』，v0.1.0 达成『可安装、可发行』。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "in_progress",
+    "success_metrics": [],
+    "title": "Workbench 新架构：CLI + 文件系统状态管理器（交付 MVP 与 v0.1.0 发行版）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "decision"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0002",
+    "kind": "milestone",
+    "next_action": "四项决策记录进仓库文档（docs/ 或包 README 的 ADR 小节）",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把『改成什么、建在哪里、旧代码怎么办、借什么轮子』四个方向性问题一次性定死，避免开发中途反复。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "里程碑一：技术决策与基座选型（开工前置）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "decision"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0013",
+    "kind": "decision",
+    "next_action": "决策记录写入仓库文档",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "决策：运行时 = Bun 1.3 + TypeScript"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "decision"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0014",
+    "kind": "decision",
+    "next_action": "决策记录写入仓库文档",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "决策：包落位 = packages/workbench"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "decision",
+      "migration"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0015",
+    "kind": "decision",
+    "next_action": "决策记录写入仓库文档",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "决策：Helmor 存量处置 = MVP 期间冻结 GUI，v0.1.0 后再评估退役"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "decision",
+      "foundation"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0016",
+    "kind": "decision",
+    "next_action": "依赖白名单评审通过并记录",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "决策：基座策略 = 核心自研 + 组件级借库（不整体 fork）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.95,
+    "context_tags": [
+      "workbench",
+      "git"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0017",
+    "kind": "task",
+    "next_action": "git status 可用",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "git init 与远端配置"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "risk"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0018",
+    "kind": "risk",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "风险：把 Helmor GUI 全量重写纳入 MVP 导致范围失控"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "risk"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0019",
+    "kind": "risk",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "风险：误引入 Agent SDK / 数据库 / 服务器等重依赖破坏零依赖定位"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "infra"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0020",
+    "kind": "task",
+    "next_action": "bun test 在新包内可运行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "创建 packages/workbench 独立包"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "cli"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0021",
+    "kind": "task",
+    "next_action": "workbench --help 展示完整命令树",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "CLI 框架与命令树骨架"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "ci"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0022",
+    "kind": "task",
+    "next_action": "改动 packages/** 能触发对应 CI 车道",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "biome 与 CI 车道接入"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "risk"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0023",
+    "kind": "risk",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "风险：git 仓库缺失阻塞 worktree 与发行全链路"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "types"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0024",
+    "kind": "task",
+    "next_action": "八组类型与骨架字段一一对应",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "定义 types/ 全量类型与运行时校验 schema"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "data-layer"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0025",
+    "kind": "task",
+    "next_action": "init 重复执行安全（幂等）",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": ".workbench/ 目录布局与 init 落盘"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "data-layer"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0026",
+    "kind": "task",
+    "next_action": "写入中途 kill 不产生半截 YAML",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "原子写与 JSONL 追加基础设施"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "data-layer"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0027",
+    "kind": "task",
+    "next_action": "API 返回快照而非活引用",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "Blackboard API：goals / decisions / interfaces"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "data-layer"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0028",
+    "kind": "task",
+    "next_action": "checkpoint 在三区间移动原子且留事件记录",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "Blackboard API：state 与 checkpoints 三区"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "testing"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0029",
+    "kind": "task",
+    "next_action": "快照与文件状态一致",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "getWorldSnapshot 聚合与测试夹具"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "risk",
+      "windows"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0030",
+    "kind": "risk",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "风险：Windows 原子 rename 覆盖语义差异"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "state-machine"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0031",
+    "kind": "subtask",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "goal-machine 状态机"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "state-machine"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0032",
+    "kind": "subtask",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "checkpoint-machine 状态机"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "state-machine"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0033",
+    "kind": "subtask",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "workspot-machine 状态机"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "state-machine"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0034",
+    "kind": "subtask",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "evaluator 组合器与表驱动单测"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "agent-integration"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0035",
+    "kind": "task",
+    "next_action": "生成内容包含任务、验收、决策、接口路径、约束五要素",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": ".agent-context.md 模板渲染"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "agent-integration"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0036",
+    "kind": "task",
+    "next_action": "快照测试通过",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "generateAll 全工位刷新与快照测试"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.95,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "verification"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0037",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "验证策略分发"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "verification"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0038",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "受控子进程执行"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "runtime"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0039",
+    "kind": "task",
+    "next_action": "重复调用 runOnce 无变化时零副作用",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "Runtime.runOnce 编排"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "cli"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0040",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "CLI：goal / decision / interface 子树"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "cli"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0041",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "CLI：ws 与 checkpoint 子树"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "cli"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0042",
+    "kind": "task",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "CLI：sync / status / map / log"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "testing"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0043",
+    "kind": "task",
+    "next_action": "集成测试在 CI 与本机全绿",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "MVP 端到端集成测试"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0008"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "scheduler"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0009",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0008",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "上线调度能力，从单工位手动走向多工位并行（骨架 Phase 5）。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑八：Scheduler 调度与派发"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0008"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "watcher"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0010",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0008",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "免手动 sync，达成骨架 Phase 6 的『后台持续运行』。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑九：Watcher 后台监听模式"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0009",
+      "TF-0010"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "quality",
+      "doctor"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0011",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0009, TF-0010",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "发行前的质量闸门（骨架 Phase 7）。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑十：doctor 一致性检查与容错收口"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0011"
+    ],
+    "confidence": 0.8,
+    "context_tags": [
+      "workbench",
+      "release",
+      "v0.1.0"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0012",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0011",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "达成『完成一个发行版』的能力：可安装、可分发、可被新人按文档上手。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑十一：v0.1.0 发行能力"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0002"
+    ],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "infra"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0003",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0002",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让后续所有模块代码有一个可测试、可 lint、可 CI 的家。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑二：工程骨架与新 CLI 包落地"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0003"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "data-layer"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0004",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0003",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "数据层是骨架 Phase 1，其他一切模块都依赖它；类型定义是所有模块的契约。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑三：类型契约与 Blackboard 数据层"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0004"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "state-machine"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0005",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0004",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "状态流转是系统正确性的核心，必须纯逻辑、独立可测（不读文件、不执行命令）。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑四：Automaton 纯函数状态机引擎"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0004"
+    ],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "agent-integration"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0006",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0004",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把 Blackboard 信息翻译给任意 Agent（Claude Code/Codex/Copilot），是『不侵入 Agent、利用项目指令机制』集成方式的落点。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑五：ContextGen 上下文生成器"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0004"
+    ],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "verification"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0007",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0004",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让 checkpoint 的『已验证』状态有真实执行背书，而不是 agent 自述。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑六：Verifier 验证执行器"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0005",
+      "TF-0006",
+      "TF-0007"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "runtime"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0008",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0005, TF-0006, TF-0007",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑七：Runtime 组合与基础 CLI（MVP 收口）"
+  }
+]
