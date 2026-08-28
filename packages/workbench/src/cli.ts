@@ -21,6 +21,7 @@ import {
 	statusCommand,
 	syncCommand,
 } from "./commands/sync";
+import { watchCommand } from "./commands/watch";
 import { wsCreate, wsList, wsReassign, wsStatus } from "./commands/ws";
 import type { GlobalOptions } from "./output";
 import { WORKBENCH_VERSION } from "./version";
@@ -219,8 +220,8 @@ export function buildProgram(): Command {
 		.action(syncCommand);
 	program
 		.command("watch")
-		.description("run the watcher loop")
-		.action(pending("watch"));
+		.description("watch the blackboard and run the Runtime loop on changes")
+		.action(watchCommand);
 	program
 		.command("doctor")
 		.description("run consistency checks")
