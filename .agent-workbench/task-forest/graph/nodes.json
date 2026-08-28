@@ -804,11 +804,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "当前目录不是 git 仓库（疑似解压副本）：workspot 的 worktree 能力、changesets 发行与 CI 全部依赖 git 仓库存在；需初始化并确认是否保留上游 Helmor 提交历史。",
     "title": "git init 与远端配置",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:11:45.733644Z"
   },
   "TF-0018": {
     "acceptance_criteria": [],

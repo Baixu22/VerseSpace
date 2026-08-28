@@ -1,0 +1,13 @@
+{
+  "proposal_id": "TFP-workbench-v1-git-done",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "rationale": "用户选定方案一并确认『不考虑 helmor，作为全新项目开始』：工作区已 git init（main 分支），关联远端 origin=https://github.com/Baixu22/VerseSpace.git，1652 个文件的冻结基线初始提交已推送成功。t-git-init 的验收标准（git status 可用、远端 origin 确定）全部满足。",
+  "status": "proposed",
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0017",
+      "status": "done"
+    }
+  ]
+}

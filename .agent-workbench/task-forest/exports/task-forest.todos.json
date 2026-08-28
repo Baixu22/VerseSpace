@@ -537,36 +537,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.95,
-    "context_tags": [
-      "workbench",
-      "git"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0017",
-    "kind": "task",
-    "next_action": "git status 可用",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "git init 与远端配置"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.9,
     "context_tags": [
       "workbench",
