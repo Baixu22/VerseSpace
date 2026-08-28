@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T11:55:19.463927Z",
+  "generated_at": "2026-08-28T12:10:21.450042Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2276,7 +2276,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -2296,11 +2296,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "监听 .workbench/checkpoints/staging、blackboard/goals、接口契约目录，500ms 防抖后触发 Runtime.runOnce；处理信号、崩溃恢复与单实例锁。",
       "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T12:10:21.057633Z"
     },
     "TF-0011": {
       "acceptance_criteria": [
@@ -4031,7 +4031,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -4051,11 +4051,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "chokidar 监听 checkpoints/staging、goals 目录、接口契约目录；500ms 防抖合并后调用 Runtime.runOnce。",
       "title": "文件监听与防抖循环",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T12:10:21.057106Z"
     },
     "TF-0047": {
       "acceptance_criteria": [],
@@ -4078,7 +4078,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -4098,11 +4098,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "SIGINT/SIGTERM 优雅退出、崩溃后重启自恢复（状态全在文件）、lock 文件单实例互斥。",
       "title": "watch 进程生命周期管理",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T12:10:21.057106Z"
     },
     "TF-0048": {
       "acceptance_criteria": [],
@@ -4500,9 +4500,7 @@
   },
   "status_queues": {
     "actionable_todos": [
-      "TF-0010",
-      "TF-0046",
-      "TF-0047",
+      "TF-0011",
       "TF-0048",
       "TF-0049",
       "TF-0050",
@@ -4515,7 +4513,6 @@
       "TF-0023",
       "TF-0030",
       "TF-0055",
-      "TF-0011",
       "TF-0012"
     ],
     "blocked": [],
@@ -4532,6 +4529,7 @@
         "TF-0007",
         "TF-0008",
         "TF-0009",
+        "TF-0010",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,21 +4558,20 @@
         "TF-0042",
         "TF-0043",
         "TF-0044",
-        "TF-0045"
+        "TF-0045",
+        "TF-0046",
+        "TF-0047"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0010",
         "TF-0011",
         "TF-0012",
         "TF-0018",
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0046",
-        "TF-0047",
         "TF-0048",
         "TF-0049",
         "TF-0050",
@@ -4592,15 +4589,12 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0010",
       "TF-0011",
       "TF-0012",
       "TF-0018",
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0046",
-      "TF-0047",
       "TF-0048",
       "TF-0049",
       "TF-0050",
@@ -4615,10 +4609,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 37,
+    "done_count": 40,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 18,
+    "open_count": 15,
     "review_needed_count": 0
   },
   "tree_edges": [

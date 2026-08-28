@@ -480,11 +480,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "监听 .workbench/checkpoints/staging、blackboard/goals、接口契约目录，500ms 防抖后触发 Runtime.runOnce；处理信号、崩溃恢复与单实例锁。",
     "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-08-28T12:10:21.057633Z"
   },
   "TF-0011": {
     "acceptance_criteria": [
@@ -2118,11 +2118,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "chokidar 监听 checkpoints/staging、goals 目录、接口契约目录；500ms 防抖合并后调用 Runtime.runOnce。",
     "title": "文件监听与防抖循环",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T12:10:21.057106Z"
   },
   "TF-0047": {
     "acceptance_criteria": [],
@@ -2162,11 +2162,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "SIGINT/SIGTERM 优雅退出、崩溃后重启自恢复（状态全在文件）、lock 文件单实例互斥。",
     "title": "watch 进程生命周期管理",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T12:10:21.057106Z"
   },
   "TF-0048": {
     "acceptance_criteria": [],

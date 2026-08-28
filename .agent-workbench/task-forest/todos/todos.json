@@ -12,85 +12,23 @@
     "confidence": 0.85,
     "context_tags": [
       "workbench",
-      "beta",
-      "watcher"
+      "quality",
+      "doctor"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0010",
+    "id": "TF-0011",
     "kind": "milestone",
-    "next_action": "workbench watch 常驻运行且文件变化后约 1 秒内完成一轮循环",
+    "next_action": "doctor 对每类已知损坏给出定位与修复建议",
     "priority": 2,
     "progress": 0.0,
-    "purpose": "免手动 sync，达成骨架 Phase 6 的『后台持续运行』。",
+    "purpose": "发行前的质量闸门（骨架 Phase 7）。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "beta",
-      "watcher"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0046",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "文件监听与防抖循环"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "beta",
-      "watcher"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0047",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "watch 进程生命周期管理"
+    "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）"
   },
   {
     "alignment": {
@@ -496,39 +434,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0010"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "quality",
-      "doctor"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0011",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0010",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "发行前的质量闸门（骨架 Phase 7）。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）"
   },
   {
     "alignment": {
