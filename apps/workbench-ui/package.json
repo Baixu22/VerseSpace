@@ -10,6 +10,8 @@
 		"typecheck": "bunx tsc --noEmit"
 	},
 	"dependencies": {
+		"@assistant-ui/react": "^0.15.17",
+		"@assistant-ui/react-markdown": "^0.14.13",
 		"@radix-ui/react-slot": "1.2.5",
 		"@tanstack/react-query": "5.101.0",
 		"class-variance-authority": "^0.7.1",
@@ -17,7 +19,9 @@
 		"radix-ui": "^1.5.0",
 		"react": "19.2.7",
 		"react-dom": "19.2.7",
-		"tailwind-merge": "^3.6.0"
+		"remark-gfm": "^4.0.1",
+		"tailwind-merge": "^3.6.0",
+		"zustand": "^5.0.15"
 	},
 	"devDependencies": {
 		"@types/react": "^19.2.17",

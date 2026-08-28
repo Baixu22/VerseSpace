@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
+import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
 import { WORKBENCH_VERSION } from "../version";
 
@@ -203,6 +204,7 @@ export async function createUiServer(
 	uiDirOverride?: string,
 ) {
 	const assets = await resolveUiAssets(uiDirOverride);
+	const chat = new ChatThreads(bb);
 
 	async function readAsset(urlPath: string): Promise<Response | null> {
 		const key = urlPath.replace(/^\/+/, "") || "index.html";
@@ -296,6 +298,68 @@ export async function createUiServer(
 					await reviewCheckpoint(bb, body.cpId, body.approve),
 					{ headers: cors },
 				);
+			}
+
+			// ── chat runtime: threads + streaming messages ──
+			if (url.pathname === "/api/chat/threads" && request.method === "GET") {
+				return Response.json(await chat.list(), { headers: cors });
+			}
+			if (url.pathname === "/api/chat/threads" && request.method === "POST") {
+				const body = (await request.json().catch(() => ({}))) as {
+					title?: string;
+				};
+				return Response.json(await chat.create(body.title), { headers: cors });
+			}
+			const chatMatch = url.pathname.match(
+				/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel))?$/,
+			);
+			if (chatMatch) {
+				const threadId = decodeURIComponent(chatMatch[1] ?? "");
+				const sub = chatMatch[3];
+				if (!sub && request.method === "GET") {
+					const [meta, messages] = await Promise.all([
+						chat.get(threadId),
+						chat.messages(threadId),
+					]);
+					return Response.json({ meta, messages }, { headers: cors });
+				}
+				if (sub === "cancel" && request.method === "POST") {
+					chat.cancel(threadId);
+					return Response.json({ ok: true }, { headers: cors });
+				}
+				if (sub === "messages" && request.method === "POST") {
+					const body = (await request.json()) as { text?: string };
+					if (!body.text?.trim()) {
+						return Response.json(
+							{ error: "text is required" },
+							{ status: 400, headers: cors },
+						);
+					}
+					const stream = new ReadableStream({
+						start(controller) {
+							const encoder = new TextEncoder();
+							const emit = (event: Record<string, unknown>) => {
+								controller.enqueue(
+									encoder.encode(`${JSON.stringify(event)}
+`),
+								);
+							};
+							chat
+								.run(threadId, body.text as string, emit)
+								.then(() => controller.close())
+								.catch((error) => {
+									emit({ type: "error", message: String(error) });
+									controller.close();
+								});
+						},
+					});
+					return new Response(stream, {
+						headers: {
+							"content-type": "application/x-ndjson",
+							...cors,
+						},
+					});
+				}
 			}
 
 			if (!url.pathname.startsWith("/api")) {
