@@ -34,7 +34,7 @@
 		"test:e2e:ui": "playwright test --ui",
 		"test:e2e:headed": "playwright test --headed",
 		"dev:e2e": "vite --config vite.e2e.config.ts",
-		"typecheck": "tsc --noEmit && cd sidecar && bunx tsc --noEmit && cd ../packages/workbench && bunx tsc --noEmit",
+		"typecheck": "tsc --noEmit && cd sidecar && bunx tsc --noEmit && cd ../packages/workbench && bunx tsc --noEmit && cd ../../apps/workbench-ui && bunx tsc --noEmit",
 		"tauri": "tauri",
 		"lint": "biome check . --config-path=./biome.json && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
 		"lint:fix": "biome check . --write --config-path=./biome.json && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --fix --allow-dirty -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --all",
@@ -50,7 +50,9 @@
 		"release:verify": "node scripts/verify-release-config.mjs && bun run scripts/verify-release-announcements.ts",
 		"release:version": "changeset version && bun run release:announcements && bun run release:sync-versions",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"dev:ui": "cd apps/workbench-ui && bun run dev",
+		"build:ui": "cd apps/workbench-ui && bun run build"
 	},
 	"dependencies": {
 		"@chenglou/pretext": "0.0.7",

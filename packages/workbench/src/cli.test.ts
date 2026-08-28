@@ -19,6 +19,7 @@ describe("buildProgram", () => {
 			"sync",
 			"watch",
 			"doctor",
+			"ui",
 			"config",
 		]);
 	});

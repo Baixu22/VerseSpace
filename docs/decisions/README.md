@@ -10,3 +10,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0002](./0002-package-location.md) | 包落位 = packages/workbench（bun workspace 成员） | 已接受 | TF-0014 |
 | [0003](./0003-helmor-legacy-freeze.md) | Helmor 存量处置 = MVP 期间冻结，v0.1.0 后再评估退役 | 已接受 | TF-0015（后继节点 TF-0055） |
 | [0004](./0004-foundation-strategy.md) | 基座策略 = 核心自研 + 组件级借库，不整体 fork | 已接受 | TF-0016 |
+| [0005](./0005-local-web-ui.md) | Workbench 增加本地 Web GUI（`workbench ui`），取代 ADR-0004 的 no-web-server 约束 | 已接受 | 森林 GUI 节点 |

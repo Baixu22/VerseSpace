@@ -1,5 +1,9 @@
 # @baixu22/workbench
 
+## 0.2.0
+
+新增本地 Web GUI：`workbench ui` 在 http://127.0.0.1:7700 提供深色面板（目标 DAG、工位、checkpoint 三区、接口漂移、决策、事件流、doctor 体检 + 一键 Sync，2 秒自动刷新）。前端复用仓库 React 19 + Vite + Tailwind v4 + shadcn/ui 栈（apps/workbench-ui），主题直接引用仓库 color-theme.css；UI 资源构建时内嵌进单文件二进制，也可用 --ui-dir 外部指定（ADR-0005）。
+
 ## 0.1.0
 
 首个发行版。《Workbench 实现架构骨架》Phase 1-7 全部落地：

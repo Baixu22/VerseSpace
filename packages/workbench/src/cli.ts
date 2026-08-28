@@ -21,6 +21,7 @@ import {
 	statusCommand,
 	syncCommand,
 } from "./commands/sync";
+import { uiCommand } from "./commands/ui";
 import { watchCommand } from "./commands/watch";
 import { wsCreate, wsList, wsReassign, wsStatus } from "./commands/ws";
 import type { GlobalOptions } from "./output";
@@ -246,6 +247,20 @@ export function buildProgram(): Command {
 			"run consistency checks over the blackboard (exit 1 on errors)",
 		)
 		.action((_options, command) => doctorCommand(command));
+
+	program
+		.command("ui")
+		.description(
+			"serve a local web dashboard for the blackboard (default port 7700)",
+		)
+		.option("--port <n>", "port to listen on", "7700")
+		.option(
+			"--ui-dir <path>",
+			"serve dashboard assets from this directory instead of the embedded bundle",
+		)
+		.action((options: { port?: string; uiDir?: string }, command: Command) =>
+			uiCommand(options, command),
+		);
 
 	const config = program
 		.command("config")

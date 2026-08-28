@@ -14,5 +14,10 @@
 		"skipLibCheck": true,
 		"noEmit": true
 	},
-	"include": ["src", "scripts/build.ts", "scripts/build-single.ts"]
+	"include": [
+		"src",
+		"scripts/build.ts",
+		"scripts/build-single.ts",
+		"scripts/ui-prepare.ts"
+	]
 }

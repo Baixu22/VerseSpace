@@ -66,6 +66,15 @@ workbench watch
 
 所有命令支持 `--json`（机器可读）与 `--quiet`。
 
+## 本地面板（GUI）
+
+```bash
+workbench ui            # 打开 http://127.0.0.1:7700（自动开浏览器）
+workbench ui --port 8080 --ui-dir ./some-dist
+```
+
+深色仪表盘：目标 DAG、工位、checkpoint 三区、接口漂移、决策、事件流、doctor 体检，右上角一键 Sync，每 2 秒自动刷新。前端基于仓库 React 19 + Vite + Tailwind + shadcn/ui 栈（`apps/workbench-ui`，开发用 `bun run dev:ui`），构建时资源内嵌进单文件二进制（ADR-0005）。
+
 ## `.workbench/` 目录结构
 
 ```

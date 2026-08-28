@@ -9,6 +9,7 @@
 import { mkdir, rm } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { prepareUiAssets } from "./ui-prepare";
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(PKG_ROOT, "dist");
@@ -67,6 +68,7 @@ const HOST_TARGET: Target = {
 const buildAll = process.argv.includes("--all");
 const targets = buildAll ? RELEASE_TARGETS : [HOST_TARGET];
 
+await prepareUiAssets();
 await rm(DIST, { recursive: true, force: true });
 await mkdir(DIST, { recursive: true });
 
