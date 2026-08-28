@@ -1,0 +1,51 @@
+{
+  "applied_at": "2026-08-28T12:57:56.805471Z",
+  "base_graph_hash": "ff98bca928d117973b4d9f336ec03de80170b8c1603610cb2bdbdfffb0cced3f",
+  "base_summary": {
+    "edge_count": 68,
+    "node_count": 55,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0050",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0051",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0052",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0053",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0054",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0012",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0001",
+      "status": "done"
+    }
+  ],
+  "created_at": "2026-08-28T12:57:56.634803Z",
+  "proposal_id": "TFP-workbench-v1-m11-final",
+  "rationale": "里程碑十一（发行阶段）完成，全局目标 TF-0001 达成，全森林闭环。交付（推送 5c4ed44）：① 构建产物——bun build --compile 四平台二进制（windows-x64/linux-x64/macos-arm64/macos-x64，交叉编译经手动种子 bun 运行时缓存绕过沙箱下载拦截后全部产出并验证）+ npm JS bundle；② npm 双形态——@baixu22/workbench@0.1.0（bin/files/engines 备齐，changesets 移出 ignore 并 access: public）；③ 发行流水线——release-workbench.yml 按 workbench-v* tag 触发平台矩阵构建+测试+挂载（tag 前缀与冻结的 legacy publish.yml v* 触发隔离；Actions 计费恢复后生效）；④ 文档——包 README（5 分钟上手/命令参考/目录结构/Agent 协作）+ CHANGELOG；⑤ 验收——release 二进制在真实 git 仓库完成全流程（init→goal→decision→interface→ws→sync→dispatch→checkpoint→验证通过→done→doctor 零问题）。验收过程抓出并修复 m7 期 command action 传参真 bug（零/单操作数命令在真实 CLI 崩溃）与队列残留缺口（新增 dequeue_goal 转移）。GitHub Release workbench-v0.1.0 已发布并挂载四平台二进制。累计 109 测试全绿。",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "status": "applied"
+}

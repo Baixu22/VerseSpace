@@ -49,11 +49,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
     "summary": "把 Helmor 仓库从 Tauri 桌面应用演进为《Workbench 实现架构骨架》定义的七模块三层 CLI 工具：Blackboard（.workbench/ 下 YAML+JSONL 存储）、Automaton 纯函数状态机、Verifier 验证执行器、Scheduler 调度器、CLI、Watcher 文件监听、ContextGen 上下文生成器，由 Runtime 组合成事件循环。",
     "title": "Workbench 新架构：CLI + 文件系统状态管理器（交付 MVP 与 v0.1.0 发行版）",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0002": {
     "acceptance_criteria": [
@@ -576,11 +576,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "workbench 纳入 changesets 版本管理与 npm 发行链路，bun build --compile 产出三平台单文件二进制（npm 包 + 二进制双形态），扩展 CI 发行流水线，交付 README/docs/示例项目，完成首版验收清单。",
     "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0013": {
     "acceptance_criteria": [
@@ -2293,11 +2293,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "把 packages/workbench 纳入 changesets：现 config 为 access: restricted 且 ignore 里只有 marketing，需改 public 并确认 privatePackages 行为；sidecar 不在 workspace 内的先例要显式处理，避免发行脚本漏掉新包。",
     "title": "changesets 接入与 npm 发布链路",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0051": {
     "acceptance_criteria": [],
@@ -2337,11 +2337,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "bun build --compile 产出 Windows/macOS/Linux 三平台单文件二进制（参考 sidecar/scripts/build.ts 的交叉编译与目标三元组处理）；npm 包形态（内嵌平台二进制 vs 纯 JS）二选一落地。",
     "title": "构建产物：单文件二进制 + npm 双形态",
-    "updated_at": "2026-08-28T08:50:49.556238Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0052": {
     "acceptance_criteria": [],
@@ -2381,11 +2381,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "publish.yml 扩展或新增独立 workflow：平台矩阵构建、npm token、GitHub Release 产物挂载、tag 触发；沿用 release-plan.yml 的 changesets/action 模式。",
     "title": "发行流水线扩展",
-    "updated_at": "2026-08-28T08:50:49.556238Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0053": {
     "acceptance_criteria": [],
@@ -2425,11 +2425,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "quickstart（5 分钟从 init 到 sync）、命令参考、.agent-context.md 生成示例、pre-commit 保护 hook 示例、架构说明（可直接引用骨架文档）。",
     "title": "README、docs 与示例项目",
-    "updated_at": "2026-08-28T08:50:49.556238Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0054": {
     "acceptance_criteria": [],
@@ -2469,11 +2469,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "三平台安装冒烟、示例项目按文档端到端复现、CHANGELOG 与 tag v0.1.0、首个发行说明。",
     "title": "v0.1.0 发行验收清单",
-    "updated_at": "2026-08-28T08:50:49.556238Z"
+    "updated_at": "2026-08-28T12:57:56.799471Z"
   },
   "TF-0055": {
     "acceptance_criteria": [

@@ -12,212 +12,23 @@
     "confidence": 0.8,
     "context_tags": [
       "workbench",
-      "release",
-      "v0.1.0"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0012",
-    "kind": "milestone",
-    "next_action": "三平台安装冒烟通过（npm 安装 + 二进制下载）",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "达成『完成一个发行版』的能力：可安装、可分发、可被新人按文档上手。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "release"
+      "follow-up",
+      "retirement"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0050",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
+    "id": "TF-0055",
+    "kind": "follow_up",
+    "next_action": "新增 ADR 明确存量去留",
+    "priority": 3,
     "progress": 0.0,
-    "purpose": "",
+    "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "changesets 接入与 npm 发布链路"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "workbench",
-      "release",
-      "build"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0051",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "构建产物：单文件二进制 + npm 双形态"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "release",
-      "ci"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0052",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "发行流水线扩展"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "release",
-      "docs"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0053",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "README、docs 与示例项目"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "release",
-      "v0.1.0"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0054",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "v0.1.0 发行验收清单"
-  },
-  {
-    "alignment": {
-      "fit": "aligned",
-      "fit_confidence": 0.9,
-      "user_goal": "将当前 Helmor 项目改造成 Workbench 全新架构，任务规划覆盖 MVP，并保证具备完成一个发行版的能力",
-      "validation_plan": [
-        "proposal-apply 后 validate 通过",
-        "按里程碑推进并持续 export HTML 检查可见进度",
-        "MVP 收口时用端到端集成测试验收手动闭环"
-      ],
-      "why_not_enough": "任务森林只保证结构与进度可追踪，不保证执行质量；MVP 划线、存量处置与基座策略等决策节点仍需用户逐项确认",
-      "why_this_task": "仓库已具备 bun workspace、sidecar 独立包模板、helmor-cli 命令组织、git worktree 操作参考与完整 changesets/CI 发行链路，改造条件成熟；骨架文档已给出模块边界、类型契约与实现顺序"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "architecture",
-      "mvp"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0001",
-    "kind": "global_task",
-    "next_action": "MVP：init → 添加目标 → 工位开发 → 落 checkpoint → workbench sync 验证 的手动闭环可用",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "得到一个不依赖任何编辑器、零数据库、git 可直接追踪的 AI 协作元结构管理工具，作为 Helmor 的下一代架构基座；MVP 达成『手动模式可用』，v0.1.0 达成『可安装、可发行』。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "Workbench 新架构：CLI + 文件系统状态管理器（交付 MVP 与 v0.1.0 发行版）"
+    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
   },
   {
     "alignment": {
@@ -339,38 +150,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "风险：Windows 原子 rename 覆盖语义差异"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0012"
-    ],
-    "confidence": 0.8,
-    "context_tags": [
-      "workbench",
-      "follow-up",
-      "retirement"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0055",
-    "kind": "follow_up",
-    "next_action": "先完成依赖：TF-0012",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
   }
 ]
