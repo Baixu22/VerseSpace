@@ -814,5 +814,17 @@
     "to": "TF-0012",
     "type": "depends_on",
     "updated_at": "2026-08-28T10:30:48.038729Z"
+  },
+  "TFE-0069": {
+    "blocking": false,
+    "confidence": 0.6,
+    "created_at": "2026-08-28T14:37:32.289519Z",
+    "created_from_session": null,
+    "from": "TF-0056",
+    "id": "TFE-0069",
+    "reason": "GUI 是全局目标的可观测性扩展",
+    "to": "TF-0001",
+    "type": "child_of",
+    "updated_at": "2026-08-28T14:37:32.289519Z"
   }
 }

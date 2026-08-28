@@ -28,7 +28,9 @@
     "created_at": "2026-08-28T08:50:49.555240Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-770d5190e8"
+    ],
     "difficulty": "high",
     "display_order": 0,
     "estimated_total_minutes": null,
@@ -2521,5 +2523,53 @@
     "summary": "ADR-0003 冻结存量的后继动作：Workbench 达到 v0.1.0 后，评估 src/、src-tauri/、sidecar/ 的退役或迁移方案（保留为参考库 / 抽取部分能力 / 整体移除），届时新增 ADR 取代 ADR-0003。",
     "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径",
     "updated_at": "2026-08-28T10:30:48.038729Z"
+  },
+  "TF-0056": {
+    "acceptance_criteria": [
+      "面板在 127.0.0.1:7700 可用",
+      "UI 资源内嵌二进制",
+      "112 测试全绿"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "gui",
+      "adr-0005"
+    ],
+    "created_at": "2026-08-28T14:37:32.289519Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "medium",
+    "display_order": 1300,
+    "estimated_total_minutes": null,
+    "evidence": [],
+    "execution_hints": [],
+    "id": "TF-0056",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "v0.2.0 新增本地 Web GUI：apps/workbench-ui 复用仓库 React 19 + Vite + Tailwind v4 + shadcn/ui 栈，主题直接引用仓库 color-theme.css；workbench ui 用 Bun.serve 提供只读 API + 静态 SPA，UI 资源构建时内嵌进四平台单文件二进制。首版 vanilla HTML 方案被用户否决（重复造轮子）后按 ADR-0005 重做。",
+    "title": "GUI：workbench ui 本地面板（React + shadcn，ADR-0005）",
+    "updated_at": "2026-08-28T14:37:32.289519Z"
   }
 }
