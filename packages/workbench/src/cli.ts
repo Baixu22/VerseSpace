@@ -6,6 +6,7 @@ import {
 } from "./commands/checkpoint";
 import { configSet, queueCommand } from "./commands/config";
 import { decisionAdd } from "./commands/decision";
+import { dispatchCommand } from "./commands/dispatch";
 import { goalAdd, goalCancel, goalList, goalShow } from "./commands/goal";
 import { initCommand } from "./commands/init";
 import {
@@ -191,8 +192,10 @@ export function buildProgram(): Command {
 
 	program
 		.command("dispatch <goal-id> [workspot-id]")
-		.description("dispatch a goal to a workspot")
-		.action(pending("dispatch"));
+		.description(
+			"dispatch a ready goal to an idle workspot (creates the git worktree)",
+		)
+		.action(dispatchCommand);
 	program
 		.command("queue")
 		.description("show the execution queue")

@@ -2,6 +2,7 @@ import { isAbsolute, join } from "node:path";
 import { evaluate } from "../automaton/evaluator";
 import type { Blackboard } from "../blackboard";
 import { generateContext } from "../contextgen/generate";
+import { type DispatchResult, runScheduler } from "../scheduler/dispatch";
 import type { Checkpoint } from "../types/checkpoint";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Transition } from "../types/transitions";
@@ -21,6 +22,8 @@ export interface RunOnceResult {
 	verifications: Array<{ cpId: string; result: VerifyResult }>;
 	/** Interfaces whose registry entry was re-anchored to fresh content. */
 	reanchored: string[];
+	/** Dispatches executed by the auto scheduler (empty for manual policy). */
+	dispatches: DispatchResult[];
 }
 
 function event(bb: Blackboard, type: string, payload: unknown): Promise<void> {
@@ -259,5 +262,30 @@ export async function runOnce(bb: Blackboard): Promise<RunOnceResult> {
 		}
 	}
 
-	return { transitions, applied, notifications, verifications, reanchored };
+	// Skeleton step 4: scheduler decisions. manual policy never dispatches;
+	// semi-auto only surfaces suggestions as notifications.
+	const config = await bb.config.load();
+	const dispatches: DispatchResult[] = [];
+	if (config.scheduler.policy !== "manual") {
+		dispatches.push(
+			...(await runScheduler(
+				bb,
+				config.scheduler.policy,
+				config.scheduler.autoConstraints?.maxConcurrentWorkspots ?? 2,
+				async (message, severity) => {
+					notifications.push({ message, severity });
+					await event(bb, "notify_human", { message, severity });
+				},
+			)),
+		);
+	}
+
+	return {
+		transitions,
+		applied,
+		notifications,
+		verifications,
+		reanchored,
+		dispatches,
+	};
 }
