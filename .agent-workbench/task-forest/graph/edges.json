@@ -790,5 +790,29 @@
     "to": "TF-0011",
     "type": "depends_on",
     "updated_at": "2026-08-28T08:50:49.564691Z"
+  },
+  "TFE-0067": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-08-28T10:30:48.038729Z",
+    "created_from_session": null,
+    "from": "TF-0055",
+    "id": "TFE-0067",
+    "reason": "存量退役评估是全局目标的远期后续节点",
+    "to": "TF-0001",
+    "type": "child_of",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
+  },
+  "TFE-0068": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-08-28T10:30:48.038729Z",
+    "created_from_session": null,
+    "from": "TF-0055",
+    "id": "TFE-0068",
+    "reason": "退役评估以 v0.1.0 发行完成为前提",
+    "to": "TF-0012",
+    "type": "depends_on",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   }
 }

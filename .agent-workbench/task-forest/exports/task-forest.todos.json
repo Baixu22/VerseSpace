@@ -385,26 +385,26 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.9,
+    "confidence": 0.85,
     "context_tags": [
       "workbench",
       "mvp",
-      "infra"
+      "data-layer"
     ],
     "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0003",
+    "difficulty": "high",
+    "id": "TF-0004",
     "kind": "milestone",
-    "next_action": "复核产物并决定是否标记完成",
+    "next_action": "Blackboard 是唯一文件访问通道，上层模块不直接摸文件",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "让后续所有模块代码有一个可测试、可 lint、可 CI 的家。",
+    "purpose": "数据层是骨架 Phase 1，其他一切模块都依赖它；类型定义是所有模块的契约。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "review_needed",
+    "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑二：工程骨架与新 CLI 包落地"
+    "title": "里程碑三：类型契约与 Blackboard 数据层（骨架 Phase 1）"
   },
   {
     "alignment": {
@@ -465,37 +465,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "风险：误引入 Agent SDK / 数据库 / 服务器等重依赖破坏零依赖定位"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "ci"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0022",
-    "kind": "task",
-    "next_action": "复核产物并决定是否标记完成",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "review_needed",
-    "success_metrics": [],
-    "title": "biome 与 CI 车道接入"
   },
   {
     "alignment": {
@@ -1157,6 +1126,39 @@
       "why_this_task": ""
     },
     "blocked_by": [
+      "TF-0012"
+    ],
+    "confidence": 0.8,
+    "context_tags": [
+      "workbench",
+      "follow-up",
+      "retirement"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0055",
+    "kind": "follow_up",
+    "next_action": "先完成依赖：TF-0012",
+    "priority": 3,
+    "progress": 0.0,
+    "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
       "TF-0008"
     ],
     "confidence": 0.85,
@@ -1178,7 +1180,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑八：Scheduler 调度与派发"
+    "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）"
   },
   {
     "alignment": {
@@ -1211,7 +1213,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑九：Watcher 后台监听模式"
+    "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）"
   },
   {
     "alignment": {
@@ -1245,7 +1247,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑十：doctor 一致性检查与容错收口"
+    "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）"
   },
   {
     "alignment": {
@@ -1278,40 +1280,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑十一：v0.1.0 发行能力"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0003"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "data-layer"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0004",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0003",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "数据层是骨架 Phase 1，其他一切模块都依赖它；类型定义是所有模块的契约。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑三：类型契约与 Blackboard 数据层"
+    "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
   },
   {
     "alignment": {
@@ -1344,7 +1313,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑四：Automaton 纯函数状态机引擎"
+    "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）"
   },
   {
     "alignment": {
@@ -1377,7 +1346,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑五：ContextGen 上下文生成器"
+    "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）"
   },
   {
     "alignment": {
@@ -1410,7 +1379,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑六：Verifier 验证执行器"
+    "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）"
   },
   {
     "alignment": {
@@ -1445,6 +1414,6 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑七：Runtime 组合与基础 CLI（MVP 收口）"
+    "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）"
   }
 ]

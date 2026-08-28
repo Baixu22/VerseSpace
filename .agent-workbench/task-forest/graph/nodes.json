@@ -145,11 +145,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "review_needed",
+    "status": "done",
     "success_metrics": [],
     "summary": "创建 packages/workbench 独立包（复刻 sidecar 的独立 lockfile/tsconfig/bun test 模板），接入 CLI 框架与 bin 入口，补齐 biome 覆盖确认与 CI 车道。",
     "title": "里程碑二：工程骨架与新 CLI 包落地",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-08-28T10:30:48.037729Z"
   },
   "TF-0004": {
     "acceptance_criteria": [
@@ -196,8 +196,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "先定义全部跨模块类型（goal/checkpoint/workspot/decision/interface/event/transition/config）与运行时校验，再实现 .workbench/ 目录的结构化读写：原子写、JSONL 追加、goals/decisions/interfaces/state/checkpoints 全套 API 与 WorldSnapshot 聚合。",
-    "title": "里程碑三：类型契约与 Blackboard 数据层",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑三：类型契约与 Blackboard 数据层（骨架 Phase 1）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0005": {
     "acceptance_criteria": [
@@ -244,8 +244,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "实现 goal/checkpoint/workspot 三个子状态机与 evaluator 组合器：输入 WorldSnapshot、输出 Transition[]，无状态、无副作用、幂等，配表驱动单测。",
-    "title": "里程碑四：Automaton 纯函数状态机引擎",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0006": {
     "acceptance_criteria": [
@@ -291,8 +291,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "按工位的 context_needs 从 Blackboard 查询目标、验收条件、决策、接口、最近事件，渲染 .agent-context.md；支持单工位与全量刷新。",
-    "title": "里程碑五：ContextGen 上下文生成器",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0007": {
     "acceptance_criteria": [
@@ -339,8 +339,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "按 checkpoint 的验证策略（test/type-check/build/human-review/缺省 skipped）在对应 worktree 内受控执行命令：超时控制、exit code 判定、失败输出截断归档。",
-    "title": "里程碑六：Verifier 验证执行器",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0008": {
     "acceptance_criteria": [
@@ -387,8 +387,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "Runtime.runOnce 按 snapshot → automaton.evaluate → 逐条落 Blackboard（含调 Verifier）→ 事件落盘 的顺序组合全部模块（幂等、单轮不递归）；CLI 提供 goal/decision/interface/ws/checkpoint/sync/status/map/log 命令。达成即 MVP：手动模式全链路可用。",
-    "title": "里程碑七：Runtime 组合与基础 CLI（MVP 收口）",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0009": {
     "acceptance_criteria": [
@@ -435,8 +435,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "scheduler.tick 按 manual/semi-auto/auto 三策略决定是否把 ready 目标派发到空闲工位（含并发上限）；dispatch 落地 = worktree 创建/绑定 + 上下文刷新 + CLI dispatch/queue 命令。",
-    "title": "里程碑八：Scheduler 调度与派发",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0010": {
     "acceptance_criteria": [
@@ -483,8 +483,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "监听 .workbench/checkpoints/staging、blackboard/goals、接口契约目录，500ms 防抖后触发 Runtime.runOnce；处理信号、崩溃恢复与单实例锁。",
-    "title": "里程碑九：Watcher 后台监听模式",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0011": {
     "acceptance_criteria": [
@@ -531,8 +531,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "doctor 全量体检：DAG 完整性、接口 hash 漂移、孤儿 checkpoint、队列与状态机结论矛盾；并补容错测试（部分写入、崩溃恢复、并发 CLI 写入）。",
-    "title": "里程碑十：doctor 一致性检查与容错收口",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0012": {
     "acceptance_criteria": [
@@ -579,8 +579,8 @@
     "status": "proposed",
     "success_metrics": [],
     "summary": "workbench 纳入 changesets 版本管理与 npm 发行链路，bun build --compile 产出三平台单文件二进制（npm 包 + 二进制双形态），扩展 CI 发行流水线，交付 README/docs/示例项目，完成首版验收清单。",
-    "title": "里程碑十一：v0.1.0 发行能力",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   },
   "TF-0013": {
     "acceptance_criteria": [
@@ -1034,11 +1034,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "review_needed",
+    "status": "done",
     "success_metrics": [],
     "summary": "确认 biome ** 通配自动覆盖新包；ci.yml 的 dorny/paths-filter 增加 packages/** 车道触发 biome + typecheck + bun test。",
     "title": "biome 与 CI 车道接入",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-08-28T10:30:48.037729Z"
   },
   "TF-0023": {
     "acceptance_criteria": [],
@@ -2474,5 +2474,52 @@
     "summary": "三平台安装冒烟、示例项目按文档端到端复现、CHANGELOG 与 tag v0.1.0、首个发行说明。",
     "title": "v0.1.0 发行验收清单",
     "updated_at": "2026-08-28T08:50:49.556238Z"
+  },
+  "TF-0055": {
+    "acceptance_criteria": [
+      "新增 ADR 明确存量去留",
+      "退役评估覆盖三块存量各自的处理结论"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.8,
+    "context_tags": [
+      "workbench",
+      "follow-up",
+      "retirement"
+    ],
+    "created_at": "2026-08-28T10:30:48.038729Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "medium",
+    "display_order": 1200,
+    "estimated_total_minutes": null,
+    "evidence": [],
+    "execution_hints": [],
+    "id": "TF-0055",
+    "kind": "follow_up",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "proposed",
+    "success_metrics": [],
+    "summary": "ADR-0003 冻结存量的后继动作：Workbench 达到 v0.1.0 后，评估 src/、src-tauri/、sidecar/ 的退役或迁移方案（保留为参考库 / 抽取部分能力 / 整体移除），届时新增 ADR 取代 ADR-0003。",
+    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径",
+    "updated_at": "2026-08-28T10:30:48.038729Z"
   }
 }

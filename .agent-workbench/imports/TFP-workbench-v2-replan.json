@@ -1,0 +1,125 @@
+{
+  "proposal_id": "TFP-workbench-v2-replan",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "rationale": "按用户指示校准任务森林：① GitHub Actions 计费问题用户明确豁免（『无所谓，反正我们也要改的』，发行阶段会重写 workflows），t-ci 与 m2 转 done，之前记录的偏差视为已按用户决策关闭；② 里程碑三至十一的标题显式标注《Workbench 实现架构骨架》的 Phase 1-7 映射，使森林结构与用户预期的骨架阶段一一对应（里程碑一/二为仓库自有基建，十一为发行阶段）；③ 新增 follow_up 节点承接 ADR-0003 的存量退役再评估，依赖 v0.1.0 发行完成。",
+  "status": "proposed",
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0022",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0003",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0004",
+      "fields": {
+        "title": "里程碑三：类型契约与 Blackboard 数据层（骨架 Phase 1）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0005",
+      "fields": {
+        "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0006",
+      "fields": {
+        "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0007",
+      "fields": {
+        "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0008",
+      "fields": {
+        "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0009",
+      "fields": {
+        "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0010",
+      "fields": {
+        "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0011",
+      "fields": {
+        "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）"
+      }
+    },
+    {
+      "action": "update_node",
+      "id": "TF-0012",
+      "fields": {
+        "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "fu-retire",
+      "node": {
+        "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径",
+        "kind": "follow_up",
+        "status": "proposed",
+        "summary": "ADR-0003 冻结存量的后继动作：Workbench 达到 v0.1.0 后，评估 src/、src-tauri/、sidecar/ 的退役或迁移方案（保留为参考库 / 抽取部分能力 / 整体移除），届时新增 ADR 取代 ADR-0003。",
+        "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
+        "acceptance_criteria": [
+          "新增 ADR 明确存量去留",
+          "退役评估覆盖三块存量各自的处理结论"
+        ],
+        "display_order": 1200,
+        "priority": 3,
+        "difficulty": "medium",
+        "confidence": 0.8,
+        "context_tags": [
+          "workbench",
+          "follow-up",
+          "retirement"
+        ]
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "fu-retire",
+      "to": "TF-0001",
+      "type": "child_of",
+      "edge": {
+        "reason": "存量退役评估是全局目标的远期后续节点",
+        "blocking": true
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "fu-retire",
+      "to": "TF-0012",
+      "type": "depends_on",
+      "edge": {
+        "reason": "退役评估以 v0.1.0 发行完成为前提",
+        "blocking": true
+      }
+    }
+  ]
+}
