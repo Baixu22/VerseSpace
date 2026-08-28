@@ -239,7 +239,7 @@ export function buildProgram(): Command {
 	program
 		.command("watch")
 		.description("watch the blackboard and run the Runtime loop on changes")
-		.action(watchCommand);
+		.action((_options, command) => watchCommand(command));
 	program
 		.command("doctor")
 		.description(
@@ -253,7 +253,9 @@ export function buildProgram(): Command {
 	config
 		.command("set <key> <value>")
 		.description("set a config value, e.g. scheduler.policy auto")
-		.action(configSet);
+		.action((key: string, value: string, _options: unknown, command: Command) =>
+			configSet(key, value, command),
+		);
 
 	return program;
 }
