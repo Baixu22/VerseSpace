@@ -66,6 +66,10 @@ export interface UiState {
 	};
 	checkpointsByWorkspot: Record<string, Checkpoint[]>;
 	activity: Record<string, WbEvent[]>;
+	agentSessions: Record<
+		string,
+		{ session: AgentSession | null; lastLines: string[] } | null
+	>;
 	interfaces: RegistryEntry[];
 	decisions: Decision[];
 	events: WbEvent[];
@@ -93,6 +97,19 @@ export async function triggerSync(): Promise<SyncResult> {
 		throw new Error(`/api/sync ${response.status}`);
 	}
 	return response.json() as Promise<SyncResult>;
+}
+
+export interface AgentSession {
+	workspot: string;
+	agent: string;
+	goal?: string;
+	prompt: string;
+	status: "running" | "done" | "failed";
+	startedAt: string;
+	finishedAt?: string;
+	exitCode?: number | null;
+	error?: string;
+	logFile: string;
 }
 
 export interface DispatchOutcome {
@@ -132,4 +149,20 @@ export async function reviewCheckpoint(
 		body: JSON.stringify({ cpId, approve }),
 	});
 	return response.json() as Promise<ReviewOutcome>;
+}
+
+export async function runAgent(
+	workspotId: string,
+	prompt: string,
+): Promise<{ ok: boolean; reason?: string; logFile?: string }> {
+	const response = await fetch("/api/agent/run", {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ workspotId, prompt }),
+	});
+	return response.json() as Promise<{
+		ok: boolean;
+		reason?: string;
+		logFile?: string;
+	}>;
 }

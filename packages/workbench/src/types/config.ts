@@ -27,5 +27,11 @@ export const workbenchConfigSchema = z.object({
 			checkpointTimeout: z.string().default("5m"),
 		})
 		.default({ idleNotification: "15m", checkpointTimeout: "5m" }),
+	/** Agent CLI invoked per workspot (batch mode reads the prompt on stdin). */
+	agent: z
+		.object({
+			command: z.string().default("claude -p --output-format stream-json"),
+		})
+		.default({ command: "claude -p --output-format stream-json" }),
 });
 export type WorkbenchConfig = z.infer<typeof workbenchConfigSchema>;

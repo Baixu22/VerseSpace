@@ -5,11 +5,13 @@ import {
 	dispatchGoal,
 	fetchState,
 	reviewCheckpoint,
+	runAgent,
 	triggerSync,
 	type UiState,
 } from "./api";
 import { LaneCard } from "./components/lanes";
 import { Empty, GoalTree, Metric, Panel, ZoneList } from "./components/panels";
+import { Badge } from "./components/ui/badge";
 import { Button } from "./components/ui/button";
 import { cn } from "./lib/utils";
 
@@ -17,16 +19,163 @@ function issueTone(severity: DoctorIssue["severity"]) {
 	return severity === "error" ? "text-status-danger" : "text-status-warning";
 }
 
+interface Verdict {
+	key: string;
+	kind: string;
+	title: string;
+	detail: string;
+	tone: "err" | "warn";
+	actions?: React.ReactNode;
+}
+
+/**
+ * UI 定律一（裁决优先）：首屏第一公民是"需要人拍板的事"。
+ * 没有待裁决项时整个区块塌缩为一行空态——观察税降到零。
+ */
+function ReviewQueue({
+	state,
+	onReview,
+	busy,
+}: {
+	state: UiState;
+	onReview: (cpId: string, approve: boolean) => void;
+	busy: boolean;
+}) {
+	const items: Verdict[] = [];
+	for (const cp of state.checkpoints.staging) {
+		if (cp.lifecycle === "awaiting_review") {
+			items.push({
+				key: `review-${cp.id}`,
+				kind: "人工审查",
+				title: cp.assertion,
+				detail: `${cp.id} · 工位 ${cp.workspot}`,
+				tone: "warn",
+				actions: (
+					<span className="flex gap-1">
+						<Button
+							size="xs"
+							variant="outline"
+							disabled={busy}
+							onClick={() => onReview(cp.id, true)}
+						>
+							通过
+						</Button>
+						<Button
+							size="xs"
+							variant="destructive"
+							disabled={busy}
+							onClick={() => onReview(cp.id, false)}
+						>
+							驳回
+						</Button>
+					</span>
+				),
+			});
+		}
+	}
+	for (const cp of state.checkpoints.failed) {
+		if (cp.lifecycle === "failed") {
+			const tail = cp.verificationResult?.output
+				?.split("\n")
+				.filter(Boolean)
+				.at(-1);
+			items.push({
+				key: `failed-${cp.id}`,
+				kind: "验证失败",
+				title: cp.assertion,
+				detail: `${cp.id} · 工位 ${cp.workspot}${tail ? ` · ${tail.slice(0, 80)}` : ""}`,
+				tone: "err",
+			});
+		}
+	}
+	for (const issue of state.doctor.issues) {
+		if (issue.severity !== "error") {
+			continue;
+		}
+		items.push({
+			key: `doctor-${issue.check}-${issue.subject ?? issue.message}`,
+			kind: "一致性错误",
+			title: issue.check,
+			detail: issue.message,
+			tone: "err",
+		});
+	}
+	for (const issue of state.doctor.issues) {
+		if (
+			issue.check !== "interface_drift" &&
+			issue.check !== "active_on_dead_task"
+		) {
+			continue;
+		}
+		items.push({
+			key: `warn-${issue.check}-${issue.subject ?? issue.message}`,
+			kind: "漂移/阻塞",
+			title: issue.check,
+			detail: issue.message,
+			tone: "warn",
+		});
+	}
+
+	if (items.length === 0) {
+		const running = state.workspots.filter(
+			(ws) => ws.status === "active",
+		).length;
+		return (
+			<section className="rounded-xl border border-status-success/30 bg-status-success/5 px-4 py-3">
+				<p className="text-body text-status-success">
+					无需裁决 — {running} 条跑道运行中 ·{" "}
+					{state.goals.filter((goal) => goal.status === "ready").length}{" "}
+					个目标就绪 · Sync 后此处只出现例外
+				</p>
+			</section>
+		);
+	}
+	return (
+		<section className="rounded-xl border border-status-warning/40 bg-status-warning/5 px-4 py-3">
+			<h2 className="text-mini font-semibold tracking-widest text-status-warning uppercase">
+				待裁决 · {items.length}
+			</h2>
+			<div className="mt-2">
+				{items.map((item) => (
+					<div
+						key={item.key}
+						className="flex flex-wrap items-center gap-2 border-b border-border-subtle py-2 last:border-b-0"
+					>
+						<Badge
+							variant="outline"
+							className={cn(
+								"border-transparent",
+								item.tone === "err"
+									? "bg-status-danger/15 text-status-danger"
+									: "bg-status-warning/15 text-status-warning",
+							)}
+						>
+							{item.kind}
+						</Badge>
+						<span className="font-body">{item.title}</span>
+						<span className="truncate font-mono text-micro text-fg-subtle">
+							{item.detail}
+						</span>
+						<span className="ml-auto">{item.actions}</span>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+
 function Dashboard({
 	state,
 	onDispatch,
 	onReview,
+	onAgent,
 	dispatchNote,
 	busy,
 }: {
 	state: UiState;
 	onDispatch: (goalId: string) => void;
 	onReview: (cpId: string, approve: boolean) => void;
+	onAgent: (workspotId: string, prompt: string) => void;
 	dispatchNote: string | null;
 	busy: boolean;
 }) {
@@ -47,6 +196,9 @@ function Dashboard({
 
 	return (
 		<main className="mx-auto max-w-7xl px-5 pb-14">
+			<div className="mt-4">
+				<ReviewQueue state={state} onReview={onReview} busy={busy} />
+			</div>
 			<div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5 lg:grid-cols-9">
 				<Metric n={state.goals.length} t="目标" />
 				<Metric n={counts.ready ?? 0} t="就绪" />
@@ -73,6 +225,7 @@ function Dashboard({
 										workspot={ws}
 										state={state}
 										onReview={onReview}
+										onAgent={onAgent}
 										busy={busy}
 									/>
 								))}
@@ -293,10 +446,22 @@ export default function App() {
 		onSuccess: () => invalidate(),
 	});
 
+	const agentMutation = useMutation({
+		mutationFn: ({
+			workspotId,
+			prompt,
+		}: {
+			workspotId: string;
+			prompt: string;
+		}) => runAgent(workspotId, prompt),
+		onSuccess: () => invalidate(),
+	});
+
 	const busy =
 		syncMutation.isPending ||
 		dispatchMutation.isPending ||
-		reviewMutation.isPending;
+		reviewMutation.isPending ||
+		agentMutation.isPending;
 
 	return (
 		<div className="min-h-dvh">
@@ -331,6 +496,9 @@ export default function App() {
 					state={stateQuery.data}
 					onDispatch={(goalId) => dispatchMutation.mutate({ goalId })}
 					onReview={(cpId, approve) => reviewMutation.mutate({ cpId, approve })}
+					onAgent={(workspotId, prompt) =>
+						agentMutation.mutate({ workspotId, prompt })
+					}
 					dispatchNote={dispatchNote}
 					busy={busy}
 				/>

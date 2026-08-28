@@ -27,10 +27,13 @@ describe("resolveUiAssets", () => {
 	test("explicit dir wins; fallback kinds are all valid", async () => {
 		const dir = await mkdtemp(join(tmpdir(), "workbench-ui-"));
 		try {
-			expect(resolveUiAssets(dir)).toEqual({ kind: "disk", diskDir: dir });
+			expect(await resolveUiAssets(dir)).toEqual({
+				kind: "disk",
+				diskDir: dir,
+			});
 			// the placeholder manifest is empty; whether the dev dist exists
 			// depends on the checkout — any of the three kinds is acceptable
-			const resolved = resolveUiAssets();
+			const resolved = await resolveUiAssets();
 			expect(["embedded", "disk", "none"]).toContain(resolved.kind);
 		} finally {
 			await rm(dir, { recursive: true, force: true });
@@ -53,7 +56,7 @@ describe("ui server", () => {
 			"console.log('workbench-ui');",
 			"utf8",
 		);
-		const server = createUiServer(ws.bb, 0, uiDir);
+		const server = await createUiServer(ws.bb, 0, uiDir);
 		try {
 			const base = `http://127.0.0.1:${server.port}`;
 

@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { agentRun } from "./commands/agent";
 import {
 	checkpointCreate,
 	checkpointList,
@@ -120,6 +121,19 @@ export function buildProgram(): Command {
 		.command("check")
 		.description("check all interfaces for hash drift (exit 1 on drift)")
 		.action((_options, command) => interfaceCheck(command));
+
+	const agent = program
+		.command("agent")
+		.description("run agent sessions inside workspot worktrees");
+	agent
+		.command("run")
+		.summary("run a non-interactive agent batch in a workspot")
+		.description(
+			"spawn the configured agent CLI in the worktree (--workspot, --prompt)",
+		)
+		.option("--workspot <id>", "workspot to run the agent in")
+		.option("--prompt <text>", "task prompt (default: task title + acceptance)")
+		.action(agentRun);
 
 	const ws = program.command("ws").description("manage workspots");
 	ws.command("create <id>")

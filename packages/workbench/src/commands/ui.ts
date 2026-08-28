@@ -37,9 +37,9 @@ export async function uiCommand(
 	);
 	const url = `http://127.0.0.1:${port}`;
 
-	let server: ReturnType<typeof createUiServer>;
+	let server: Awaited<ReturnType<typeof createUiServer>>;
 	try {
-		server = createUiServer(bb, port, options.uiDir);
+		server = await createUiServer(bb, port, options.uiDir);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		if (message.includes("EADDRINUSE")) {

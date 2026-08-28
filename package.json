@@ -52,7 +52,7 @@
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
 		"dev:ui": "cd apps/workbench-ui && bun run dev",
-		"build:ui": "cd apps/workbench-ui && bun run build"
+		"build:ui": "cd apps/workbench-ui && bun run build && cd ../../packages/workbench && bun run scripts/ui-prepare.ts"
 	},
 	"dependencies": {
 		"@chenglou/pretext": "0.0.7",

@@ -4,7 +4,6 @@ import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { runDoctor } from "../doctor";
 import { WORKBENCH_VERSION } from "../version";
-import { files as embeddedFiles } from "./assets.generated.js";
 
 export interface UiState {
 	version: string;
@@ -22,6 +21,11 @@ export interface UiState {
 	checkpointsByWorkspot: Record<string, unknown[]>;
 	/** Per-workspot recent activity (newest first), the lane feed. */
 	activity: Record<string, unknown[]>;
+	/** Latest agent batch session per workspot, with human-readable tail. */
+	agentSessions: Record<
+		string,
+		{ session: unknown; lastLines: string[] } | null
+	>;
 	interfaces: unknown[];
 	decisions: unknown[];
 	events: unknown[];
@@ -90,6 +94,15 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		list.reverse(); // newest first per lane
 	}
 
+	const { readAgentView } = await import("../agents/runner");
+	const agentSessions: Record<
+		string,
+		{ session: unknown; lastLines: string[] } | null
+	> = {};
+	for (const workspot of workspots) {
+		agentSessions[workspot.id] = await readAgentView(bb, workspot.id);
+	}
+
 	return {
 		version: WORKBENCH_VERSION,
 		project: bb.projectRoot,
@@ -100,6 +113,7 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		checkpoints,
 		checkpointsByWorkspot,
 		activity,
+		agentSessions,
 		interfaces,
 		decisions,
 		events: events.reverse(),
@@ -138,18 +152,39 @@ export interface UiAssets {
 	/** Serve mode: embedded (compiled binary) wins, then disk dir. */
 	kind: "embedded" | "disk" | "none";
 	diskDir?: string;
+	embeddedFiles?: Record<string, string>;
+}
+
+/**
+ * The manifest is generated at build time with `with { type: "file" }`
+ * imports of the UI dist. Loaded dynamically + fault-tolerant: a stale
+ * manifest (UI rebuilt → hashed filenames changed) or a missing one degrades
+ * to non-embedded modes instead of crashing the process or the tests.
+ */
+async function loadEmbeddedFiles(): Promise<Record<string, string>> {
+	try {
+		const mod = (await import("./assets.generated.js")) as {
+			files: Record<string, string>;
+		};
+		return mod.files ?? {};
+	} catch {
+		return {};
+	}
 }
 
 /**
  * Resolution order: explicit --ui-dir > embedded assets (compiled binary) >
  * the repo dev build (apps/workbench-ui/dist) > none (fallback page).
  */
-export function resolveUiAssets(uiDirOverride?: string): UiAssets {
+export async function resolveUiAssets(
+	uiDirOverride?: string,
+): Promise<UiAssets> {
 	if (uiDirOverride) {
 		return { kind: "disk", diskDir: resolve(uiDirOverride) };
 	}
+	const embeddedFiles = await loadEmbeddedFiles();
 	if (Object.keys(embeddedFiles).length > 0) {
-		return { kind: "embedded" };
+		return { kind: "embedded", embeddedFiles };
 	}
 	const devDist = resolve(import.meta.dir, "../../../apps/workbench-ui/dist");
 	if (existsSync(join(devDist, "index.html"))) {
@@ -162,17 +197,17 @@ function assetResponse(body: ReadableStream | string, path: string): Response {
 	return new Response(body, { headers: { "content-type": mimeFor(path) } });
 }
 
-export function createUiServer(
+export async function createUiServer(
 	bb: Blackboard,
 	port: number,
 	uiDirOverride?: string,
 ) {
-	const assets = resolveUiAssets(uiDirOverride);
+	const assets = await resolveUiAssets(uiDirOverride);
 
 	async function readAsset(urlPath: string): Promise<Response | null> {
 		const key = urlPath.replace(/^\/+/, "") || "index.html";
-		if (assets.kind === "embedded") {
-			const embedded = embeddedFiles[key];
+		if (assets.kind === "embedded" && assets.embeddedFiles) {
+			const embedded = assets.embeddedFiles[key];
 			if (!embedded) {
 				return null;
 			}
@@ -219,6 +254,27 @@ export function createUiServer(
 					);
 				}
 				const result = await dispatchGoal(bb, body.goalId, body.workspotId);
+				return Response.json(result, {
+					status: result.ok ? 200 : 409,
+					headers: cors,
+				});
+			}
+			if (url.pathname === "/api/agent/run" && request.method === "POST") {
+				const { startAgent } = await import("../agents/runner");
+				const body = (await request.json()) as {
+					workspotId?: string;
+					prompt?: string;
+				};
+				if (!body.workspotId || !body.prompt) {
+					return Response.json(
+						{ ok: false, reason: "缺少 workspotId / prompt" },
+						{ status: 400, headers: cors },
+					);
+				}
+				const result = await startAgent(bb, {
+					workspotId: body.workspotId,
+					prompt: body.prompt,
+				});
 				return Response.json(result, {
 					status: result.ok ? 200 : 409,
 					headers: cors,

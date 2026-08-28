@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Checkpoint, UiState, WbEvent, Workspot } from "../api";
 import { Empty, EventLine, StateBadge, WS_TONE } from "./panels";
 import { Badge } from "./ui/badge";
@@ -13,13 +14,18 @@ export function LaneCard({
 	workspot,
 	state,
 	onReview,
+	onAgent,
 	busy,
 }: {
 	workspot: Workspot;
 	state: UiState;
 	onReview: (cpId: string, approve: boolean) => void;
+	onAgent: (workspotId: string, prompt: string) => void;
 	busy: boolean;
 }) {
+	const [prompt, setPrompt] = useState("");
+	const agentView = state.agentSessions[workspot.id] ?? null;
+	const agentSession = agentView?.session ?? null;
 	const taskId = workspot.currentTask ?? workspot.primaryTask;
 	const task = state.goals.find((goal) => goal.id === taskId);
 	const laneCps: Checkpoint[] = state.checkpointsByWorkspot[workspot.id] ?? [];
@@ -99,6 +105,71 @@ export function LaneCard({
 					))}
 				</div>
 			) : null}
+
+			{agentSession && agentView ? (
+				<div className="mt-3 border-t border-border-subtle pt-2">
+					<div className="flex items-center gap-2">
+						<span className="text-mini font-semibold tracking-widest text-fg-muted uppercase">
+							agent
+						</span>
+						<StateBadge
+							tone={{
+								running: "bg-status-info/15 text-status-info",
+								done: "bg-status-success/15 text-status-success",
+								failed: "bg-status-danger/15 text-status-danger",
+							}}
+							value={agentSession.status}
+						/>
+						{agentSession.exitCode !== undefined &&
+						agentSession.exitCode !== null ? (
+							<span className="font-mono text-micro text-fg-subtle">
+								exit {agentSession.exitCode}
+							</span>
+						) : null}
+					</div>
+					{agentView.lastLines.length > 0 ? (
+						<div className="mt-1 rounded-md border border-border-subtle bg-bg-base p-2">
+							{agentView.lastLines.map((line, index) => (
+								<div
+									key={`${index}`}
+									className="truncate text-small text-fg-muted"
+								>
+									{line}
+								</div>
+							))}
+						</div>
+					) : null}
+				</div>
+			) : null}
+
+			{agentSession?.status !== "running" ? (
+				<form
+					className="mt-3 flex gap-2 border-t border-border-subtle pt-3"
+					onSubmit={(event) => {
+						event.preventDefault();
+						const text = prompt.trim();
+						if (!text) {
+							return;
+						}
+						onAgent(workspot.id, text);
+						setPrompt("");
+					}}
+				>
+					<input
+						value={prompt}
+						onChange={(event) => setPrompt(event.target.value)}
+						placeholder="给这条跑道的 agent 下任务…"
+						className="h-8 min-w-0 flex-1 rounded-lg border border-input bg-input/30 px-2.5 text-small outline-none focus-visible:border-ring"
+					/>
+					<Button type="submit" size="sm" disabled={busy || !prompt.trim()}>
+						启动
+					</Button>
+				</form>
+			) : (
+				<div className="mt-3 border-t border-border-subtle pt-3 text-small text-fg-muted">
+					agent 运行中…
+				</div>
+			)}
 
 			<div className="mt-2 border-t border-border-subtle pt-2">
 				{laneEvents.length === 0 ? (

@@ -9,6 +9,7 @@ describe("buildProgram", () => {
 			"goal",
 			"decision",
 			"interface",
+			"agent",
 			"ws",
 			"checkpoint",
 			"dispatch",
