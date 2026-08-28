@@ -1,0 +1,31 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`renderContext full context renders every section (snapshot) 1`] = `
+"# 工作上下文（自动生成，请勿手动编辑）
+
+## 你的任务
+实现 Blackboard 数据层（g-1）
+工位：ws-a（分支 ws/ws-a，绑定 primary）
+
+## 验收条件
+- goals 读写往返一致〔验证：test〕
+- 原子写不留临时文件
+
+## 必须遵守的架构决策
+- 原子写：防止半截 YAML（human）
+
+## 可用的接口定义
+- core/api → contracts/api.md（v3）
+  文件路径: \\proj\\contracts\\api.md
+
+## 最近的相关事件
+- [2026-08-28T01:00:00.000Z] checkpoint_moved: cp-1 staging → verified
+
+## 当前已知冲突
+- [workspot_status] ws-a active 但任务已取消
+
+## 约束
+- src/contracts/ 下的文件是跨模块契约，修改前请说明理由
+- 完成有意义的阶段时，请在 .workbench/checkpoints/staging/ 创建 checkpoint 文件
+"
+`;
