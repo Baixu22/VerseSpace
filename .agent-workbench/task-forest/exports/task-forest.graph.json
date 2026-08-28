@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T11:41:30.386211Z",
+  "generated_at": "2026-08-28T11:55:19.463927Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2222,7 +2222,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -2242,11 +2242,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "scheduler.tick 按 manual/semi-auto/auto 三策略决定是否把 ready 目标派发到空闲工位（含并发上限）；dispatch 落地 = worktree 创建/绑定 + 上下文刷新 + CLI dispatch/queue 命令。",
       "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T11:55:19.141473Z"
     },
     "TF-0010": {
       "acceptance_criteria": [
@@ -3936,7 +3936,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3956,11 +3956,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "manual 恒 noop（调度全靠 CLI 手动）；semi-auto 返回 notify_human 提示可派发；auto 在有空闲工位且未超 maxConcurrentWorkspots 时返回 dispatch。队列就是 queue.yaml 里的数组，不引入消息中间件。",
       "title": "scheduler.tick 与三种调度策略",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:55:19.141473Z"
     },
     "TF-0045": {
       "acceptance_criteria": [],
@@ -3984,7 +3984,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -4004,11 +4004,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "dispatch 动作 = git worktree 创建/绑定工位分支 + 刷新上下文文件 + 更新工位状态；CLI dispatch/queue 命令。",
       "title": "dispatch 落地与 CLI 派发命令",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:55:19.141473Z"
     },
     "TF-0046": {
       "acceptance_criteria": [],
@@ -4500,10 +4500,7 @@
   },
   "status_queues": {
     "actionable_todos": [
-      "TF-0009",
       "TF-0010",
-      "TF-0044",
-      "TF-0045",
       "TF-0046",
       "TF-0047",
       "TF-0048",
@@ -4534,6 +4531,7 @@
         "TF-0006",
         "TF-0007",
         "TF-0008",
+        "TF-0009",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,13 +4558,14 @@
         "TF-0040",
         "TF-0041",
         "TF-0042",
-        "TF-0043"
+        "TF-0043",
+        "TF-0044",
+        "TF-0045"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0009",
         "TF-0010",
         "TF-0011",
         "TF-0012",
@@ -4574,8 +4573,6 @@
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0044",
-        "TF-0045",
         "TF-0046",
         "TF-0047",
         "TF-0048",
@@ -4595,7 +4592,6 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0009",
       "TF-0010",
       "TF-0011",
       "TF-0012",
@@ -4603,8 +4599,6 @@
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0044",
-      "TF-0045",
       "TF-0046",
       "TF-0047",
       "TF-0048",
@@ -4621,10 +4615,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 34,
+    "done_count": 37,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 21,
+    "open_count": 18,
     "review_needed_count": 0
   },
   "tree_edges": [

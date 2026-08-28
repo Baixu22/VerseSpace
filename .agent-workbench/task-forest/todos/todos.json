@@ -13,37 +13,6 @@
     "context_tags": [
       "workbench",
       "beta",
-      "scheduler"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0009",
-    "kind": "milestone",
-    "next_action": "三种策略可配置、可测试",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "上线调度能力，从单工位手动走向多工位并行（骨架 Phase 5）。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "beta",
       "watcher"
     ],
     "desired_outcomes": [],
@@ -60,69 +29,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "beta",
-      "scheduler"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0044",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "scheduler.tick 与三种调度策略"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "beta",
-      "scheduler",
-      "git"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0045",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "dispatch 落地与 CLI 派发命令"
   },
   {
     "alignment": {
@@ -601,7 +507,6 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0009",
       "TF-0010"
     ],
     "confidence": 0.85,
@@ -614,7 +519,7 @@
     "difficulty": "medium",
     "id": "TF-0011",
     "kind": "milestone",
-    "next_action": "先完成依赖：TF-0009, TF-0010",
+    "next_action": "先完成依赖：TF-0010",
     "priority": 2,
     "progress": 0.0,
     "purpose": "发行前的质量闸门（骨架 Phase 7）。",

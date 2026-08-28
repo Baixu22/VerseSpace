@@ -1,0 +1,31 @@
+{
+  "applied_at": "2026-08-28T11:55:19.146238Z",
+  "base_graph_hash": "c9e806ddc603ab7efbdf25c8ba25953555675553aed6da475c99cb5f56367bae",
+  "base_summary": {
+    "edge_count": 68,
+    "node_count": 55,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0044",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0045",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0009",
+      "status": "done"
+    }
+  ],
+  "created_at": "2026-08-28T11:55:19.044692Z",
+  "proposal_id": "TFP-workbench-v1-m8",
+  "rationale": "里程碑八（骨架 Phase 5）完成并推送（fd64d01）：scheduler.tick 纯函数三策略——manual 恒 noop、semi-auto 建议派发、auto 在 maxConcurrentWorkspots 并发上限内按队列顺序把 ready 目标配对到空闲工位，失效队列条目在任何非手动策略下告警；dispatchGoal 真实落地派发——git worktree 创建/绑定（已存在 checkout 幂等跳过、分支已存在回退为 checkout）、激活工位、目标出队、刷新上下文文件、事件审计，非 ready 目标与非空闲工位给出明确失败；Runtime 在转移应用后按配置策略运行调度阶段（默认 manual 零行为变化）；workbench dispatch 命令真实可用。新增 12 个测试（含真实 git worktree 创建、分支回退、auto 策略 runOnce 集成），累计 93 测试全绿，tsc/biome/根链路通过。",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "status": "applied"
+}
