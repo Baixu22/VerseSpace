@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T10:55:26.436172Z",
+  "generated_at": "2026-08-28T11:05:10.112256Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2004,7 +2004,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -2024,11 +2024,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "实现 goal/checkpoint/workspot 三个子状态机与 evaluator 组合器：输入 WorldSnapshot、输出 Transition[]，无状态、无副作用、幂等，配表驱动单测。",
       "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T11:05:09.680262Z"
     },
     "TF-0006": {
       "acceptance_criteria": [
@@ -3314,7 +3314,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -3334,11 +3334,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "planned → ready（依赖满足）→ in_progress（被派发）→ done（验证通过）→ stale_done（锚定接口漂移）/ cancelled 的转移规则；含 stale 是否阻塞下游的策略点。",
       "title": "goal-machine 状态机",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:05:09.680262Z"
     },
     "TF-0032": {
       "acceptance_criteria": [],
@@ -3361,7 +3361,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -3381,11 +3381,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "draft → pending → verified → applied 主链与 failed / awaiting_review / rejected 分支的转移规则。",
       "title": "checkpoint-machine 状态机",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:05:09.680262Z"
     },
     "TF-0033": {
       "acceptance_criteria": [],
@@ -3408,7 +3408,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3428,11 +3428,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "idle → active → blocked / borrowed / completed 的转移规则，含借用与归还。",
       "title": "workspot-machine 状态机",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:05:09.680262Z"
     },
     "TF-0034": {
       "acceptance_criteria": [],
@@ -3455,7 +3455,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -3475,11 +3475,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "组合三个子状态机扫描 WorldSnapshot 产出 Transition[]；无状态幂等（同输入同输出、进程随时重启不丢正确性）；合法/非法转移全表单测。",
       "title": "evaluator 组合器与表驱动单测",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:05:09.680262Z"
     },
     "TF-0035": {
       "acceptance_criteria": [
@@ -4511,17 +4511,12 @@
       "TF-0052",
       "TF-0053",
       "TF-0054",
-      "TF-0005",
       "TF-0006",
       "TF-0007",
       "TF-0018",
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0031",
-      "TF-0032",
-      "TF-0033",
-      "TF-0034",
       "TF-0035",
       "TF-0036",
       "TF-0037",
@@ -4547,6 +4542,7 @@
         "TF-0002",
         "TF-0003",
         "TF-0004",
+        "TF-0005",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,13 +4556,16 @@
         "TF-0026",
         "TF-0027",
         "TF-0028",
-        "TF-0029"
+        "TF-0029",
+        "TF-0031",
+        "TF-0032",
+        "TF-0033",
+        "TF-0034"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0005",
         "TF-0006",
         "TF-0007",
         "TF-0008",
@@ -4578,10 +4577,6 @@
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0031",
-        "TF-0032",
-        "TF-0033",
-        "TF-0034",
         "TF-0035",
         "TF-0036",
         "TF-0037",
@@ -4612,7 +4607,6 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0005",
       "TF-0006",
       "TF-0007",
       "TF-0008",
@@ -4624,10 +4618,6 @@
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0031",
-      "TF-0032",
-      "TF-0033",
-      "TF-0034",
       "TF-0035",
       "TF-0036",
       "TF-0037",
@@ -4655,10 +4645,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 17,
+    "done_count": 22,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 38,
+    "open_count": 33,
     "review_needed_count": 0
   },
   "tree_edges": [

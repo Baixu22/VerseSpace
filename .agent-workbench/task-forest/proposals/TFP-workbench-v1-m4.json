@@ -1,0 +1,41 @@
+{
+  "applied_at": "2026-08-28T11:05:09.687202Z",
+  "base_graph_hash": "64fc69c9d5c8c23353effa33e4289b43ff8646be1a317ff6509f9322ba6ffdba",
+  "base_summary": {
+    "edge_count": 68,
+    "node_count": 55,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0031",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0032",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0033",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0034",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0005",
+      "status": "done"
+    }
+  ],
+  "created_at": "2026-08-28T11:05:09.531053Z",
+  "proposal_id": "TFP-workbench-v1-m4",
+  "rationale": "里程碑四（骨架 Phase 2）完成并推送（3d64a09）：goal/checkpoint/workspot 三个纯函数状态机 + evaluator 稳定序组合器，全部无 IO、确定性、幂等（同快照两次求值结果深度相等，一致快照产出空转移）。关键设计决策：① stale_done/cancelled 依赖显式阻塞下游目标并以 notify_human 告警（扩展点 4 文档化）；② done 目标经 verifiedAgainst 接口版本锚定检测漂移 → mark_stale；③ draft checkpoint 带 verification 策略 → request_verification（Runtime 负责置 pending 并执行验证）；④ Transition 联合类型补充 workspot_status 变体（工位状态机必需，骨架联合类型缺失）。28 个表驱动测试，累计 62 测试全绿，tsc/biome/根链路通过。",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "status": "applied"
+}

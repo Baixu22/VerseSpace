@@ -241,11 +241,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "实现 goal/checkpoint/workspot 三个子状态机与 evaluator 组合器：输入 WorldSnapshot、输出 Transition[]，无状态、无副作用、幂等，配表驱动单测。",
     "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-08-28T11:05:09.680262Z"
   },
   "TF-0006": {
     "acceptance_criteria": [
@@ -1446,11 +1446,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "planned → ready（依赖满足）→ in_progress（被派发）→ done（验证通过）→ stale_done（锚定接口漂移）/ cancelled 的转移规则；含 stale 是否阻塞下游的策略点。",
     "title": "goal-machine 状态机",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:05:09.680262Z"
   },
   "TF-0032": {
     "acceptance_criteria": [],
@@ -1490,11 +1490,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "draft → pending → verified → applied 主链与 failed / awaiting_review / rejected 分支的转移规则。",
     "title": "checkpoint-machine 状态机",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:05:09.680262Z"
   },
   "TF-0033": {
     "acceptance_criteria": [],
@@ -1534,11 +1534,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "idle → active → blocked / borrowed / completed 的转移规则，含借用与归还。",
     "title": "workspot-machine 状态机",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:05:09.680262Z"
   },
   "TF-0034": {
     "acceptance_criteria": [],
@@ -1578,11 +1578,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "组合三个子状态机扫描 WorldSnapshot 产出 Transition[]；无状态幂等（同输入同输出、进程随时重启不丢正确性）；合法/非法转移全表单测。",
     "title": "evaluator 组合器与表驱动单测",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:05:09.680262Z"
   },
   "TF-0035": {
     "acceptance_criteria": [

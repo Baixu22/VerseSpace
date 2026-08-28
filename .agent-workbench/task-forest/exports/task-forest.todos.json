@@ -385,37 +385,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "state-machine"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0005",
-    "kind": "milestone",
-    "next_action": "同输入两次调用输出一致",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "状态流转是系统正确性的核心，必须纯逻辑、独立可测（不读文件、不执行命令）。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.9,
     "context_tags": [
       "workbench",
@@ -588,130 +557,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "风险：Windows 原子 rename 覆盖语义差异"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "state-machine"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0031",
-    "kind": "subtask",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "goal-machine 状态机"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "state-machine"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0032",
-    "kind": "subtask",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "checkpoint-machine 状态机"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "state-machine"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0033",
-    "kind": "subtask",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "workspot-machine 状态机"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "state-machine"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0034",
-    "kind": "subtask",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "evaluator 组合器与表驱动单测"
   },
   {
     "alignment": {
@@ -1168,7 +1013,6 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0005",
       "TF-0006",
       "TF-0007"
     ],
@@ -1182,7 +1026,7 @@
     "difficulty": "high",
     "id": "TF-0008",
     "kind": "milestone",
-    "next_action": "先完成依赖：TF-0005, TF-0006, TF-0007",
+    "next_action": "先完成依赖：TF-0006, TF-0007",
     "priority": 1,
     "progress": 0.0,
     "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
