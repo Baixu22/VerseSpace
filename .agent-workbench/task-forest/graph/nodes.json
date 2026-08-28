@@ -528,11 +528,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "doctor 全量体检：DAG 完整性、接口 hash 漂移、孤儿 checkpoint、队列与状态机结论矛盾；并补容错测试（部分写入、崩溃恢复、并发 CLI 写入）。",
     "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-08-28T12:23:24.630126Z"
   },
   "TF-0012": {
     "acceptance_criteria": [
@@ -2206,11 +2206,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "检查 DAG 引用完整性、接口 hash 与注册表漂移、孤儿 checkpoint、队列中目标与状态机结论的矛盾、worktree 与分支绑定一致性；输出定位与修复建议。",
     "title": "doctor 全量一致性体检",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T12:23:24.630126Z"
   },
   "TF-0049": {
     "acceptance_criteria": [],
@@ -2250,11 +2250,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "写入中途 kill（半截 YAML/半行 JSONL）后 sync 自愈或明确报错；两个 CLI 进程并发写的串行化行为验证。",
     "title": "容错与并发写入测试",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T12:23:24.630126Z"
   },
   "TF-0050": {
     "acceptance_criteria": [],

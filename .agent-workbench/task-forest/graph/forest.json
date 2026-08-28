@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T12:10:21.450042Z",
+  "generated_at": "2026-08-28T12:23:25.001867Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2330,7 +2330,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -2350,11 +2350,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "doctor 全量体检：DAG 完整性、接口 hash 漂移、孤儿 checkpoint、队列与状态机结论矛盾；并补容错测试（部分写入、崩溃恢复、并发 CLI 写入）。",
       "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T12:23:24.630126Z"
     },
     "TF-0012": {
       "acceptance_criteria": [
@@ -4125,7 +4125,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -4145,11 +4145,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "检查 DAG 引用完整性、接口 hash 与注册表漂移、孤儿 checkpoint、队列中目标与状态机结论的矛盾、worktree 与分支绑定一致性；输出定位与修复建议。",
       "title": "doctor 全量一致性体检",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T12:23:24.630126Z"
     },
     "TF-0049": {
       "acceptance_criteria": [],
@@ -4172,7 +4172,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -4192,11 +4192,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "写入中途 kill（半截 YAML/半行 JSONL）后 sync 自愈或明确报错；两个 CLI 进程并发写的串行化行为验证。",
       "title": "容错与并发写入测试",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T12:23:24.630126Z"
     },
     "TF-0050": {
       "acceptance_criteria": [],
@@ -4500,9 +4500,7 @@
   },
   "status_queues": {
     "actionable_todos": [
-      "TF-0011",
-      "TF-0048",
-      "TF-0049",
+      "TF-0012",
       "TF-0050",
       "TF-0051",
       "TF-0052",
@@ -4512,8 +4510,7 @@
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0055",
-      "TF-0012"
+      "TF-0055"
     ],
     "blocked": [],
     "by_status": {
@@ -4530,6 +4527,7 @@
         "TF-0008",
         "TF-0009",
         "TF-0010",
+        "TF-0011",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,20 +4558,19 @@
         "TF-0044",
         "TF-0045",
         "TF-0046",
-        "TF-0047"
+        "TF-0047",
+        "TF-0048",
+        "TF-0049"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0011",
         "TF-0012",
         "TF-0018",
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0048",
-        "TF-0049",
         "TF-0050",
         "TF-0051",
         "TF-0052",
@@ -4589,14 +4586,11 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0011",
       "TF-0012",
       "TF-0018",
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0048",
-      "TF-0049",
       "TF-0050",
       "TF-0051",
       "TF-0052",
@@ -4609,10 +4603,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 40,
+    "done_count": 43,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 15,
+    "open_count": 12,
     "review_needed_count": 0
   },
   "tree_edges": [

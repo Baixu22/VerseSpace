@@ -9,88 +9,26 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.85,
+    "confidence": 0.8,
     "context_tags": [
       "workbench",
-      "quality",
-      "doctor"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0011",
-    "kind": "milestone",
-    "next_action": "doctor 对每类已知损坏给出定位与修复建议",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "发行前的质量闸门（骨架 Phase 7）。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "quality",
-      "doctor"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0048",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "doctor 全量一致性体检"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "quality",
-      "testing"
+      "release",
+      "v0.1.0"
     ],
     "desired_outcomes": [],
     "difficulty": "high",
-    "id": "TF-0049",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
+    "id": "TF-0012",
+    "kind": "milestone",
+    "next_action": "三平台安装冒烟通过（npm 安装 + 二进制下载）",
     "priority": 2,
     "progress": 0.0,
-    "purpose": "",
+    "purpose": "达成『完成一个发行版』的能力：可安装、可分发、可被新人按文档上手。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "容错与并发写入测试"
+    "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
   },
   {
     "alignment": {
@@ -434,38 +372,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0011"
-    ],
-    "confidence": 0.8,
-    "context_tags": [
-      "workbench",
-      "release",
-      "v0.1.0"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0012",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0011",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "达成『完成一个发行版』的能力：可安装、可分发、可被新人按文档上手。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
   }
 ]
