@@ -384,11 +384,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "Runtime.runOnce 按 snapshot → automaton.evaluate → 逐条落 Blackboard（含调 Verifier）→ 事件落盘 的顺序组合全部模块（幂等、单轮不递归）；CLI 提供 goal/decision/interface/ws/checkpoint/sync/status/map/log 命令。达成即 MVP：手动模式全链路可用。",
     "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-08-28T11:41:30.079611Z"
   },
   "TF-0009": {
     "acceptance_criteria": [
@@ -1806,11 +1806,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "snapshot → automaton.evaluate → 逐条执行转移（含调 Verifier）→ scheduler 决策 → 接口漂移检测 → 事件落盘；幂等可重入，本轮转移触发的变化下一轮才生效（不递归）。",
     "title": "Runtime.runOnce 编排",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:41:30.079611Z"
   },
   "TF-0040": {
     "acceptance_criteria": [],
@@ -1850,11 +1850,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "goal add/list/show/cancel、decision add、interface register/list/check，全部接 Blackboard 并支持 --json。",
     "title": "CLI：goal / decision / interface 子树",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:41:30.079611Z"
   },
   "TF-0041": {
     "acceptance_criteria": [],
@@ -1894,11 +1894,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "ws create/list/reassign/status、checkpoint create（交互式）/list/review，全部接 Blackboard 并支持 --json。",
     "title": "CLI：ws 与 checkpoint 子树",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:41:30.079611Z"
   },
   "TF-0042": {
     "acceptance_criteria": [],
@@ -1938,11 +1938,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "sync = Runtime.runOnce；status 全局概览；map 的 DAG 文本渲染（递归缩进）；log --tail N 事件流查看。",
     "title": "CLI：sync / status / map / log",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:41:30.079611Z"
   },
   "TF-0043": {
     "acceptance_criteria": [
@@ -1985,11 +1985,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "真实 git 仓库夹具：init → 添加两目标（含依赖）→ 创建工位 → 手工落 staging checkpoint → sync 走通 verified/applied 与 failed 两分支 → 接口漂移触发下游 stale。全绿即 MVP 达成。",
     "title": "MVP 端到端集成测试",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T11:41:30.079611Z"
   },
   "TF-0044": {
     "acceptance_criteria": [],

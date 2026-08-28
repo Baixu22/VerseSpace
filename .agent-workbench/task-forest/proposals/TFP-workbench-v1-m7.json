@@ -1,0 +1,46 @@
+{
+  "applied_at": "2026-08-28T11:41:30.084611Z",
+  "base_graph_hash": "d5cafb67a05d8c6e6647ae4cc12d26bcdc41dd4adda8c8445674a4310025538b",
+  "base_summary": {
+    "edge_count": 68,
+    "node_count": 55,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0039",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0040",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0041",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0042",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0043",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0008",
+      "status": "done"
+    }
+  ],
+  "created_at": "2026-08-28T11:41:29.964160Z",
+  "proposal_id": "TFP-workbench-v1-m7",
+  "rationale": "里程碑七（骨架 Phase 3-4 · MVP 收口）五项任务全部完成并推送（6941071）：Runtime.runOnce 按 snapshot → automaton → 逐条应用（带 from 状态守卫防重放）→ 接口漂移重锚定 编排，全程事件落盘且单轮不递归；request_verification 驱动 checkpoint 走完 pending → verified/failed/awaiting_review 并归档 verificationResult；目标完成时把 verifiedAgainst 锚定到注册表版本（端到端测试抓出并修复的缺口）；12 组 CLI 命令接上真实实现（watch/doctor/dispatch 留给里程碑八至十）；真实 git 仓库端到端测试覆盖 init → 依赖目标 → 通过/失败两分支验证 → 工位释放与上下文刷新 → 漂移传播 stale → 稳态零转移。81 测试全绿。MVP 达成：workbench init → goal → 工位 → checkpoint → sync 手动闭环可用。",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "status": "applied"
+}

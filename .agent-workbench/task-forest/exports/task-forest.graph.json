@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T11:12:11.861971Z",
+  "generated_at": "2026-08-28T11:41:30.386211Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -2168,7 +2168,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -2188,11 +2188,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "Runtime.runOnce 按 snapshot → automaton.evaluate → 逐条落 Blackboard（含调 Verifier）→ 事件落盘 的顺序组合全部模块（幂等、单轮不递归）；CLI 提供 goal/decision/interface/ws/checkpoint/sync/status/map/log 命令。达成即 MVP：手动模式全链路可用。",
       "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T11:41:30.079611Z"
     },
     "TF-0009": {
       "acceptance_criteria": [
@@ -3698,7 +3698,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -3718,11 +3718,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "snapshot → automaton.evaluate → 逐条执行转移（含调 Verifier）→ scheduler 决策 → 接口漂移检测 → 事件落盘；幂等可重入，本轮转移触发的变化下一轮才生效（不递归）。",
       "title": "Runtime.runOnce 编排",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:41:30.079611Z"
     },
     "TF-0040": {
       "acceptance_criteria": [],
@@ -3745,7 +3745,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3765,11 +3765,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "goal add/list/show/cancel、decision add、interface register/list/check，全部接 Blackboard 并支持 --json。",
       "title": "CLI：goal / decision / interface 子树",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:41:30.079611Z"
     },
     "TF-0041": {
       "acceptance_criteria": [],
@@ -3792,7 +3792,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3812,11 +3812,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "ws create/list/reassign/status、checkpoint create（交互式）/list/review，全部接 Blackboard 并支持 --json。",
       "title": "CLI：ws 与 checkpoint 子树",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:41:30.079611Z"
     },
     "TF-0042": {
       "acceptance_criteria": [],
@@ -3839,7 +3839,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3859,11 +3859,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "sync = Runtime.runOnce；status 全局概览；map 的 DAG 文本渲染（递归缩进）；log --tail N 事件流查看。",
       "title": "CLI：sync / status / map / log",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:41:30.079611Z"
     },
     "TF-0043": {
       "acceptance_criteria": [
@@ -3889,7 +3889,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -3909,11 +3909,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "真实 git 仓库夹具：init → 添加两目标（含依赖）→ 创建工位 → 手工落 staging checkpoint → sync 走通 verified/applied 与 failed 两分支 → 接口漂移触发下游 stale。全绿即 MVP 达成。",
       "title": "MVP 端到端集成测试",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T11:41:30.079611Z"
     },
     "TF-0044": {
       "acceptance_criteria": [],
@@ -4500,6 +4500,8 @@
   },
   "status_queues": {
     "actionable_todos": [
+      "TF-0009",
+      "TF-0010",
       "TF-0044",
       "TF-0045",
       "TF-0046",
@@ -4511,19 +4513,11 @@
       "TF-0052",
       "TF-0053",
       "TF-0054",
-      "TF-0008",
       "TF-0018",
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0039",
-      "TF-0040",
-      "TF-0041",
-      "TF-0042",
-      "TF-0043",
       "TF-0055",
-      "TF-0009",
-      "TF-0010",
       "TF-0011",
       "TF-0012"
     ],
@@ -4539,6 +4533,7 @@
         "TF-0005",
         "TF-0006",
         "TF-0007",
+        "TF-0008",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,13 +4555,17 @@
         "TF-0035",
         "TF-0036",
         "TF-0037",
-        "TF-0038"
+        "TF-0038",
+        "TF-0039",
+        "TF-0040",
+        "TF-0041",
+        "TF-0042",
+        "TF-0043"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0008",
         "TF-0009",
         "TF-0010",
         "TF-0011",
@@ -4575,11 +4574,6 @@
         "TF-0019",
         "TF-0023",
         "TF-0030",
-        "TF-0039",
-        "TF-0040",
-        "TF-0041",
-        "TF-0042",
-        "TF-0043",
         "TF-0044",
         "TF-0045",
         "TF-0046",
@@ -4601,7 +4595,6 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0008",
       "TF-0009",
       "TF-0010",
       "TF-0011",
@@ -4610,11 +4603,6 @@
       "TF-0019",
       "TF-0023",
       "TF-0030",
-      "TF-0039",
-      "TF-0040",
-      "TF-0041",
-      "TF-0042",
-      "TF-0043",
       "TF-0044",
       "TF-0045",
       "TF-0046",
@@ -4633,10 +4621,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 28,
+    "done_count": 34,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 27,
+    "open_count": 21,
     "review_needed_count": 0
   },
   "tree_edges": [

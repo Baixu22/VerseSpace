@@ -9,6 +9,68 @@
       "why_this_task": ""
     },
     "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "scheduler"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0009",
+    "kind": "milestone",
+    "next_action": "三种策略可配置、可测试",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "上线调度能力，从单工位手动走向多工位并行（骨架 Phase 5）。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "beta",
+      "watcher"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0010",
+    "kind": "milestone",
+    "next_action": "workbench watch 常驻运行且文件变化后约 1 秒内完成一轮循环",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "免手动 sync，达成骨架 Phase 6 的『后台持续运行』。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
     "confidence": 0.9,
     "context_tags": [
       "workbench",
@@ -385,37 +447,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "runtime"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0008",
-    "kind": "milestone",
-    "next_action": "workbench sync 一条命令跑通完整循环，无变化时返回空转移",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.9,
     "context_tags": [
       "workbench",
@@ -536,161 +567,6 @@
       "why_not_enough": "",
       "why_this_task": ""
     },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "runtime"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0039",
-    "kind": "task",
-    "next_action": "重复调用 runOnce 无变化时零副作用",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "Runtime.runOnce 编排"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "cli"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0040",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "CLI：goal / decision / interface 子树"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "cli"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0041",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "CLI：ws 与 checkpoint 子树"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "cli"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0042",
-    "kind": "task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "CLI：sync / status / map / log"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "testing"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0043",
-    "kind": "task",
-    "next_action": "集成测试在 CI 与本机全绿",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "MVP 端到端集成测试"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
     "blocked_by": [
       "TF-0012"
     ],
@@ -714,72 +590,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0008"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "beta",
-      "scheduler"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0009",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0008",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "上线调度能力，从单工位手动走向多工位并行（骨架 Phase 5）。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0008"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "beta",
-      "watcher"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0010",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0008",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "免手动 sync，达成骨架 Phase 6 的『后台持续运行』。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）"
   },
   {
     "alignment": {
