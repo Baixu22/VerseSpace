@@ -64,6 +64,8 @@ export interface UiState {
 		verified: Checkpoint[];
 		failed: Checkpoint[];
 	};
+	checkpointsByWorkspot: Record<string, Checkpoint[]>;
+	activity: Record<string, WbEvent[]>;
 	interfaces: RegistryEntry[];
 	decisions: Decision[];
 	events: WbEvent[];
@@ -91,4 +93,43 @@ export async function triggerSync(): Promise<SyncResult> {
 		throw new Error(`/api/sync ${response.status}`);
 	}
 	return response.json() as Promise<SyncResult>;
+}
+
+export interface DispatchOutcome {
+	ok: boolean;
+	goalId?: string;
+	workspotId?: string;
+	worktree?: string;
+	reason?: string;
+}
+
+export interface ReviewOutcome {
+	ok: boolean;
+	id: string;
+	verdict?: string;
+	reason?: string;
+}
+
+export async function dispatchGoal(
+	goalId: string,
+	workspotId?: string,
+): Promise<DispatchOutcome> {
+	const response = await fetch("/api/dispatch", {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ goalId, workspotId }),
+	});
+	return response.json() as Promise<DispatchOutcome>;
+}
+
+export async function reviewCheckpoint(
+	cpId: string,
+	approve: boolean,
+): Promise<ReviewOutcome> {
+	const response = await fetch("/api/review", {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ cpId, approve }),
+	});
+	return response.json() as Promise<ReviewOutcome>;
 }

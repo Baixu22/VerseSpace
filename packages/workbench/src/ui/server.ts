@@ -18,6 +18,10 @@ export interface UiState {
 		verified: unknown[];
 		failed: unknown[];
 	};
+	/** checkpoint id → owning workspot, for lane grouping. */
+	checkpointsByWorkspot: Record<string, unknown[]>;
+	/** Per-workspot recent activity (newest first), the lane feed. */
+	activity: Record<string, unknown[]>;
 	interfaces: unknown[];
 	decisions: unknown[];
 	events: unknown[];
@@ -44,9 +48,48 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		bb.checkpoints.scanAll(),
 		bb.interfaces.list(),
 		bb.decisions.list(),
-		bb.events.tail(50),
+		bb.events.tail(200),
 		runDoctor(bb),
 	]);
+
+	// map every checkpoint to its workspot so lane cards can show their own
+	// checkpoints, and route checkpoint events into the right lane
+	const cpOwner = new Map<string, string>();
+	const checkpointsByWorkspot: Record<string, unknown[]> = {};
+	for (const cp of [
+		...checkpoints.staging,
+		...checkpoints.verified,
+		...checkpoints.failed,
+	]) {
+		cpOwner.set(cp.id, cp.workspot);
+		const owned = checkpointsByWorkspot[cp.workspot] ?? [];
+		owned.push(cp);
+		checkpointsByWorkspot[cp.workspot] = owned;
+	}
+
+	const activity: Record<string, unknown[]> = {};
+	const laneOf = (event: { type: string; payload: unknown }): string | null => {
+		const payload = event.payload as Record<string, unknown> | null;
+		if (payload && typeof payload.workspotId === "string") {
+			return payload.workspotId;
+		}
+		if (payload && typeof payload.cpId === "string") {
+			return cpOwner.get(payload.cpId) ?? null;
+		}
+		return null;
+	};
+	for (const event of events) {
+		const lane = laneOf(event);
+		if (lane) {
+			const feed = activity[lane] ?? [];
+			feed.push(event);
+			activity[lane] = feed;
+		}
+	}
+	for (const list of Object.values(activity)) {
+		list.reverse(); // newest first per lane
+	}
+
 	return {
 		version: WORKBENCH_VERSION,
 		project: bb.projectRoot,
@@ -55,6 +98,8 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		queue,
 		workspots,
 		checkpoints,
+		checkpointsByWorkspot,
+		activity,
 		interfaces,
 		decisions,
 		events: events.reverse(),
@@ -160,6 +205,41 @@ export function createUiServer(
 			if (url.pathname === "/api/sync" && request.method === "POST") {
 				const { runOnce } = await import("../runtime");
 				return Response.json(await runOnce(bb), { headers: cors });
+			}
+			if (url.pathname === "/api/dispatch" && request.method === "POST") {
+				const { dispatchGoal } = await import("../scheduler/dispatch");
+				const body = (await request.json()) as {
+					goalId?: string;
+					workspotId?: string;
+				};
+				if (!body.goalId) {
+					return Response.json(
+						{ ok: false, reason: "缺少 goalId" },
+						{ status: 400, headers: cors },
+					);
+				}
+				const result = await dispatchGoal(bb, body.goalId, body.workspotId);
+				return Response.json(result, {
+					status: result.ok ? 200 : 409,
+					headers: cors,
+				});
+			}
+			if (url.pathname === "/api/review" && request.method === "POST") {
+				const { reviewCheckpoint } = await import("../runtime/review");
+				const body = (await request.json()) as {
+					cpId?: string;
+					approve?: boolean;
+				};
+				if (!body.cpId || typeof body.approve !== "boolean") {
+					return Response.json(
+						{ ok: false, reason: "缺少 cpId / approve" },
+						{ status: 400, headers: cors },
+					);
+				}
+				return Response.json(
+					await reviewCheckpoint(bb, body.cpId, body.approve),
+					{ headers: cors },
+				);
 			}
 
 			if (!url.pathname.startsWith("/api")) {

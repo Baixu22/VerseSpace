@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { CHECKPOINT_ZONES } from "../blackboard/checkpoints";
 import { newId } from "../ids";
 import { emitJson, type GlobalOptions } from "../output";
+import { reviewCheckpoint } from "../runtime/review";
 import type { Checkpoint } from "../types/checkpoint";
 import { resolveBlackboard } from "./context";
 
@@ -109,37 +110,19 @@ export async function checkpointReview(
 		throw new Error("checkpoint review 需要 --approve 或 --reject 之一");
 	}
 	const bb = await resolveBlackboard();
-	const staging = await bb.checkpoints.scanZone("staging");
-	const checkpoint = staging.find((cp) => cp.id === id);
-	if (!checkpoint) {
-		throw new Error(`staging 区找不到 checkpoint：${id}`);
-	}
-	if (checkpoint.lifecycle !== "awaiting_review") {
-		throw new Error(
-			`checkpoint ${id} 处于 ${checkpoint.lifecycle}，只有 awaiting_review 需要人工审查`,
-		);
-	}
-	if (options.approve) {
-		await bb.checkpoints.save(
-			{ ...checkpoint, lifecycle: "verified" },
-			"staging",
-		);
-		await bb.checkpoints.move(id, "staging", "verified");
-		if (opts.json) {
-			emitJson({ ok: true, id, verdict: "verified" });
-		} else if (!opts.quiet) {
+	const outcome = await reviewCheckpoint(bb, id, options.approve === true);
+	if (opts.json) {
+		emitJson(outcome);
+	} else if (!opts.quiet) {
+		if (!outcome.ok) {
+			console.error(`workbench: ${outcome.reason}`);
+		} else if (outcome.verdict === "verified") {
 			console.log(`checkpoint ${id} 已通过审查，进入 verified 区`);
-		}
-	} else {
-		await bb.checkpoints.save(
-			{ ...checkpoint, lifecycle: "rejected" },
-			"staging",
-		);
-		await bb.checkpoints.move(id, "staging", "failed");
-		if (opts.json) {
-			emitJson({ ok: true, id, verdict: "rejected" });
-		} else if (!opts.quiet) {
+		} else {
 			console.log(`checkpoint ${id} 被驳回，进入 failed 区`);
 		}
+	}
+	if (!outcome.ok) {
+		process.exitCode = 1;
 	}
 }

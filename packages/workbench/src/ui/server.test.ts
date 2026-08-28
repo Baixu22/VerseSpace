@@ -11,7 +11,7 @@ describe("collectState", () => {
 		try {
 			const goal = await ws.bb.goals.add({ title: "面板测试" });
 			const state = await collectState(ws.bb);
-			expect(state.version).toBe("0.2.0");
+			expect(state.version).toBe("0.3.0");
 			expect(state.goals.map((g) => (g as { id: string }).id)).toEqual([
 				goal.id,
 			]);

@@ -31,10 +31,10 @@ import a9 from "D:/helmor-main/apps/workbench-ui/dist/assets/geist-mono-vietname
 import a10 from "D:/helmor-main/apps/workbench-ui/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2" with {
 	type: "file",
 };
-import a11 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-ClpFQAnZ.css" with {
+import a11 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-B70UcrF9.css" with {
 	type: "file",
 };
-import a12 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-DB_e-lx-.js" with {
+import a12 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-rwme98Q_.js" with {
 	type: "file",
 };
 import a13 from "D:/helmor-main/apps/workbench-ui/dist/index.html" with {
@@ -52,7 +52,7 @@ export const files = {
 	"assets/geist-mono-symbols2-wght-normal-GZpp1pK2.woff2": a8,
 	"assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2": a9,
 	"assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2": a10,
-	"assets/index-ClpFQAnZ.css": a11,
-	"assets/index-DB_e-lx-.js": a12,
+	"assets/index-B70UcrF9.css": a11,
+	"assets/index-rwme98Q_.js": a12,
 	"index.html": a13,
 };
