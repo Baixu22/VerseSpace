@@ -7,6 +7,7 @@ import {
 import { configSet, queueCommand } from "./commands/config";
 import { decisionAdd } from "./commands/decision";
 import { dispatchCommand } from "./commands/dispatch";
+import { doctorCommand } from "./commands/doctor";
 import { goalAdd, goalCancel, goalList, goalShow } from "./commands/goal";
 import { initCommand } from "./commands/init";
 import {
@@ -14,7 +15,6 @@ import {
 	interfaceList,
 	interfaceRegister,
 } from "./commands/interface";
-import { notImplemented } from "./commands/not-implemented";
 import {
 	logCommand,
 	mapCommand,
@@ -25,8 +25,6 @@ import { watchCommand } from "./commands/watch";
 import { wsCreate, wsList, wsReassign, wsStatus } from "./commands/ws";
 import type { GlobalOptions } from "./output";
 import { WORKBENCH_VERSION } from "./version";
-
-const pending = notImplemented;
 
 export function buildProgram(): Command {
 	const program = new Command();
@@ -224,8 +222,10 @@ export function buildProgram(): Command {
 		.action(watchCommand);
 	program
 		.command("doctor")
-		.description("run consistency checks")
-		.action(pending("doctor"));
+		.description(
+			"run consistency checks over the blackboard (exit 1 on errors)",
+		)
+		.action(doctorCommand);
 
 	const config = program
 		.command("config")
