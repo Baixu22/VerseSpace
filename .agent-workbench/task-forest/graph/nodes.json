@@ -95,11 +95,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "确认运行时、包落位、存量处置、基座策略四项决策，并补齐 git 仓库基线；所有后续里程碑都以这些决策为前提。",
     "title": "里程碑一：技术决策与基座选型（开工前置）",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0003": {
     "acceptance_criteria": [
@@ -126,7 +126,9 @@
     "created_at": "2026-08-28T08:50:49.555240Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-73d2c3ad94"
+    ],
     "difficulty": "medium",
     "display_order": 200,
     "estimated_total_minutes": null,
@@ -143,11 +145,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "review_needed",
     "success_metrics": [],
     "summary": "创建 packages/workbench 独立包（复刻 sidecar 的独立 lockfile/tsconfig/bun test 模板），接入 CLI 框架与 bin 入口，补齐 biome 覆盖确认与 CI 车道。",
     "title": "里程碑二：工程骨架与新 CLI 包落地",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0004": {
     "acceptance_criteria": [
@@ -619,11 +621,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "沿用 sidecar 已验证的独立包形态（自带 lockfile、tsconfig、bun test、bun build --compile 单文件编译）；骨架文档的 types/*.ts 契约直接落地为 TS 类型。手写 4-6 状态的 switch/case，不引入状态机库。",
     "title": "决策：运行时 = Bun 1.3 + TypeScript",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0014": {
     "acceptance_criteria": [
@@ -664,11 +666,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "根 workspaces 已含 packages/* 通配（当前空置），biome 的 ** 通配会自动覆盖新包、lint-staged 自动生效；与 sidecar（刻意不在 workspace 内、自带独立 lockfile）并存，两条集成模式都有先例。",
     "title": "决策：包落位 = packages/workbench",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0015": {
     "acceptance_criteria": [
@@ -711,11 +713,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "src/、src-tauri/、sidecar/ 在 Workbench 达发行线前不删不改（仅必要修复）；一次性全量重写风险过高，新架构以新包并行生长。helmor-cli 的 clap 命令组织与 git/ops.rs 的 worktree 实现作为行为参考长期保留。",
     "title": "决策：Helmor 存量处置 = MVP 期间冻结 GUI，v0.1.0 后再评估退役",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0016": {
     "acceptance_criteria": [
@@ -758,11 +760,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "调研结论：beads（JSONL 图任务跟踪）、claude-task-master（PRD → 依赖任务）、Backlog.md（Markdown 任务文件）、claude-squad / vibe-kanban / conductor（worktree 多代理编排）、spec-kit（spec 驱动流程）都只覆盖单一切面，没有一个能整体充当 Blackboard + Automaton + Verifier 组合的基座。按骨架『不造轮子』清单引入组件库：yaml、citty 或 commander、chokidar、zod、picocolors；上述开源项目作为数据模型与交互参考。",
     "title": "决策：基座策略 = 核心自研 + 组件级借库（不整体 fork）",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0017": {
     "acceptance_criteria": [
@@ -937,11 +939,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "package.json（bin: workbench）、独立 tsconfig（types: node+bun，参考 sidecar/tsconfig.json）、bun test 接入；根 package.json 增加 test:workbench 脚本并扩展 typecheck 链。",
     "title": "创建 packages/workbench 独立包",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0021": {
     "acceptance_criteria": [
@@ -984,11 +986,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "citty 或 commander 二选一后搭出全部子命令占位；统一参数解析、--json/--quiet 双输出、退出码约定（参考 helmor-cli 的 args.rs/output.rs 分层模式）。",
     "title": "CLI 框架与命令树骨架",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0022": {
     "acceptance_criteria": [
@@ -1013,7 +1015,9 @@
     "created_at": "2026-08-28T08:50:49.555240Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-73d2c3ad94"
+    ],
     "difficulty": "low",
     "display_order": 230,
     "estimated_total_minutes": null,
@@ -1030,11 +1034,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "review_needed",
     "success_metrics": [],
     "summary": "确认 biome ** 通配自动覆盖新包；ci.yml 的 dorny/paths-filter 增加 packages/** 车道触发 biome + typecheck + bun test。",
     "title": "biome 与 CI 车道接入",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-08-28T09:48:35.844852Z"
   },
   "TF-0023": {
     "acceptance_criteria": [],

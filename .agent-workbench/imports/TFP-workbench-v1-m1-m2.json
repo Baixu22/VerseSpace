@@ -1,0 +1,64 @@
+{
+  "proposal_id": "TFP-workbench-v1-m1-m2",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "rationale": "里程碑一收口：四份 ADR 已写入 docs/decisions/（运行时 Bun+TS、包落位 packages/workbench、存量冻结、基座自研+借库白名单）。里程碑二三项任务落地：packages/workbench 骨架（commander 命令树 + --json/--quiet + 退出码 + 3 个冒烟测试）完成；根脚本 test/typecheck 链接入完成；CI 车道接线完成但因账号 Actions 计费问题无法在线验证，按 review_needed 挂起并记录偏差。",
+  "status": "proposed",
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0013",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0014",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0015",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0016",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0002",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0020",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0021",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0022",
+      "status": "review_needed"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0003",
+      "status": "review_needed"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "summary": "CI 车道已接线但无法在 GitHub Actions 上验证",
+        "reason": "packages/** 车道（macOS + Windows workbench-test、typecheck 过滤器）已在 ci.yml 完成，但 Baixu22 账号 Actions 因计费问题（payments failed / spending limit）拒绝启动所有 runner。待用户在 Settings → Billing & plans 修复后，由一次真实 push 验证通过即可将 t-ci 与 m2 转为 done。",
+        "related_task_ids": [
+          "TF-0022",
+          "TF-0003"
+        ]
+      }
+    }
+  ]
+}

@@ -388,144 +388,23 @@
     "confidence": 0.9,
     "context_tags": [
       "workbench",
-      "decision"
+      "mvp",
+      "infra"
     ],
     "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0002",
+    "difficulty": "medium",
+    "id": "TF-0003",
     "kind": "milestone",
-    "next_action": "四项决策记录进仓库文档（docs/ 或包 README 的 ADR 小节）",
+    "next_action": "复核产物并决定是否标记完成",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "把『改成什么、建在哪里、旧代码怎么办、借什么轮子』四个方向性问题一次性定死，避免开发中途反复。",
+    "purpose": "让后续所有模块代码有一个可测试、可 lint、可 CI 的家。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "ready",
+    "status": "review_needed",
     "success_metrics": [],
-    "title": "里程碑一：技术决策与基座选型（开工前置）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "decision"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0013",
-    "kind": "decision",
-    "next_action": "决策记录写入仓库文档",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "决策：运行时 = Bun 1.3 + TypeScript"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "decision"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0014",
-    "kind": "decision",
-    "next_action": "决策记录写入仓库文档",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "决策：包落位 = packages/workbench"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "decision",
-      "migration"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0015",
-    "kind": "decision",
-    "next_action": "决策记录写入仓库文档",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "决策：Helmor 存量处置 = MVP 期间冻结 GUI，v0.1.0 后再评估退役"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "decision",
-      "foundation"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0016",
-    "kind": "decision",
-    "next_action": "依赖白名单评审通过并记录",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "决策：基座策略 = 核心自研 + 组件级借库（不整体 fork）"
+    "title": "里程碑二：工程骨架与新 CLI 包落地"
   },
   {
     "alignment": {
@@ -601,82 +480,20 @@
     "context_tags": [
       "workbench",
       "mvp",
-      "infra"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0020",
-    "kind": "task",
-    "next_action": "bun test 在新包内可运行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "创建 packages/workbench 独立包"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "cli"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0021",
-    "kind": "task",
-    "next_action": "workbench --help 展示完整命令树",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "CLI 框架与命令树骨架"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
       "ci"
     ],
     "desired_outcomes": [],
     "difficulty": "low",
     "id": "TF-0022",
     "kind": "task",
-    "next_action": "改动 packages/** 能触发对应 CI 车道",
+    "next_action": "复核产物并决定是否标记完成",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "review_needed",
     "success_metrics": [],
     "title": "biome 与 CI 车道接入"
   },
@@ -1462,39 +1279,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "里程碑十一：v0.1.0 发行能力"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0002"
-    ],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "infra"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0003",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0002",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "让后续所有模块代码有一个可测试、可 lint、可 CI 的家。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑二：工程骨架与新 CLI 包落地"
   },
   {
     "alignment": {
