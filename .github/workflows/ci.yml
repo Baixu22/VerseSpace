@@ -43,9 +43,10 @@ jobs:
       biome: ${{ steps.filter.outputs.biome }}
       typecheck: ${{ steps.filter.outputs.typecheck }}
       frontend: ${{ steps.filter.outputs.frontend }}
-      e2e: ${{ steps.filter.outputs.e2e }}
-      sidecar: ${{ steps.filter.outputs.sidecar }}
-      rust: ${{ steps.filter.outputs.rust }}
+	      e2e: ${{ steps.filter.outputs.e2e }}
+	      sidecar: ${{ steps.filter.outputs.sidecar }}
+	      workbench: ${{ steps.filter.outputs.workbench }}
+	      rust: ${{ steps.filter.outputs.rust }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -69,9 +70,12 @@ jobs:
               - 'vitest.shims.d.ts'
               - 'components.json'
               - '.storybook/**'
-            sidecar: &sidecar
-              - *global
-              - 'sidecar/**'
+	            sidecar: &sidecar
+	              - *global
+	              - 'sidecar/**'
+	            workbench: &workbench
+	              - *global
+	              - 'packages/workbench/**'
             # Agent SDK bumps land in sidecar/package.json + sidecar/bun.lock;
             # the SDK event shape is the contract the Rust accumulator depends
             # on, so those two files must re-run the pipeline snapshot tests
@@ -89,10 +93,11 @@ jobs:
               - 'vite.e2e.config.ts'
             # Root tsc also checks playwright.config.ts via tsconfig.node.json
             # references (vite configs are already in `frontend`).
-            typecheck:
-              - *frontend
-              - *sidecar
-              - 'playwright.config.ts'
+	            typecheck:
+	              - *frontend
+	              - *sidecar
+	              - *workbench
+	              - 'playwright.config.ts'
             # Biome lints the whole repo (biome.json includes: ["**"]), so gate
             # on every extension Biome can parse, anywhere — this mirrors
             # `biome check .` instead of trying to enumerate directories.
@@ -197,6 +202,23 @@ jobs:
       - name: Run sidecar tests
         shell: bash
         run: bun run test:sidecar
+
+  workbench-test:
+    name: Workbench Test
+    needs: changes
+    if: needs.changes.outputs.workbench == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup JS toolchain
+        uses: ./.github/actions/setup-js
+
+      - name: Run workbench tests
+        shell: bash
+        run: bun run test:workbench
 
   rust-test:
     name: Rust Test
@@ -364,6 +386,27 @@ jobs:
       - name: Run sidecar tests
         shell: bash
         run: bun run test:sidecar
+
+  windows-workbench-test:
+    name: Windows Workbench Test
+    needs: changes
+    if: needs.changes.outputs.workbench == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup JS toolchain
+        uses: ./.github/actions/setup-js
+        with:
+          # sccache is unused by the Windows jobs and its installer is flaky
+          # on Windows runners; skip it.
+          install-sccache: "false"
+
+      - name: Run workbench tests
+        shell: bash
+        run: bun run test:workbench
 
   windows-rust-test:
     name: Windows Rust Test

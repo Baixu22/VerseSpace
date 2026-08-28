@@ -18,18 +18,19 @@ bun run lint                 # biome check . + cargo clippy -- -D warnings
 bun run lint:fix             # biome --write + cargo clippy --fix + cargo fmt
 ```
 
-Tests are **three targets** — `bun run test` runs all three (frontend -> sidecar -> rust). Pre-commit hook runs biome on JS/TS and clippy/fmt on Rust.
+Tests are **four targets** — `bun run test` runs all four (frontend -> sidecar -> workbench -> rust). Pre-commit hook runs biome on JS/TS and clippy/fmt on Rust.
 
 ```bash
-bun run test                 # All three suites
+bun run test                 # All four suites
 bun run test:frontend        # vitest run (jsdom, @testing-library/react)
 bun run test:sidecar         # cd sidecar && bun test
+bun run test:workbench       # cd packages/workbench && bun test
 bun run test:rust            # cd src-tauri && cargo test
 bun run test:rust:update-snapshots    # INSTA_UPDATE=always
 bun run test:watch           # vitest watch (frontend only)
 ```
 
-Single test file: `bun x vitest run src/App.test.tsx` | `cd sidecar && bun test src/foo.test.ts` | `cd src-tauri && cargo test --test pipeline_scenarios -- <name>`
+Single test file: `bun x vitest run src/App.test.tsx` | `cd sidecar && bun test src/foo.test.ts` | `cd packages/workbench && bun test src/cli.test.ts` | `cd src-tauri && cargo test --test pipeline_scenarios -- <name>`
 
 ## Architecture
 
@@ -38,6 +39,7 @@ Single test file: `bun x vitest run src/App.test.tsx` | `cd sidecar && bun test 
 - **Frontend** (`src/`): React 19 SPA in Tauri webview. State managed by focused hooks in `shell/hooks/` (`useAppShellState`, `useSelectionController`, `useEditorEditMode`, `useGlobalShortcutHandlers`, `useAppBootstrap`) + TanStack React Query + context providers.
 - **Rust backend** (`src-tauri/src/`): Tauri host, SQLite database, spawns and supervises the sidecar.
 - **Sidecar** (`sidecar/`): Bun + TypeScript, wraps `@anthropic-ai/claude-agent-sdk`, `@openai/codex` (CLI), and `@opencode-ai/sdk`. Built to `sidecar/dist/helmor-sidecar` via `bun build --compile`. JSON event stream over stdout.
+- **Workbench package** (`packages/workbench/`): greenfield CLI + filesystem state manager — the next-generation architecture, growing per the ADRs in `docs/decisions/`. Bun + TypeScript with `bun test`; legacy Helmor surfaces stay frozen while it matures (ADR-0003).
 
 Message flow: user prompt -> Rust `agents::streaming` -> sidecar -> SDK -> stdout events -> Rust accumulator -> adapter + collapse -> `ThreadMessageLike[]` -> `tauri::ipc::Channel` -> React.
 
