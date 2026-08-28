@@ -389,22 +389,84 @@
     "context_tags": [
       "workbench",
       "mvp",
-      "data-layer"
+      "state-machine"
     ],
     "desired_outcomes": [],
     "difficulty": "high",
-    "id": "TF-0004",
+    "id": "TF-0005",
     "kind": "milestone",
-    "next_action": "Blackboard 是唯一文件访问通道，上层模块不直接摸文件",
+    "next_action": "同输入两次调用输出一致",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "数据层是骨架 Phase 1，其他一切模块都依赖它；类型定义是所有模块的契约。",
+    "purpose": "状态流转是系统正确性的核心，必须纯逻辑、独立可测（不读文件、不执行命令）。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑三：类型契约与 Blackboard 数据层（骨架 Phase 1）"
+    "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "agent-integration"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0006",
+    "kind": "milestone",
+    "next_action": "生成文件头标注『自动生成，请勿手动编辑』",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把 Blackboard 信息翻译给任意 Agent（Claude Code/Codex/Copilot），是『不侵入 Agent、利用项目指令机制』集成方式的落点。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "workbench",
+      "mvp",
+      "verification"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0007",
+    "kind": "milestone",
+    "next_action": "五种策略行为符合骨架定义",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让 checkpoint 的『已验证』状态有真实执行背书，而不是 agent 自述。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）"
   },
   {
     "alignment": {
@@ -495,192 +557,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "风险：git 仓库缺失阻塞 worktree 与发行全链路"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "types"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0024",
-    "kind": "task",
-    "next_action": "八组类型与骨架字段一一对应",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "定义 types/ 全量类型与运行时校验 schema"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "data-layer"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0025",
-    "kind": "task",
-    "next_action": "init 重复执行安全（幂等）",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": ".workbench/ 目录布局与 init 落盘"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "data-layer"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0026",
-    "kind": "task",
-    "next_action": "写入中途 kill 不产生半截 YAML",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "原子写与 JSONL 追加基础设施"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "data-layer"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0027",
-    "kind": "task",
-    "next_action": "API 返回快照而非活引用",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "Blackboard API：goals / decisions / interfaces"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "data-layer"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0028",
-    "kind": "task",
-    "next_action": "checkpoint 在三区间移动原子且留事件记录",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "Blackboard API：state 与 checkpoints 三区"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "testing"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0029",
-    "kind": "task",
-    "next_action": "快照与文件状态一致",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "getWorldSnapshot 聚合与测试夹具"
   },
   {
     "alignment": {
@@ -1281,105 +1157,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0004"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "state-machine"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0005",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0004",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "状态流转是系统正确性的核心，必须纯逻辑、独立可测（不读文件、不执行命令）。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0004"
-    ],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "agent-integration"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0006",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0004",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把 Blackboard 信息翻译给任意 Agent（Claude Code/Codex/Copilot），是『不侵入 Agent、利用项目指令机制』集成方式的落点。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0004"
-    ],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "mvp",
-      "verification"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0007",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0004",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "让 checkpoint 的『已验证』状态有真实执行背书，而不是 agent 自述。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）"
   },
   {
     "alignment": {

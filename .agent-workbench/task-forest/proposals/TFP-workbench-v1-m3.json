@@ -1,0 +1,51 @@
+{
+  "applied_at": "2026-08-28T10:55:26.134792Z",
+  "base_graph_hash": "36c90d3f471ffab10fe6bcba2d36751b97c5be737aa3e61f6bb97cbed8639432",
+  "base_summary": {
+    "edge_count": 68,
+    "node_count": 55,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0024",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0025",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0026",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0027",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0028",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0029",
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0004",
+      "status": "done"
+    }
+  ],
+  "created_at": "2026-08-28T10:55:26.025184Z",
+  "proposal_id": "TFP-workbench-v1-m3",
+  "rationale": "里程碑三（骨架 Phase 1）六项任务全部完成并推送（f629037）：types/ 十组类型 + zod schema 校验；tmp+rename 原子写（Windows EPERM 重试）+ JSONL 追加；.workbench/ 目录布局与 init 幂等落盘（CLI init 命令已真实实现并通过 --json 冒烟）；Blackboard API（goals/decisions/interfaces 含 sha256 漂移检查/state 队列与冲突/checkpoints 三区扫描与带事件审计的移动）；getWorldSnapshot 聚合；34 个测试在独立临时工作台夹具上于 win32 本机全绿，biome/tsc/根 typecheck 链全部通过。Windows rename 语义风险（TF-0030）的缓解措施已落地（renameWithRetry + 本机测试），风险节点保持开放监视至里程碑十容错收口。",
+  "session_id": "session-2026-08-28-workbench-plan",
+  "status": "applied"
+}

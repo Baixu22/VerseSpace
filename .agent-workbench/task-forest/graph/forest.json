@@ -1726,7 +1726,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-08-28T10:30:48.308967Z",
+  "generated_at": "2026-08-28T10:55:26.436172Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -1948,7 +1948,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -1968,11 +1968,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "先定义全部跨模块类型（goal/checkpoint/workspot/decision/interface/event/transition/config）与运行时校验，再实现 .workbench/ 目录的结构化读写：原子写、JSONL 追加、goals/decisions/interfaces/state/checkpoints 全套 API 与 WorldSnapshot 聚合。",
       "title": "里程碑三：类型契约与 Blackboard 数据层（骨架 Phase 1）",
-      "updated_at": "2026-08-28T10:30:48.038729Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0005": {
       "acceptance_criteria": [
@@ -2971,7 +2971,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -2991,11 +2991,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "按骨架第六节落地 goal/checkpoint/workspot/decision/interface/event/transition/config 八组类型；运行时用 zod 校验外部输入（YAML 文件内容），内部逻辑用纯 TS 类型。",
       "title": "定义 types/ 全量类型与运行时校验 schema",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0025": {
       "acceptance_criteria": [
@@ -3021,7 +3021,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3041,11 +3041,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "实现骨架定义的目录结构（blackboard/goals、state、checkpoints 三区、events.jsonl、workbench.yaml）与 workbench init 的幂等初始化。",
       "title": ".workbench/ 目录布局与 init 落盘",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0026": {
       "acceptance_criteria": [
@@ -3071,7 +3071,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -3091,11 +3091,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "tmp+rename 原子写（注意 Windows 上覆盖已存在文件的 rename 语义差异）与 events.jsonl 单行追加；为 Blackboard 所有写路径提供统一原语。",
       "title": "原子写与 JSONL 追加基础设施",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0027": {
       "acceptance_criteria": [
@@ -3121,7 +3121,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3141,11 +3141,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "YAML 目标与决策的读写；接口注册表（内容 hash、getSubscribers、checkDrift 漂移检查）。返回纯数据对象，不做任何业务判断。",
       "title": "Blackboard API：goals / decisions / interfaces",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0028": {
       "acceptance_criteria": [
@@ -3170,7 +3170,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3190,11 +3190,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "workspot 状态、execution/queue.yaml 队列、conflicts 读写；staging/verified/failed 三区 checkpoint 扫描与原子移动。",
       "title": "Blackboard API：state 与 checkpoints 三区",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0029": {
       "acceptance_criteria": [
@@ -3220,7 +3220,7 @@
       ],
       "created_at": "2026-08-28T08:50:49.555240Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
@@ -3240,11 +3240,11 @@
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "聚合 goals/checkpoints/interfaces/workspots/queue 为 Automaton 的输入快照；搭临时目录夹具（每个测试独立 .workbench/）。",
       "title": "getWorldSnapshot 聚合与测试夹具",
-      "updated_at": "2026-08-28T08:50:49.555240Z"
+      "updated_at": "2026-08-28T10:55:26.128275Z"
     },
     "TF-0030": {
       "acceptance_criteria": [],
@@ -4511,16 +4511,12 @@
       "TF-0052",
       "TF-0053",
       "TF-0054",
-      "TF-0004",
+      "TF-0005",
+      "TF-0006",
+      "TF-0007",
       "TF-0018",
       "TF-0019",
       "TF-0023",
-      "TF-0024",
-      "TF-0025",
-      "TF-0026",
-      "TF-0027",
-      "TF-0028",
-      "TF-0029",
       "TF-0030",
       "TF-0031",
       "TF-0032",
@@ -4540,9 +4536,6 @@
       "TF-0010",
       "TF-0011",
       "TF-0012",
-      "TF-0005",
-      "TF-0006",
-      "TF-0007",
       "TF-0008"
     ],
     "blocked": [],
@@ -4553,6 +4546,7 @@
       "done": [
         "TF-0002",
         "TF-0003",
+        "TF-0004",
         "TF-0013",
         "TF-0014",
         "TF-0015",
@@ -4560,13 +4554,18 @@
         "TF-0017",
         "TF-0020",
         "TF-0021",
-        "TF-0022"
+        "TF-0022",
+        "TF-0024",
+        "TF-0025",
+        "TF-0026",
+        "TF-0027",
+        "TF-0028",
+        "TF-0029"
       ],
       "in_progress": [
         "TF-0001"
       ],
       "proposed": [
-        "TF-0004",
         "TF-0005",
         "TF-0006",
         "TF-0007",
@@ -4578,12 +4577,6 @@
         "TF-0018",
         "TF-0019",
         "TF-0023",
-        "TF-0024",
-        "TF-0025",
-        "TF-0026",
-        "TF-0027",
-        "TF-0028",
-        "TF-0029",
         "TF-0030",
         "TF-0031",
         "TF-0032",
@@ -4619,7 +4612,6 @@
     ],
     "open": [
       "TF-0001",
-      "TF-0004",
       "TF-0005",
       "TF-0006",
       "TF-0007",
@@ -4631,12 +4623,6 @@
       "TF-0018",
       "TF-0019",
       "TF-0023",
-      "TF-0024",
-      "TF-0025",
-      "TF-0026",
-      "TF-0027",
-      "TF-0028",
-      "TF-0029",
       "TF-0030",
       "TF-0031",
       "TF-0032",
@@ -4669,10 +4655,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 10,
+    "done_count": 17,
     "edge_count": 68,
     "node_count": 55,
-    "open_count": 45,
+    "open_count": 38,
     "review_needed_count": 0
   },
   "tree_edges": [
