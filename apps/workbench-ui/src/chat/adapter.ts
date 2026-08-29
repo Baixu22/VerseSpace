@@ -17,11 +17,16 @@ function toThreadMessage(m: StoredMessage): ThreadMessage {
 		}
 		return { type: "text", text: part.text };
 	});
+	// external store rule: status is only supported for assistant messages —
+	// a status on user messages throws at convertMessages
+	const isAssistant = m.role === "assistant";
 	return {
 		id: m.id,
 		role: m.role === "user" ? "user" : "assistant",
 		content,
-		status: { type: m.status === "running" ? "running" : "complete" },
+		...(isAssistant
+			? { status: { type: m.status === "running" ? "running" : "complete" } }
+			: {}),
 		createdAt: new Date(m.at),
 		metadata: { custom: {} },
 	} as unknown as ThreadMessage;
@@ -51,5 +56,6 @@ export function useChatRuntimeAdapter() {
 			await useChatStore.getState().send(text);
 		},
 		onCancel: async () => useChatStore.getState().cancel(),
+		onReload: async () => useChatStore.getState().reload(),
 	});
 }

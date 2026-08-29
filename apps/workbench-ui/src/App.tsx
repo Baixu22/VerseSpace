@@ -1,12 +1,15 @@
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useChatRuntimeAdapter } from "./chat/adapter";
 import { useChatStore } from "./chat/store";
+import { type ChatConfig, SettingsPanel } from "./components/chat/settings";
 import { ChatThread } from "./components/chat/thread";
 import { Button } from "./components/ui/button";
 import { cn } from "./lib/utils";
 
 function ThreadSidebar() {
+	const [config, setConfig] = useState<ChatConfig | null>(null);
+	const [showSettings, setShowSettings] = useState(false);
 	const threads = useChatStore((s) => s.threads);
 	const activeId = useChatStore((s) => s.activeId);
 	const runningThreadId = useChatStore((s) => s.runningThreadId);
@@ -55,9 +58,24 @@ function ThreadSidebar() {
 					))
 				)}
 			</div>
-			<p className="px-4 py-3 text-micro text-fg-subtle">
-				runtime 并发：线程各自串行，线程间并行
-			</p>
+			<div className="border-t border-border px-4 py-3">
+				<p className="font-mono text-micro text-fg-muted">
+					{config
+						? `${config.provider}${config.model ? ` · ${config.model}` : ""}`
+						: "runtime"}
+				</p>
+				<p className="text-micro text-fg-subtle">线程各自串行 · 线程间并行</p>
+			</div>
+			{showSettings ? (
+				<SettingsPanel
+					onClose={() => {
+						setShowSettings(false);
+						void fetch("/api/config/chat")
+							.then((r) => r.json() as Promise<ChatConfig>)
+							.then(setConfig);
+					}}
+				/>
+			) : null}
 		</aside>
 	);
 }

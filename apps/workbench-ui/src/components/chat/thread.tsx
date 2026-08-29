@@ -84,6 +84,9 @@ function AssistantMessage() {
 			</div>
 			<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
 				<CopyAction />
+				<ActionBarPrimitive.Reload className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle hover:bg-muted hover:text-fg-default">
+					重试
+				</ActionBarPrimitive.Reload>
 				<BranchPickerPrimitive.Root className="flex items-center gap-1 text-micro text-fg-subtle">
 					<BranchPickerPrimitive.Previous className="px-1 hover:text-fg-default">
 						‹

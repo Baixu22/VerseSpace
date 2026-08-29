@@ -4,6 +4,7 @@ import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
+import { workbenchConfigSchema } from "../types/config";
 import { WORKBENCH_VERSION } from "../version";
 
 export interface UiState {
@@ -300,6 +301,33 @@ export async function createUiServer(
 				);
 			}
 
+			if (url.pathname === "/api/config/chat" && request.method === "GET") {
+				const config = await bb.config.load();
+				const { apiKey, ...rest } = config.chat;
+				return Response.json(
+					{ ...rest, hasKey: Boolean(apiKey) },
+					{ headers: cors },
+				);
+			}
+			if (url.pathname === "/api/config/chat" && request.method === "PATCH") {
+				const body = (await request.json()) as Record<string, unknown>;
+				const config = await bb.config.load();
+				const next = { ...config.chat, ...body };
+				if (body.apiKey === "") {
+					next.apiKey = undefined; // empty string clears the key
+				}
+				config.chat = workbenchConfigSchema.parse({
+					...config,
+					chat: next,
+				}).chat;
+				await bb.config.save(config);
+				const { apiKey, ...rest } = config.chat;
+				return Response.json(
+					{ ...rest, hasKey: Boolean(apiKey) },
+					{ headers: cors },
+				);
+			}
+
 			// ── chat runtime: threads + streaming messages ──
 			if (url.pathname === "/api/chat/threads" && request.method === "GET") {
 				return Response.json(await chat.list(), { headers: cors });
@@ -326,6 +354,9 @@ export async function createUiServer(
 				if (sub === "cancel" && request.method === "POST") {
 					chat.cancel(threadId);
 					return Response.json({ ok: true }, { headers: cors });
+				}
+				if (sub === "reload" && request.method === "POST") {
+					return Response.json(await chat.reload(threadId), { headers: cors });
 				}
 				if (sub === undefined && request.method === "PATCH") {
 					const body = (await request.json()) as {
