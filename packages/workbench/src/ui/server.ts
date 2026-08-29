@@ -327,6 +327,15 @@ export async function createUiServer(
 					chat.cancel(threadId);
 					return Response.json({ ok: true }, { headers: cors });
 				}
+				if (sub === undefined && request.method === "PATCH") {
+					const body = (await request.json()) as {
+						title?: string;
+						permissionMode?: "default" | "plan" | "acceptEdits";
+					};
+					return Response.json(await chat.update(threadId, body), {
+						headers: cors,
+					});
+				}
 				if (sub === "messages" && request.method === "POST") {
 					const body = (await request.json()) as { text?: string };
 					if (!body.text?.trim()) {

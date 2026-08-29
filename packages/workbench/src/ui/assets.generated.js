@@ -9,8 +9,8 @@ import a7 from "D:/helmor-main/apps/workbench-ui/dist/assets/geist-mono-latin-wg
 import a8 from "D:/helmor-main/apps/workbench-ui/dist/assets/geist-mono-symbols2-wght-normal-GZpp1pK2.woff2" with { type: "file" };
 import a9 from "D:/helmor-main/apps/workbench-ui/dist/assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2" with { type: "file" };
 import a10 from "D:/helmor-main/apps/workbench-ui/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2" with { type: "file" };
-import a11 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-DTSwFLQE.js" with { type: "file" };
-import a12 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-DcofPR2u.css" with { type: "file" };
+import a11 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-BDfJLc5U.css" with { type: "file" };
+import a12 from "D:/helmor-main/apps/workbench-ui/dist/assets/index-CKFHAws1.js" with { type: "file" };
 import a13 from "D:/helmor-main/apps/workbench-ui/dist/index.html" with { type: "file" };
 export const files = {
 	"assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2": a0,
@@ -24,7 +24,7 @@ export const files = {
 	"assets/geist-mono-symbols2-wght-normal-GZpp1pK2.woff2": a8,
 	"assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2": a9,
 	"assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2": a10,
-	"assets/index-DTSwFLQE.js": a11,
-	"assets/index-DcofPR2u.css": a12,
+	"assets/index-BDfJLc5U.css": a11,
+	"assets/index-CKFHAws1.js": a12,
 	"index.html": a13,
 };

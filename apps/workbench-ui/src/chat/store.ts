@@ -1,18 +1,26 @@
 import { create } from "zustand";
 
+export type MessagePart =
+	| { type: "text"; text: string }
+	| { type: "tool-call"; toolCallId: string; toolName: string; args: unknown };
+
 export interface StoredMessage {
 	id: string;
 	role: "user" | "assistant";
 	text: string;
 	at: string;
 	status?: "running" | "complete";
+	parts?: MessagePart[];
 }
+
+export type PermissionMode = "default" | "plan" | "acceptEdits";
 
 export interface ThreadMeta {
 	id: string;
 	title: string;
 	createdAt: string;
 	status: "idle" | "running";
+	permissionMode: PermissionMode;
 }
 
 interface ChatState {
@@ -26,6 +34,7 @@ interface ChatState {
 	switchThread(id: string): Promise<void>;
 	send(text: string): Promise<void>;
 	cancel(): void;
+	setPlanMode(enabled: boolean): Promise<void>;
 }
 
 const EMPTY: StoredMessage[] = [];
@@ -79,6 +88,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (id) {
 			void fetch(`/api/chat/threads/${id}/cancel`, { method: "POST" });
 		}
+	},
+
+	async setPlanMode(enabled: boolean) {
+		const id = get().activeId;
+		if (!id) {
+			return;
+		}
+		await fetch(`/api/chat/threads/${id}`, {
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ permissionMode: enabled ? "plan" : "default" }),
+		});
+		set((s) => ({
+			threads: s.threads.map((t) =>
+				t.id === id
+					? {
+							...t,
+							permissionMode: (enabled ? "plan" : "default") as PermissionMode,
+						}
+					: t,
+			),
+		}));
 	},
 
 	async send(text) {
@@ -151,17 +182,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
 						type: string;
 						text?: string;
 						message?: StoredMessage;
-						message_meta?: string;
+						part?: MessagePart;
 					};
 					if (event.type === "delta" && event.text) {
 						const current = (get().messages[threadId] ?? EMPTY).find(
 							(m) => m.id === assistantId,
 						);
 						patchAssistant({ text: (current?.text ?? "") + event.text });
+					} else if (event.type === "tool" && event.part) {
+						// tool-call cards render live while the turn continues
+						set((s) => ({
+							messages: {
+								...s.messages,
+								[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
+									m.id === assistantId
+										? {
+												...m,
+												parts: [...(m.parts ?? []), event.part as MessagePart],
+											}
+										: m,
+								),
+							},
+						}));
 					} else if (event.type === "done" && event.message) {
 						patchAssistant({
 							id: event.message.id,
 							text: event.message.text,
+							parts: event.message.parts,
 							status: "complete",
 						});
 					} else if (event.type === "error") {

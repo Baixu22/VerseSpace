@@ -5,10 +5,22 @@ import {
 import { type StoredMessage, useActiveMessages, useChatStore } from "./store";
 
 function toThreadMessage(m: StoredMessage): ThreadMessage {
+	const content = (m.parts ?? [{ type: "text", text: m.text }]).map((part) => {
+		if (part.type === "tool-call") {
+			return {
+				type: "tool-call",
+				toolCallId: part.toolCallId,
+				toolName: part.toolName,
+				args: part.args,
+				argsText: JSON.stringify(part.args, null, 2),
+			};
+		}
+		return { type: "text", text: part.text };
+	});
 	return {
 		id: m.id,
 		role: m.role === "user" ? "user" : "assistant",
-		content: [{ type: "text", text: m.text }],
+		content,
 		status: { type: m.status === "running" ? "running" : "complete" },
 		createdAt: new Date(m.at),
 		metadata: { custom: {} },

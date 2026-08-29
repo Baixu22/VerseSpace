@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import "@assistant-ui/react-markdown/styles/dot.css";
 import "./index.css";
 
 // The dashboard ships dark-first; the theme file drives light if the class

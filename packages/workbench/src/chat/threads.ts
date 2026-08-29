@@ -14,19 +14,34 @@ import type { Blackboard } from "../blackboard";
  *   lost and the next message simply continues via --resume.
  */
 
+export type PermissionMode = "default" | "plan" | "acceptEdits";
+
 export interface ThreadMeta {
 	id: string;
 	title: string;
 	createdAt: string;
 	claudeSessionId?: string;
 	status: "idle" | "running";
+	/** plan 模式下跑出的最后回复即计划，UI 渲染批准卡 */
+	permissionMode: PermissionMode;
 }
+
+export type MessagePart =
+	| { type: "text"; text: string }
+	| {
+			type: "tool-call";
+			toolCallId: string;
+			toolName: string;
+			args: unknown;
+	  };
 
 export interface StoredMessage {
 	id: string;
 	role: "user" | "assistant";
 	text: string;
 	at: string;
+	/** assistant 消息的结构化内容（text / tool-call）；user 消息省略 */
+	parts?: MessagePart[];
 }
 
 const CHAT_COMMAND =
@@ -73,6 +88,7 @@ export class ChatThreads {
 			title: title?.trim() || "新对话",
 			createdAt: new Date().toISOString(),
 			status: "idle",
+			permissionMode: "default",
 		};
 		await mkdir(this.dir(id), { recursive: true });
 		await writeFile(this.metaFile(id), JSON.stringify(meta, null, 2), "utf8");
@@ -137,6 +153,22 @@ export class ChatThreads {
 		this.running.get(id)?.kill();
 	}
 
+	/** Patch mutable meta fields (title / permissionMode). */
+	async update(
+		id: string,
+		patch: Partial<Pick<ThreadMeta, "title" | "permissionMode">>,
+	): Promise<ThreadMeta> {
+		const meta = await this.get(id);
+		if (patch.title !== undefined) {
+			meta.title = patch.title;
+		}
+		if (patch.permissionMode !== undefined) {
+			meta.permissionMode = patch.permissionMode;
+		}
+		await this.saveMeta(meta);
+		return meta;
+	}
+
 	/**
 	 * Run one exchange. Streams NDJSON events to `emit`:
 	 * {type:"delta",text} → {type:"done",message,claudeSessionId} |
@@ -172,6 +204,9 @@ export class ChatThreads {
 				const parts = CHAT_COMMAND.split(" ").filter(Boolean);
 				const bin = parts[0]!;
 				const args = parts.slice(1);
+				if (meta.permissionMode !== "default") {
+					args.push("--permission-mode", meta.permissionMode);
+				}
 				if (claudeSessionId) {
 					args.push("--resume", claudeSessionId);
 				}
@@ -191,6 +226,7 @@ export class ChatThreads {
 
 				let buffer = "";
 				let stderr = "";
+				const messageParts: MessagePart[] = [];
 				const handleLine = (line: string) => {
 					if (!line.trim()) {
 						return;
@@ -215,14 +251,38 @@ export class ChatThreads {
 							inner.delta?.type === "text_delta" &&
 							inner.delta.text
 						) {
+							const last = messageParts.at(-1);
+							if (last?.type === "text") {
+								last.text += inner.delta.text;
+							} else {
+								messageParts.push({ type: "text", text: inner.delta.text });
+							}
 							assistantTexts.push(inner.delta.text);
 							emit({ type: "delta", text: inner.delta.text });
+						}
+					} else if (event.type === "assistant") {
+						// complete assistant messages carry tool_use blocks verbatim
+						const message = event.message as
+							| { content?: Array<Record<string, unknown>> }
+							| undefined;
+						for (const block of message?.content ?? []) {
+							if (block.type === "tool_use") {
+								const part: MessagePart = {
+									type: "tool-call",
+									toolCallId: String(block.id ?? ""),
+									toolName: String(block.name ?? "tool"),
+									args: block.input ?? {},
+								};
+								messageParts.push(part);
+								emit({ type: "tool", part });
+							}
 						}
 					} else if (event.type === "result") {
 						const result =
 							typeof event.result === "string" ? event.result : undefined;
 						if (result && assistantTexts.length === 0) {
 							assistantTexts.push(result);
+							messageParts.push({ type: "text", text: result });
 							emit({ type: "delta", text: result });
 						}
 					}
@@ -262,12 +322,13 @@ export class ChatThreads {
 						emit({ type: "error", message: stderr.trim().slice(0, 500) });
 					}
 					const full = assistantTexts.join("");
-					if (full) {
+					if (full || messageParts.some((part) => part.type === "tool-call")) {
 						const assistantMessage: StoredMessage = {
 							id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
 							role: "assistant",
 							text: full,
 							at: new Date().toISOString(),
+							parts: messageParts,
 						};
 						await this.appendMessage(id, assistantMessage);
 						emit({
@@ -284,6 +345,9 @@ export class ChatThreads {
 					const latest = await this.get(id);
 					latest.status = "idle";
 					latest.claudeSessionId = claudeSessionId ?? latest.claudeSessionId;
+					if (latest.permissionMode === "acceptEdits") {
+						latest.permissionMode = "default";
+					}
 					await this.saveMeta(latest);
 					resolve();
 				});
