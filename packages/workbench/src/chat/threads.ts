@@ -27,6 +27,7 @@ export interface ThreadMeta {
 	status: "idle" | "running";
 	/** plan 模式下跑出的最后回复即计划，UI 渲染批准卡 */
 	permissionMode: PermissionMode;
+	archived?: boolean;
 }
 
 export type MessagePart =
@@ -36,6 +37,8 @@ export type MessagePart =
 			toolCallId: string;
 			toolName: string;
 			args: unknown;
+			/** tool_result 回填后可展示 */
+			result?: unknown;
 	  };
 
 export interface StoredMessage {
@@ -166,7 +169,7 @@ export class ChatThreads {
 	/** Patch mutable meta fields (title / permissionMode). */
 	async update(
 		id: string,
-		patch: Partial<Pick<ThreadMeta, "title" | "permissionMode">>,
+		patch: Partial<Pick<ThreadMeta, "title" | "permissionMode" | "archived">>,
 	): Promise<ThreadMeta> {
 		const meta = await this.get(id);
 		if (patch.title !== undefined) {
@@ -175,8 +178,22 @@ export class ChatThreads {
 		if (patch.permissionMode !== undefined) {
 			meta.permissionMode = patch.permissionMode;
 		}
+		if (patch.archived !== undefined) {
+			meta.archived = patch.archived;
+		}
 		await this.saveMeta(meta);
 		return meta;
+	}
+
+	/** Hard-delete a thread directory (guard: not while running). */
+	async remove(id: string): Promise<{ ok: boolean; reason?: string }> {
+		if (this.running.get(id)) {
+			return { ok: false, reason: "线程正在运行" };
+		}
+		const { rm } = await import("node:fs/promises");
+		await rm(this.dir(id), { recursive: true, force: true });
+		this.meta.delete(id);
+		return { ok: true };
 	}
 
 	/** Drop the trailing assistant message; returns the user text to resend. */
@@ -327,6 +344,24 @@ export class ChatThreads {
 									};
 									messageParts.push(part);
 									emit({ type: "tool", part });
+								}
+							}
+						} else if (event.type === "user") {
+							// tool_result blocks ride on transcript "user" events
+							const message = event.message as
+								| { content?: Array<Record<string, unknown>> }
+								| undefined;
+							for (const block of message?.content ?? []) {
+								if (block.type === "tool_result") {
+									const toolCallId = String(block.tool_use_id ?? "");
+									const part = messageParts.find(
+										(p) =>
+											p.type === "tool-call" && p.toolCallId === toolCallId,
+									);
+									if (part && part.type === "tool-call") {
+										part.result = block.content ?? null;
+										emit({ type: "tool_result", part });
+									}
 								}
 							}
 						} else if (event.type === "result") {

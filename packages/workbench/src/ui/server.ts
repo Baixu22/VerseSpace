@@ -301,6 +301,20 @@ export async function createUiServer(
 				);
 			}
 
+			if (url.pathname === "/api/chat/feedback" && request.method === "POST") {
+				const body = (await request.json()) as {
+					threadId?: string;
+					messageId?: string;
+					kind?: string;
+				};
+				await bb.events.append({
+					timestamp: new Date().toISOString(),
+					source: "human",
+					type: "feedback",
+					payload: body,
+				});
+				return Response.json({ ok: true }, { headers: cors });
+			}
 			if (url.pathname === "/api/config/chat" && request.method === "GET") {
 				const config = await bb.config.load();
 				const { apiKey, ...rest } = config.chat;
@@ -357,6 +371,13 @@ export async function createUiServer(
 				}
 				if (sub === "reload" && request.method === "POST") {
 					return Response.json(await chat.reload(threadId), { headers: cors });
+				}
+				if (sub === undefined && request.method === "DELETE") {
+					const outcome = await chat.remove(threadId);
+					return Response.json(outcome, {
+						status: outcome.ok ? 200 : 409,
+						headers: cors,
+					});
 				}
 				if (sub === undefined && request.method === "PATCH") {
 					const body = (await request.json()) as {

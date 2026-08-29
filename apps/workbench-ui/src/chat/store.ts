@@ -2,7 +2,13 @@ import { create } from "zustand";
 
 export type MessagePart =
 	| { type: "text"; text: string }
-	| { type: "tool-call"; toolCallId: string; toolName: string; args: unknown };
+	| {
+			type: "tool-call";
+			toolCallId: string;
+			toolName: string;
+			args: unknown;
+			result?: unknown;
+	  };
 
 export interface StoredMessage {
 	id: string;
@@ -21,6 +27,7 @@ export interface ThreadMeta {
 	createdAt: string;
 	status: "idle" | "running";
 	permissionMode: PermissionMode;
+	archived?: boolean;
 }
 
 interface ChatState {
@@ -36,6 +43,10 @@ interface ChatState {
 	reload(): Promise<void>;
 	cancel(): void;
 	setPlanMode(enabled: boolean): Promise<void>;
+	deleteThread(id: string): Promise<void>;
+	setArchived(id: string, archived: boolean): Promise<void>;
+	renameThread(id: string, title: string): Promise<void>;
+	feedback(messageId: string, kind: "positive" | "negative"): Promise<void>;
 }
 
 const EMPTY: StoredMessage[] = [];
@@ -207,6 +218,54 @@ export const useChatStore = create<ChatState>((set, get) => ({
 					: t,
 			),
 		}));
+	},
+
+	async deleteThread(id: string) {
+		await fetch(`/api/chat/threads/${id}`, { method: "DELETE" });
+		set((s) => {
+			const messages = { ...s.messages };
+			delete messages[id];
+			const threads = s.threads.filter((t) => t.id !== id);
+			return {
+				threads,
+				messages,
+				activeId: s.activeId === id ? (threads[0]?.id ?? null) : s.activeId,
+			};
+		});
+	},
+
+	async setArchived(id: string, archived: boolean) {
+		await fetch(`/api/chat/threads/${id}`, {
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ archived }),
+		});
+		set((s) => ({
+			threads: s.threads.map((t) => (t.id === id ? { ...t, archived } : t)),
+		}));
+	},
+
+	async renameThread(id: string, title: string) {
+		await fetch(`/api/chat/threads/${id}`, {
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ title }),
+		});
+		set((s) => ({
+			threads: s.threads.map((t) => (t.id === id ? { ...t, title } : t)),
+		}));
+	},
+
+	async feedback(messageId: string, kind: "positive" | "negative") {
+		const threadId = get().activeId;
+		if (!threadId) {
+			return;
+		}
+		await fetch("/api/chat/feedback", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ threadId, messageId, kind }),
+		});
 	},
 
 	async send(text) {

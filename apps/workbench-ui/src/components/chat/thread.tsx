@@ -38,7 +38,15 @@ function UserMessage() {
 	);
 }
 
-function ToolCallCard({ toolName, args }: { toolName: string; args: unknown }) {
+function ToolCallCard({
+	toolName,
+	args,
+	result,
+}: {
+	toolName: string;
+	args: unknown;
+	result?: unknown;
+}) {
 	const [open, setOpen] = useState(false);
 	return (
 		<div className="my-1 rounded-lg border border-border-subtle bg-bg-base">
@@ -58,9 +66,18 @@ function ToolCallCard({ toolName, args }: { toolName: string; args: unknown }) {
 				</span>
 			</button>
 			{open ? (
-				<pre className="overflow-x-auto border-t border-border-subtle px-3 py-2 font-mono text-micro text-fg-muted">
-					{JSON.stringify(args, null, 2)}
-				</pre>
+				<>
+					<pre className="overflow-x-auto border-t border-border-subtle px-3 py-2 font-mono text-micro text-fg-muted">
+						{JSON.stringify(args, null, 2)}
+					</pre>
+					{result !== undefined ? (
+						<pre className="overflow-x-auto border-t border-border-subtle px-3 py-2 font-mono text-micro text-status-success">
+							{typeof result === "string"
+								? result
+								: JSON.stringify(result, null, 2)}
+						</pre>
+					) : null}
+				</>
 			) : null}
 		</div>
 	);
@@ -76,7 +93,13 @@ function AssistantMessage() {
 							return part.text ? <MarkdownText /> : null;
 						}
 						if (part.type === "tool-call") {
-							return <ToolCallCard toolName={part.toolName} args={part.args} />;
+							return (
+								<ToolCallCard
+									toolName={part.toolName}
+									args={part.args}
+									result={part.result}
+								/>
+							);
 						}
 						return null;
 					}}
@@ -87,6 +110,18 @@ function AssistantMessage() {
 				<ActionBarPrimitive.Reload className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle hover:bg-muted hover:text-fg-default">
 					重试
 				</ActionBarPrimitive.Reload>
+				<ActionBarPrimitive.Speak className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle hover:bg-muted hover:text-fg-default">
+					朗读
+				</ActionBarPrimitive.Speak>
+				<ActionBarPrimitive.StopSpeaking className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle hover:bg-muted hover:text-fg-default">
+					停止
+				</ActionBarPrimitive.StopSpeaking>
+				<ActionBarPrimitive.FeedbackPositive className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle data-[feedback-positive]:text-status-success hover:bg-muted hover:text-fg-default">
+					👍
+				</ActionBarPrimitive.FeedbackPositive>
+				<ActionBarPrimitive.FeedbackNegative className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle data-[feedback-negative]:text-status-danger hover:bg-muted hover:text-fg-default">
+					👎
+				</ActionBarPrimitive.FeedbackNegative>
 				<BranchPickerPrimitive.Root className="flex items-center gap-1 text-micro text-fg-subtle">
 					<BranchPickerPrimitive.Previous className="px-1 hover:text-fg-default">
 						‹

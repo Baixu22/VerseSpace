@@ -1,6 +1,7 @@
 import {
 	type ThreadMessage,
 	useExternalStoreRuntime,
+	WebSpeechSynthesisAdapter,
 } from "@assistant-ui/react";
 import { type StoredMessage, useActiveMessages, useChatStore } from "./store";
 
@@ -12,6 +13,7 @@ function toThreadMessage(m: StoredMessage): ThreadMessage {
 				toolCallId: part.toolCallId,
 				toolName: part.toolName,
 				args: part.args,
+				result: part.result,
 				argsText: JSON.stringify(part.args, null, 2),
 			};
 		}
@@ -40,6 +42,7 @@ export function useChatRuntimeAdapter() {
 	const messages = useActiveMessages();
 	const runningThreadId = useChatStore((s) => s.runningThreadId);
 	const activeId = useChatStore((s) => s.activeId);
+	const threads = useChatStore((s) => s.threads);
 
 	return useExternalStoreRuntime({
 		messages,
@@ -57,5 +60,46 @@ export function useChatRuntimeAdapter() {
 		},
 		onCancel: async () => useChatStore.getState().cancel(),
 		onReload: async () => useChatStore.getState().reload(),
+		adapters: {
+			// browser-native TTS; enables ActionBarPrimitive.Speak/StopSpeaking
+			speech: new WebSpeechSynthesisAdapter(),
+			feedback: {
+				submit: (feedback: {
+					message: ThreadMessage;
+					type: "positive" | "negative";
+				}) => {
+					void useChatStore
+						.getState()
+						.feedback(feedback.message.id, feedback.type);
+				},
+			},
+			threadList: {
+				threadId: activeId ?? undefined,
+				threads: threads
+					.filter((t) => !t.archived)
+					.map((t) => ({
+						status: "regular" as const,
+						id: t.id,
+						title: t.title,
+					})),
+				archivedThreads: threads
+					.filter((t) => t.archived)
+					.map((t) => ({
+						status: "archived" as const,
+						id: t.id,
+						title: t.title,
+					})),
+				onSwitchToNewThread: () => useChatStore.getState().createThread(),
+				onSwitchToThread: (id: string) =>
+					useChatStore.getState().switchThread(id),
+				onRename: (id: string, title: string) =>
+					useChatStore.getState().renameThread(id, title),
+				onArchive: (id: string) =>
+					useChatStore.getState().setArchived(id, true),
+				onUnarchive: (id: string) =>
+					useChatStore.getState().setArchived(id, false),
+				onDelete: (id: string) => useChatStore.getState().deleteThread(id),
+			},
+		},
 	});
 }
