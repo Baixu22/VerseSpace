@@ -202,22 +202,22 @@ describe("ui chat routes", () => {
 		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
 		process.env.WORKBENCH_CHAT_COMMAND = `bun ${fakeAgent}`;
 		const server = await createUiServer(ws.bb, 0);
+		const base = `http://127.0.0.1:${server.port}`;
+		const token = await fetch(`${base}/api/bootstrap`)
+			.then((r) => r.json())
+			.then((b: { token: string }) => b.token);
+		const auth = {
+			"x-workbench-token": token,
+			"content-type": "application/json",
+		};
+		let id = "";
 		try {
-			const base = `http://127.0.0.1:${server.port}`;
-			const token = await fetch(`${base}/api/bootstrap`)
-				.then((r) => r.json())
-				.then((b: { token: string }) => b.token);
-			const auth = {
-				"x-workbench-token": token,
-				"content-type": "application/json",
-			};
-
 			const thread = await fetch(`${base}/api/chat/threads`, {
 				method: "POST",
 				headers: auth,
 				body: JSON.stringify({}),
 			}).then((r) => r.json());
-			const id = (thread as { id: string }).id;
+			id = (thread as { id: string }).id;
 
 			// the reload sub-route used to fall out of the regex and 404
 			const emptyReload = await fetch(`${base}/api/chat/threads/${id}/reload`, {
@@ -260,6 +260,13 @@ describe("ui chat routes", () => {
 			messages = await read();
 			expect(messages.map((m) => m.role)).toEqual(["user", "assistant"]);
 		} finally {
+			// the fake agent's cwd is inside the temp workbench and it lives on
+			// between turns (SESSION_IDLE_CLOSE_MS is minutes); kill it before
+			// rm or Windows reports EBUSY on the locked directory
+			await fetch(`${base}/api/chat/threads/${id}/cancel`, {
+				method: "POST",
+				headers: { "x-workbench-token": token },
+			}).catch(() => {});
 			server.stop(true);
 			if (previousCommand === undefined) {
 				delete process.env.WORKBENCH_CHAT_COMMAND;
@@ -461,6 +468,99 @@ describe("ui chat routes", () => {
 				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
 			}
 			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	}, 20000);
+
+	test("fork route: anchor gesture creates a sibling thread and leaves the source untouched", async () => {
+		const ws: TempWorkbench = await makeTempWorkbench();
+		const server = await createUiServer(ws.bb, 0);
+		try {
+			const base = `http://127.0.0.1:${server.port}`;
+			const token = await fetch(`${base}/api/bootstrap`)
+				.then((r) => r.json())
+				.then((b: { token: string }) => b.token);
+			const auth = {
+				"x-workbench-token": token,
+				"content-type": "application/json",
+			};
+
+			const thread = await fetch(`${base}/api/chat/threads`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({}),
+			}).then((r) => r.json());
+			const id = (thread as { id: string }).id;
+
+			// seed a 3-message transcript directly on disk (fork runs no agent)
+			const mk = (id: string, role: "user" | "assistant", text: string) => ({
+				id,
+				role,
+				text,
+				at: new Date().toISOString(),
+			});
+			const seeded = [
+				mk("m-1", "user", "第一问"),
+				mk("m-2", "assistant", "第一答"),
+				mk("m-3", "user", "第二问"),
+			];
+			const { appendFile } = await import("node:fs/promises");
+			for (const m of seeded) {
+				await appendFile(
+					join(ws.workbenchRoot, "threads", id, "messages.jsonl"),
+					`${JSON.stringify(m)}\n`,
+					"utf8",
+				);
+			}
+
+			// missing anchor → 400
+			const noAnchor = await fetch(`${base}/api/chat/threads/${id}/fork`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({}),
+			});
+			expect(noAnchor.status).toBe(400);
+
+			// unknown anchor → ok:false
+			const unknown = await fetch(`${base}/api/chat/threads/${id}/fork`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({ anchorMessageId: "m-nope" }),
+			}).then((r) => r.json());
+			expect((unknown as { ok: boolean }).ok).toBe(false);
+
+			// fork at m2: inherits [m1, m2], declaration present
+			const outcome = await fetch(`${base}/api/chat/threads/${id}/fork`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({ anchorMessageId: "m-2" }),
+			}).then((r) => r.json());
+			const forked = outcome as {
+				ok: boolean;
+				thread: { id: string; forkOf: { sourceThreadId: string } };
+				declaration: { inheritedMessages: number };
+			};
+			expect(forked.ok).toBe(true);
+			expect(forked.thread.id).not.toBe(id);
+			expect(forked.thread.forkOf.sourceThreadId).toBe(id);
+			expect(forked.declaration.inheritedMessages).toBe(2);
+
+			const readMessages = (threadId: string) =>
+				fetch(`${base}/api/chat/threads/${threadId}`, { headers: auth })
+					.then((r) => r.json())
+					.then((b: { messages: { id: string }[] }) => b.messages);
+			expect((await readMessages(forked.thread.id)).map((m) => m.id)).toEqual([
+				"m-1",
+				"m-2",
+			]);
+			// source transcript untouched
+			expect((await readMessages(id)).map((m) => m.id)).toEqual([
+				"m-1",
+				"m-2",
+				"m-3",
+			]);
+		} finally {
+			server.stop(true);
 			await ws.cleanup();
 		}
 	}, 20000);

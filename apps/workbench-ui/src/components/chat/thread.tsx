@@ -6,11 +6,12 @@ import {
 	MessagePrimitive,
 	ThreadPrimitive,
 } from "@assistant-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../../auth";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { MarkdownText } from "./markdown-text";
+import { ThreadSidecar } from "./sidecar";
 
 function CopyAction() {
 	return (
@@ -20,7 +21,23 @@ function CopyAction() {
 	);
 }
 
-function UserMessage() {
+/** 追溯式分叉（TF-0093）：锚点消息上一个手势，零仪式——无对话框，直接生成兄弟线程。 */
+function ForkAction({ messageId }: { messageId: string }) {
+	const busy = useChatStore((s) => s.runningThreadId !== null);
+	return (
+		<button
+			type="button"
+			disabled={busy}
+			title="从此处分叉：继承之前的对话，生成一个新线程（原对话不变）"
+			onClick={() => void useChatStore.getState().fork(messageId)}
+			className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle hover:bg-muted hover:text-fg-default disabled:opacity-50"
+		>
+			分叉
+		</button>
+	);
+}
+
+function UserMessage({ messageId }: { messageId: string }) {
 	return (
 		<MessagePrimitive.Root className="group flex flex-col items-end gap-1">
 			<div className="max-w-[80%] rounded-xl bg-primary px-4 py-2.5 text-body text-primary-foreground">
@@ -34,6 +51,7 @@ function UserMessage() {
 			</div>
 			<div className="opacity-0 transition-opacity group-hover:opacity-100">
 				<CopyAction />
+				<ForkAction messageId={messageId} />
 			</div>
 		</MessagePrimitive.Root>
 	);
@@ -84,7 +102,41 @@ function ToolCallCard({
 	);
 }
 
-function AssistantMessage() {
+/** 备选变体（TF-0094）：主回答已直接展示；chip 常显在消息上，一击展开备选——没有任何选择界面。 */
+function VariantsPanel({ variants }: { variants: string[] }) {
+	const [open, setOpen] = useState(false);
+	return (
+		<div className="flex flex-col items-start gap-1">
+			<button
+				type="button"
+				title="本次同时生成了 N 个回答，这是另一个变体"
+				onClick={() => setOpen(!open)}
+				className="rounded bg-muted px-1.5 py-0.5 text-micro text-fg-subtle hover:text-fg-default"
+			>
+				备选 {variants.length}
+			</button>
+			{open
+				? variants.map((text, index) => (
+						<div
+							key={index}
+							className="max-w-[92%] rounded-xl border border-border-subtle bg-bg-base px-4 py-3 text-body text-fg-muted"
+						>
+							<p className="mb-1 text-micro text-fg-subtle">变体 {index + 1}</p>
+							<p className="whitespace-pre-wrap">{text}</p>
+						</div>
+					))
+				: null}
+		</div>
+	);
+}
+
+function AssistantMessage({ messageId }: { messageId: string }) {
+	const variants = useChatStore(
+		(s) =>
+			(s.activeId ? s.messages[s.activeId] : undefined)?.find(
+				(m) => m.id === messageId,
+			)?.variants,
+	);
 	return (
 		<MessagePrimitive.Root className="group flex flex-col gap-1">
 			<div className="max-w-[92%] rounded-xl border border-border bg-bg-surface px-4 py-3">
@@ -106,8 +158,10 @@ function AssistantMessage() {
 					}}
 				</MessagePrimitive.Parts>
 			</div>
+			{variants?.length ? <VariantsPanel variants={variants} /> : null}
 			<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
 				<CopyAction />
+				<ForkAction messageId={messageId} />
 				<ActionBarPrimitive.Reload className="rounded-md px-1.5 py-0.5 text-micro text-fg-subtle hover:bg-muted hover:text-fg-default">
 					重试
 				</ActionBarPrimitive.Reload>
@@ -177,6 +231,34 @@ function PlanApproval() {
 	);
 }
 
+/** 分叉继承声明（TF-0093）：分叉后明确告诉用户继承了什么、什么从新开始。 */
+function ForkNotice() {
+	const notice = useChatStore((s) => s.forkNotice);
+	const dismiss = useChatStore((s) => s.dismissForkNotice);
+	useEffect(() => {
+		if (!notice) {
+			return;
+		}
+		const timer = setTimeout(dismiss, 8000);
+		return () => clearTimeout(timer);
+	}, [notice, dismiss]);
+	if (!notice) {
+		return null;
+	}
+	return (
+		<div className="mx-6 mt-3 flex items-start gap-2 rounded-lg border border-border-subtle bg-bg-surface px-3 py-2 text-small text-fg-muted">
+			<span className="flex-1">{notice}</span>
+			<button
+				type="button"
+				onClick={dismiss}
+				className="shrink-0 text-micro text-fg-subtle hover:text-fg-default"
+			>
+				知道了
+			</button>
+		</div>
+	);
+}
+
 export function ChatThread() {
 	const threads = useChatStore((s) => s.threads);
 	const activeId = useChatStore((s) => s.activeId);
@@ -193,6 +275,7 @@ export function ChatThread() {
 
 	return (
 		<ThreadPrimitive.Root className="flex h-full min-w-0 flex-1 flex-col">
+			<ForkNotice />
 			<ThreadPrimitive.Viewport className="flex-1 overflow-y-auto px-6 py-4">
 				<ThreadPrimitive.Empty>
 					<div className="flex h-full flex-col items-center justify-center gap-2 text-fg-muted">
@@ -205,12 +288,17 @@ export function ChatThread() {
 				</ThreadPrimitive.Empty>
 				<ThreadPrimitive.Messages>
 					{({ message }) =>
-						message.role === "user" ? <UserMessage /> : <AssistantMessage />
+						message.role === "user" ? (
+							<UserMessage messageId={message.id} />
+						) : (
+							<AssistantMessage messageId={message.id} />
+						)
 					}
 				</ThreadPrimitive.Messages>
 			</ThreadPrimitive.Viewport>
 
 			<ThreadPrimitive.ViewportFooter className="px-6 pb-5">
+				<ThreadSidecar />
 				{showPlanApproval ? (
 					<div className="mb-3">
 						<PlanApproval />

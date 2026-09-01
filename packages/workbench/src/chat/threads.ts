@@ -9,9 +9,17 @@ import {
 } from "../blackboard/footprint";
 import { type ProcHandle, spawnSupervised } from "../supervisor";
 import type { WorkbenchConfig } from "../types/config";
+import { buildVariants, clampFanout } from "./fanout";
+import {
+	buildForkDeclaration,
+	type ForkLineage,
+	type ForkOutcome,
+	forkSlice,
+} from "./fork";
 import {
 	collectSignals,
 	countUserTurns,
+	deriveTitle,
 	evaluatePromotion,
 	type PromotionRecord,
 	type PromotionSignal,
@@ -57,6 +65,8 @@ export interface ThreadMeta {
 	forks?: Record<string, number>;
 	/** 晋升记录（TF-0092）：何时、因哪些信号、命名成什么。可观测，不参与自动动作。 */
 	promotion?: PromotionRecord;
+	/** 分叉血统（TF-0093）：本线程由哪个线程的哪条消息分叉而来。 */
+	forkOf?: ForkLineage;
 }
 
 export type MessagePart =
@@ -77,6 +87,8 @@ export interface StoredMessage {
 	at: string;
 	/** assistant 消息的结构化内容（text / tool-call）；user 消息省略 */
 	parts?: MessagePart[];
+	/** 扇出的备选文本（TF-0094）：不含主回答，最多 fanout-1 条。 */
+	variants?: string[];
 }
 
 export type RunEvent = Record<string, unknown>;
@@ -308,6 +320,78 @@ export class ChatThreads {
 		});
 	}
 
+	// ── 追溯式分叉（TF-0093）───────────────────────────────────────────
+	// 每条消息都是隐式分叉点：一次 POST 即分叉，零仪式（无标题输入、无
+	// 对话框）。新线程继承锚点（含）之前的消息前缀，原线程逐字节不变；
+	// 继承声明随响应返回（fork.ts: ForkDeclaration），不静默决定任何继承。
+
+	/**
+	 * 从源线程锚点消息处分叉出一个兄弟线程。
+	 * 源线程的分叉计数 feeds TF-0092 的 second-fork 信号（与 reload 同层）。
+	 */
+	async fork(id: string, anchorMessageId: string): Promise<ForkOutcome> {
+		return this.enqueue(id, async () => {
+			// claude sessions stay alive BETWEEN turns (running holds the live
+			// child for minutes) — refuse only when a turn is actually in flight
+			if (
+				this.running.get(id) instanceof AbortController ||
+				this.live.get(id)?.turn
+			) {
+				return { ok: false, reason: "线程正在运行" };
+			}
+			const source = await this.get(id);
+			const sliced = forkSlice(await this.messages(id), anchorMessageId);
+			if (!sliced.ok) {
+				return { ok: false, reason: "找不到锚点消息" };
+			}
+			const { inherited, anchor } = sliced;
+
+			// 新线程：全新 uuid / 全新 agent 会话 / 无晋升记录 / 未归档；
+			// 标题从继承前缀确定性推导（与晋升同规则）——零仪式，随时可改。
+			const forkId = randomUUID();
+			const forkMeta: ThreadMeta = {
+				id: forkId,
+				title: deriveTitle(inherited),
+				createdAt: new Date().toISOString(),
+				claudeSessionId: forkId,
+				status: "idle",
+				permissionMode: "default",
+				forkOf: {
+					sourceThreadId: id,
+					sourceTitle: source.title,
+					anchorMessageId,
+					inheritedMessages: inherited.length,
+					at: new Date().toISOString(),
+				},
+			};
+			await mkdir(this.dir(forkId), { recursive: true });
+			await writeFile(
+				this.metaFile(forkId),
+				JSON.stringify(forkMeta, null, 2),
+				"utf8",
+			);
+			await writeFile(
+				this.messagesFile(forkId),
+				`${inherited.map((m) => JSON.stringify(m)).join("\n")}\n`,
+				"utf8",
+			);
+			this.meta.set(forkId, forkMeta);
+			await this.bb.sessions.register(forkId, "agent", forkMeta.title);
+
+			// 源线程只动 meta.forks 计数；messages.jsonl 一个字节不动
+			const forks = { ...(source.forks ?? {}) };
+			forks[anchorMessageId] = (forks[anchorMessageId] ?? 0) + 1;
+			source.forks = forks;
+			await this.saveMeta(source);
+
+			return {
+				ok: true,
+				thread: forkMeta,
+				declaration: buildForkDeclaration(anchor, inherited.length),
+			};
+		});
+	}
+
 	/** Hard-delete a thread directory (guard: not while running). */
 	async remove(id: string): Promise<{ ok: boolean; reason?: string }> {
 		if (this.live.get(id)) {
@@ -327,7 +411,12 @@ export class ChatThreads {
 		id: string,
 	): Promise<{ ok: boolean; userText?: string; reason?: string }> {
 		return this.enqueue(id, async () => {
-			if (this.running.get(id)) {
+			// claude sessions stay alive BETWEEN turns (running holds the live
+			// child for minutes) — refuse only when a turn is actually in flight
+			if (
+				this.running.get(id) instanceof AbortController ||
+				this.live.get(id)?.turn
+			) {
 				return { ok: false, reason: "线程正在运行" };
 			}
 			const messages = await this.messages(id);
@@ -433,15 +522,20 @@ export class ChatThreads {
 					.map((p) => p.text)
 					.join("");
 				if (full) {
+					const variants = this.pendingVariants.get(id);
+					this.pendingVariants.delete(id);
 					const assistantMessage: StoredMessage = {
 						id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
 						role: "assistant",
 						text: full,
 						at: new Date().toISOString(),
 						parts: messageParts,
+						...(variants?.length ? { variants } : {}),
 					};
 					await this.appendMessage(id, assistantMessage);
 					emit({ type: "done", message: assistantMessage });
+				} else {
+					this.pendingVariants.delete(id);
 				}
 				const latest = await this.get(id);
 				latest.status = "idle";
@@ -536,6 +630,10 @@ export class ChatThreads {
 		});
 
 		// finalize the turn: footprints, messages, meta
+		// the child stays alive between turns, but the turn is over — detach
+		// it so session-level noise stops being routed and reload/fork see an
+		// idle thread (SESSION_IDLE_CLOSE_MS keeps the child for minutes)
+		session.turn = null;
 		await turn.fpQueue;
 		for (const fp of turn.pendingFootprints.values()) {
 			await this.bb.sessions.recordActivity(id, fp);
@@ -861,70 +959,15 @@ export class ChatThreads {
 			return;
 		}
 
-		let url: string;
-		const headers: Record<string, string> = {
-			"content-type": "application/json",
-		};
 		const history = await this.history(id);
-		const body: Record<string, unknown> = {};
+		const fanout = clampFanout(chat.fanout);
+		const { url, headers, body } = this.buildHttpRequest(
+			provider,
+			key,
+			chat,
+			history,
+		);
 
-		if (provider === "anthropic") {
-			url = `${(chat.baseUrl ?? "https://api.anthropic.com").replace(/\/$/, "")}/v1/messages`;
-			headers["x-api-key"] = key;
-			headers["anthropic-version"] = "2023-06-01";
-			body.model = chat.model ?? "claude-sonnet-4-5";
-			body.max_tokens = chat.maxTokens ?? 1024;
-			if (chat.temperature !== undefined) {
-				body.temperature = chat.temperature;
-			}
-			body.stream = true;
-			body.messages = history;
-		} else if (provider === "openai-chat") {
-			url = `${(chat.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
-			headers.authorization = `Bearer ${key}`;
-			body.model = chat.model ?? "gpt-4o-mini";
-			body.messages = history;
-			body.stream = true;
-			if (chat.temperature !== undefined) {
-				body.temperature = chat.temperature;
-			}
-			if (chat.maxTokens !== undefined) {
-				body.max_tokens = chat.maxTokens;
-			}
-		} else {
-			// openai-responses
-			url = `${(chat.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "")}/responses`;
-			headers.authorization = `Bearer ${key}`;
-			body.model = chat.model ?? "gpt-4o-mini";
-			body.input = history.map((m) => ({ role: m.role, content: m.content }));
-			body.stream = true;
-			if (chat.temperature !== undefined) {
-				body.temperature = chat.temperature;
-			}
-			if (chat.maxTokens !== undefined) {
-				body.max_output_tokens = chat.maxTokens;
-			}
-			if (chat.effort) {
-				body.reasoning = { effort: chat.effort };
-			}
-		}
-
-		const response = await fetch(url, {
-			method: "POST",
-			headers,
-			body: JSON.stringify(body),
-			signal,
-		});
-		if (!response.ok || !response.body) {
-			const detail = (await response.text()).slice(0, 300);
-			emit({
-				type: "error",
-				message: `${provider} HTTP ${response.status}：${detail}`,
-			});
-			return;
-		}
-
-		// unified SSE consumption → text deltas
 		const onSseData = (payload: string) => {
 			if (payload === "[DONE]") {
 				return;
@@ -976,7 +1019,174 @@ export class ChatThreads {
 			}
 		};
 
-		const reader = response.body.getReader();
+		// 主请求先发出（它是流式展示的主角），shadow 变体随后并发、只捕获
+		// 不展示。shadow 的任何失败都被吞掉（runHttpShadow 返回空串）——
+		// 备选是余光，绝不打扰主回答；cancel 经由同一个 signal 中止全部。
+		const response = await fetch(url, {
+			method: "POST",
+			headers,
+			body: JSON.stringify(body),
+			signal,
+		});
+		if (!response.ok || !response.body) {
+			const detail = (await response.text()).slice(0, 300);
+			emit({
+				type: "error",
+				message: `${provider} HTTP ${response.status}：${detail}`,
+			});
+			return;
+		}
+		const shadowPromises =
+			fanout > 1
+				? Array.from({ length: fanout - 1 }, () =>
+						this.runHttpShadow(provider, url, headers, body, signal),
+					)
+				: [];
+
+		await this.consumeSse(response, onSseData);
+		// 主回答结束：收下 shadow 文本，备选挂在 run() 的 finally 里组装
+		const shadowTexts = await Promise.all(shadowPromises);
+		const primaryText = messageParts
+			.filter((p): p is { type: "text"; text: string } => p.type === "text")
+			.map((p) => p.text)
+			.join("");
+		this.pendingVariants.set(
+			id,
+			buildVariants(primaryText, shadowTexts, fanout),
+		);
+	}
+
+	/** 主回答结束后的备选暂存（run() 的 finally 组装 assistant 消息时取走）。 */
+	private readonly pendingVariants = new Map<string, string[]>();
+
+	private buildHttpRequest(
+		provider: WorkbenchConfig["chat"]["provider"],
+		key: string,
+		chat: WorkbenchConfig["chat"],
+		history: Array<{ role: string; content: string }>,
+	): {
+		url: string;
+		headers: Record<string, string>;
+		body: Record<string, unknown>;
+	} {
+		let url: string;
+		const headers: Record<string, string> = {
+			"content-type": "application/json",
+		};
+		const body: Record<string, unknown> = {};
+
+		if (provider === "anthropic") {
+			url = `${(chat.baseUrl ?? "https://api.anthropic.com").replace(/\/$/, "")}/v1/messages`;
+			headers["x-api-key"] = key;
+			headers["anthropic-version"] = "2023-06-01";
+			body.model = chat.model ?? "claude-sonnet-4-5";
+			body.max_tokens = chat.maxTokens ?? 1024;
+			if (chat.temperature !== undefined) {
+				body.temperature = chat.temperature;
+			}
+			body.stream = true;
+			body.messages = history;
+		} else if (provider === "openai-chat") {
+			url = `${(chat.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
+			headers.authorization = `Bearer ${key}`;
+			body.model = chat.model ?? "gpt-4o-mini";
+			body.messages = history;
+			body.stream = true;
+			if (chat.temperature !== undefined) {
+				body.temperature = chat.temperature;
+			}
+			if (chat.maxTokens !== undefined) {
+				body.max_tokens = chat.maxTokens;
+			}
+		} else {
+			// openai-responses
+			url = `${(chat.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "")}/responses`;
+			headers.authorization = `Bearer ${key}`;
+			body.model = chat.model ?? "gpt-4o-mini";
+			body.input = history.map((m) => ({ role: m.role, content: m.content }));
+			body.stream = true;
+			if (chat.temperature !== undefined) {
+				body.temperature = chat.temperature;
+			}
+			if (chat.maxTokens !== undefined) {
+				body.max_output_tokens = chat.maxTokens;
+			}
+			if (chat.effort) {
+				body.reasoning = { effort: chat.effort };
+			}
+		}
+		return { url, headers, body };
+	}
+
+	/**
+	 * shadow 变体请求：与主回答同一个请求体并发发出，只把文本捕获成
+	 * 备选——不 emit、不落盘；失败返回空串（buildVariants 会丢弃）。
+	 */
+	private async runHttpShadow(
+		provider: WorkbenchConfig["chat"]["provider"],
+		url: string,
+		headers: Record<string, string>,
+		body: Record<string, unknown>,
+		signal: AbortSignal,
+	): Promise<string> {
+		try {
+			let text = "";
+			const response = await fetch(url, {
+				method: "POST",
+				headers,
+				body: JSON.stringify(body),
+				signal,
+			});
+			if (!response.ok || !response.body) {
+				return "";
+			}
+			await this.consumeSse(response, (payload) => {
+				if (payload === "[DONE]") {
+					return;
+				}
+				let event: Record<string, unknown>;
+				try {
+					event = JSON.parse(payload) as Record<string, unknown>;
+				} catch {
+					return;
+				}
+				let delta: string | undefined;
+				if (provider === "anthropic") {
+					if (event.type === "content_block_delta") {
+						const d = event.delta as
+							| { type?: string; text?: string }
+							| undefined;
+						if (d?.type === "text_delta" && d.text) {
+							delta = d.text;
+						}
+					}
+				} else if (provider === "openai-chat") {
+					const choices = event.choices as
+						| Array<{ delta?: { content?: string } }>
+						| undefined;
+					delta = choices?.[0]?.delta?.content;
+				} else {
+					// openai-responses
+					if (event.type === "response.output_text.delta") {
+						delta = event.delta as string;
+					}
+				}
+				if (delta) {
+					text += delta;
+				}
+			});
+			return text;
+		} catch {
+			return "";
+		}
+	}
+
+	/** 统一的 SSE 消费循环：按空行分帧，data: 行逐条喂给回调。 */
+	private async consumeSse(
+		response: Response,
+		onSseData: (payload: string) => void,
+	): Promise<void> {
+		const reader = response.body!.getReader();
 		const decoder = new TextDecoder();
 		let buffer = "";
 		for (;;) {

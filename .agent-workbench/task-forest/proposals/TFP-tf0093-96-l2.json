@@ -1,0 +1,83 @@
+{
+  "applied_at": "2026-09-01T18:25:14.661892+00:00",
+  "base_graph_hash": "3ba0782d638fa8db27b1ef0eb8c55cbf43f63a1f05c24ec26aefa1ee6cffd1fd",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：chat/fork.ts（ForkLineage/ForkDeclaration/forkSlice/buildForkDeclaration 纯函数）+ chat/threads.ts fork()（enqueue 串行、源线程只动 meta.forks 计数、新线程铸造全新 uuid 会话）+ ui/server.ts POST /api/chat/threads/:id/fork",
+          "接线：apps/workbench-ui——每条消息悬停「分叉」按钮、线程列表血统徽标（↳ + 「分叉」chip 悬停声明）、分叉后瞬态声明条（8s 自动消失）；store.fork 先入列表再切换",
+          "测试：chat/threads.test.ts 2 个（锚点前缀继承 + 原线程逐字节不变 + 声明字段断言；同锚二次分叉计数 + 未知锚点拒绝）+ server.test.ts fork 路由 1 个（400/ok:false/继承与声明）；全套 337 测试绿、tsc 五段干净、biome 干净",
+          "顺带修复三个存量缺陷：ui/server.ts stop() 覆盖版自我递归（整个 server 套件在此机器上挂死的根因）、reload/fork 的「正在运行」守卫误判持久化会话（R2 后会话存活于轮次之间，守卫改为只挡在飞轮次）、轮次完成后 turn 未脱离（session.turn = null）"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "追溯式分叉落地：每条消息悬停即「分叉」手势，一次 POST 生成兄弟线程（不要求标题/类型、不弹任何对话框）；新线程继承锚点（含）之前的前缀，源线程 messages.jsonl 逐字节不动；继承声明随响应返回并在两处呈现——分叉后的瞬态声明条（继承几条、什么从新开始）与线程列表「分叉」徽标的悬停说明；标题从继承前缀确定性推导（与晋升同规则），血统记录进 meta.forkOf。"
+      },
+      "id": "TF-0093"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：chat/fanout.ts 纯函数（clampFanout 夹取 + buildVariants 去空/去重/封顶）；threads.ts 拆出 buildHttpRequest/consumeSse/runHttpShadow，主请求先发、shadows 后并发，备选经 pendingVariants 暂存在 run() 的 finally 挂上 StoredMessage.variants 持久化",
+          "接线：UI StoredMessage 增加 variants，「备选 n」chip 点击内联展开变体文本；done 事件与 reload 流程同步携带 variants",
+          "测试：chat/fanout.test.ts（夹取/封顶/去重）+ chat/threads.test.ts 2 个集成（mock fetch：fanout=2 主回答落盘 + variants=[shadow 回答] 且 done 事件携带、fanout=1 单请求无字段）",
+          "成本护栏：默认 fanout=1（关）——扇出翻倍真实花费，启用是 workbench.yaml 一行配置，不是代码改动"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "生成 N、展示 1、备选一击可达：config.chat.fanout（1-3，默认 1=关）下，HTTP provider 的主请求照常流式展示，shadow 变体与主请求并发、只捕获不展示，作为备选文本挂上同一条助手消息；UI 在消息下常显「备选 n」chip，一击展开——全程没有任何「请选择」界面，默认路径拿到结果不需要任何动作。claude CLI 路径保持单发（持久会话 KV 复用与并发 shadow 不兼容，留作后续接线点）。"
+      },
+      "id": "TF-0094"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：chat/suggest.ts（extractLines 结构提取 + suggestNext 组装，纯推导不额外调模型）+ chat/ledger.ts（collectDecisionPoints，含已被 reload 截掉的锚点仍记账）",
+          "接线：ui/server.ts 线程 GET 载荷扩展 {meta, messages, suggestions, decisionPoints}——同一组纯函数在服务端推导，UI 是纯渲染层；UI store 在切换线程与轮次边界（send/reload finally）刷新",
+          "UI：composer 上方安静层 sidecar.tsx——决策账本折叠条（▸ 决策账本 · n 个分歧点，展开列预览与次数）、建议 chip 条（kind 作悬停解释：来自选项/问题/下一步/发散）",
+          "测试：suggest.test.ts 3 个（编号/问题/回退/空守卫）+ ledger.test.ts 3 个（无分歧为空/分叉与备选混合按序/锚点被截仍记账）"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "系统提议的下一步 + 安静的决策账本：chat/suggest.ts 从最后一条助手回答推导 2-3 个发散续写（编号/列表选项、助手留下的开放问题、下一步标记，无结构时回退通用发散方向），随线程 GET 返回，UI 在 composer 上方渲染 chip，点击即作为下一条用户消息发送——每个建议一次点击，不要求打字。chat/ledger.ts 从既有事实（meta.forks 分叉/重跑计数 + 消息上的扇出备选）自动收集决策点，UI 默认折叠条呈现，无分歧时数组为空、完全不渲染。"
+      },
+      "id": "TF-0095"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：store.ts 的 drafts（composer 实时镜像）/parked（停放快照）两个状态族 + parkDraft/discardParked/clearParked 动作；switchThread 离开瞬间收场",
+          "UI：sidecar.tsx 的 DraftMirror（unstable_useComposerInput 镜像 + 切换瞬间 park-and-clear，用 ref 捕获上一车道最后值避免竞态）+ ParkedBar（默认折叠、筛选、恢复/丢弃/全部丢弃）",
+          "范围说明：本车道的「产物」目前是 composer 草稿——workbench-ui 尚无文件/面板类产物，快照按列表建模以便未来产物类型直接入列"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "切换清场 + 返回带筛选还原：切换线程的瞬间，离开车道的 composer 草稿被自动收进该线程的停放快照（parked），composer 对任何新进入的线程都从空开始——产物不再跨车道泄漏；返回一条有停放项的车道时，快照以默认折叠的条带呈现（「停放快照 · n 项」），展开为可筛选列表（>1 项出现筛选输入），每项可恢复（回填 composer）或丢弃，另有全部丢弃。"
+      },
+      "id": "TF-0096"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 0.875,
+        "summary": "L2 里程碑进行中（8 个子任务完成 7 个）。已完成：TF-0091 实测 B/C/K → ADR-0009；TF-0098 回退 + diff 主安全网；TF-0092 加法式晋升；TF-0093 追溯式分叉（含继承声明）；TF-0094 生成 N 展示 1（fanout + 备选 chip）；TF-0095 提议下一步 + 决策账本；TF-0096 切换清场 + 停放快照。待做：TF-0097 恢复笔记。"
+      },
+      "id": "TF-0090"
+    }
+  ],
+  "created_at": "2026-09-01T18:25:14.661892+00:00",
+  "proposal_id": "TFP-tf0093-96-l2",
+  "rationale": "L2 里程碑四个交互任务一次性收口（TF-0093 分叉 / TF-0094 扇出 / TF-0095 建议与账本 / TF-0096 清场），全部遵循 ADR-0009 的加法式纪律：分叉零仪式、扇出默认展示主回答、建议一次点击、账本无分歧不可见。实现层顺带修复三个存量缺陷（ui/server.ts stop() 自我递归导致整个 server 套件挂死、reload/fork 守卫误判持久化会话、轮次完成后 turn 未脱离）。全套 workbench 337 测试绿、tsc 五段干净、biome 干净、workbench-ui vite 构建通过。",
+  "session_id": "session-2026-09-02-l2-fork-fanout",
+  "status": "applied"
+}

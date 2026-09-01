@@ -19,7 +19,6 @@
     "difficulty": "high",
     "id": "TF-0099",
     "kind": "milestone",
-    "next_action": "任一衍生产物都能一键『对着来源轨迹重放并 diff』",
     "priority": 5,
     "progress": 0.0,
     "purpose": "",
@@ -28,7 +27,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）"
+    "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）",
+    "next_action": "任一衍生产物都能一键『对着来源轨迹重放并 diff』"
   },
   {
     "alignment": {
@@ -48,7 +48,6 @@
     "difficulty": "high",
     "id": "TF-0100",
     "kind": "task",
-    "next_action": "同一形状的工作第二次发生时才出现提议，且提议内容由两次轨迹的差集生成",
     "priority": 5,
     "progress": 0.0,
     "purpose": "",
@@ -57,7 +56,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "N=2 推导：两条相似轨迹之差即泛化"
+    "title": "N=2 推导：两条相似轨迹之差即泛化",
+    "next_action": "同一形状的工作第二次发生时才出现提议，且提议内容由两次轨迹的差集生成"
   },
   {
     "alignment": {
@@ -77,7 +77,6 @@
     "difficulty": "high",
     "id": "TF-0101",
     "kind": "task",
-    "next_action": "用户可以只拒绝一个占位符而保留产物其余部分",
     "priority": 5,
     "progress": 0.0,
     "purpose": "",
@@ -86,65 +85,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "重放验证 + 逐字面量占位符"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0094",
-    "kind": "task",
-    "next_action": "用户在不做任何选择的情况下拿到结果，且随时能一键看到备选",
-    "priority": 4,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "生成 N 个、展示 1 个、其余留在一个按键之外"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0095",
-    "kind": "task",
-    "next_action": "账本在无分歧时完全不可见",
-    "priority": 4,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "系统提议的下一步（每个一次点击）+ 安静的决策账本"
+    "title": "重放验证 + 逐字面量占位符",
+    "next_action": "用户可以只拒绝一个占位符而保留产物其余部分"
   },
   {
     "alignment": {
@@ -166,7 +108,6 @@
     "difficulty": "medium",
     "id": "TF-0055",
     "kind": "follow_up",
-    "next_action": "新增 ADR 明确存量去留",
     "priority": 3,
     "progress": 0.0,
     "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
@@ -175,7 +116,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
+    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径",
+    "next_action": "新增 ADR 明确存量去留"
   },
   {
     "alignment": {
@@ -196,74 +138,16 @@
     "difficulty": "high",
     "id": "TF-0090",
     "kind": "milestone",
-    "next_action": "接受任何提议后，对话的滚动位置与内容排布不发生任何变化",
     "priority": 3,
-    "progress": 0.4,
+    "progress": 0.875,
     "purpose": "",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "in_progress",
     "success_metrics": [],
-    "title": "里程碑 L2：晋升、分叉与恢复（加法式的一层）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0093",
-    "kind": "task",
-    "next_action": "从任意历史消息分叉只需一个手势，且分叉后原线程完全不受影响",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "追溯式分叉，零仪式"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0096",
-    "kind": "task",
-    "next_action": "返回一条停放的车道时，打开的无关产物数量显著低于不做清场的基线",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "切换时自动关闭，返回时带筛选还原"
+    "title": "里程碑 L2：晋升、分叉与恢复（加法式的一层）",
+    "next_action": "接受任何提议后，对话的滚动位置与内容排布不发生任何变化"
   },
   {
     "alignment": {
@@ -283,7 +167,6 @@
     "difficulty": "medium",
     "id": "TF-0097",
     "kind": "task",
-    "next_action": "恢复一条隔天的车道时，无需翻 git log 即可重建上下文",
     "priority": 3,
     "progress": 0.0,
     "purpose": "",
@@ -292,7 +175,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "离开时生成『准备恢复』笔记 + 返回时给有序叙事"
+    "title": "离开时生成『准备恢复』笔记 + 返回时给有序叙事",
+    "next_action": "恢复一条隔天的车道时，无需翻 git log 即可重建上下文"
   },
   {
     "alignment": {
@@ -313,7 +197,6 @@
     "difficulty": "low",
     "id": "TF-0119",
     "kind": "follow_up",
-    "next_action": "npx context-rot 在任意机器上可用",
     "priority": 3,
     "progress": 0.7,
     "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
@@ -322,7 +205,8 @@
     "remaining_minutes_min": null,
     "status": "in_progress",
     "success_metrics": [],
-    "title": "后续：npm 发布 context-rot（当前按用户决定跳过）"
+    "title": "后续：npm 发布 context-rot（当前按用户决定跳过）",
+    "next_action": "npx context-rot 在任意机器上可用"
   },
   {
     "alignment": {
@@ -342,7 +226,6 @@
     "difficulty": "unknown",
     "id": "TF-0107",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 2,
     "progress": 0.0,
     "purpose": "",
@@ -351,7 +234,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：投影 bug 导致约 1000× 过度通知，通道开局即死"
+    "title": "风险：投影 bug 导致约 1000× 过度通知，通道开局即死",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -371,7 +255,6 @@
     "difficulty": "unknown",
     "id": "TF-0108",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 2,
     "progress": 0.0,
     "purpose": "",
@@ -380,7 +263,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：L3 明确超前于证据"
+    "title": "风险：L3 明确超前于证据",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -400,7 +284,6 @@
     "difficulty": "unknown",
     "id": "TF-0109",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 2,
     "progress": 0.0,
     "purpose": "",
@@ -409,7 +292,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：跨会话 socket 在 Windows／WSL2 边界不可达"
+    "title": "风险：跨会话 socket 在 Windows／WSL2 边界不可达",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -429,7 +313,6 @@
     "difficulty": "unknown",
     "id": "TF-0110",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 2,
     "progress": 0.0,
     "purpose": "",
@@ -438,7 +321,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：隐式层用一套全局常数必然同时在两个方向失败"
+    "title": "风险：隐式层用一套全局常数必然同时在两个方向失败",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -458,7 +342,6 @@
     "difficulty": "unknown",
     "id": "TF-0111",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 2,
     "progress": 0.0,
     "purpose": "",
@@ -467,7 +350,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：本地优先这组工程约束正好使收费不可能"
+    "title": "风险：本地优先这组工程约束正好使收费不可能",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -487,7 +371,6 @@
     "difficulty": "unknown",
     "id": "TF-0112",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 2,
     "progress": 0.0,
     "purpose": "",
@@ -496,7 +379,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：叙事位已被厂商占据"
+    "title": "风险：叙事位已被厂商占据",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -518,7 +402,6 @@
     "difficulty": "medium",
     "id": "TF-0114",
     "kind": "risk",
-    "next_action": "已落地的两道保险：package.json 的 `bun test --timeout 60000`（覆盖全部文件）+ bunfig.toml 的 [test] preload（覆盖直接执行 bun test 的第一个文件）",
     "priority": 2,
     "progress": 0.0,
     "purpose": "把这台机器的 IO 现实登记在案：既避免反复误判成 Workbench 的代码缺陷，也避免按正常机器的速度做估时。",
@@ -527,7 +410,8 @@
     "remaining_minutes_min": null,
     "status": "ready",
     "success_metrics": [],
-    "title": "风险：本机文件删除慢一个数量级，bun 默认超时恰好卡在边界上"
+    "title": "风险：本机文件删除慢一个数量级，bun 默认超时恰好卡在边界上",
+    "next_action": "已落地的两道保险：package.json 的 `bun test --timeout 60000`（覆盖全部文件）+ bunfig.toml 的 [test] preload（覆盖直接执行 bun test 的第一个文件）"
   },
   {
     "alignment": {
@@ -549,7 +433,6 @@
     "difficulty": "low",
     "id": "TF-0117",
     "kind": "risk",
-    "next_action": "确认绕行方案（先建分支再建 worktree，或改用不含斜杠的分支名）",
     "priority": 2,
     "progress": 0.0,
     "purpose": "把这条环境回归单独可见，避免把它误读成 R3 的 WIP 准入控制把派发拒了。",
@@ -558,7 +441,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：本机 git 2.55 的 worktree add 拒绝含斜杠的分支名，派发链路在本机不可用"
+    "title": "风险：本机 git 2.55 的 worktree add 拒绝含斜杠的分支名，派发链路在本机不可用",
+    "next_action": "确认绕行方案（先建分支再建 worktree，或改用不含斜杠的分支名）"
   },
   {
     "alignment": {
@@ -579,7 +463,6 @@
     "difficulty": "low",
     "id": "TF-0018",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -588,7 +471,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：把 Helmor GUI 全量重写纳入 MVP 导致范围失控"
+    "title": "风险：把 Helmor GUI 全量重写纳入 MVP 导致范围失控",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -609,7 +493,6 @@
     "difficulty": "low",
     "id": "TF-0019",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -618,7 +501,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：误引入 Agent SDK / 数据库 / 服务器等重依赖破坏零依赖定位"
+    "title": "风险：误引入 Agent SDK / 数据库 / 服务器等重依赖破坏零依赖定位",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -639,7 +523,6 @@
     "difficulty": "low",
     "id": "TF-0023",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -648,7 +531,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：git 仓库缺失阻塞 worktree 与发行全链路"
+    "title": "风险：git 仓库缺失阻塞 worktree 与发行全链路",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -670,7 +554,6 @@
     "difficulty": "low",
     "id": "TF-0030",
     "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -679,7 +562,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "风险：Windows 原子 rename 覆盖语义差异"
+    "title": "风险：Windows 原子 rename 覆盖语义差异",
+    "next_action": "补充下一步动作或开始执行"
   },
   {
     "alignment": {
@@ -706,7 +590,6 @@
     "difficulty": "very_high",
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "v5 与 v6 的证伪实验各跑一轮并有记账数据",
     "priority": 1,
     "progress": 0.0,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
@@ -715,7 +598,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）"
+    "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
+    "next_action": "v5 与 v6 的证伪实验各跑一轮并有记账数据"
   },
   {
     "alignment": {
@@ -736,7 +620,6 @@
     "difficulty": "unknown",
     "id": "TF-0058",
     "kind": "decision",
-    "next_action": "可对外声明隔离级别与其边界：不覆盖外部副作用与纯方法体语义变化",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -745,7 +628,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "决策 ADR-0006：并发控制采用建议式，拒绝 single-writer 排他"
+    "title": "决策 ADR-0006：并发控制采用建议式，拒绝 single-writer 排他",
+    "next_action": "可对外声明隔离级别与其边界：不覆盖外部副作用与纯方法体语义变化"
   },
   {
     "alignment": {
@@ -767,7 +651,6 @@
     "difficulty": "unknown",
     "id": "TF-0059",
     "kind": "decision",
-    "next_action": "操作注册表含单调性字段，且非单调操作均标注了所选逃生路",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -776,7 +659,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "决策 ADR-0007：单调优先——与其协调，不如把操作改造成不需要协调"
+    "title": "决策 ADR-0007：单调优先——与其协调，不如把操作改造成不需要协调",
+    "next_action": "操作注册表含单调性字段，且非单调操作均标注了所选逃生路"
   },
   {
     "alignment": {
@@ -797,7 +681,6 @@
     "difficulty": "unknown",
     "id": "TF-0060",
     "kind": "decision",
-    "next_action": "杀死判据生效：无法通过执行检查且输出空间开放的产物一律不建",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -806,7 +689,8 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "决策 ADR-0008：结构从执行推导，不从对话推断；交互层只做加法"
+    "title": "决策 ADR-0008：结构从执行推导，不从对话推断；交互层只做加法",
+    "next_action": "杀死判据生效：无法通过执行检查且输出空间开放的产物一律不建"
   },
   {
     "alignment": {
@@ -827,7 +711,6 @@
     "difficulty": "unknown",
     "id": "TF-0085",
     "kind": "requirement",
-    "next_action": "新增任何交互功能时，不增加发出第一条消息前的任何步骤",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -836,6 +719,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "要求 L0：线性对话是默认且不动它"
+    "title": "要求 L0：线性对话是默认且不动它",
+    "next_action": "新增任何交互功能时，不增加发出第一条消息前的任何步骤"
   }
 ]

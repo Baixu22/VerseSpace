@@ -3,6 +3,8 @@ import { existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
+import { collectDecisionPoints } from "../chat/ledger";
+import { suggestNext } from "../chat/suggest";
 import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
 import { drainPremiseQueue } from "../runtime/delivery";
@@ -428,7 +430,7 @@ export async function createUiServer(
 			return Response.json(await chat.create(body.title));
 		}
 		const chatMatch = url.pathname.match(
-			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote))?$/,
+			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork))?$/,
 		);
 		if (chatMatch) {
 			const threadId = decodeURIComponent(chatMatch[1] ?? "");
@@ -438,7 +440,14 @@ export async function createUiServer(
 					chat.get(threadId),
 					chat.messages(threadId),
 				]);
-				return Response.json({ meta, messages });
+				// TF-0095：建议与决策账本由同一组纯函数在服务端推导，
+				// UI 是纯渲染层——无分歧时账本为空数组（完全不渲染）
+				return Response.json({
+					meta,
+					messages,
+					suggestions: suggestNext(messages),
+					decisionPoints: collectDecisionPoints(messages, meta),
+				});
 			}
 			if (sub === "cancel" && request.method === "POST") {
 				chat.cancel(threadId);
@@ -450,6 +459,19 @@ export async function createUiServer(
 			if (sub === "promote" && request.method === "POST") {
 				// TF-0092：手动晋升——任意时刻一个手势命名无名对话
 				return Response.json(await chat.promote(threadId));
+			}
+			if (sub === "fork" && request.method === "POST") {
+				// TF-0093：追溯式分叉——锚点消息一个手势，零仪式
+				const body = (await request.json().catch(() => ({}))) as {
+					anchorMessageId?: string;
+				};
+				if (!body.anchorMessageId) {
+					return Response.json(
+						{ ok: false, reason: "缺少 anchorMessageId" },
+						{ status: 400 },
+					);
+				}
+				return Response.json(await chat.fork(threadId, body.anchorMessageId));
 			}
 			if (sub === undefined && request.method === "DELETE") {
 				const outcome = await chat.remove(threadId);
@@ -560,12 +582,15 @@ export async function createUiServer(
 		})();
 	}, RECONCILE_INTERVAL_MS);
 
+	// Object.assign 会用覆盖版替换掉 server 上可写的 stop——先把原型方法
+	// 固定住，否则覆盖版调用 server.stop(...) 会无限递归回自己。
+	const superStop = server.stop.bind(server);
 	return Object.assign(server, {
 		authToken: token,
 		handle,
 		stop: (closeActiveConnections?: boolean) => {
 			clearInterval(reconcileTimer);
-			return server.stop(closeActiveConnections);
+			return superStop(closeActiveConnections);
 		},
 	});
 }

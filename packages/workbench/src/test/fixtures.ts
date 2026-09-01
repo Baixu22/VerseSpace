@@ -22,6 +22,21 @@ export async function makeTempWorkbench(): Promise<TempWorkbench> {
 		projectDir,
 		workbenchRoot,
 		bb,
-		cleanup: () => rm(projectDir, { recursive: true, force: true }),
+		cleanup: async () => {
+			// a spawned agent's cwd can keep the directory locked for a beat
+			// after a tree kill (Windows EBUSY); retry instead of flaking
+			for (let attempt = 0; ; attempt++) {
+				try {
+					await rm(projectDir, { recursive: true, force: true });
+					return;
+				} catch (error) {
+					const code = (error as NodeJS.ErrnoException).code;
+					if (attempt >= 4 || (code !== "EBUSY" && code !== "ENOTEMPTY")) {
+						throw error;
+					}
+					await new Promise((resolve) => setTimeout(resolve, 150));
+				}
+			}
+		},
 	};
 }

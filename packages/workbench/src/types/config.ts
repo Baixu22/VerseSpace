@@ -49,6 +49,11 @@ export const workbenchConfigSchema = z.object({
 			temperature: z.number().min(0).max(2).optional(),
 			maxTokens: z.number().int().positive().optional(),
 			effort: z.enum(["low", "medium", "high"]).optional(),
+			/**
+			 * 自动扇出变体数（TF-0094）：≥2 时同一请求并发发 shadow 变体，
+			 * 主回答照常展示，备选挂在消息上一击展开。1 = 关（默认）。
+			 */
+			fanout: z.number().int().min(1).max(3).optional(),
 		})
 		.default({ provider: "claude" }),
 });

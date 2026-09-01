@@ -18,6 +18,8 @@ export interface StoredMessage {
 	at: string;
 	status?: "running" | "complete";
 	parts?: MessagePart[];
+	/** 扇出的备选文本（TF-0094）：不含主回答，消息上的 chip 一击展开。 */
+	variants?: string[];
 }
 
 export type PermissionMode = "default" | "plan" | "acceptEdits";
@@ -29,6 +31,48 @@ export interface ThreadMeta {
 	status: "idle" | "running";
 	permissionMode: PermissionMode;
 	archived?: boolean;
+	/** 分叉/重跑计数（TF-0092/0095）：锚点消息 id → 次数。 */
+	forks?: Record<string, number>;
+	/** 分叉血统（TF-0093）：本线程由哪个线程的哪条消息分叉而来。 */
+	forkOf?: {
+		sourceThreadId: string;
+		sourceTitle: string;
+		anchorMessageId: string;
+		inheritedMessages: number;
+		at: string;
+	};
+}
+
+/** 服务端推导的续写建议（TF-0095，chat/suggest.ts）。 */
+export interface Suggestion {
+	text: string;
+	kind: "option" | "question" | "next-step" | "diverge";
+}
+
+/** 服务端推导的决策点（TF-0095，chat/ledger.ts）。 */
+export interface DecisionPoint {
+	messageId: string;
+	kind: "fork" | "variant";
+	count: number;
+	preview: string;
+}
+
+/** 切换离开时被收起的产物（TF-0096）。 */
+export interface ParkedItem {
+	id: string;
+	kind: "draft";
+	text: string;
+	parkedAt: string;
+}
+
+/** 分叉响应携带的继承声明（packages/workbench fork.ts 的 ForkDeclaration）。 */
+interface ForkDeclaration {
+	inheritedMessages: number;
+	anchor: { id: string; role: string; at: string };
+	freshAgentSession: true;
+	freshPromotion: true;
+	freshForkCounts: true;
+	freshArchived: true;
 }
 
 interface ChatState {
@@ -37,11 +81,28 @@ interface ChatState {
 	messages: Record<string, StoredMessage[]>;
 	/** The thread with an in-flight run, if any. */
 	runningThreadId: string | null;
+	/** 最近一次分叉的继承声明（TF-0093）：切线程或手动关闭后消失。 */
+	forkNotice: string | null;
+	/** 当前线程的系统提议下一步（TF-0095），随线程 GET 刷新。 */
+	suggestions: Suggestion[];
+	/** 当前线程的决策账本（TF-0095），无分歧时为空数组＝完全不渲染。 */
+	decisionPoints: DecisionPoint[];
+	/** 各线程的实时草稿镜像（TF-0096）：composer 文本随键入镜像到这里。 */
+	drafts: Record<string, string>;
+	/** 各线程的停放快照（TF-0096）：切换离开时收起的产物。 */
+	parked: Record<string, ParkedItem[]>;
 	init(): Promise<void>;
 	createThread(): Promise<void>;
 	switchThread(id: string): Promise<void>;
 	send(text: string): Promise<void>;
 	reload(): Promise<void>;
+	fork(messageId: string): Promise<void>;
+	dismissForkNotice(): void;
+	setDraft(threadId: string, text: string): void;
+	/** 切换离开时收起草稿：进停放快照，composer 清空（清场）。 */
+	parkDraft(threadId: string, text: string): void;
+	discardParked(threadId: string, itemId: string): void;
+	clearParked(threadId: string): void;
 	cancel(): void;
 	setPlanMode(enabled: boolean): Promise<void>;
 	deleteThread(id: string): Promise<void>;
@@ -52,11 +113,24 @@ interface ChatState {
 
 const EMPTY: StoredMessage[] = [];
 
+/** 线程 GET 载荷：meta + messages + 服务端推导的建议与决策账本（TF-0095）。 */
+interface ThreadGetResponse {
+	meta: ThreadMeta;
+	messages: StoredMessage[];
+	suggestions: Suggestion[];
+	decisionPoints: DecisionPoint[];
+}
+
 export const useChatStore = create<ChatState>((set, get) => ({
 	threads: [],
 	activeId: null,
 	messages: {},
 	runningThreadId: null,
+	forkNotice: null,
+	suggestions: [],
+	decisionPoints: [],
+	drafts: {},
+	parked: {},
 
 	async init() {
 		const threads = await apiFetch("/api/chat/threads").then(
@@ -86,14 +160,88 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (get().activeId === id) {
 			return;
 		}
-		set({ activeId: id });
-		if (!get().messages[id]) {
-			const data = await apiFetch(`/api/chat/threads/${id}`).then(
-				(r) =>
-					r.json() as Promise<{ meta: ThreadMeta; messages: StoredMessage[] }>,
-			);
-			set((s) => ({ messages: { ...s.messages, [id]: data.messages } }));
-		}
+		// TF-0096 清场：离开的车道收起草稿进停放快照，composer 从干净开始。
+		// 返回时快照以可筛选列表呈现，恢复或丢弃由用户决定。
+		set((s) => {
+			const parked = { ...s.parked };
+			const drafts = { ...s.drafts };
+			const prev = s.activeId;
+			if (prev) {
+				const text = (drafts[prev] ?? "").trim();
+				if (text) {
+					parked[prev] = [
+						...(parked[prev] ?? []),
+						{
+							id: `p-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+							kind: "draft" as const,
+							text,
+							parkedAt: new Date().toISOString(),
+						},
+					];
+				}
+				delete drafts[prev];
+			}
+			return {
+				parked,
+				drafts,
+				activeId: id,
+				forkNotice: null,
+				suggestions: [],
+				decisionPoints: [],
+			};
+		});
+		const data = await apiFetch(`/api/chat/threads/${id}`).then(
+			(r) => r.json() as Promise<ThreadGetResponse>,
+		);
+		set((s) => ({
+			messages: { ...s.messages, [id]: data.messages },
+			suggestions: data.suggestions,
+			decisionPoints: data.decisionPoints,
+			threads: s.threads.some((t) => t.id === id)
+				? s.threads.map((t) => (t.id === id ? { ...t, ...data.meta } : t))
+				: [data.meta, ...s.threads],
+		}));
+	},
+
+	setDraft(threadId, text) {
+		set((s) => ({ drafts: { ...s.drafts, [threadId]: text } }));
+	},
+
+	parkDraft(threadId, text) {
+		set((s) => {
+			const parked = { ...s.parked };
+			const drafts = { ...s.drafts };
+			if (text.trim()) {
+				parked[threadId] = [
+					...(parked[threadId] ?? []),
+					{
+						id: `p-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+						kind: "draft" as const,
+						text,
+						parkedAt: new Date().toISOString(),
+					},
+				];
+			}
+			delete drafts[threadId];
+			return { parked, drafts };
+		});
+	},
+
+	discardParked(threadId, itemId) {
+		set((s) => ({
+			parked: {
+				...s.parked,
+				[threadId]: (s.parked[threadId] ?? []).filter((p) => p.id !== itemId),
+			},
+		}));
+	},
+
+	clearParked(threadId) {
+		set((s) => {
+			const parked = { ...s.parked };
+			delete parked[threadId];
+			return { parked };
+		});
 	},
 
 	cancel() {
@@ -187,6 +335,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							id: event.message.id,
 							text: event.message.text,
 							parts: event.message.parts,
+							variants: event.message.variants,
 							status: "complete",
 						});
 					} else if (event.type === "error") {
@@ -199,7 +348,50 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			}
 		} finally {
 			set({ runningThreadId: null });
+			// 轮次边界刷新：meta（标题/晋升）+ 建议 + 决策账本（TF-0095）
+			await refreshThread(threadId);
 		}
+	},
+
+	/**
+	 * 追溯式分叉（TF-0093）：锚点消息上一个手势，零仪式。新线程继承
+	 * 锚点（含）之前的消息前缀，原线程不动；声明随响应返回，这里负责
+	 * 把新线程插进列表并切换过去。
+	 */
+	async fork(messageId) {
+		const threadId = get().activeId;
+		if (!threadId || get().runningThreadId) {
+			return;
+		}
+		const outcome = await apiFetch(`/api/chat/threads/${threadId}/fork`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ anchorMessageId: messageId }),
+		}).then(
+			(r) =>
+				r.json() as Promise<{
+					ok: boolean;
+					thread?: ThreadMeta;
+					declaration?: ForkDeclaration;
+				}>,
+		);
+		if (!outcome.ok || !outcome.thread) {
+			return;
+		}
+		// 先入列表再切换：switchThread 见缓存未命中会拉取新线程的消息
+		set((s) => ({ threads: [outcome.thread as ThreadMeta, ...s.threads] }));
+		await get().switchThread(outcome.thread.id);
+		// 继承声明（硬要求）：分叉完成了什么、继承了什么、什么从新开始
+		const d = outcome.declaration;
+		set({
+			forkNotice: d
+				? `已分叉：继承「${outcome.thread.forkOf?.sourceTitle ?? "原对话"}」的前 ${d.inheritedMessages} 条消息（含锚点）；agent 会话从新开始，原对话保持不变。`
+				: null,
+		});
+	},
+
+	dismissForkNotice() {
+		set({ forkNotice: null });
 	},
 
 	async setPlanMode(enabled: boolean) {
@@ -347,7 +539,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
 						message?: StoredMessage;
 						part?: MessagePart;
 					};
-					if (event.type === "delta" && event.text) {
+					if (event.type === "user" && event.message) {
+						// 服务器确认了用户消息（真实持久化 id）——换掉本地占位
+						// id，消息操作（分叉锚点等）必须用服务端 id
+						set((s) => ({
+							messages: {
+								...s.messages,
+								[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
+									m.id === userMessage.id
+										? { ...event.message!, status: "complete" as const }
+										: m,
+								),
+							},
+						}));
+					} else if (event.type === "delta" && event.text) {
 						const current = (get().messages[threadId] ?? EMPTY).find(
 							(m) => m.id === assistantId,
 						);
@@ -372,6 +577,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							id: event.message.id,
 							text: event.message.text,
 							parts: event.message.parts,
+							variants: event.message.variants,
 							status: "complete",
 						});
 					} else if (event.type === "error") {
@@ -398,9 +604,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				(r) => r.json() as Promise<ThreadMeta[]>,
 			);
 			set({ threads });
+			// 轮次边界刷新：meta + 建议 + 决策账本（TF-0095）
+			await refreshThread(threadId);
 		}
 	},
 }));
+
+/** 拉取当前线程的 meta/messages/建议/决策账本并落地（TF-0095）。 */
+async function refreshThread(threadId: string): Promise<void> {
+	const data = await apiFetch(`/api/chat/threads/${threadId}`).then(
+		(r) => r.json() as Promise<ThreadGetResponse>,
+	);
+	useChatStore.setState((s) => ({
+		messages: { ...s.messages, [threadId]: data.messages },
+		suggestions: data.suggestions,
+		decisionPoints: data.decisionPoints,
+		threads: s.threads.map((t) =>
+			t.id === threadId ? { ...t, ...data.meta } : t,
+		),
+	}));
+}
 
 export function useActiveMessages(): StoredMessage[] {
 	return (
