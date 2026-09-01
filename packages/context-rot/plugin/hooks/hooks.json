@@ -1,0 +1,17 @@
+{
+	"description": "采集 Read/Write/Edit/Grep/Glob 的确定性读写足迹到 .context-rot/footprints.jsonl",
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Read|Write|Edit|Grep|Glob",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/footprint.mjs\"",
+						"timeout": 10
+					}
+				]
+			}
+		]
+	}
+}

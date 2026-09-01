@@ -1,0 +1,45 @@
+{
+	"name": "context-rot",
+	"description": "context-rot — 检测 AGENTS.md / CLAUDE.md / .cursorrules 中已失效的代码引用；附带足迹采集 hooks（Claude Code / Cursor 双宿主）。零配置、零 agent、即时输出。",
+	"version": "0.1.0",
+	"type": "module",
+	"license": "MIT",
+	"keywords": [
+		"context-rot",
+		"claude-code",
+		"cursor",
+		"AGENTS.md",
+		"CLAUDE.md",
+		".cursorrules",
+		"stale",
+		"docs",
+		"hooks"
+	],
+	"bin": {
+		"context-rot": "./dist/cli.js"
+	},
+	"files": [
+		"dist/cli.js",
+		"README.md",
+		"hooks/",
+		"scripts/",
+		"plugin/"
+	],
+	"engines": {
+		"node": ">=18"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Baixu22/VerseSpace.git",
+		"directory": "packages/context-rot"
+	},
+	"scripts": {
+		"build": "bun run scripts/build.ts && bun run scripts/sync-hooks.mjs",
+		"dev": "bun run src/cli.ts",
+		"test": "bun test --timeout 60000",
+		"typecheck": "bunx tsc --noEmit"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.3.11"
+	}
+}

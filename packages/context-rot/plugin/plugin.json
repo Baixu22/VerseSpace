@@ -1,0 +1,7 @@
+{
+	"name": "context-rot",
+	"version": "0.1.0",
+	"description": "采集 agent 读写足迹到 .context-rot/footprints.jsonl。只观测、绝不阻塞。",
+	"author": "context-rot",
+	"license": "MIT"
+}
