@@ -1,0 +1,52 @@
+{
+  "applied_at": "2026-08-31T14:35:51.421983Z",
+  "base_graph_hash": "ce41e72cc97784896e16411acfb446fd975ec868b6d29f96b7518615dc93c4ee",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实测数据：C_worktree=1.30s（样本 5 次 1.29-1.46s）、C_goal=12ms（15 次，首样本 91ms 冷启动后稳定 11-16ms）、B_goal=3ms（15 次）——拆 worktree 比删 goal YAML 贵 104×，C 靠设计可降一个量级",
+          "数学：区间非空 ⇔ K/B ≤ 1−K/C；K/B>0 恒成立，故 C≤K 时区间必然为空。实测 C_goal=12ms << K=2s，重路径 C_worktree=1.30s 也 < K 的下限区间；含认知倍率（×3/×5）的所有 12 组敏感性组合 K(1/B+1/C) 均 >1（172~12970 倍）",
+          "裁定文档：docs/decisions/0009-proposal-ask-costs.md（ADR-0009，已登记 README 索引）；测量脚本 packages/workbench/scripts/measure-ask-costs.ts 保留可复现",
+          "静态验证：tsc/biome 干净；测量脚本用 bun run 直接跑通（不依赖测试夹具）"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "实测并裁定：不建『要不要 X』式提议 UI。实测（measure-ask-costs.ts，本机真实 IO 中位数）：B_goal=3ms（晋升）、C_goal=12ms（拆除轻路径）、C_worktree=1.30s（拆除重路径）。K（问一句）2-30s。关键不等式 C ≤ K ⟹ 提议区间为空；含认知成本估计（B=30s-5min、C=1-5s、K=2-10s）下 K(1/B+1/C)≈1.8-5>1 恒成立。裁定：永远直接做 + 廉价撤销（TF-0098 回退+diff 从可选升级为正式替代品），C 设计预算写死为 ≤ 一次撤销 ≤ K。"
+      },
+      "id": "TF-0091"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "TF-0091 实测证实：12 组敏感性组合 K(1/B+1/C) 全部 >1（172~12970 倍）；C_goal=12ms << K=2s 使 1−K/C<0，区间必然为空"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "风险已验证并处理：K(1/B+1/C)>1 在所有合理参数下成立（实测 B/C 为 ms 级机械成本，K 为秒级），提议区间为空——『要不要变成任务』式提示不通过检验，已按 ADR-0009 裁定删除该品类 UI，选『直接做』一边。"
+      },
+      "id": "TF-0106"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 0.25,
+        "status": "in_progress",
+        "summary": "L2 开工：第一个子任务 TF-0091 完成——裁定不建提议 UI，廉价撤销（TF-0098）升级为替代品，ADR-0009 落定。剩余子任务：TF-0092 加法式晋升、TF-0093 追溯式分叉、TF-0094/0095 加法式输出（不受裁定影响）、TF-0096 切换清场、TF-0097 离开笔记、TF-0098 回退+diff 主安全网（从可选升级为必需）。"
+      },
+      "id": "TF-0090"
+    }
+  ],
+  "created_at": "2026-08-31T14:35:51.035325Z",
+  "proposal_id": "TFP-tf0091-askcosts",
+  "rationale": "L2 首个子任务 TF-0091（实测 B/C/K 决定建不建提议 UI）已完成并作出裁定：提议区间为空，不建『要不要 X』式提议 UI。实测 B_goal=3ms、C_goal=12ms、C_worktree=1.30s（本机真实 IO），K 用文献区间 2-30s。关键不等式：C ≤ K ⟹ 提议区间必为空（1−K/C ≤ 0 < K/B），而 C 是唯一可设计控制的项——设计目标是让拆除比问一句便宜，用廉价撤销替代询问。裁定写入 ADR-0009。风险 TF-0106 的预言得到证实，转 done。",
+  "session_id": "session-2026-08-31-r4-hooks",
+  "status": "applied"
+}

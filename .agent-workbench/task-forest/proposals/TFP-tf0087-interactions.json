@@ -1,0 +1,39 @@
+{
+  "applied_at": "2026-08-31T12:52:52.303312Z",
+  "base_graph_hash": "1f953a0924cd48c3bf7c6c17d8b7345772f8800171ad6a868d651d0e2090e379",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：packages/workbench/src/interactions/types.ts（InteractionEvent + INTERACTION_WEIGHT 出厂权重 selection=1/edit=2/command=0，供 TF-0088 消费）+ derive.ts（纯函数：used→selection 含 span 行数 delta、generated→edit delta=1、无扩展名路径按 directory 计 contentType）+ 集成进 sessions.recordActivity",
+          "测试 12 个全绿：派生映射（selection/edit/delta/contentType/多路径/空活动）、集成（recordActivity 后 events.jsonl 同含 footprint+interaction、seq 交替单调、按写者分组）、规模验证（30 天×40 活动≈3600 行 < 1MB 且单事件均 < 280B）",
+          "回归：blackboard 目录 38 测试全绿（sessions/events/footprint 不受双写影响）；runtime 事件数量断言均在 seed 之后采样或按 type 过滤，安全；bunx tsc --noEmit 与 biome check 干净"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "交互事件日志落地：InteractionEvent 6 字段（time/kind/origin/contentType/handle/delta）。agent 侧由 R1 PROV 足迹派生（used→selection、generated→edit，权重 1/2），在 sessions.recordActivity 内与 footprint 事件同序落进同一 events.jsonl（seq=行号，因果有序），按写者 origin 分组；人类侧未来由前端交互层直接上报同一日志。"
+      },
+      "id": "TF-0087"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 0.25,
+        "status": "in_progress",
+        "summary": "L1 隐式上下文层开工：第一个子任务 TF-0087（交互事件日志）已完成——事件输入流就绪（与 R1 足迹同日志同 seq）。下一步 TF-0088 Mylyn DOI（含重置规则与生命周期自适应常数），然后是 TF-0089 地标投影。"
+      },
+      "id": "TF-0086"
+    }
+  ],
+  "created_at": "2026-08-31T12:29:04.306527Z",
+  "proposal_id": "TFP-tf0087-interactions",
+  "rationale": "R4 收口后转向前端主线，开启 L1 里程碑。TF-0087（交互事件日志）已落地：新建 packages/workbench/src/interactions/ 模块，InteractionEvent 6 字段（time/kind/origin/contentType/handle/delta），PROV 派生（used→selection、generated→edit 权重更高），集成进 sessions.recordActivity 与 R1 足迹共用同一 events.jsonl 与 seq 时钟，事件按写者 origin 分组。测试 12 个全绿（含 1MB/月规模验证），blackboard 回归 38 全绿，tsc/biome 干净。",
+  "session_id": "session-2026-08-31-r4-hooks",
+  "status": "applied"
+}

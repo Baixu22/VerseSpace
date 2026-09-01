@@ -1,0 +1,30 @@
+{
+  "applied_at": "2026-08-31T08:05:24.626623Z",
+  "base_graph_hash": "7e6c808c88a87979162421e21021468d3fe4079aef17e3df8974d1a80b43666c",
+  "base_summary": {
+    "edge_count": 143,
+    "node_count": 118,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "本仓库 dogfood：356 条架构断言中 38 条已失效，用时约 10 秒（本机 D 盘 IO 约束；正常机器预计 1 秒内）",
+          "失效清单逐条核实为真腐烂：src-tauri/src/mcp.rs 已不存在；sidecar 的 claude-session-manager.ts / codex-session-manager.ts / codex-skill-scanner.ts 已重构进 claude/、codex/ 子目录；webview_* 与 ipc_* 共 11 个符号在全库代码中 0 次出现，只活在文档里",
+          "误报治理记录：首轮 238 条误报，根因是文档表格缩写路径（index.tsx）、占位符（{data_dir}/logs）、花括号展开、家目录引用——分别用后缀匹配、惯例忽略、unverified 降级三类规则消除",
+          "工程接入：根 package.json 新增 test:context-rot 车道并接入 test 链与 typecheck 链；dist/cli.js 单文件构建带 shebang，bin 入口就绪"
+        ],
+        "progress": 0.85,
+        "status": "review_needed"
+      },
+      "id": "TF-0104"
+    }
+  ],
+  "created_at": "2026-08-31T08:05:24.322269Z",
+  "proposal_id": "TFP-tf0104-review",
+  "rationale": "context-rot doctor 已实现并通过全部本地验收：packages/context-rot 新包（零运行时依赖），提取/验证/扫描/CLI 四层，27 个测试全绿，tsc 与 biome 通过，dist 单文件构建可用。在本仓库 dogfood 验证判定质量：首轮 386 条断言误报 238 条，修正三类判定规则（路径后缀匹配、文档惯例忽略、无扩展名目录降级 unverified）后收敛到 356 条断言中 38 条失效，且逐条核实为真腐烂（mcp.rs 已删除、session-manager 已重构进 claude/codex/cursor 子目录、webview_* IPC 命令只存在于文档）。剩余工作仅 npm 发布（需要用户账号凭据），故置 review_needed 待用户复核。",
+  "session_id": "session-2026-08-31-r4",
+  "status": "applied"
+}

@@ -1,0 +1,164 @@
+{
+  "applied_at": "2026-08-31T07:07:41.178497Z",
+  "base_graph_hash": "298526a0b49050140d8b162c9e97b5bc2365c026045e15ecfdbd9e79a96d43d8",
+  "base_summary": {
+    "edge_count": 143,
+    "node_count": 118,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0081",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "人的容量硬上限：约 1 条/10 分钟可持续，约 12 条/小时上限，10 分钟内 10 条即洪泛",
+          "验收流：18 条入队、29 条孪生折叠、20 条软阈值抑制；速率 0.75/小时；严重项 5.6%；分布 1/3/5/9 = 5.6%/16.7%/27.8%/50%",
+          "bun run test src/tribunal → 34 pass / 0 fail（含 acceptance.test.ts）"
+        ]
+      },
+      "id": "TF-0081"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0082",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "Zirk 2020：保守二元 > 4 级 > 3 级 > 自由二元；漏报上保守二元显著优于其余全部",
+          "产品承诺红线：争取依从不争取信赖。永远不要把沉默包装成安全保证",
+          "13 个 envelope 全部带既定动作，建议不以问号结尾；队列条目没有中间告警级别，push 为二元"
+        ]
+      },
+      "id": "TF-0082"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0083",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "workbench wip 文案：由 Little 定律推导 L = λ × W；样本不足时 basis=insufficient-history 并退回物理上限",
+          "验收：basis=little-law、tokensFree=0 时拒绝派发，原因含「复核」和 --force"
+        ]
+      },
+      "id": "TF-0083"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0084",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "60% 填充开始退化是民间传说；NoLiMa 实测 32K 处 12 个模型里 10 个跌破短文本基线的 50%",
+          "Laban：迷失后不会自行恢复——故恢复必须是 transcript 重放而非摘要的摘要",
+          "N 个并发 agent 不构成抖动系统（车道不共享上下文窗口），但该模型精确搬家到人的复核带宽上",
+          "每车道显示绝对 token / 缓存命中 / 压缩次数；全局未复核积压单独一个数",
+          "工具结果>40% 可恢复驱逐；命中率下降禁止压缩；压缩≥2 或连续失败≥2 在 startAgent 前挂起车道"
+        ]
+      },
+      "id": "TF-0084"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0118",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "packages/workbench/src/blackboard/metrics.ts：Lane keys are workspot ids；chat/threads.ts 不写 state/metrics/"
+        ],
+        "summary": "决定：聊天线程不进每车道计量。车道键只用工位 id；thread:<id> 会把「每车道」口径混进非车道键。口径已写进 blackboard/metrics.ts 模块注释。"
+      },
+      "id": "TF-0118"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0080",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "合成 24h 流实测：速率 0.75 条/小时（≤6）、无洪泛、严重项 5.6%（≤25%）、分布接近 5/15/30/50、每条带既定动作",
+          "WIP 为推导值；每车道三个数 + 全局未复核积压",
+          "子任务 TF-0081/0082/0083/0084 与口径待办 TF-0118 已完成；风险 TF-0117（本机 git 2.55 斜杠分支）仍挂着，不阻塞里程碑"
+        ]
+      },
+      "id": "TF-0080"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-31T07:07:36.148243Z",
+        "id": "TFD-b9eaca2290",
+        "reason": "原 KIND_PROFILES 里 checkpoint_no_policy / queue_stale_entries 分数低于软阈值 0.30，checkpoint_needs_review / no_idle_workspot / metric_tool_bloat 落在 medium。结果是入队队列几乎没有 low，5/15/30/50 的验收分布无从谈起。critical 仍然只来自 NEWS2 越级，没有把任何基线抬到 critical。容量信号 concurrency_cap 和 dispatch_suggestion 继续被软阈值吃掉。这是分级校准，不是放宽告警。",
+        "related_task_ids": [
+          "TF-0080",
+          "TF-0081",
+          "TF-0082"
+        ],
+        "summary": "把若干 pull 型事件从「低于软阈值被抑制」调到「入队但不打断」的 low 带，否则合理化后不可能接近 50% low"
+      }
+    },
+    {
+      "action": "record_alignment",
+      "alignment": {
+        "created_at": "2026-08-31T07:07:36.148243Z",
+        "fit": "aligned",
+        "fit_confidence": 0.9,
+        "id": "TFA-b9a4e325dd",
+        "node_alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.9,
+          "user_goal": "按本地 task forest 接力并完成 R3：裁决队列 + WIP 推导 + 每车道计量",
+          "validation_plan": [
+            "bun run test src/tribunal（含 acceptance.test.ts）",
+            "WIP / metrics / runner 挂起路径的专项测试",
+            "用户确认后再 proposal-apply"
+          ],
+          "why_not_enough": "本机 git 2.55 的 worktree add 仍拒绝含斜杠的分支名，派发链路在本机不可用；这是环境风险 TF-0117，不是 R3 功能缺口",
+          "why_this_task": "用户确认了实测验收数字，要求把 0081-0084 收 done、0080 收里程碑、0118 关掉、0117 继续挂着"
+        },
+        "related_task_ids": [
+          "TF-0080"
+        ],
+        "user_goal": "按本地 task forest 接力并完成 R3：裁决队列 + WIP 推导 + 每车道计量",
+        "validation_plan": [
+          "bun run test src/tribunal（含 acceptance.test.ts）",
+          "WIP / metrics / runner 挂起路径的专项测试",
+          "用户确认后再 proposal-apply"
+        ],
+        "why_not_enough": "本机 git 2.55 的 worktree add 仍拒绝含斜杠的分支名，派发链路在本机不可用；这是环境风险 TF-0117，不是 R3 功能缺口",
+        "why_this_task": "用户确认了实测验收数字，要求把 0081-0084 收 done、0080 收里程碑、0118 关掉、0117 继续挂着"
+      }
+    }
+  ],
+  "created_at": "2026-08-31T07:07:36.141430Z",
+  "proposal_id": "TFP-20260831-r3-accepted",
+  "rationale": "用户确认了 R3 实测验收数字：合成 24 小时流上队列速率 0.75 条/小时、无洪泛、严重项 5.6%、分布 5.6/16.7/27.8/50，WIP 文案为推导值且池满拒绝，每车道三个数 + 全局未复核积压。四个子任务和里程碑可以标 done。聊天线程不进车道计量（TF-0118）已写进口径注释。本机 git 2.55 斜杠分支风险（TF-0117）仍挂着，不并进里程碑完成条件。",
+  "session_id": "session-2026-08-31-r3",
+  "status": "applied"
+}

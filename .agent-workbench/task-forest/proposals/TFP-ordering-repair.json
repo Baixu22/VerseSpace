@@ -1,0 +1,418 @@
+{
+  "applied_at": "2026-08-30T06:52:08.198723Z",
+  "base_graph_hash": "564495f89a643736c8483c00c0ee8a259094e40ec95a7bc78a15c504ea0a950c",
+  "base_summary": {
+    "edge_count": 136,
+    "node_count": 112,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1400
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0058"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0059"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0060"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0061"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 500
+      },
+      "id": "TF-0068"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 600
+      },
+      "id": "TF-0073"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 700
+      },
+      "id": "TF-0080"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 800
+      },
+      "id": "TF-0085"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 900
+      },
+      "id": "TF-0086"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1000
+      },
+      "id": "TF-0090"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1100
+      },
+      "id": "TF-0099"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1200
+      },
+      "id": "TF-0102"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1300
+      },
+      "id": "TF-0106"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1400
+      },
+      "id": "TF-0107"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1500
+      },
+      "id": "TF-0108"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1600
+      },
+      "id": "TF-0109"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1700
+      },
+      "id": "TF-0110"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1800
+      },
+      "id": "TF-0111"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 1900
+      },
+      "id": "TF-0112"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0062"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0063"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0064"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0065"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 500
+      },
+      "id": "TF-0066"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 600
+      },
+      "id": "TF-0067"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0069"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0070"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0071"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0072"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0074"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0075"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0076"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0077"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 500
+      },
+      "id": "TF-0078"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 600
+      },
+      "id": "TF-0079"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0081"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0082"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0083"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0084"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0087"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0088"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0089"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0091"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0092"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0093"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0094"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 500
+      },
+      "id": "TF-0095"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 600
+      },
+      "id": "TF-0096"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 700
+      },
+      "id": "TF-0097"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 800
+      },
+      "id": "TF-0098"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0100"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0101"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 100
+      },
+      "id": "TF-0103"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 200
+      },
+      "id": "TF-0104"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0105"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "v5/v6 全局任务挂到根目标 TF-0001 之下（TFP-v5v6-a 遗漏此边，导致根兄弟组 display_order 不完整）"
+      },
+      "from": "TF-0057",
+      "to": "TF-0001",
+      "type": "child_of"
+    }
+  ],
+  "created_at": "2026-08-30T06:52:08.077136Z",
+  "proposal_id": "TFP-ordering-repair",
+  "reason": "提案 TFP-v5v6-a/b/c 应用了新节点但未补 display_order，且 TF-0057 缺 child_of TF-0001 边，validate 的兄弟序完整性检查失败，阻塞后续 proposal-save/apply。",
+  "session_id": null,
+  "status": "applied",
+  "title": "修复：TF-0057 挂接根目标 + 为 v5/v6 规划的 56 个新节点补齐 display_order"
+}

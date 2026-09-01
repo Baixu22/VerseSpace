@@ -1,0 +1,40 @@
+{
+  "applied_at": "2026-08-31T13:32:46.986226Z",
+  "base_graph_hash": "23d83fe4709078106dbeb4e9e5fd9b6e9902cc8843da51a2e553ed0316711123",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：packages/workbench/src/interactions/project.ts（projectLandmarks 纯函数 + ProjectedLandmark 输出 + collectStats 单遍统计 + summarize 一句话生成 + directParent 折叠判定）",
+          "测试 9 个全绿：过滤（只投影地标/空回退 top-8/空事件空列表）、排序降序、装饰统计（editCount/selectionCount/deltaTotal/origins/lastTouchAt）、折叠（8 文件聚合进 src/core、回退池非地标目录不折叠）、验收（summary 可读且含时间、纯函数不改输入）",
+          "静态验证：interactions 全量 30 测试全绿（12+9+9），bunx tsc --noEmit 干净，biome check 干净",
+          "调试修正：折叠目标必须是『真地标』（回退池中的可见目录不能当折叠目标，否则 hot.ts 被误折进非地标 src）；DoiScore.lastTouchAt 是 epoch number 直接相减排序，不经过 Date.parse"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "地标投影：过滤（只留地标，空时回退可见 top-8 保列表非空）→ 折叠（文件地标折进『直接父目录是地标』的条目，回退池中的非地标目录不作折叠目标）→ 排序（DOI 降序、同分按最近触碰）→ 装饰（编辑/触碰次数、累计 delta、来源写者、最近触碰 + 『编辑 N 次 · 触碰 M 次 · 改动 L 行 · 最后 HH:MM』一句话）。纯函数无副作用，绝不基于 DOI 触发自动动作。"
+      },
+      "id": "TF-0089"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 1.0,
+        "status": "done",
+        "summary": "L1 隐式上下文层收口：交互事件日志（TF-0087，与 R1 足迹同日志同 seq）→ Mylyn DOI（TF-0088，衰减重置/双阈值/父级传播/生命周期自适应）→ 地标投影（TF-0089，过滤/排序/装饰/折叠）。链路完整：事件流 → DOI 模型 → 可直接回答『这次干了什么』的地标列表。下一步候选：L2 里程碑（晋升/分叉/恢复）或把 L1 产物接入 UI。"
+      },
+      "id": "TF-0086"
+    }
+  ],
+  "created_at": "2026-08-31T13:32:46.574188Z",
+  "proposal_id": "TFP-tf0089-project",
+  "rationale": "L1 最后一个子任务 TF-0089（地标投影）已完成：在 DOI 结果之上做过滤/排序/装饰/折叠四种只读投影，输出可直接作为『这次干了什么』答案的地标列表。纯函数不触发任何自动动作（符合核心判据 TF-0057）。L1 里程碑三个子任务（TF-0087 事件日志、TF-0088 DOI、TF-0089 投影）全部 done，L1 隐式上下文层收口。",
+  "session_id": "session-2026-08-31-r4-hooks",
+  "status": "applied"
+}

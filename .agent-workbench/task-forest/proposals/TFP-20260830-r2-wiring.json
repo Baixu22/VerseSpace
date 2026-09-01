@@ -1,0 +1,36 @@
+{
+  "applied_at": "2026-08-30T14:15:57.616562Z",
+  "base_graph_hash": "0ac89dc47b052a4d4b1d9d285bc8b4cf654f380c608b1be99ff062b7c2034051",
+  "base_summary": {
+    "edge_count": 141,
+    "node_count": 116,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0116",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T14:15:37.531528Z",
+        "id": "TFD-700224dabd",
+        "reason": "TF-0116 落地后，watcher 每轮都会调用 reconcilePremises，失效前提会以 premise_stale 事件落进事件日志，没有活会话时记录为 premise_notice_outcome: queued。但全仓库核查没有任何消费方读取 premise_stale——既没有 CLI 子命令，也没有在会话启动时排空。也就是说当前是「只检测不投递」的半闭环：不开 UI 面板时事件会安静堆积，等 TF-0077（失效通知投递，socket／stream-json stdin 边界）落地后才真正闭环。本轮没有顺手实现排空，因为投递通道的形状属于 TF-0077，提前做会锁死它的设计空间。",
+        "related_task_ids": [
+          "TF-0116",
+          "TF-0077",
+          "TF-0073"
+        ],
+        "summary": "检测已接进 watcher，但排空那一半仍缺：premise_stale 事件只写不读"
+      }
+    }
+  ],
+  "created_at": "2026-08-30T14:15:37.526063Z",
+  "proposal_id": "TFP-20260830-r2-wiring",
+  "rationale": "TF-0116 完成：前提高和已接进 watcher 周期，检测与投递分离（watcher 只检测，宿主可选传 deliverNotice）。新增两个用例证明开启与关闭两条路径。核查时发现排空那一半仍然缺失：premise_stale 事件目前只写不读，需要 TF-0077 落地后才闭环。",
+  "session_id": "session-2026-08-30-workbench-r2",
+  "status": "applied"
+}

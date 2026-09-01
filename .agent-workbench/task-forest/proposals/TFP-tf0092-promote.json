@@ -1,0 +1,39 @@
+{
+  "applied_at": "2026-09-01T04:38:25.010421Z",
+  "base_graph_hash": "5e3a9d19dded0ad8fd289f4c042c87fb486c9ebd9719122b01414264feeca570",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：chat/promote.ts（UNNAMED_TITLE、PROMOTION_TURNS=8、NEXT_DAY_RESUME_HOURS=20、PromotionSignal 五种、evaluatePromotion/deriveTitle/countUserTurns/hoursSinceLastMessage/collectSignals/promotionPatch 全纯函数）",
+          "接线：chat/threads.ts——create 默认无名、run() 移除首消息立即命名、runClaudeTurn 与 HTTP finalize 两个完成轮次边界调 maybePromote、reload 按 anchor 消息 id 累计 forks、ThreadMeta 新增 forks/promotion 字段；ui/server.ts 新增 promote 子路由",
+          "测试：chat/promote.test.ts 14 个全绿（信号判定/已命名不覆盖/无信号不晋升/标题裁断/隔天恢复阈值/首轮不算恢复/非法时间戳降级/纯函数不改消息）+ chat/threads.test.ts 3 个全绿（默认无名+手动晋升+消息零变化/已命名空操作+空对话保持无名/reload 分叉计数）；bunx tsc --noEmit 干净、biome check 干净",
+          "范围说明：repeated-test-failure 与 commit 两种信号已定义形状并由 maybePromote 的 extraSignals 入参预留，待足迹侧能可靠识别测试失败与提交事件后接线；晋升撤销走已有 PATCH 标题（一个动作）"
+        ],
+        "progress": 1.0,
+        "status": "done",
+        "summary": "加法式晋升落地：对话从第 0 个事件起就是无名上下文，命名发生在事后由既有事件触发。新模块 chat/promote.ts 是纯函数晋升引擎（5 种信号形状、evaluatePromotion 判定、deriveTitle 确定性命名、promotionPatch 产出标题+可观测记录）；threads.ts 移除即时自动标题、在 claude 与 HTTP 两条轮次边界的完成点评估晋升、reload 记录分叉计数（二次分叉信号输入）、公开 promote(id) 手动晋升（任意时刻一个手势）；UI server 暴露 POST /api/chat/threads/:id/promote。已命名的对话不再晋升（不覆盖用户的编辑），空对话无可派生名字保持无名。"
+      },
+      "id": "TF-0092"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 0.375,
+        "summary": "L2 里程碑进行中（8 个子任务完成 3 个）。已完成：TF-0091 实测 B/C/K → ADR-0009 裁定不建提议 UI；TF-0098 回退 + diff 主安全网（三动作标注 + undo 负样本）；TF-0092 加法式晋升（默认无名 + 触发信号 + 轮次边界直接晋升）。待做：TF-0093 追溯式分叉（依赖已解锁）、TF-0096 切换清场、TF-0097 恢复笔记、TF-0094 生成 N 展示 1、TF-0095 提议下一步 + 决策账本。"
+      },
+      "id": "TF-0090"
+    }
+  ],
+  "created_at": "2026-09-01T04:38:24.622187Z",
+  "proposal_id": "TFP-tf0092-promote",
+  "rationale": "TF-0092（加法式晋升 + 触发信号绑定到既有事件）实现完成。核心产品改变：对话默认保持无名（原「第一条消息立即截 24 字命名」被移除），命名延迟到触发信号命中的完成的轮次边界，按 ADR-0009 直接晋升不提议（B=3ms << K），撤销 = 改回标题。晋升只写 meta（标题 + 晋升记录），messages.jsonl 一个字节不动——满足『晋升后对话本身零变化』。信号落地三个：会话跨过 8 轮、隔天（≥20h）恢复、同一条消息上第二次分叉（reload 计数）；重复测试失败与提交信号已定义形状，待足迹侧喂入（记录为后续接线点）。",
+  "session_id": "session-2026-09-01-l2-resume",
+  "status": "applied"
+}

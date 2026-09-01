@@ -1,0 +1,177 @@
+{
+  "applied_at": "2026-08-30T22:44:27.281781Z",
+  "base_graph_hash": "2cde16fdc077caba6ab9da8c5688eed3799d0b9885c0907d0a33371030c4f0f1",
+  "base_summary": {
+    "edge_count": 141,
+    "node_count": 116,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0080",
+      "progress": 0.9,
+      "status": "in_progress"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0081",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0082",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0083",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0084",
+      "progress": 0.85,
+      "status": "done"
+    },
+    {
+      "action": "add_node",
+      "alias": "r3-git-worktree-slash",
+      "node": {
+        "acceptance_criteria": [
+          "确认绕行方案（先建分支再建 worktree，或改用不含斜杠的分支名）",
+          "dispatch.test.ts 的 3 个用例在本机恢复通过"
+        ],
+        "confidence": 0.9,
+        "context_tags": [
+          "r3",
+          "环境",
+          "git"
+        ],
+        "difficulty": "low",
+        "display_order": 500,
+        "evidence": [
+          "git version 2.55.0.windows.3",
+          "git worktree add wt-y -b ws/ws-a → fatal: invalid reference: ws/ws-a",
+          "git worktree add wt-z -b simple → 正常"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "purpose": "把这条环境回归单独可见，避免把它误读成 R3 的 WIP 准入控制把派发拒了。",
+        "status": "proposed",
+        "summary": "git version 2.55.0.windows.3 上，`git worktree add <path> -b ws/ws-a` 报 `fatal: invalid reference: ws/ws-a`；不带斜杠的分支名正常，`git branch feat/y` 也正常。工位默认分支命名就是 ws/<id>，所以本机上 workbench dispatch 建不出 worktree。不是 R3 引入的，但会挡住准入控制之后的整条派发链路。",
+        "title": "风险：本机 git 2.55 的 worktree add 拒绝含斜杠的分支名，派发链路在本机不可用"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "r3-chat-metrics",
+      "node": {
+        "acceptance_criteria": [
+          "决定聊天线程是单独成键还是不计量，并把口径写进 metrics 模块注释"
+        ],
+        "confidence": 0.7,
+        "context_tags": [
+          "r3",
+          "计量"
+        ],
+        "difficulty": "low",
+        "display_order": 600,
+        "kind": "follow_up",
+        "priority": 4,
+        "purpose": "让『每车道三个数』的口径保持干净：车道就是工位，聊天线程另算。",
+        "status": "ready",
+        "summary": "TF-0084 的用量采集目前接在批量 agent 运行器（agents/runner.ts）上，车道键是工位 id。交互式聊天线程（chat/threads.ts）同样在解析 stream-json，但线程不挂工位，接进来会让『每车道』这个口径混进非车道的键。要么按 thread:<id> 单独成键并在展示上分开，要么先不动。",
+        "title": "待办：聊天线程路径还没接进每车道计量"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "这条环境回归是在做 R3 的准入门时撞到的，挂在 R3 下才不会被当成别处的问题"
+      },
+      "from": "r3-git-worktree-slash",
+      "to": "TF-0080",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "是每车道计量这一项收尾时留下的口径问题"
+      },
+      "from": "r3-chat-metrics",
+      "to": "TF-0084",
+      "type": "child_of"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T17:52:28.739384Z",
+        "id": "TFD-0c728e7685",
+        "reason": "开工时 queue.test.ts 有 2 个用例失败，根因是 rationalize.ts 里写了 belowSoftFloor 但 submit() 从来没调用它。修的时候发现这不是漏写，而是任务书自己留下的分层冲突：rationalize 的注释说『定量阈值是队列决策，必须在因果抑制之后跑』（第 30 个被同一失效依赖打断的会话自己分很低，折叠才是队列发现这个原因重要的方式），但测试却直接断言 rationalize() 会拒绝低分事件。保留了注释里的分层——把 ISA-18.2 的五条定性准则留在 rationalize()（纯函数、不知道队列里有没有孪生），定量软阈值下沉到 submit() 只在『要新建条目』时判（无孪生可折叠、或孪生已过聚合窗口）。拒绝原因单列一条 soft_floor，不混进五条定性准则，这样审计时能分清『不配叫告警』和『不够响』。测试改为在提交层断言，并补了一条把分层钉住的用例：同一个原因的孪生即使自己低于软阈值也照常折叠。",
+        "related_task_ids": [
+          "TF-0081"
+        ],
+        "summary": "定量软阈值从 ISA-18.2 闸门下沉到队列的创建路径；顺带修掉两个遗留失败用例"
+      }
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T17:52:28.739417Z",
+        "id": "TFD-bf4acdae74",
+        "reason": "让 notify_human 变成真队列有两种做法：一是队列侧写个翻译层从 message 字符串里正则反解出 kind/subject/action；二是给 notify_human 转移加一个可选的 tribunal envelope，由三个状态机和调度器在发射处填。选了后者，因为『这个事件是关于什么的、人能做点什么不一样的事、没人管会怎样』只有发射点知道，反解出来的 action 是猜的，而 ISA-18.2 第三条（没有既定动作就不是告警）恰恰不能靠猜。代价是改了 3 个状态机和 tick，并调整了 3 处用 toEqual 断言转移形状的用例（改用 toMatchObject 并顺带断言 envelope 本身的质量：动作非空、后果非空、结尾是建议而不是问句）。调度器里 concurrency_cap 这条刻意分在软阈值之下——达到配置的并发上限是容量信号，不是告警，它会被引擎自动抑制，正好验证合理化真的在工作。",
+        "related_task_ids": [
+          "TF-0081",
+          "TF-0082"
+        ],
+        "summary": "发点改成在发射处带结构化 envelope，而不是从中文消息里反解"
+      }
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T17:52:28.739439Z",
+        "id": "TFD-0dd565fb09",
+        "reason": "Little 定律 L = λ × W 在观测到 0 个完成项时会给出 λ = 0，进而把上限算成 0，等于把所有派发全部拒掉。任务书要求『配置项显示为推导值而非手填值』，于是补了第三种状态：完成样本不足 3 个时，basis 记为 insufficient-history，上限退回物理上限（工位数量），并且 explainWip() 直接把这些字打出来。宁可承认『没数据、先按工位数来』，也不给一个看起来是推导出来、其实是没有根据的数字让人去调。准入控制保留了显式 --force（并写事件），因为 drum-buffer-rope 一向允许人工插队，只是要求你说出来；自动调度器拿不到这个开关。",
+        "related_task_ids": [
+          "TF-0083"
+        ],
+        "summary": "WIP 上限在样本不足时不编数字，而是退回物理上限并明说"
+      }
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T17:52:28.739456Z",
+        "id": "TFD-7c94d28e17",
+        "reason": "第一版实现在 runner 里把整轮的 UsageSample 先累加成一个再折叠进计数器，结果 turns 只算 1 次、cacheReadTokens 却累加了三轮，命中率恒为 100%。命中率是『每一轮』的数，不是整轮合计的数。改成每解析出一个 sample 就立刻 foldUsage 一次（纯函数、很便宜），只在 result 行和进程结束时把整个 LaneMetrics 落盘。测试也改成复刻真实采集顺序逐条折叠。",
+        "related_task_ids": [
+          "TF-0084"
+        ],
+        "summary": "每车道的缓存命中率必须逐轮折叠，先累加再折叠会把命中率算成 100%"
+      }
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T17:52:28.739471Z",
+        "id": "TFD-bb1336dc77",
+        "reason": "给 R3 的准入门写验证时发现 dispatch.test.ts 有 3 个用例失败，排查后确认是环境回归而非本次改动：git version 2.55.0.windows.3 上 `git worktree add wt-y -b ws/ws-a` 报 fatal: invalid reference；不带斜杠的分支名（simple）正常，`git branch feat/y` 也正常，先建分支再 `worktree add <path> feat/w1` 同样失败。工位默认分支命名就是 ws/<id>，所以本机上派发建不出 worktree。没有顺手改分支命名去绕：那会把一个上游 git 问题固化进产品命名，且改动面超出 R3。记为风险节点，R3 的准入控制因此只能验证到 git 之前。",
+        "related_task_ids": [
+          "TF-0080",
+          "TF-0083"
+        ],
+        "summary": "本机 git 2.55 的 worktree add 拒绝含斜杠的分支名，派发链路在本机不可用"
+      }
+    }
+  ],
+  "created_at": "2026-08-30T17:52:28.725808Z",
+  "proposal_id": "TFP-20260831-r3",
+  "rationale": "本轮开工任务森林里最新的 R3 里程碑（TF-0080：裁决队列 + WIP 推导 + 每车道计量），依赖的 R2（TF-0073）已完成。四个子任务全部落到 packages/workbench 里并补了测试；过程中修掉了队列遗留的两个失败用例，另外发现一条本机 git 回归会挡住派发链路，单独记成风险与偏离。",
+  "session_id": "session-2026-08-31-r3",
+  "status": "applied"
+}

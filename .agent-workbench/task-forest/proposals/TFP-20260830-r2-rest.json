@@ -1,0 +1,88 @@
+{
+  "applied_at": "2026-08-30T15:27:06.011588Z",
+  "base_graph_hash": "c86ab2108b96983a8009dde86415ea7c44f09e3461d05e57d3a44fb854db8a8c",
+  "base_summary": {
+    "edge_count": 141,
+    "node_count": 116,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "id": "TF-0075",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0076",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0077",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0078",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0079",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0073",
+      "progress": 1.0,
+      "status": "done"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T15:26:55.178570Z",
+        "id": "TFD-386fc39351",
+        "reason": "两点偏离，都是刻意的。（1）任务书要求用 tree-sitter 的 tags.scm 对每个 @definition 哈希去 body 文本。tree-sitter 是原生依赖，而本项目的定位是零重依赖（TF-0019 明确把误引入重依赖列为风险）。任务书自己的红线是『一个投影 bug = 约 1000× 过度通知 = 通道开局即死』，所以它要的是投影稳定性，不是解析器完备性。于是用 packages/workbench/src/runtime/surface.ts 做了保守的词法投影：处理注释与字符串转义，函数／类只取到体前的签名，interface／enum 保留成员（成员对消费方可见），const 只取到等号前的声明与类型标注。拿不到结论时返回 null，调用方按『已变化』处理——拿不准就通知，不静默。（2）任务书要求读集条目标注 dependency 还是 subject-matter。要求 agent 先声明属于本森林一贯拒绝的前置税，所以改为从足迹本身推导：同一个写者若也写过这个文件就是主题式读（方法体变化也要通知），只读未写就是依赖式读（只有导出面变化才通知）。",
+        "related_task_ids": [
+          "TF-0076"
+        ],
+        "summary": "第 3 层没有按任务书用 tree-sitter，改为自写词法投影；依赖式／主题式的判定也不靠标注而是推导"
+      }
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-08-30T15:26:55.178581Z",
+        "id": "TFD-ae192d22d0",
+        "reason": "开工 TF-0077 时核查发现 notify_session 转移类型、chat.notifySession（活会话走 stdin 追加、空闲则落 notices.jsonl）、以及 runClaudeTurn 里下一轮排空 notices.jsonl 这三样都已实现。真正缺的是没有任何东西读取事件日志里的 premise_stale 并调用投递。新增 src/runtime/delivery.ts（pendingPremiseNotices + drainPremiseQueue）补上，并把 UI server 里原本耦合的检测＋投递拆成两步。写测试时发现两个真 bug：一是按 (path, currentVersion) 去重会让已被取代的旧条目残留，导致同一文件改两次通知两次；二是空桶的写者仍会被当成一条待投递通知，投递出内容为空的 turn 并标记已送达。两者都改为按路径取最新、并丢弃空桶。",
+        "related_task_ids": [
+          "TF-0077",
+          "TF-0116"
+        ],
+        "summary": "投递那一半其实早已存在，缺的只是把事件日志转成投递；修队列去重时还连带发现两个真 bug"
+      }
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "本仓库实测：git merge-tree --write-tree --name-only 单对约 320ms，十对并发 421ms；shell 里顺序跑十对约 3.2 秒、并发约 1.8 秒——shell 自身的开销把读数抬高了一个量级",
+          "merge-tree 输出格式：干净时只有 tree oid 且退出码 0；冲突时 oid 之后到空行之间是冲突路径，退出码 1（是答案不是失败）",
+          "退出码非 0/1 才是 git 真的出错，需要单独区分"
+        ]
+      },
+      "id": "TF-0079"
+    }
+  ],
+  "created_at": "2026-08-30T15:26:55.173445Z",
+  "proposal_id": "TFP-20260830-r2-rest",
+  "rationale": "R2 剩余五项全部完成：谓词第 2 层（跨度限定的读）、第 3 层（导出面哈希 + 依赖式／主题式读分离）、失效通知投递与排空队列、封印点、便宜的合并安全网。核心发现是代码早已领先于森林的规律再次应验——notify_session 转移类型、chat.notifySession 的 stdin 投递、notices.jsonl 的下一轮排空都已存在，缺的是把事件日志里的 premise_stale 转成投递的那一段。",
+  "session_id": "session-2026-08-30-workbench-r2",
+  "status": "applied"
+}

@@ -1,0 +1,30 @@
+{
+  "applied_at": "2026-08-31T12:22:08.077707Z",
+  "base_graph_hash": "e0ce69ab52b97c434391035746a5e812918e5cc70e500e42aed6f4c38e3beaea",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 0.7,
+        "requirements": [
+          "发布前确认包名 context-rot 未被占用（已确认：npm view 404）",
+          "走仓库既有 changesets 链路发版本",
+          "登录 npm（npm login）后执行发布"
+        ],
+        "status": "in_progress",
+        "summary": "发布物已就绪：包名 context-rot 未被占用、changeset 已创建、files 补全（dist/README/hooks/scripts/plugin）、CLI 新增 install-hooks 子命令（dist 端到端验证通过：安装→配置→事件采集）。硬阻塞：本机 npm 未登录（E401），需用户登录 npm 后执行 bun run changeset version + changeset publish。"
+      },
+      "id": "TF-0119"
+    }
+  ],
+  "created_at": "2026-08-31T12:22:07.659323Z",
+  "proposal_id": "TFP-tf0119-inprogress",
+  "rationale": "用户指令：npm 发布暂时挂起为 in_progress，不阻塞主线，转去处理其他节点。发布物已就绪——包名 context-rot 未被占用（npm view E404）、changeset 已创建（.changeset/context-rot-init.md）、files 已补全（dist/README/hooks/scripts/plugin）、CLI 新增 install-hooks 子命令且 dist 端到端验证通过；唯一硬阻塞是本机 npm 未登录（E401）。",
+  "session_id": "session-2026-08-31-r4-hooks",
+  "status": "applied"
+}

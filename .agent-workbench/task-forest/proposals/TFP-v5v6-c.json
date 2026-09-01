@@ -1,0 +1,1076 @@
+{
+  "applied_at": "2026-08-30T06:33:45.408488Z",
+  "base_graph_hash": "f7ae8da1d3406137499f4b2d5a9d9d6256eb4fbf7861dde144097bd19a03dff6",
+  "base_summary": {
+    "edge_count": 103,
+    "node_count": 84,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "l0",
+      "node": {
+        "acceptance_criteria": [
+          "新增任何交互功能时，不增加发出第一条消息前的任何步骤"
+        ],
+        "confidence": 0.9,
+        "context_tags": [
+          "l0",
+          "前端"
+        ],
+        "evidence": [
+          "LMSYS-Chat-1M 平均 2.0 轮；WildChat 约 59% 单轮；Anthropic Clio 典型 Claude Code 会话约 4 轮，测试+编排合计仅 5%",
+          "微软 Adopt≠Adapt（约 12,000 用户 6 个月纵向）：基本否定个体会学成高级用户，用户习惯压倒性地黏着",
+          "GPT-3 Playground 的富界面已经在真实市场输过一次：是文本框而不是控制面板带来了采用"
+        ],
+        "kind": "requirement",
+        "priority": 1,
+        "requirements": [
+          "对话组件零改动",
+          "永久面向随手一问的用户设计，不为『他以后会学会』留余地"
+        ],
+        "status": "proposed",
+        "summary": "中位任务只有 2-4 轮，任何带每会话前置成本的结构其摊销分母接近零。且用户不会成长到高级用法。所有结构发生在对话之上或之下，从不发生在它里面。",
+        "title": "要求 L0：线性对话是默认且不动它"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l0",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "l1",
+      "node": {
+        "acceptance_criteria": [
+          "一段会话结束后，系统能列出地标集合（DOI>10），其中 80% 以上是用户认可的『这次干的活的核心』"
+        ],
+        "confidence": 0.85,
+        "context_tags": [
+          "l1",
+          "前端"
+        ],
+        "difficulty": "medium",
+        "evidence": [
+          "Mylyn（Kersten & Murphy FSE'06）：编辑比配对 t 检验 p=0.003，16 人中 13 人改善，最高 +172%",
+          "84.17% 的选择落在模型已标为正 DOI 的元素上",
+          "其上下文含约 28% 假编辑事件——一个 28% 错误的产物仍带来可测量的提升，因为没有东西依赖它正确，也没有人需要批准它"
+        ],
+        "kind": "milestone",
+        "non_goals": [
+          "不做预测式检索（Mylyn 的这一半只有五个用户重复使用过）"
+        ],
+        "priority": 2,
+        "requirements": [
+          "永不请求用户批准任何东西",
+          "容忍约 30% 噪声"
+        ],
+        "status": "proposed",
+        "summary": "可靠价值的全部所在。永远采集、永不呈现为待批准的产物、容忍约 30% 噪声、只用于加权重与排序。这是本领域唯一带 p 值的生产率机制。",
+        "title": "里程碑 L1：隐式上下文层（Mylyn DOI）"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l1",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "隐式层必须不改动对话"
+      },
+      "from": "l1",
+      "to": "l0",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "l1a",
+      "node": {
+        "acceptance_criteria": [
+          "一个月的日志规模在 1 MB 量级"
+        ],
+        "confidence": 0.85,
+        "context_tags": [
+          "前端",
+          "后端"
+        ],
+        "difficulty": "low",
+        "estimate": 180,
+        "execution_hints": [
+          "复用 R1 的 PROV 事件：used 映射为 selection，generated 映射为 edit（权重更高）"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "事件按写者 id 分组",
+          "与 R1 的足迹事件共用同一条日志与同一个 seq 时钟"
+        ],
+        "status": "proposed",
+        "summary": "time／kind／origin／contentType／handle／delta。上下文随交互增长，不随代码库规模增长，约 1 MB/月/人。",
+        "title": "交互事件日志（6 字段）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l1b",
+      "node": {
+        "acceptance_criteria": [
+          "同一元素被触碰后 DOI 立即转正",
+          "地标集合规模稳定在可读范围（约 5-15 个）"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "execution_hints": [
+          "出厂常数参考：selection=1，edit≈2，command=0，decay=0.1",
+          "必须修 Mylyn 没修的洞：它只有一套全局常数，数据显示同时在两个方向失败——2.06% 的选择落在已衰减出视野的元素上，同时两位被试点了 225 和 210 次『降低兴趣』；作者指出模型对任务生命周期是盲的"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "实现衰减重置规则",
+          "两个阈值：DOI>0 可见，DOI>10 地标，小于 0 完全过滤",
+          "兴趣度向父级（文件→模块→项目）指数衰减传播",
+          "常数按上下文生命周期自适应：年轻的慢衰减宽搜索，成熟的快衰减窄搜索"
+        ],
+        "status": "proposed",
+        "summary": "DOI = Σscaling(kind) − 自上次触碰以来的衰减。衰减重置是关键技巧：衰减到负的元素一碰就立刻变正，不必从 −N 爬回。",
+        "title": "Mylyn DOI（含重置规则与生命周期自适应常数）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l1c",
+      "node": {
+        "acceptance_criteria": [
+          "地标列表可直接作为『这次干了什么』的答案，无需用户编辑"
+        ],
+        "confidence": 0.85,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "low",
+        "estimate": 180,
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "只做过滤、排序、装饰、折叠四种投影",
+          "不基于 DOI 触发任何自动动作"
+        ],
+        "status": "proposed",
+        "summary": "活下来的是无聊的那一半：捕获、过滤、恢复。把 DOI 用于排序与折叠，不用于自动决策。",
+        "title": "地标投影（过滤／排序／装饰）"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l1a",
+      "to": "l1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l1b",
+      "to": "l1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l1c",
+      "to": "l1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "l2",
+      "node": {
+        "acceptance_criteria": [
+          "接受任何提议后，对话的滚动位置与内容排布不发生任何变化"
+        ],
+        "confidence": 0.75,
+        "context_tags": [
+          "l2",
+          "前端"
+        ],
+        "difficulty": "high",
+        "evidence": [
+          "Findlater & McGrenere n=27：破坏性自适应在三种顺序上全输给静态，被 15/27 评为最令人沮丧（对照可自定义仅 1/27）",
+          "Findlater n=48：纯加法式在 79% 准确率时快于静态，50% 时也不显著变慢",
+          "系统保持的锁定式模式在统计上与完全没有指示器无法区分（p<.33）；用户自己保持的模式状态好约 3 倍"
+        ],
+        "kind": "milestone",
+        "priority": 3,
+        "requirements": [
+          "晋升是盖在现有对话之上的一层：同一段滚动历史、同一个位置",
+          "系统提议、一次点击接受、随时可退出",
+          "模式必须常驻可见且退出与进入代价对称"
+        ],
+        "status": "proposed",
+        "summary": "所有机制共享一条硬约束：加法式，什么都不移动、什么都不改名。准确率是错的轴，破坏性才是。",
+        "title": "里程碑 L2：晋升、分叉与恢复（加法式的一层）"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "晋升的触发信号来自隐式层"
+      },
+      "from": "l2",
+      "to": "l1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "l2a",
+      "node": {
+        "acceptance_criteria": [
+          "得出 p* = C/(B+C) 的具体数值，并给出『建 / 不建提议 UI』的裁定"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "前端",
+          "调研"
+        ],
+        "difficulty": "low",
+        "estimate": 120,
+        "execution_hints": [
+          "决策规则：p<K/B 沉默；K/B≤p≤1−K/C 提议；p>1−K/C 直接做",
+          "C 是唯一能靠设计控制的项，也是全部证据所在"
+        ],
+        "kind": "task",
+        "non_goals": [
+          "不通过不等式检验就不建提议 UI，直接选一边站"
+        ],
+        "priority": 2,
+        "requirements": [
+          "实测 B = 事后补结构的中位耗时",
+          "实测 C = 拆掉不想要的工作区的中位耗时",
+          "实测 K = 问一句的成本"
+        ],
+        "status": "ready",
+        "summary": "建 UI 之前先算不等式。当 K(1/B+1/C)>1 时提议区间为空——不存在任何概率使询问最优，只能永远做或永远不做。",
+        "title": "先实测 B／C／K 并计算提议区间（决定要不要建提议 UI）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2b",
+      "node": {
+        "acceptance_criteria": [
+          "从未命名的对话可以在任意时刻被晋升，且晋升后对话本身零变化"
+        ],
+        "confidence": 0.75,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "evidence": [
+          "Giornata：标签平均 1.8 词，创建后基本不改（全部被试整个研究期间仅改过 12 次），14.8% 永久无标签——把这 14.8% 变成默认形态",
+          "随机时刻打断 vs 任务边界打断：恢复时间长最多 30%、错误最多 2 倍、负面情绪最多 2 倍"
+        ],
+        "kind": "task",
+        "non_goals": [
+          "不做每周／定期回顾式摘要——人们很少回头，且 GTD 每周回顾零实证支持，它是一个必然被忽略的复核队列",
+          "不做自动任务边界检测——Bardram 试过 RFID，太粗太不精确，退回人工信号；自动推断相关性，让边界保持廉价、延后、由人来划"
+        ],
+        "priority": 3,
+        "requirements": [
+          "绝不要求用户先声明任务才能开始",
+          "绝不要求用户命名或分类",
+          "触发信号：同一条消息上第二次分叉／会话跨过 N 轮／隔天以上的恢复／重复的测试失败／一次提交",
+          "提议在完成的轮次边界发出，绝不在生成过程中"
+        ],
+        "status": "proposed",
+        "summary": "每段对话从第 0 个事件起就是一个上下文，无名、无标题。晋升发生在事后，由已经会发生的事触发。",
+        "title": "加法式晋升 + 触发信号绑定到既有事件"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2c",
+      "node": {
+        "acceptance_criteria": [
+          "从任意历史消息分叉只需一个手势，且分叉后原线程完全不受影响",
+          "用户能看到并理解新分支继承了哪些上下文"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "evidence": [
+          "失败模式一致地是可发现性 + 怕丢东西，不是没有需求",
+          "ChatGPT 在 2026-02 的网页更新里直接删掉了版本箭头，235 条回复投诉，到 2026-08 仍未修",
+          "Cursor 文档自相矛盾，用户原话『其中一个会丢数据』",
+          "ChatGPT 两个 bug 都犯过：继承太少，然后继承太多"
+        ],
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "分叉不要求标题、不要求类型、不弹任何对话框",
+          "分叉结果在线程列表中可见",
+          "必须明确声明这次分叉继承了什么"
+        ],
+        "status": "proposed",
+        "summary": "每条消息都是隐式分叉点；分叉是一个手势，结果可见且非破坏性——线程列表里的兄弟条目，不是藏起来的箭头。",
+        "title": "追溯式分叉，零仪式"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2d",
+      "node": {
+        "acceptance_criteria": [
+          "用户在不做任何选择的情况下拿到结果，且随时能一键看到备选"
+        ],
+        "confidence": 0.7,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 240,
+        "evidence": [
+          "Dow 平行原型 n=33 真实广告点击率：平行 44 次 vs 串行 26 次（同团队后续为零结果，需谨慎）",
+          "GPT-5 用自动路由取代模型选择器：推理模型使用率 7%→24%（Plus），<1%→7%（免费）——3 倍差距纯由『要求选一次』造成",
+          "LMArena 整个产品就是并排对比，只有约 12% 的人投票"
+        ],
+        "kind": "task",
+        "priority": 4,
+        "requirements": [
+          "不出现任何『请选择』的界面",
+          "备选可通过单一按键调出"
+        ],
+        "status": "proposed",
+        "summary": "自动扇出变体、呈现最好的那个、把备选放在余光里。这一条化解了矛盾：要发散的收益，但不要选择界面。",
+        "title": "生成 N 个、展示 1 个、其余留在一个按键之外"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2e",
+      "node": {
+        "acceptance_criteria": [
+          "账本在无分歧时完全不可见"
+        ],
+        "confidence": 0.7,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 240,
+        "evidence": [
+          "CoNotate 的效果完全来自点击建议而非手打",
+          "Pail（CHI'25，11 位有经验程序员）确实带来并行探索，但失败模式是『难以跟上 LLM 引发的变更与信息过载』——折叠是设计约束本身"
+        ],
+        "kind": "task",
+        "priority": 4,
+        "requirements": [
+          "建议必须可点击，不要求用户打字",
+          "决策账本默认折叠"
+        ],
+        "status": "proposed",
+        "summary": "回答之后给 2-3 个从对话推导出的发散续写。决策账本自动填充、默认折叠、仅在分歧时浮现。",
+        "title": "系统提议的下一步（每个一次点击）+ 安静的决策账本"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2f",
+      "node": {
+        "acceptance_criteria": [
+          "返回一条停放的车道时，打开的无关产物数量显著低于不做清场的基线"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "evidence": [
+          "TaskSnap（IEEE TSE 2026，55 位职业开发者对照）：编辑延迟 4.81 vs 6.10 分钟；两任务均完成 88% vs 60%；打开无关产物 1.21 vs 20.28",
+          "Giornata：用户关掉活动后几天内不得不重建，此后把所有可能需要的活动全开着——系统把休眠和完成混为一谈会断裂卫生循环"
+        ],
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "切换离开时关闭该车道打开的产物",
+          "返回时把快照呈现为可筛选的列表，允许丢掉已过时的"
+        ],
+        "status": "proposed",
+        "summary": "唯一有因果证据的干预。清场不是附带好处，它是一半的效果。",
+        "title": "切换时自动关闭，返回时带筛选还原"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2g",
+      "node": {
+        "acceptance_criteria": [
+          "恢复一条隔天的车道时，无需翻 git log 即可重建上下文"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "evidence": [
+          "Leroy & Glomb（Organization Science 2018）四项研究一致降低注意力残留且不损害打断源",
+          "Parnin & DeLine CHI'10：给两种自动线索的开发者成功率是记笔记组的两倍",
+          "开发者明确抱怨版本历史『无序、冗长、认知负担重』；情节式排序优于罗列孤立细节",
+          "可见度<25% 的挂起窗口返回时间显著长于>75%（t(20)=3.131, p<.005）——仅仅看得见就是起作用的提醒"
+        ],
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "笔记在离开的时刻生成，不在返回时索取",
+          "变化摘要渲染为 3-5 个有序节拍：你当时在做什么／你决定了什么／你脚下什么动了／下一步是什么",
+          "挂起的工作保持常驻可见（停放条带）"
+        ],
+        "status": "proposed",
+        "summary": "agent 起草，用户确认。让用户自己记笔记是那个弱条件。返回时的『你不在时变了什么』必须是叙事，不是 diff。",
+        "title": "离开时生成『准备恢复』笔记 + 返回时给有序叙事"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l2h",
+      "node": {
+        "acceptance_criteria": [
+          "用户在分叉前不需要手动复制内容做备份"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "evidence": [
+          "Cursor 最持久的投诉是 Restore Checkpoint 读起来像回滚对话但实际不是",
+          "InkSync：验证使被接受的错误编辑减少 44%，审计抓出多达 73%——验证界面胜过探索界面",
+          "撤销事件作为可用性问题指示器误报率 0%，暴露 92% 的严重问题",
+          "但 Gilbert & Ebert：人偏好可逆决定（66.3%）却对其结果满意度更低（p=.03）——故让提议极易撤销，让工作区一旦进入就感觉是定下来的"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "每轮 checkpoint",
+          "『恢复对话』『恢复代码』『两者都恢复』必须是三个有明确标签的不同动作",
+          "每一次撤销都记为带标签的负样本"
+        ],
+        "status": "proposed",
+        "summary": "廉价的发散只有在回退可信时才是廉价的。这是 L2 全部机制能否成立的前提。",
+        "title": "回退 + diff 作为主安全网（三个动作分别标注）"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2a",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2b",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2c",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2d",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2e",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2f",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2g",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l2h",
+      "to": "l2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "分叉便宜的前提是回退可信"
+      },
+      "from": "l2c",
+      "to": "l2h",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "先算不等式再决定是否建提议 UI"
+      },
+      "from": "l2b",
+      "to": "l2a",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "l3",
+      "node": {
+        "acceptance_criteria": [
+          "任一衍生产物都能一键『对着来源轨迹重放并 diff』",
+          "用户拒绝一个占位符不需要审计整个产物"
+        ],
+        "confidence": 0.5,
+        "context_tags": [
+          "l3",
+          "前端",
+          "高风险"
+        ],
+        "difficulty": "high",
+        "evidence": [
+          "ALLOY（UIST'25 n=12）：推导出的结构在正确性上输给手写（9/12 vs 10/12），只赢认知负荷——追溯式结构化买的是省力不是准确",
+          "规格挖掘 90-99% 误报率；LLM 解冲突与开发者本人一致率 55-59%",
+          "METR RCT：慢 19% 却以为快 20%——验证成本对付钱的人不可见，用户不会告诉你它在失败",
+          "Letta 纯文件系统 74.0% 打败 Mem0 结构化抽取 68.5%——抽取销毁了信息",
+          "从对话追溯结构几乎没有实证文献；Graphologue、Sensecape 均为小样本实验室原型"
+        ],
+        "kind": "milestone",
+        "non_goals": [
+          "杀死判据：无法通过执行检查且输出空间开放的产物（计划、规格、设计文档）一律不建"
+        ],
+        "priority": 5,
+        "requirements": [
+          "N=2 才推导，绝不 N=1",
+          "用重放验证，不用阅读验证",
+          "泛化逐字面量可见、可拒绝",
+          "保留轨迹，产物只是指向它的有损索引"
+        ],
+        "status": "proposed",
+        "summary": "风险最高的一层，明确超前于证据。只有满足四条硬条件才做，否则不做。",
+        "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l3",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "推导的输入来自隐式层的轨迹"
+      },
+      "from": "l3",
+      "to": "l1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "l3a",
+      "node": {
+        "acceptance_criteria": [
+          "同一形状的工作第二次发生时才出现提议，且提议内容由两次轨迹的差集生成"
+        ],
+        "confidence": 0.6,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "high",
+        "estimate": 480,
+        "kind": "task",
+        "priority": 5,
+        "requirements": [
+          "绝不在第一次出现时提议",
+          "在知识峰值时刻推导：成功后立刻提议，不进任何摘要队列"
+        ],
+        "status": "proposed",
+        "summary": "从单条轨迹泛化是那个无解的部分。第二次出现相似轨迹时才提议——变了的是偶然的，没变的是本质的。这把推断问题变成集合运算。",
+        "title": "N=2 推导：两条相似轨迹之差即泛化"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "l3b",
+      "node": {
+        "acceptance_criteria": [
+          "用户可以只拒绝一个占位符而保留产物其余部分"
+        ],
+        "confidence": 0.6,
+        "context_tags": [
+          "前端"
+        ],
+        "difficulty": "high",
+        "estimate": 420,
+        "evidence": [
+          "ALLOY 最重要的功能是那个执行按钮，不是那张图"
+        ],
+        "kind": "task",
+        "priority": 5,
+        "requirements": [
+          "产物附带『对着来源轨迹重放并 diff』的一键动作",
+          "内联渲染占位符（如 {{feature_branch}} 而非具体分支名），每个占位符是一次推断并逐个标注",
+          "产物链接到证成它的那段轨迹，原始轨迹保持可查"
+        ],
+        "status": "proposed",
+        "summary": "绝不交付需要用户读懂才能批准的产物。附执行按钮，把验证成本从 O(所有未来输入) 压到 O(1)。",
+        "title": "重放验证 + 逐字面量占位符"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l3a",
+      "to": "l3",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "l3b",
+      "to": "l3",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "r4",
+      "node": {
+        "acceptance_criteria": [
+          "一条命令可安装",
+          "同一份 hook 配置在 Claude Code 与 Cursor 上都能加载"
+        ],
+        "confidence": 0.7,
+        "context_tags": [
+          "r4",
+          "发行"
+        ],
+        "difficulty": "medium",
+        "evidence": [
+          "Bloop 关停公告：数千日活但绝大多数是免费用户，找不到值得兴奋的商业模式——死于收费不是死于分发",
+          "每个幸存者都离开了本地优先的个人开发者：Crystal→Nimbalyst，Conductor→云",
+          "Cursor 支持加载 Claude Code 的 hook 配置：一次集成多家厂商，站在厂商层之下而非旁边",
+          "MCP 注册表约 9,652 个 server，发现性已死"
+        ],
+        "kind": "milestone",
+        "priority": 4,
+        "requirements": [
+          "产品名词保持谦卑：hook／linter／daemon，不要 orchestrator",
+          "分发楔子是 hooks 不是 MCP 注册表"
+        ],
+        "status": "proposed",
+        "summary": "形态从独立产品改为开源 hook／库；旗号用 context rot，机制独占 stale premise。多会话协调留在代码库里不做宣传。",
+        "title": "里程碑 R4：发行与分发形态"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "r4",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "r4a",
+      "node": {
+        "acceptance_criteria": [
+          "gh run view 不再出现 workflow file issue 注解"
+        ],
+        "confidence": 0.9,
+        "context_tags": [
+          "发行"
+        ],
+        "difficulty": "low",
+        "estimate": 30,
+        "kind": "task",
+        "priority": 3,
+        "status": "ready",
+        "summary": "workbench 车道新增的 15 行以 TAB 缩进，YAML 禁止 tab，GitHub 判定文件本身无效。这与计费无关，计费恢复后仍须先修。",
+        "title": "修复 ci.yml 的 15 处 tab 缩进"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "r4b",
+      "node": {
+        "acceptance_criteria": [
+          "在任意仓库上一条命令给出『N 条架构断言中 M 条已失效』"
+        ],
+        "confidence": 0.75,
+        "context_tags": [
+          "发行",
+          "前端"
+        ],
+        "difficulty": "low",
+        "estimate": 240,
+        "evidence": [
+          "356 个代表性仓库中 23.0% 存在陈旧代码元素引用（Treude & Baltes arXiv:2606.09090）"
+        ],
+        "kind": "task",
+        "priority": 4,
+        "requirements": [
+          "零配置、零 agent、即时输出",
+          "检测 CLAUDE.md／AGENTS.md／.cursorrules 中已失效的代码元素引用"
+        ],
+        "status": "proposed",
+        "summary": "npx 一条命令产出可截图的数字。用它被安装，不用它取胜。",
+        "title": "context-rot doctor（获客钩子，护城河最弱）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "r4c",
+      "node": {
+        "acceptance_criteria": [
+          "同一份配置在两个宿主上都能采集到足迹"
+        ],
+        "confidence": 0.7,
+        "context_tags": [
+          "发行"
+        ],
+        "difficulty": "medium",
+        "estimate": 300,
+        "kind": "task",
+        "priority": 4,
+        "status": "proposed",
+        "summary": "PreToolUse／PostToolUse 给确定性读写观测，而 Cursor 能加载 Claude Code 的 hook 配置。",
+        "title": "hooks 分发：Claude Code plugin + Cursor 兼容 bundle"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "r4a",
+      "to": "r4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "r4b",
+      "to": "r4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "r4c",
+      "to": "r4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k1",
+      "node": {
+        "confidence": 0.7,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "Horvitz 期望效用几何；该结论是推导而非实测"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "在建任何提议 UI 之前先实测 B／C／K 并算这个不等式",
+          "不通过就删掉提示，选一边站"
+        ],
+        "status": "proposed",
+        "summary": "当 K(1/B+1/C)>1 时不存在任何概率使询问最优。大多数『要不要把它变成一个任务』式提示都不通过此检验。",
+        "title": "风险：提议区间为空，提议 UI 建了也没用"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k1",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k2",
+      "node": {
+        "confidence": 0.85,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "真实 7800 文件工程每次首编辑失效约 1150 个、70-95 秒"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "把易变细节（位置、格式、顺序）挡在投影之外，这是主要工程成本所在",
+          "上线前必须有『纯空白编辑不产生任何通知』的回归测试"
+        ],
+        "status": "proposed",
+        "summary": "TypeScript #63664：首次编辑拿新算的 .d.ts 哈希比存着的文本哈希（必然不等），再穿 export * barrel 走完传递闭包；一次纯空白编辑重新产出 502/502 个文件。",
+        "title": "风险：投影 bug 导致约 1000× 过度通知，通道开局即死"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k2",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k3",
+      "node": {
+        "confidence": 0.8,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "Graphologue、Sensecape 均无纵向或信任度数据"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "L3 最后建",
+          "若 L1 的价值已足够，直接砍掉 L3",
+          "严守杀死判据"
+        ],
+        "status": "proposed",
+        "summary": "从对话追溯出显式产物几乎没有实证文献，现有的都是小样本实验室原型，无纵向与信任度数据。",
+        "title": "风险：L3 明确超前于证据"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k3",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k4",
+      "node": {
+        "confidence": 0.75,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "stdin 只能排队，不是自由的轮内注入；interrupt 控制消息的确切 JSON 在可达文档中查不到"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "Sprint 0 用半天做最小连通性验证",
+          "验证失败则退回轮次边界的 stdin 排队投递（能力下降但不致命）"
+        ],
+        "status": "proposed",
+        "summary": "WSL2 与原生 Windows、宿主与容器 互相不可达；原生 Windows 需 CLI 2.1.234+。这是整套架构唯一的二元风险。",
+        "title": "风险：跨会话 socket 在 Windows／WSL2 边界不可达"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k4",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k5",
+      "node": {
+        "confidence": 0.8,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "这是 Mylyn 衰落的三个原因之一"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "常数按上下文生命周期自适应：年轻的慢衰减宽搜索，成熟的快衰减窄搜索",
+          "提供『降低兴趣』的手动出口并统计其使用频次作为调参信号"
+        ],
+        "status": "proposed",
+        "summary": "Mylyn 的数据显示：2.06% 的选择落在已衰减出视野的元素上（衰减太狠），同时两位被试点了 225 和 210 次『降低兴趣』（衰减不够）。作者指出模型对任务生命周期是盲的却从未修。",
+        "title": "风险：隐式层用一套全局常数必然同时在两个方向失败"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k5",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k6",
+      "node": {
+        "confidence": 0.75,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "Crystal→商业化 Nimbalyst；Conductor 把生意搬去云；Superconductor 直接做团队多人工作区"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "以开源 hook／库形态出货，不做 $20/月的本地二进制",
+          "若要变现，surface 是团队（跨开发者的共享前提图、CI 强制）或被工作区玩家收购"
+        ],
+        "status": "proposed",
+        "summary": "无服务器、无数据库、本地优先是很好的架构，是很差的生意。Bloop 有数千日活与 VC 资金仍无法转化。",
+        "title": "风险：本地优先这组工程约束正好使收费不可能"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k6",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "k7",
+      "node": {
+        "confidence": 0.8,
+        "context_tags": [
+          "风险"
+        ],
+        "evidence": [
+          "其机制是 ListAgents+SendMessage，由模型自愿调用：没有读集、没有检测、没有确定性——而『agent 根本没意识到该发』正是常见情况"
+        ],
+        "kind": "risk",
+        "priority": 2,
+        "requirements": [
+          "不把『会话间通知』当作宣传说辞，只当作机制",
+          "对外用 context rot 与 stale premise，强调确定性检测而非自愿消息"
+        ],
+        "status": "proposed",
+        "summary": "Claude Code 文档逐字写着『当一个会话的改动破坏了另一个正在依赖的东西，Claude 可以在你发现之前警告它』，GA 且默认开启。",
+        "title": "风险：叙事位已被厂商占据"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": ""
+      },
+      "from": "k7",
+      "to": "TF-0057",
+      "type": "child_of"
+    }
+  ],
+  "created_at": "2026-08-30T06:33:45.237088Z",
+  "proposal_id": "TFP-v5v6-c",
+  "rationale": "第三批：交互层 L0-L3（前端）、发行与分发 R4、以及七条风险。",
+  "session_id": "session-2026-08-30-v5v6",
+  "status": "applied"
+}
