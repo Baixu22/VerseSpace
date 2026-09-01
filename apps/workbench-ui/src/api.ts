@@ -1,3 +1,4 @@
+import { apiFetch } from "./auth";
 export interface Goal {
 	id: string;
 	title: string;
@@ -84,7 +85,7 @@ export interface SyncResult {
 }
 
 export async function fetchState(): Promise<UiState> {
-	const response = await fetch("/api/state");
+	const response = await apiFetch("/api/state");
 	if (!response.ok) {
 		throw new Error(`/api/state ${response.status}`);
 	}
@@ -92,7 +93,7 @@ export async function fetchState(): Promise<UiState> {
 }
 
 export async function triggerSync(): Promise<SyncResult> {
-	const response = await fetch("/api/sync", { method: "POST" });
+	const response = await apiFetch("/api/sync", { method: "POST" });
 	if (!response.ok) {
 		throw new Error(`/api/sync ${response.status}`);
 	}
@@ -131,7 +132,7 @@ export async function dispatchGoal(
 	goalId: string,
 	workspotId?: string,
 ): Promise<DispatchOutcome> {
-	const response = await fetch("/api/dispatch", {
+	const response = await apiFetch("/api/dispatch", {
 		method: "POST",
 		headers: { "content-type": "application/json" },
 		body: JSON.stringify({ goalId, workspotId }),
@@ -143,7 +144,7 @@ export async function reviewCheckpoint(
 	cpId: string,
 	approve: boolean,
 ): Promise<ReviewOutcome> {
-	const response = await fetch("/api/review", {
+	const response = await apiFetch("/api/review", {
 		method: "POST",
 		headers: { "content-type": "application/json" },
 		body: JSON.stringify({ cpId, approve }),
@@ -155,7 +156,7 @@ export async function runAgent(
 	workspotId: string,
 	prompt: string,
 ): Promise<{ ok: boolean; reason?: string; logFile?: string }> {
-	const response = await fetch("/api/agent/run", {
+	const response = await apiFetch("/api/agent/run", {
 		method: "POST",
 		headers: { "content-type": "application/json" },
 		body: JSON.stringify({ workspotId, prompt }),

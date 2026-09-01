@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../../auth";
 import { Button } from "../ui/button";
 
 export interface ChatConfig {
@@ -44,13 +45,13 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
 	const [note, setNote] = useState<string | null>(null);
 
 	useEffect(() => {
-		void fetch("/api/config/chat")
+		void apiFetch("/api/config/chat")
 			.then((r) => r.json() as Promise<ChatConfig>)
 			.then(setConfig);
 	}, []);
 
 	const patch = async (body: Partial<ChatConfig>) => {
-		const saved = await fetch("/api/config/chat", {
+		const saved = await apiFetch("/api/config/chat", {
 			method: "PATCH",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify(body),

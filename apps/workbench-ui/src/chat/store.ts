@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "../auth";
 
 export type MessagePart =
 	| { type: "text"; text: string }
@@ -58,7 +59,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	runningThreadId: null,
 
 	async init() {
-		const threads = await fetch("/api/chat/threads").then(
+		const threads = await apiFetch("/api/chat/threads").then(
 			(r) => r.json() as Promise<ThreadMeta[]>,
 		);
 		set({ threads });
@@ -68,7 +69,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async createThread() {
-		const thread = await fetch("/api/chat/threads", {
+		const thread = await apiFetch("/api/chat/threads", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({}),
@@ -87,7 +88,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		}
 		set({ activeId: id });
 		if (!get().messages[id]) {
-			const data = await fetch(`/api/chat/threads/${id}`).then(
+			const data = await apiFetch(`/api/chat/threads/${id}`).then(
 				(r) =>
 					r.json() as Promise<{ meta: ThreadMeta; messages: StoredMessage[] }>,
 			);
@@ -98,7 +99,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	cancel() {
 		const id = get().runningThreadId;
 		if (id) {
-			void fetch(`/api/chat/threads/${id}/cancel`, { method: "POST" });
+			void apiFetch(`/api/chat/threads/${id}/cancel`, { method: "POST" });
 		}
 	},
 
@@ -107,7 +108,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!threadId || get().runningThreadId) {
 			return;
 		}
-		const outcome = await fetch(`/api/chat/threads/${threadId}/reload`, {
+		const outcome = await apiFetch(`/api/chat/threads/${threadId}/reload`, {
 			method: "POST",
 		}).then(
 			(r) =>
@@ -145,11 +146,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				},
 			}));
 		try {
-			const response = await fetch(`/api/chat/threads/${threadId}/messages`, {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({ text: outcome.userText, resend: true }),
-			});
+			const response = await apiFetch(
+				`/api/chat/threads/${threadId}/messages`,
+				{
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ text: outcome.userText, resend: true }),
+				},
+			);
 			const reader = response.body?.getReader();
 			const decoder = new TextDecoder();
 			let buffer = "";
@@ -203,7 +207,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!id) {
 			return;
 		}
-		await fetch(`/api/chat/threads/${id}`, {
+		await apiFetch(`/api/chat/threads/${id}`, {
 			method: "PATCH",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ permissionMode: enabled ? "plan" : "default" }),
@@ -221,7 +225,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async deleteThread(id: string) {
-		await fetch(`/api/chat/threads/${id}`, { method: "DELETE" });
+		await apiFetch(`/api/chat/threads/${id}`, { method: "DELETE" });
 		set((s) => {
 			const messages = { ...s.messages };
 			delete messages[id];
@@ -235,7 +239,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async setArchived(id: string, archived: boolean) {
-		await fetch(`/api/chat/threads/${id}`, {
+		await apiFetch(`/api/chat/threads/${id}`, {
 			method: "PATCH",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ archived }),
@@ -246,7 +250,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async renameThread(id: string, title: string) {
-		await fetch(`/api/chat/threads/${id}`, {
+		await apiFetch(`/api/chat/threads/${id}`, {
 			method: "PATCH",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ title }),
@@ -261,7 +265,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!threadId) {
 			return;
 		}
-		await fetch("/api/chat/feedback", {
+		await apiFetch("/api/chat/feedback", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ threadId, messageId, kind }),
@@ -311,11 +315,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			}));
 
 		try {
-			const response = await fetch(`/api/chat/threads/${threadId}/messages`, {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({ text }),
-			});
+			const response = await apiFetch(
+				`/api/chat/threads/${threadId}/messages`,
+				{
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ text }),
+				},
+			);
 			const reader = response.body?.getReader();
 			const decoder = new TextDecoder();
 			let buffer = "";
@@ -387,7 +394,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				),
 			}));
 			// keep the threads sidebar titles fresh (first message renames)
-			const threads = await fetch("/api/chat/threads").then(
+			const threads = await apiFetch("/api/chat/threads").then(
 				(r) => r.json() as Promise<ThreadMeta[]>,
 			);
 			set({ threads });

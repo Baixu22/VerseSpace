@@ -1,5 +1,6 @@
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "./auth";
 import { useChatRuntimeAdapter } from "./chat/adapter";
 import { useChatStore } from "./chat/store";
 import { type ChatConfig, SettingsPanel } from "./components/chat/settings";
@@ -11,7 +12,7 @@ function ThreadSidebar() {
 	const [config, setConfig] = useState<ChatConfig | null>(null);
 	const [showSettings, setShowSettings] = useState(false);
 	useEffect(() => {
-		void fetch("/api/config/chat")
+		void apiFetch("/api/config/chat")
 			.then((r) => r.json() as Promise<ChatConfig>)
 			.then(setConfig);
 	}, []);
@@ -45,7 +46,7 @@ function ThreadSidebar() {
 				<SettingsPanel
 					onClose={() => {
 						setShowSettings(false);
-						void fetch("/api/config/chat")
+						void apiFetch("/api/config/chat")
 							.then((r) => r.json() as Promise<ChatConfig>)
 							.then(setConfig);
 					}}

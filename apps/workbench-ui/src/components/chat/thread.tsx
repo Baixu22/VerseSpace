@@ -7,6 +7,7 @@ import {
 	ThreadPrimitive,
 } from "@assistant-ui/react";
 import { useState } from "react";
+import { apiFetch } from "../../auth";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { MarkdownText } from "./markdown-text";
@@ -146,7 +147,7 @@ function PlanApproval() {
 
 	const approve = async () => {
 		// 切到执行模式：下一次（resume）调用以 acceptEdits 运行，跑完自动回 default
-		await fetch(`/api/chat/threads/${useChatStore.getState().activeId}`, {
+		await apiFetch(`/api/chat/threads/${useChatStore.getState().activeId}`, {
 			method: "PATCH",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ permissionMode: "acceptEdits" }),
