@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { join } from "node:path";
+import { openBlackboard } from "../blackboard";
 import { makeTempWorkbench } from "../test/fixtures";
 import type { Workspot } from "../types/workspot";
 
@@ -43,6 +45,24 @@ describe("state blackboard API", () => {
 
 			expect(await bb.state.queue.dequeue("g-1")).toEqual(["g-2"]);
 			expect(await bb.state.queue.dequeue("g-404")).toEqual(["g-2"]);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("20 concurrent enqueues all survive (one file per entry)", async () => {
+		const { projectDir, cleanup } = await makeTempWorkbench();
+		try {
+			// independent handles: the old single queue.yaml lost concurrent
+			// appends through read-modify-write races
+			const bbs = Array.from({ length: 20 }, () =>
+				openBlackboard(join(projectDir, ".workbench")),
+			);
+			await Promise.all(
+				bbs.map((bb, i) => bb.state.queue.enqueue(`g-noise-${i}`)),
+			);
+			const final = openBlackboard(join(projectDir, ".workbench"));
+			expect(await final.state.queue.get()).toHaveLength(20);
 		} finally {
 			await cleanup();
 		}

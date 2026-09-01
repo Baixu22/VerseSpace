@@ -1,6 +1,7 @@
 import { join } from "node:path";
-import { BlackboardDataError } from "../errors";
+import { BlackboardConflictError, BlackboardDataError } from "../errors";
 import { safeReaddir } from "../fs/atomic";
+import { withPidLock } from "../fs/lockfile";
 import { newId } from "../ids";
 import type { WorkbenchPaths } from "../paths";
 import { type Goal, type GoalStatus, goalSchema } from "../types/goal";
@@ -12,8 +13,21 @@ export interface NewGoalInput {
 	dependsOn?: string[];
 }
 
+export interface GoalUpdateOptions {
+	/**
+	 * CAS precondition: fail with `BlackboardConflictError` (carrying the
+	 * current goal) instead of overwriting when another writer moved the
+	 * version first. Omit to do a serialized read-modify-write.
+	 */
+	expectedVersion?: number;
+}
+
 export function goalsApi(paths: WorkbenchPaths) {
 	const fileFor = (id: string) => join(paths.goals, `${id}.yaml`);
+	// transient per-goal locks live outside the object directories so object
+	// listings never see them
+	const lockFor = (id: string) =>
+		join(paths.root, "locks", "goals", `${id}.lock`);
 
 	async function get(id: string): Promise<Goal | null> {
 		try {
@@ -44,6 +58,7 @@ export function goalsApi(paths: WorkbenchPaths) {
 				status,
 				acceptance: input.acceptance ?? [],
 				dependsOn: input.dependsOn ?? [],
+				version: 1,
 			});
 			await save(goal);
 			return goal;
@@ -63,14 +78,39 @@ export function goalsApi(paths: WorkbenchPaths) {
 		get,
 		save,
 
-		async update(id: string, patch: Partial<Omit<Goal, "id">>): Promise<Goal> {
-			const current = await get(id);
-			if (!current) {
-				throw new BlackboardDataError(`goal not found: ${id}`, fileFor(id));
-			}
-			const next = { ...current, ...patch, id };
-			await save(next);
-			return next;
+		async update(
+			id: string,
+			patch: Partial<Omit<Goal, "id">>,
+			options: GoalUpdateOptions = {},
+		): Promise<Goal> {
+			// one file per goal means two writers can race the read-modify-write;
+			// the per-goal lock serializes them, and the version precondition
+			// turns a stale expectation into a detectable conflict with the
+			// current value attached — never a silent lost update
+			return withPidLock(lockFor(id), async () => {
+				const current = await get(id);
+				if (!current) {
+					throw new BlackboardDataError(`goal not found: ${id}`, fileFor(id));
+				}
+				if (
+					options.expectedVersion !== undefined &&
+					current.version !== options.expectedVersion
+				) {
+					throw new BlackboardConflictError(
+						`goal ${id} 版本前置条件不匹配（期望 v${options.expectedVersion}，当前 v${current.version}）`,
+						fileFor(id),
+						current,
+					);
+				}
+				const next = goalSchema.parse({
+					...current,
+					...patch,
+					id,
+					version: current.version + 1,
+				});
+				await save(next);
+				return next;
+			});
 		},
 	};
 }

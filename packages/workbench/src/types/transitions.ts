@@ -1,5 +1,6 @@
 import type { CheckpointLifecycle } from "./checkpoint";
 import type { GoalStatus } from "./goal";
+import type { TribunalEnvelope } from "./tribunal";
 import type { WorkspotStatus } from "./workspot";
 
 /**
@@ -41,4 +42,31 @@ export type Transition =
 			type: "notify_human";
 			message: string;
 			severity: "info" | "warning" | "error";
+			/**
+			 * R3 / TF-0081: the structured form the adjudication queue consumes.
+			 * The emitter is the only place that knows what the event is about,
+			 * what a human would do differently, and what happens if nobody
+			 * acts — so the envelope is built here, not parsed out of `message`
+			 * downstream. An emitter without one is a plain log line, never an
+			 * alarm.
+			 */
+			tribunal?: TribunalEnvelope;
+	  }
+	| {
+			/**
+			 * R2: deliver a premise-invalidation notice INTO a live writer's
+			 * session (the agent-side mirror of notify_human). The automaton
+			 * only names the target; the runtime owns actual delivery (it
+			 * alone knows which sessions are alive and how to reach them).
+			 */
+			type: "notify_session";
+			writerId: string;
+			message: string;
+			/** File-level stale-premise evidence attached to the notice. */
+			stale: Array<{
+				path: string;
+				observedVersion: string | null;
+				currentVersion: string | null;
+				diff?: string;
+			}>;
 	  };

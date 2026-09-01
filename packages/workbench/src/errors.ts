@@ -18,3 +18,19 @@ export class NoWorkbenchError extends Error {
 		this.name = "NoWorkbenchError";
 	}
 }
+
+/**
+ * A CAS (compare-and-set) write lost the race: the on-disk version or hash
+ * did not match the caller's precondition. `current` carries the object that
+ * IS on disk so the caller can rebase and retry without a second read.
+ */
+export class BlackboardConflictError extends BlackboardDataError {
+	constructor(
+		message: string,
+		path: string,
+		readonly current: unknown,
+	) {
+		super(message, path);
+		this.name = "BlackboardConflictError";
+	}
+}

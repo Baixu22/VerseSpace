@@ -1,9 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
+import { drainPremiseQueue } from "../runtime/delivery";
+import { reconcilePremises } from "../runtime/premises";
 import { workbenchConfigSchema } from "../types/config";
 import { WORKBENCH_VERSION } from "../version";
 
@@ -199,13 +202,26 @@ function assetResponse(body: ReadableStream | string, path: string): Response {
 	return new Response(body, { headers: { "content-type": mimeFor(path) } });
 }
 
+type UiServer = Bun.Server<undefined> & {
+	authToken: string;
+	handle: (request: Request) => Promise<Response>;
+};
+
 export async function createUiServer(
 	bb: Blackboard,
 	port: number,
 	uiDirOverride?: string,
-) {
+): Promise<UiServer> {
 	const assets = await resolveUiAssets(uiDirOverride);
 	const chat = new ChatThreads(bb);
+	// Per-run token: a fresh random secret every server start. Every /api route
+	// except the /api/bootstrap handshake requires it, so a cross-site page in
+	// the user's browser cannot fire state-changing requests (no CORS headers
+	// are emitted at all — the SPA is same-origin; `vite dev` talks through its
+	// own proxy). The handshake is safe to serve unauthenticated because its
+	// response is unreadable cross-origin (SOP) and DNS rebinding is killed by
+	// the host check below — a rebound page shows up with a foreign hostname.
+	const token = randomUUID();
 
 	async function readAsset(urlPath: string): Promise<Response | null> {
 		const key = urlPath.replace(/^\/+/, "") || "index.html";
@@ -231,216 +247,325 @@ export async function createUiServer(
 		return null;
 	}
 
-	return Bun.serve({
-		port,
-		hostname: "127.0.0.1",
-		fetch: async (request) => {
-			const url = new URL(request.url);
-			const cors = { "access-control-allow-origin": "*" };
-			if (url.pathname === "/api/state") {
-				return Response.json(await collectState(bb), { headers: cors });
+	async function handle(request: Request): Promise<Response> {
+		const url = new URL(request.url);
+		// Anti DNS-rebinding + anti cross-site pivot: only loopback hostnames.
+		// Port-agnostic so `vite dev` (127.0.0.1:5188 → proxy) keeps working.
+		const local = new Set(["127.0.0.1", "localhost", "::1"]);
+		if (!local.has(url.hostname)) {
+			return new Response("forbidden", { status: 403 });
+		}
+		const unauthorized = () => new Response("unauthorized", { status: 401 });
+		if (url.pathname.startsWith("/api")) {
+			if (url.pathname === "/api/bootstrap" && request.method === "GET") {
+				return Response.json({ token, version: WORKBENCH_VERSION });
 			}
-			if (url.pathname === "/api/sync" && request.method === "POST") {
-				const { runOnce } = await import("../runtime");
-				return Response.json(await runOnce(bb), { headers: cors });
+			if (request.headers.get("x-workbench-token") !== token) {
+				return unauthorized();
 			}
-			if (url.pathname === "/api/dispatch" && request.method === "POST") {
-				const { dispatchGoal } = await import("../scheduler/dispatch");
-				const body = (await request.json()) as {
-					goalId?: string;
-					workspotId?: string;
-				};
-				if (!body.goalId) {
-					return Response.json(
-						{ ok: false, reason: "缺少 goalId" },
-						{ status: 400, headers: cors },
-					);
-				}
-				const result = await dispatchGoal(bb, body.goalId, body.workspotId);
-				return Response.json(result, {
-					status: result.ok ? 200 : 409,
-					headers: cors,
-				});
-			}
-			if (url.pathname === "/api/agent/run" && request.method === "POST") {
-				const { startAgent } = await import("../agents/runner");
-				const body = (await request.json()) as {
-					workspotId?: string;
-					prompt?: string;
-				};
-				if (!body.workspotId || !body.prompt) {
-					return Response.json(
-						{ ok: false, reason: "缺少 workspotId / prompt" },
-						{ status: 400, headers: cors },
-					);
-				}
-				const result = await startAgent(bb, {
-					workspotId: body.workspotId,
-					prompt: body.prompt,
-				});
-				return Response.json(result, {
-					status: result.ok ? 200 : 409,
-					headers: cors,
-				});
-			}
-			if (url.pathname === "/api/review" && request.method === "POST") {
-				const { reviewCheckpoint } = await import("../runtime/review");
-				const body = (await request.json()) as {
-					cpId?: string;
-					approve?: boolean;
-				};
-				if (!body.cpId || typeof body.approve !== "boolean") {
-					return Response.json(
-						{ ok: false, reason: "缺少 cpId / approve" },
-						{ status: 400, headers: cors },
-					);
-				}
+		}
+		if (url.pathname === "/api/state") {
+			return Response.json(await collectState(bb));
+		}
+		if (url.pathname === "/api/sync" && request.method === "POST") {
+			const { runOnce } = await import("../runtime");
+			const result = await runOnce(bb);
+			// the watcher or a manual sync holds the run lock: refuse instead
+			// of racing — the UI can retry on the next interaction
+			return Response.json(result, { status: result.busy ? 409 : 200 });
+		}
+		if (url.pathname === "/api/dispatch" && request.method === "POST") {
+			const { dispatchGoal } = await import("../scheduler/dispatch");
+			const body = (await request.json()) as {
+				goalId?: string;
+				workspotId?: string;
+				force?: boolean;
+			};
+			if (!body.goalId) {
 				return Response.json(
-					await reviewCheckpoint(bb, body.cpId, body.approve),
-					{ headers: cors },
+					{ ok: false, reason: "缺少 goalId" },
+					{ status: 400 },
 				);
 			}
+			const result = await dispatchGoal(bb, body.goalId, body.workspotId, {
+				force: body.force === true,
+			});
+			return Response.json(result, { status: result.ok ? 200 : 409 });
+		}
+		// R3: the three views that make the machine's own numbers visible —
+		// the queue (what wants a decision), WIP (what the flow allows), and
+		// per-lane usage (what each lane is burning).
+		if (url.pathname === "/api/tribunal" && request.method === "GET") {
+			const [{ renderCard }, wip] = await Promise.all([
+				import("../commands/tribunal"),
+				import("../scheduler/wip").then((m) => m.observeFlow(bb)),
+			]);
+			const [items, stats, distribution] = await Promise.all([
+				bb.tribunal.list(),
+				bb.tribunal.stats(),
+				bb.tribunal.distribution(),
+			]);
+			return Response.json({
+				items: items.map((item) => ({ ...item, card: renderCard(item) })),
+				stats,
+				distribution,
+				wip,
+			});
+		}
+		const tribunalItem = url.pathname.match(/^\/api\/tribunal\/([^/]+)$/);
+		if (tribunalItem && request.method === "POST") {
+			const id = decodeURIComponent(tribunalItem[1] ?? "");
+			const body = (await request.json().catch(() => ({}))) as {
+				action?: string;
+				minutes?: number;
+			};
+			const item =
+				body.action === "shelve"
+					? await bb.tribunal.shelve(id, body.minutes ?? 30)
+					: body.action === "resolve"
+						? await bb.tribunal.resolve(id)
+						: null;
+			if (!item) {
+				return Response.json(
+					{ ok: false, reason: "未知动作或条目不存在" },
+					{ status: 400 },
+				);
+			}
+			return Response.json({ ok: true, item });
+		}
+		if (url.pathname === "/api/wip" && request.method === "GET") {
+			const { explainWip, observeFlow } = await import("../scheduler/wip");
+			const flow = await observeFlow(bb);
+			return Response.json({ ...flow, explanation: explainWip(flow) });
+		}
+		if (url.pathname === "/api/metrics" && request.method === "GET") {
+			const { observeFlow } = await import("../scheduler/wip");
+			const [lanes, flow] = await Promise.all([
+				bb.metrics.list(),
+				observeFlow(bb),
+			]);
+			return Response.json({
+				lanes,
+				unreviewedBacklog: flow.unreviewedBacklog,
+			});
+		}
+		if (url.pathname === "/api/agent/run" && request.method === "POST") {
+			const { startAgent } = await import("../agents/runner");
+			const body = (await request.json()) as {
+				workspotId?: string;
+				prompt?: string;
+			};
+			if (!body.workspotId || !body.prompt) {
+				return Response.json(
+					{ ok: false, reason: "缺少 workspotId / prompt" },
+					{ status: 400 },
+				);
+			}
+			const result = await startAgent(bb, {
+				workspotId: body.workspotId,
+				prompt: body.prompt,
+			});
+			return Response.json(result, { status: result.ok ? 200 : 409 });
+		}
+		if (url.pathname === "/api/review" && request.method === "POST") {
+			const { reviewCheckpoint } = await import("../runtime/review");
+			const body = (await request.json()) as {
+				cpId?: string;
+				approve?: boolean;
+			};
+			if (!body.cpId || typeof body.approve !== "boolean") {
+				return Response.json(
+					{ ok: false, reason: "缺少 cpId / approve" },
+					{ status: 400 },
+				);
+			}
+			return Response.json(await reviewCheckpoint(bb, body.cpId, body.approve));
+		}
 
-			if (url.pathname === "/api/chat/feedback" && request.method === "POST") {
-				const body = (await request.json()) as {
-					threadId?: string;
-					messageId?: string;
-					kind?: string;
-				};
-				await bb.events.append({
-					timestamp: new Date().toISOString(),
-					source: "human",
-					type: "feedback",
-					payload: body,
-				});
-				return Response.json({ ok: true }, { headers: cors });
+		if (url.pathname === "/api/chat/feedback" && request.method === "POST") {
+			const body = (await request.json()) as {
+				threadId?: string;
+				messageId?: string;
+				kind?: string;
+			};
+			await bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "human",
+				type: "feedback",
+				payload: body,
+			});
+			return Response.json({ ok: true });
+		}
+		if (url.pathname === "/api/config/chat" && request.method === "GET") {
+			const config = await bb.config.load();
+			const { apiKey, ...rest } = config.chat;
+			return Response.json({ ...rest, hasKey: Boolean(apiKey) });
+		}
+		if (url.pathname === "/api/config/chat" && request.method === "PATCH") {
+			const body = (await request.json()) as Record<string, unknown>;
+			const config = await bb.config.load();
+			const next = { ...config.chat, ...body };
+			if (body.apiKey === "") {
+				next.apiKey = undefined; // empty string clears the key
 			}
-			if (url.pathname === "/api/config/chat" && request.method === "GET") {
-				const config = await bb.config.load();
-				const { apiKey, ...rest } = config.chat;
-				return Response.json(
-					{ ...rest, hasKey: Boolean(apiKey) },
-					{ headers: cors },
-				);
-			}
-			if (url.pathname === "/api/config/chat" && request.method === "PATCH") {
-				const body = (await request.json()) as Record<string, unknown>;
-				const config = await bb.config.load();
-				const next = { ...config.chat, ...body };
-				if (body.apiKey === "") {
-					next.apiKey = undefined; // empty string clears the key
-				}
-				config.chat = workbenchConfigSchema.parse({
-					...config,
-					chat: next,
-				}).chat;
-				await bb.config.save(config);
-				const { apiKey, ...rest } = config.chat;
-				return Response.json(
-					{ ...rest, hasKey: Boolean(apiKey) },
-					{ headers: cors },
-				);
-			}
+			config.chat = workbenchConfigSchema.parse({
+				...config,
+				chat: next,
+			}).chat;
+			await bb.config.save(config);
+			const { apiKey, ...rest } = config.chat;
+			return Response.json({ ...rest, hasKey: Boolean(apiKey) });
+		}
 
-			// ── chat runtime: threads + streaming messages ──
-			if (url.pathname === "/api/chat/threads" && request.method === "GET") {
-				return Response.json(await chat.list(), { headers: cors });
+		// ── chat runtime: threads + streaming messages ──
+		if (url.pathname === "/api/chat/threads" && request.method === "GET") {
+			return Response.json(await chat.list());
+		}
+		if (url.pathname === "/api/chat/threads" && request.method === "POST") {
+			const body = (await request.json().catch(() => ({}))) as {
+				title?: string;
+			};
+			return Response.json(await chat.create(body.title));
+		}
+		const chatMatch = url.pathname.match(
+			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote))?$/,
+		);
+		if (chatMatch) {
+			const threadId = decodeURIComponent(chatMatch[1] ?? "");
+			const sub = chatMatch[3];
+			if (!sub && request.method === "GET") {
+				const [meta, messages] = await Promise.all([
+					chat.get(threadId),
+					chat.messages(threadId),
+				]);
+				return Response.json({ meta, messages });
 			}
-			if (url.pathname === "/api/chat/threads" && request.method === "POST") {
-				const body = (await request.json().catch(() => ({}))) as {
+			if (sub === "cancel" && request.method === "POST") {
+				chat.cancel(threadId);
+				return Response.json({ ok: true });
+			}
+			if (sub === "reload" && request.method === "POST") {
+				return Response.json(await chat.reload(threadId));
+			}
+			if (sub === "promote" && request.method === "POST") {
+				// TF-0092：手动晋升——任意时刻一个手势命名无名对话
+				return Response.json(await chat.promote(threadId));
+			}
+			if (sub === undefined && request.method === "DELETE") {
+				const outcome = await chat.remove(threadId);
+				return Response.json(outcome, { status: outcome.ok ? 200 : 409 });
+			}
+			if (sub === undefined && request.method === "PATCH") {
+				const body = (await request.json()) as {
 					title?: string;
+					permissionMode?: "default" | "plan" | "acceptEdits";
 				};
-				return Response.json(await chat.create(body.title), { headers: cors });
+				return Response.json(await chat.update(threadId, body));
 			}
-			const chatMatch = url.pathname.match(
-				/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel))?$/,
-			);
-			if (chatMatch) {
-				const threadId = decodeURIComponent(chatMatch[1] ?? "");
-				const sub = chatMatch[3];
-				if (!sub && request.method === "GET") {
-					const [meta, messages] = await Promise.all([
-						chat.get(threadId),
-						chat.messages(threadId),
-					]);
-					return Response.json({ meta, messages }, { headers: cors });
+			if (sub === "messages" && request.method === "POST") {
+				const body = (await request.json()) as {
+					text?: string;
+					resend?: boolean;
+				};
+				if (!body.text?.trim()) {
+					return Response.json({ error: "text is required" }, { status: 400 });
 				}
-				if (sub === "cancel" && request.method === "POST") {
-					chat.cancel(threadId);
-					return Response.json({ ok: true }, { headers: cors });
-				}
-				if (sub === "reload" && request.method === "POST") {
-					return Response.json(await chat.reload(threadId), { headers: cors });
-				}
-				if (sub === undefined && request.method === "DELETE") {
-					const outcome = await chat.remove(threadId);
-					return Response.json(outcome, {
-						status: outcome.ok ? 200 : 409,
-						headers: cors,
-					});
-				}
-				if (sub === undefined && request.method === "PATCH") {
-					const body = (await request.json()) as {
-						title?: string;
-						permissionMode?: "default" | "plan" | "acceptEdits";
-					};
-					return Response.json(await chat.update(threadId, body), {
-						headers: cors,
-					});
-				}
-				if (sub === "messages" && request.method === "POST") {
-					const body = (await request.json()) as { text?: string };
-					if (!body.text?.trim()) {
-						return Response.json(
-							{ error: "text is required" },
-							{ status: 400, headers: cors },
-						);
-					}
-					const stream = new ReadableStream({
-						start(controller) {
-							const encoder = new TextEncoder();
-							const emit = (event: Record<string, unknown>) => {
+				const stream = new ReadableStream({
+					start(controller) {
+						const encoder = new TextEncoder();
+						// cancel can resolve the run while a final event is still in
+						// flight — once closed, drop anything late instead of throwing
+						let closed = false;
+						const emit = (event: Record<string, unknown>) => {
+							if (closed) {
+								return;
+							}
+							try {
 								controller.enqueue(
 									encoder.encode(`${JSON.stringify(event)}
 `),
 								);
-							};
-							chat
-								.run(threadId, body.text as string, emit)
-								.then(() => controller.close())
-								.catch((error) => {
-									emit({ type: "error", message: String(error) });
-									controller.close();
-								});
-						},
-					});
-					return new Response(stream, {
-						headers: {
-							"content-type": "application/x-ndjson",
-							...cors,
-						},
-					});
-				}
-			}
-
-			if (!url.pathname.startsWith("/api")) {
-				// static SPA with history fallback: exact asset, else index.html
-				const direct =
-					url.pathname === "/"
-						? await readAsset("/")
-						: await readAsset(url.pathname);
-				if (direct) {
-					return direct;
-				}
-				const index = await readAsset("/");
-				if (index) {
-					return index;
-				}
-				return new Response(FALLBACK_PAGE, {
-					headers: { "content-type": "text/html; charset=utf-8" },
+							} catch {
+								closed = true;
+							}
+						};
+						const close = () => {
+							if (closed) {
+								return;
+							}
+							closed = true;
+							try {
+								controller.close();
+							} catch {
+								// already closed by the peer
+							}
+						};
+						chat
+							.run(threadId, body.text as string, emit, {
+								resend: Boolean(body.resend),
+							})
+							.then(close)
+							.catch((error) => {
+								emit({ type: "error", message: String(error) });
+								close();
+							});
+					},
+				});
+				return new Response(stream, {
+					headers: { "content-type": "application/x-ndjson" },
 				});
 			}
-			return new Response("not found", { status: 404, headers: cors });
+		}
+
+		if (!url.pathname.startsWith("/api")) {
+			// static SPA with history fallback: exact asset, else index.html
+			const direct =
+				url.pathname === "/"
+					? await readAsset("/")
+					: await readAsset(url.pathname);
+			if (direct) {
+				return direct;
+			}
+			const index = await readAsset("/");
+			if (index) {
+				return index;
+			}
+			return new Response(FALLBACK_PAGE, {
+				headers: { "content-type": "text/html; charset=utf-8" },
+			});
+		}
+		return new Response("not found", { status: 404 });
+	}
+
+	const server = Bun.serve({
+		port,
+		hostname: "127.0.0.1",
+		fetch: handle,
+	});
+
+	// R2: detect and deliver are two different jobs, and only the second one
+	// needs a live session. Detection writes into the event log; the drain
+	// below owns delivery (between turns, via the session's streaming-input
+	// stdin — append-only, so the KV cache survives). Splitting them also
+	// means notices recorded by the watcher while this process was down get
+	// delivered here rather than rotting in the log.
+	const RECONCILE_INTERVAL_MS = 15_000;
+	const reconcileTimer = setInterval(() => {
+		void (async () => {
+			await reconcilePremises(bb).catch(() => {});
+			await drainPremiseQueue(bb, {
+				deliver: async (writerId, message) =>
+					(await chat.notifySession(writerId, message)) === "delivered",
+			}).catch(() => {});
+		})();
+	}, RECONCILE_INTERVAL_MS);
+
+	return Object.assign(server, {
+		authToken: token,
+		handle,
+		stop: (closeActiveConnections?: boolean) => {
+			clearInterval(reconcileTimer);
+			return server.stop(closeActiveConnections);
 		},
 	});
 }

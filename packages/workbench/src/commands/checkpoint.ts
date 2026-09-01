@@ -3,6 +3,7 @@ import { CHECKPOINT_ZONES } from "../blackboard/checkpoints";
 import { newId } from "../ids";
 import { emitJson, type GlobalOptions } from "../output";
 import { reviewCheckpoint } from "../runtime/review";
+import { captureCodeRollback } from "../runtime/rollback";
 import type { Checkpoint } from "../types/checkpoint";
 import { resolveBlackboard } from "./context";
 
@@ -33,6 +34,18 @@ export async function checkpointCreate(
 	if (!goal) {
 		throw new Error(`目标不存在：${options.goal}`);
 	}
+	// TF-0098：落 checkpoint 的同时采集代码面回退快照（工作区 HEAD + 改动文件）。
+	// 没有恢复点的 checkpoint 一律拒绝回退，所以这一步是廉价可逆的地基。
+	let rollback: Checkpoint["rollback"];
+	const workspot = await bb.state.workspots.get(options.workspot);
+	if (workspot) {
+		try {
+			rollback = { code: await captureCodeRollback(workspot.worktreePath) };
+		} catch {
+			// 工作区不可读（如派发失败）时不阻塞落 checkpoint，只是没有恢复点
+			rollback = undefined;
+		}
+	}
 	const checkpoint: Checkpoint = {
 		id: newId("cp"),
 		goal: options.goal,
@@ -54,6 +67,7 @@ export async function checkpointCreate(
 					},
 		artifacts: [],
 		unblocks: [],
+		rollback,
 	};
 	await bb.checkpoints.save(checkpoint, "staging");
 	await bb.goals.update(options.goal, {

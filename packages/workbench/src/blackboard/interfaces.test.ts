@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { appendFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { BlackboardConflictError } from "../errors";
 import { hashFile } from "../hash";
 import { makeTempWorkbench } from "../test/fixtures";
+import type { RegistryEntry } from "../types/interface-registry";
 
 const CONTRACT = "contract-file.md";
 
@@ -82,6 +84,32 @@ describe("interfaces blackboard API", () => {
 			);
 			expect(updated.version).toBe(2);
 			expect((await bb.interfaces.checkDrift("core/api")).drifted).toBe(false);
+
+			// CAS precondition: a stale expectedVersion fails loudly and
+			// carries the current entry instead of overwriting it
+			let conflict: BlackboardConflictError | null = null;
+			try {
+				await bb.interfaces.updateVersion("core/api", "any-hash", {
+					expectedVersion: 1,
+				});
+			} catch (error) {
+				if (error instanceof BlackboardConflictError) {
+					conflict = error;
+				} else {
+					throw error;
+				}
+			}
+			expect(conflict).not.toBeNull();
+			expect((conflict?.current as RegistryEntry).version).toBe(2);
+			expect((await bb.interfaces.getEntry("core/api"))?.contentHash).not.toBe(
+				"any-hash",
+			);
+
+			// matching precondition goes through and bumps the version
+			const next = await bb.interfaces.updateVersion("core/api", "fresh-hash", {
+				expectedVersion: 2,
+			});
+			expect(next.version).toBe(3);
 		} finally {
 			await cleanup();
 		}

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { emitJson, type GlobalOptions } from "../output";
-import { runOnce } from "../runtime";
+import { type RunOnceResult, runOnce } from "../runtime";
 import type { WorkbenchEvent } from "../types/event";
 import type { Goal } from "../types/goal";
 import type { Transition } from "../types/transitions";
@@ -26,6 +26,8 @@ function describeTransition(t: Transition): string {
 			return `refresh_context: ${t.wsId}`;
 		case "notify_human":
 			return `notify_human[${t.severity}]: ${t.message}`;
+		case "notify_session":
+			return `notify_session → ${t.writerId}: ${t.message}`;
 	}
 }
 
@@ -33,6 +35,11 @@ export async function syncCommand(command: Command): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
 	const bb = await resolveBlackboard();
 	const result = await runOnce(bb);
+	if (result.busy) {
+		throw new Error(
+			`另一个 runOnce 正在执行（pid ${result.lockHolder}，可能是 watch 进程）；稍后重试即可`,
+		);
+	}
 	if (opts.json) {
 		emitJson(result);
 		return;
@@ -60,6 +67,34 @@ export async function syncCommand(command: Command): Promise<void> {
 					? "警告"
 					: "提示";
 		console.log(`  ! [${tag}] ${notification.message}`);
+	}
+	await reportTribunal(bb, result.tribunal);
+}
+
+/**
+ * R3: what the queue did with this cycle's alarms. Printed after the raw
+ * notifications on purpose — the two lists are not the same thing, and seeing
+ * the difference is how you tell whether the rationalization is working.
+ */
+async function reportTribunal(
+	bb: Awaited<ReturnType<typeof resolveBlackboard>>,
+	tally: RunOnceResult["tribunal"],
+): Promise<void> {
+	if (tally.submitted === 0) {
+		return;
+	}
+	console.log(
+		`裁决队列：提交 ${tally.submitted} · 入队 ${tally.admitted}（折叠 ${tally.folded}）· 抑制 ${tally.suppressed}`,
+	);
+	const push = await bb.tribunal.pushable();
+	if (push.length === 0) {
+		console.log("  没有需要打断你的事；其余留在 workbench tribunal list");
+		return;
+	}
+	for (const item of push) {
+		console.log(
+			`  → [${item.priority}] ${item.action.label}（建议：${item.sbar.recommendation}）`,
+		);
 	}
 }
 

@@ -24,7 +24,7 @@
 		"build": "bun run scripts/build.ts",
 		"build:all": "bun run scripts/build.ts --all",
 		"dev": "bun run src/index.ts",
-		"test": "bun test",
+		"test": "bun test --timeout 60000",
 		"typecheck": "bunx tsc --noEmit"
 	},
 	"dependencies": {

@@ -1,0 +1,16 @@
+# 本机（Windows / D 盘）实测：文件系统删除约 350–500ms/条目，临时目录里
+# 100 个条目的 rm -rf 要 35–49 秒（bun 与 node 一致，关掉宿主沙箱也一样）。
+# makeTempWorkbench() 的清理因此会轻易突破 bun 默认的 5000ms 超时，把本来
+# 能过的用例判死。
+#
+# 两道保险，缺一不可：
+#
+# 1. package.json 的 `bun test --timeout 60000` —— 覆盖所有测试文件，但只对
+#    走 npm script 的调用生效。
+# 2. 这里的 [test] preload —— 覆盖直接执行 `bun test` 的调用，但实测 bun 只
+#    把它应用到**第一个**测试文件，后续文件仍回落到 5000ms 默认值。
+#
+# 另：bunfig 的 [test] 段不认识 `timeout` 键，写进去不报错也不生效，所以
+# preload 里只能走 bun:test 的 setDefaultTimeout()。
+[test]
+preload = ["./src/test/preload.ts"]

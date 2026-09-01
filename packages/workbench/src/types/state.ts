@@ -1,10 +1,21 @@
 import { z } from "zod";
 
-/** Queue file shape (blackboard/state/execution/queue.yaml). */
+/**
+ * Legacy queue shape (a single queue.yaml holding the whole array) — kept
+ * only so pre-0.3 workspaces migrate transparently to one-file-per-entry.
+ */
 export const queueFileSchema = z.object({
 	queue: z.array(z.string()).default([]),
 });
 export type QueueFile = z.infer<typeof queueFileSchema>;
+
+/** One queue entry file: blackboard/state/queue/<goalId>.yaml. */
+export const queueEntrySchema = z.object({
+	goalId: z.string().min(1),
+	/** Best-effort FIFO position; ties resolve alphabetically by goalId. */
+	seq: z.number().int().nonnegative(),
+});
+export type QueueEntry = z.infer<typeof queueEntrySchema>;
 
 /**
  * Known contradiction between two parts of the blackboard (e.g. a workspot is

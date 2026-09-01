@@ -1,6 +1,7 @@
-import { isAbsolute, resolve } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 import type { Command } from "commander";
 import { emitJson, type GlobalOptions } from "../output";
+import { reapOrphans } from "../supervisor";
 import { startWatcher } from "../watcher";
 import { acquireWatchLock } from "../watcher/lock";
 import { resolveBlackboard } from "./context";
@@ -8,6 +9,12 @@ import { resolveBlackboard } from "./context";
 export async function watchCommand(command: Command): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
 	const bb = await resolveBlackboard();
+
+	// adopt-or-kill agents orphaned by a crashed previous runtime
+	const reaped = await reapOrphans(join(bb.paths.root, "proc"));
+	if (reaped > 0 && !opts.quiet) {
+		console.log(`workbench: 收割了 ${reaped} 个孤儿 agent 进程`);
+	}
 
 	const lock = await acquireWatchLock(bb.paths.root);
 	if (!lock.acquired) {

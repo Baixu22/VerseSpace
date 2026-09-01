@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
+import { join } from "node:path";
 import type { Command } from "commander";
 import { emitJson, type GlobalOptions } from "../output";
+import { reapOrphans } from "../supervisor";
 import { createUiServer } from "../ui/server";
 import { resolveBlackboard } from "./context";
 
@@ -31,6 +33,10 @@ export async function uiCommand(
 ): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
 	const bb = await resolveBlackboard();
+
+	// adopt-or-kill agents orphaned by a crashed previous runtime
+	await reapOrphans(join(bb.paths.root, "proc"));
+
 	const port = Math.max(
 		1,
 		Math.min(65535, Number(options.port ?? 7700) || 7700),
@@ -51,9 +57,12 @@ export async function uiCommand(
 	}
 
 	if (opts.json) {
-		emitJson({ ok: true, url, stop: "Ctrl+C" });
+		emitJson({ ok: true, url, token: server.authToken, stop: "Ctrl+C" });
 	} else if (!opts.quiet) {
 		console.log(`workbench ui：${url}（只读本地面板，Ctrl+C 退出）`);
+		console.log(
+			`API 调试用 token：${server.authToken}（请求头 x-workbench-token；浏览器里的面板自动获取）`,
+		);
 	}
 	openBrowser(url);
 

@@ -3,9 +3,11 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openBlackboard } from "../blackboard";
+import { emptyLaneMetrics, foldUsage } from "../blackboard/metrics";
 import { initWorkbench } from "../commands/init";
 import type { AgentSession } from "./runner";
 import { describeStreamLine, readAgentView, startAgent } from "./runner";
+import { emptyUsage } from "./usage";
 
 async function makeProject(): Promise<{
 	projectDir: string;
@@ -140,5 +142,98 @@ describe("agent runner", () => {
 			"结果：done",
 		);
 		expect(describeStreamLine("not json at all")).toBe("not json at all");
+	});
+
+	test("a long-running agent's log is readable while it streams", async () => {
+		const { projectDir, cleanup } = await makeProject();
+		try {
+			const bb = openBlackboard(join(projectDir, ".workbench"));
+			await bb.goals.add({ title: "长跑目标" });
+			await mkdir(join(projectDir, "worktrees", "ws-a"), { recursive: true });
+			// emits one line every 200ms for ~1.4s: the log must show lines
+			// BEFORE the process exits (the old code buffered everything in
+			// memory and only flushed on close)
+			await writeFile(
+				join(projectDir, "worktrees", "ws-a", "slow-agent.js"),
+				[
+					"let n = 0;",
+					"const tick = () => {",
+					"  n += 1;",
+					'  console.log(JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "step-" + n }] } }));',
+					"  if (n < 7) { setTimeout(tick, 200); } else { process.exit(0); }",
+					"};",
+					"tick();",
+				].join("\n"),
+				"utf8",
+			);
+			const config = await bb.config.load();
+			config.agent.command = "bun slow-agent.js";
+			await bb.config.save(config);
+			await bb.state.workspots.save({
+				id: "ws-a",
+				branch: "ws/ws-a",
+				worktreePath: join("worktrees", "ws-a"),
+				primaryTask: "g-1",
+				binding: "primary",
+				status: "active",
+				contextNeeds: { decisions: [], interfaces: [] },
+			});
+
+			const start = await startAgent(bb, {
+				workspotId: "ws-a",
+				prompt: "慢慢做",
+			});
+			expect(start.ok).toBe(true);
+
+			// mid-run: at least one line already on disk while still running
+			let sawLinesMidRun = false;
+			for (let i = 0; i < 40 && !sawLinesMidRun; i += 1) {
+				await new Promise((resolve) => setTimeout(resolve, 50));
+				const view = await readAgentView(bb, "ws-a");
+				if (view.session?.status === "running" && view.lastLines.length > 0) {
+					sawLinesMidRun = true;
+				}
+			}
+			expect(sawLinesMidRun).toBe(true);
+
+			await pollFor(async () => {
+				const view = await readAgentView(bb, "ws-a");
+				return view.session?.status === "done";
+			}, 10000);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("a lane with two consecutive failures is hung before spawn", async () => {
+		const { projectDir, cleanup } = await makeProject();
+		try {
+			const bb = openBlackboard(join(projectDir, ".workbench"));
+			await bb.state.workspots.save({
+				id: "ws-a",
+				branch: "ws/ws-a",
+				worktreePath: join("worktrees", "ws-a"),
+				primaryTask: "g-1",
+				binding: "primary",
+				status: "active",
+				contextNeeds: { decisions: [], interfaces: [] },
+			});
+			let lane = emptyLaneMetrics("ws-a");
+			lane = foldUsage(lane, { ...emptyUsage(), failed: true });
+			lane = foldUsage(lane, { ...emptyUsage(), failed: true });
+			await bb.metrics.save("ws-a", lane);
+
+			const start = await startAgent(bb, {
+				workspotId: "ws-a",
+				prompt: "再试一次",
+			});
+			expect(start.ok).toBe(false);
+			expect(start.reason).toContain("挂起");
+			expect(start.reason).toContain("git diff");
+			const items = await bb.tribunal.list();
+			expect(items.some((item) => item.kind === "metric_suspend")).toBe(true);
+		} finally {
+			await cleanup();
+		}
 	});
 });

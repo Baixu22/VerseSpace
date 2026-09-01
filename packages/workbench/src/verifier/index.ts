@@ -1,4 +1,4 @@
-import { type ChildProcess, spawn } from "node:child_process";
+import { spawnSupervised } from "../supervisor";
 import type {
 	VerificationStrategy,
 	VerificationStrategyName,
@@ -28,17 +28,6 @@ const MAX_KEPT_OUTPUT_CHARS = 20_000;
 /** Hard cap on accumulated output so a spewing process cannot eat memory. */
 const MAX_BUFFER_CHARS = 1_000_000;
 
-function killTree(child: ChildProcess): void {
-	if (process.platform === "win32" && child.pid !== undefined) {
-		// shell:true means the direct child is a shell; kill the whole tree.
-		spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
-			stdio: "ignore",
-		});
-	} else {
-		child.kill("SIGKILL");
-	}
-}
-
 function truncateForArchive(output: string): string {
 	if (output.length <= MAX_KEPT_OUTPUT_CHARS) {
 		return output;
@@ -57,32 +46,31 @@ function execute(
 	exitCode: number | null;
 	output: string;
 }> {
+	// the supervisor owns the spawn: argv-array (no shell:true), tree kill on
+	// timeout, and a bounded output buffer so a spewing process cannot eat
+	// memory
 	return new Promise((resolve) => {
-		const child = spawn(command, { cwd, shell: true });
 		let output = "";
-		let timedOut = false;
-		const collect = (chunk: Buffer) => {
-			output += chunk.toString("utf8");
+		const append = (chunk: string) => {
+			output += chunk;
 			if (output.length > MAX_BUFFER_CHARS) {
 				output = output.slice(-MAX_BUFFER_CHARS / 2);
 			}
 		};
-		child.stdout?.on("data", collect);
-		child.stderr?.on("data", collect);
-
-		const timer = setTimeout(() => {
-			timedOut = true;
-			killTree(child);
-		}, timeoutSeconds * 1000);
-
-		child.on("close", (exitCode) => {
-			clearTimeout(timer);
-			resolve({ timedOut, exitCode, output });
+		const proc = spawnSupervised(command, {
+			label: "verify",
+			cwd,
+			timeoutSeconds,
+			onLine: (line, _kind) =>
+				append(`${line}
+`),
 		});
-		child.on("error", () => {
-			clearTimeout(timer);
-			// spawn failure (e.g. shell missing) surfaces as a failed run
-			resolve({ timedOut: false, exitCode: null, output });
+		void proc.wait().then((outcome) => {
+			resolve({
+				timedOut: outcome.timedOut,
+				exitCode: outcome.exitCode,
+				output,
+			});
 		});
 	});
 }

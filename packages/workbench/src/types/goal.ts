@@ -46,5 +46,7 @@ export const goalSchema = z.object({
 		})
 		.default({ interfaces: {}, decisions: [] }),
 	staleReason: z.string().optional(),
+	/** Monotonic per-goal revision — the CAS precondition for updates. */
+	version: z.number().int().nonnegative().default(0),
 });
 export type Goal = z.infer<typeof goalSchema>;

@@ -48,20 +48,24 @@ describe("workspot machine", () => {
 			workspots: [mkWorkspot("ws-a", "active", "g-1")],
 		});
 		const transitions = evaluateWorkspots(snapshot);
-		expect(transitions).toEqual([
-			{
-				type: "workspot_status",
-				wsId: "ws-a",
-				from: "active",
-				to: "blocked",
-				reason: "任务 g-1 已失效（stale_done），需人工重新指派",
+		expect(transitions).toHaveLength(2);
+		expect(transitions[0]).toEqual({
+			type: "workspot_status",
+			wsId: "ws-a",
+			from: "active",
+			to: "blocked",
+			reason: "任务 g-1 已失效（stale_done），需人工重新指派",
+		});
+		expect(transitions[1]).toMatchObject({
+			type: "notify_human",
+			message: "工位 ws-a 被阻塞：任务 g-1 stale_done",
+			severity: "warning",
+			tribunal: {
+				kind: "workspot_blocked",
+				subject: "ws-a",
+				causeKey: "workspot_blocked:ws-a:g-1",
 			},
-			{
-				type: "notify_human",
-				message: "工位 ws-a 被阻塞：任务 g-1 stale_done",
-				severity: "warning",
-			},
-		]);
+		});
 	});
 
 	test("active workspot pointing at a missing goal raises an error notification", () => {
@@ -69,13 +73,18 @@ describe("workspot machine", () => {
 			goals: [],
 			workspots: [mkWorkspot("ws-a", "active", "g-ghost")],
 		});
-		expect(evaluateWorkspots(snapshot)).toEqual([
-			{
-				type: "notify_human",
-				message: "工位 ws-a 指向的目标 g-ghost 不存在",
-				severity: "error",
+		const transitions = evaluateWorkspots(snapshot);
+		expect(transitions).toHaveLength(1);
+		expect(transitions[0]).toMatchObject({
+			type: "notify_human",
+			message: "工位 ws-a 指向的目标 g-ghost 不存在",
+			severity: "error",
+			tribunal: {
+				kind: "workspot_orphan_task",
+				subject: "ws-a",
+				causeKey: "workspot_orphan_task:ws-a:g-ghost",
 			},
-		]);
+		});
 	});
 
 	test("non-active workspots yield nothing", () => {

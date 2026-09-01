@@ -28,6 +28,7 @@ const goal: Goal = {
 	dependsOn: [],
 	checkpoints: [],
 	verifiedAgainst: { interfaces: {}, decisions: [] },
+	version: 0,
 };
 
 function baseInput(): ContextInput {

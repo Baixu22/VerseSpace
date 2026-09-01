@@ -10,6 +10,12 @@ describe("buildProgram", () => {
 			"decision",
 			"interface",
 			"agent",
+			"sessions",
+			"premises",
+			// R3: the human channel, the flow limit, and the lane meters
+			"tribunal",
+			"wip",
+			"metrics",
 			"ws",
 			"checkpoint",
 			"dispatch",
@@ -38,6 +44,47 @@ describe("buildProgram", () => {
 			"show",
 			"cancel",
 		]);
+	});
+
+	test("premises subtree exposes inspection and the seal hook", () => {
+		const premises = buildProgram().commands.find(
+			(command) => command.name() === "premises",
+		);
+		if (!premises) {
+			throw new Error("premises command is missing");
+		}
+		expect(premises.commands.map((command) => command.name())).toEqual([
+			"pending",
+			"seal",
+		]);
+		const seal = premises.commands.find((command) => command.name() === "seal");
+		expect(seal?.options.map((option) => option.long)).toEqual([
+			"--writer",
+			"--target",
+		]);
+	});
+
+	test("tribunal subtree exposes the queue's four verbs and its numbers", () => {
+		const tribunal = buildProgram().commands.find(
+			(command) => command.name() === "tribunal",
+		);
+		if (!tribunal) {
+			throw new Error("tribunal command is missing");
+		}
+		expect(tribunal.commands.map((command) => command.name())).toEqual([
+			"list",
+			"show",
+			"shelve",
+			"resolve",
+			"stats",
+		]);
+	});
+
+	test("dispatch exposes the CONWIP override as an explicit flag", () => {
+		const dispatch = buildProgram().commands.find(
+			(command) => command.name() === "dispatch",
+		);
+		expect(dispatch?.options.map((option) => option.long)).toContain("--force");
 	});
 
 	test("global flags include --json and --quiet", () => {

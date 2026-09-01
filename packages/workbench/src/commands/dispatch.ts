@@ -9,8 +9,9 @@ export async function dispatchCommand(
 	command: Command,
 ): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
+	const force = command.opts().force === true;
 	const bb = await resolveBlackboard();
-	const result = await dispatchGoal(bb, goalId, workspotId);
+	const result = await dispatchGoal(bb, goalId, workspotId, { force });
 	if (opts.json) {
 		emitJson(result);
 	} else if (!opts.quiet) {

@@ -1,3 +1,4 @@
+import { envelopes } from "../tribunal/envelopes";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Transition } from "../types/transitions";
 
@@ -26,6 +27,7 @@ export function evaluateWorkspots(snapshot: WorldSnapshot): Transition[] {
 				type: "notify_human",
 				message: `工位 ${workspot.id} 指向的目标 ${taskId} 不存在`,
 				severity: "error",
+				tribunal: envelopes.orphanTask(workspot.id, taskId),
 			});
 			continue;
 		}
@@ -53,6 +55,7 @@ export function evaluateWorkspots(snapshot: WorldSnapshot): Transition[] {
 				type: "notify_human",
 				message: `工位 ${workspot.id} 被阻塞：任务 ${taskId} ${task.status}`,
 				severity: "warning",
+				tribunal: envelopes.blockedWorkspot(workspot.id, taskId, task.status),
 			});
 		}
 	}

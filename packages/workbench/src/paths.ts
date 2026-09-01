@@ -8,11 +8,21 @@ export interface WorkbenchPaths {
 	blackboard: string;
 	goals: string;
 	decisions: string;
+	/** Directory of anchored interface files (the registry lives inside it). */
 	interfaces: string;
+	/** Directory holding one file per registered interface entry. */
 	registry: string;
 	state: string;
 	workspots: string;
+	/** Directory holding one file per queued goal (one entry, one file). */
 	queue: string;
+	/**
+	 * R3: the adjudication queue — one file per item awaiting (or recording)
+	 * a human decision. Reads stay possible while a decision is pending.
+	 */
+	tribunal: string;
+	/** Per-writer registration + footprint logs (R1: writers as citizens). */
+	sessions: string;
 	conflicts: string;
 	checkpoints: string;
 	staging: string;
@@ -20,6 +30,8 @@ export interface WorkbenchPaths {
 	failed: string;
 	eventsDir: string;
 	eventsFile: string;
+	/** R3 / TF-0084: one usage file per lane. */
+	metrics: string;
 }
 
 export function workbenchPaths(workbenchRoot: string): WorkbenchPaths {
@@ -34,10 +46,13 @@ export function workbenchPaths(workbenchRoot: string): WorkbenchPaths {
 		goals: join(blackboard, "goals"),
 		decisions: join(blackboard, "decisions"),
 		interfaces: join(blackboard, "interfaces"),
-		registry: join(blackboard, "interfaces", "registry.yaml"),
+		registry: join(blackboard, "interfaces", "registry"),
 		state,
 		workspots: join(state, "workspots"),
-		queue: join(state, "queue.yaml"),
+		queue: join(state, "queue"),
+		tribunal: join(state, "tribunal"),
+		sessions: join(blackboard, "sessions"),
+		metrics: join(state, "metrics"),
 		conflicts: join(state, "conflicts.yaml"),
 		checkpoints,
 		staging: join(checkpoints, "staging"),
@@ -55,11 +70,27 @@ export function workbenchPaths(workbenchRoot: string): WorkbenchPaths {
 export async function findWorkbenchRoot(
 	startDir = process.cwd(),
 ): Promise<string | null> {
+	return walkUpFor(startDir, ".workbench");
+}
+
+/**
+ * Nearest git root. Context-rot scans instruction files from here so
+ * `workbench doctor` run inside a package still sees the repo's AGENTS.md.
+ */
+export async function findGitRoot(
+	startDir = process.cwd(),
+): Promise<string | null> {
+	return walkUpFor(startDir, ".git");
+}
+
+async function walkUpFor(
+	startDir: string,
+	name: string,
+): Promise<string | null> {
 	let current = startDir;
 	for (;;) {
-		const candidate = join(current, ".workbench");
-		if (await pathExists(candidate)) {
-			return candidate;
+		if (await pathExists(join(current, name))) {
+			return current;
 		}
 		const parent = join(current, "..");
 		if (parent === current) {

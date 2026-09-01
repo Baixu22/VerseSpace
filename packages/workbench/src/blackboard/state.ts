@@ -1,3 +1,4 @@
+import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { BlackboardDataError } from "../errors";
 import { pathExists, safeReaddir } from "../fs/atomic";
@@ -6,6 +7,8 @@ import type { WorkbenchPaths } from "../paths";
 import {
 	type Conflict,
 	conflictsFileSchema,
+	type QueueEntry,
+	queueEntrySchema,
 	queueFileSchema,
 } from "../types/state";
 import { type Workspot, workspotSchema } from "../types/workspot";
@@ -13,19 +16,53 @@ import { readYamlFile, writeYamlFile } from "../yamlio";
 
 export function stateApi(paths: WorkbenchPaths) {
 	const workspotFile = (id: string) => join(paths.workspots, `${id}.yaml`);
-
-	async function loadQueue() {
-		if (!(await pathExists(paths.queue))) {
-			return queueFileSchema.parse({});
-		}
-		return readYamlFile(paths.queue, queueFileSchema);
-	}
+	const queueEntryFile = (goalId: string) =>
+		join(paths.queue, `${goalId}.yaml`);
 
 	async function loadConflicts() {
 		if (!(await pathExists(paths.conflicts))) {
 			return conflictsFileSchema.parse({});
 		}
 		return readYamlFile(paths.conflicts, conflictsFileSchema);
+	}
+
+	/**
+	 * Pre-0.3 workspaces kept the whole queue in one queue.yaml; move it to
+	 * one file per entry on first touch. Concurrent migrators converge: entry
+	 * creation is O_EXCL-idempotent and the legacy remove is idempotent.
+	 */
+	async function migrateLegacyQueue(): Promise<void> {
+		const legacy = join(paths.state, "queue.yaml");
+		if (!(await pathExists(legacy))) {
+			return;
+		}
+		const file = await readYamlFile(legacy, queueFileSchema);
+		await mkdir(paths.queue, { recursive: true });
+		for (const [index, goalId] of file.queue.entries()) {
+			await writeYamlFile(queueEntryFile(goalId), queueEntrySchema, {
+				goalId,
+				seq: index,
+			});
+		}
+		await rm(legacy, { force: true });
+	}
+
+	async function listEntries(): Promise<QueueEntry[]> {
+		const names = await safeReaddir(paths.queue);
+		const entries = await Promise.all(
+			names
+				.filter((name) => name.endsWith(".yaml"))
+				.map((name) =>
+					readYamlFile(join(paths.queue, name), queueEntrySchema).catch(
+						() => null,
+					),
+				),
+		);
+		return entries
+			.filter((entry): entry is QueueEntry => entry !== null)
+			.sort((a, b) =>
+				a.seq === b.seq ? a.goalId.localeCompare(b.goalId) : a.seq - b.seq,
+			);
 	}
 
 	const workspots = {
@@ -61,26 +98,31 @@ export function stateApi(paths: WorkbenchPaths) {
 
 	const queue = {
 		async get(): Promise<string[]> {
-			return (await loadQueue()).queue;
+			await migrateLegacyQueue();
+			return (await listEntries()).map((entry) => entry.goalId);
 		},
 
-		/** Idempotent: enqueueing an already-queued goal is a no-op. */
+		/** Idempotent: enqueueing an already-queued goal keeps its position. */
 		async enqueue(goalId: string): Promise<string[]> {
-			const file = await loadQueue();
-			if (!file.queue.includes(goalId)) {
-				file.queue.push(goalId);
-				await writeYamlFile(paths.queue, queueFileSchema, file);
+			await migrateLegacyQueue();
+			await mkdir(paths.queue, { recursive: true });
+			// one file per entry, named by the goal id: concurrent enqueues of
+			// the same goal target the same file (idempotent), and different
+			// goals write different files — no update can be lost
+			if (!(await pathExists(queueEntryFile(goalId)))) {
+				const seq = (await listEntries()).length;
+				await writeYamlFile(queueEntryFile(goalId), queueEntrySchema, {
+					goalId,
+					seq,
+				});
 			}
-			return file.queue;
+			return (await listEntries()).map((entry) => entry.goalId);
 		},
 
 		async dequeue(goalId: string): Promise<string[]> {
-			const file = await loadQueue();
-			const next = file.queue.filter((id) => id !== goalId);
-			if (next.length !== file.queue.length) {
-				await writeYamlFile(paths.queue, queueFileSchema, { queue: next });
-			}
-			return next;
+			await migrateLegacyQueue();
+			await rm(queueEntryFile(goalId), { force: true });
+			return (await listEntries()).map((entry) => entry.goalId);
 		},
 	};
 

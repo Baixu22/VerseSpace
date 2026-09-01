@@ -37,13 +37,38 @@ describe("goal machine", () => {
 		const snapshot = snapshotWith({
 			goals: [mkGoal({ id: "g-1", dependsOn: ["g-ghost"] })],
 		});
-		expect(evaluateGoals(snapshot)).toEqual([
-			{
-				type: "notify_human",
-				message: "目标 g-1 依赖的目标不存在：g-ghost",
-				severity: "error",
-			},
-		]);
+		const transitions = evaluateGoals(snapshot);
+		expect(transitions).toHaveLength(1);
+		expect(transitions[0]).toMatchObject({
+			type: "notify_human",
+			message: "目标 g-1 依赖的目标不存在：g-ghost",
+			severity: "error",
+		});
+	});
+
+	test("every notify_human carries an envelope that names an action and a consequence", () => {
+		// R3 / TF-0081: an emitter without an envelope is a log line, not an
+		// alarm. The queue refuses anything that cannot answer both questions.
+		const snapshot = snapshotWith({
+			goals: [
+				mkGoal({ id: "g-1", dependsOn: ["g-ghost"] }),
+				mkGoal({ id: "g-2", dependsOn: ["g-dead"] }),
+				mkGoal({ id: "g-dead", status: "stale_done" }),
+				mkGoal({ id: "g-3", status: "ready", dependsOn: ["g-dead"] }),
+			],
+		});
+		const alarms = evaluateGoals(snapshot).filter(
+			(t): t is Transition & { type: "notify_human" } =>
+				t.type === "notify_human",
+		);
+		expect(alarms).not.toHaveLength(0);
+		for (const alarm of alarms) {
+			expect(alarm.tribunal).toBeDefined();
+			expect(alarm.tribunal?.action.label.length).toBeGreaterThan(0);
+			expect(alarm.tribunal?.sbar.assessment.length).toBeGreaterThan(0);
+			// the card ends in a recommendation, never a question
+			expect(alarm.tribunal?.sbar.recommendation.endsWith("？")).toBe(false);
+		}
 	});
 
 	test("planned goal blocked by a stale dependency emits a warning", () => {

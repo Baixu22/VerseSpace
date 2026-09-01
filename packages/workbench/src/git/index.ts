@@ -4,6 +4,9 @@ import { pathExists } from "../fs/atomic";
 
 export interface GitResult {
 	ok: boolean;
+	/** Exit code. Some git verbs encode the answer here: `merge-tree` exits
+	 * 1 for "they conflict", which is a result, not a failure. */
+	code: number | null;
 	stdout: string;
 	stderr: string;
 }
@@ -21,10 +24,10 @@ export function git(args: string[], cwd: string): Promise<GitResult> {
 			stderr += chunk.toString("utf8");
 		});
 		child.on("close", (code) => {
-			resolve({ ok: code === 0, stdout, stderr });
+			resolve({ ok: code === 0, code, stdout, stderr });
 		});
 		child.on("error", (error) => {
-			resolve({ ok: false, stdout, stderr: String(error) });
+			resolve({ ok: false, code: null, stdout, stderr: String(error) });
 		});
 	});
 }

@@ -2,8 +2,10 @@ import type { Blackboard } from "../blackboard";
 import { generateContext } from "../contextgen/generate";
 import { createWorktree } from "../git";
 import type { SchedulerPolicy } from "../types/config";
+import type { TribunalEnvelope } from "../types/tribunal";
 import type { Workspot } from "../types/workspot";
 import { type DispatchDecision, type SchedulerState, tick } from "./tick";
+import { admitDispatch } from "./wip";
 
 export interface DispatchResult {
 	ok: boolean;
@@ -23,6 +25,7 @@ export async function dispatchGoal(
 	bb: Blackboard,
 	goalId: string,
 	workspotId?: string,
+	options: { force?: boolean } = {},
 ): Promise<DispatchResult> {
 	const goal = await bb.goals.get(goalId);
 	if (!goal) {
@@ -34,6 +37,24 @@ export async function dispatchGoal(
 			goalId,
 			reason: `目标状态为 ${goal.status}，只有 ready 状态可以派发`,
 		};
+	}
+	// R3 / TF-0083: CONWIP gate. Checked before anything is created so a
+	// refused dispatch leaves no half-built worktree behind.
+	const admission = await admitDispatch(bb, options);
+	if (!admission.allowed) {
+		await bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "scheduler",
+			type: "dispatch_refused",
+			payload: {
+				goalId,
+				wipLimit: admission.wipLimit,
+				inFlight: admission.inFlight,
+				unreviewedBacklog: admission.unreviewedBacklog,
+				basis: admission.basis,
+			},
+		});
+		return { ok: false, goalId, reason: admission.reason };
 	}
 
 	let workspot: Workspot | null;
@@ -111,6 +132,8 @@ export async function runScheduler(
 	notify: (
 		message: string,
 		severity: "info" | "warning" | "error",
+		/** R3: the structured envelope, when this decision is an alarm. */
+		tribunal?: TribunalEnvelope,
 	) => Promise<void>,
 ): Promise<DispatchResult[]> {
 	const state: SchedulerState = {
@@ -124,7 +147,7 @@ export async function runScheduler(
 	const results: DispatchResult[] = [];
 	for (const decision of decisions) {
 		if (decision.type === "notify_human") {
-			await notify(decision.message, decision.severity);
+			await notify(decision.message, decision.severity, decision.tribunal);
 			continue;
 		}
 		if (decision.type === "dispatch") {

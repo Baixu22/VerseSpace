@@ -15,17 +15,21 @@ export function eventsApi(paths: WorkbenchPaths) {
 		}
 		const raw = await readFile(paths.eventsFile, "utf8");
 		const events: WorkbenchEvent[] = [];
+		let seq = 0;
 		for (const line of raw.split("\n")) {
 			if (!line.trim()) {
 				continue;
 			}
+			seq += 1;
 			try {
 				const parsed = JSON.parse(line) as WorkbenchEvent;
 				if (
 					typeof parsed.type === "string" &&
 					typeof parsed.timestamp === "string"
 				) {
-					events.push(parsed);
+					// seq = line number in the append-only file: monotonic by
+					// construction, the causal order shared with the footprints
+					events.push({ ...parsed, seq });
 				}
 			} catch {
 				// torn or garbage line: skip, keep reading

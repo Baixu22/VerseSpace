@@ -3,9 +3,12 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openBlackboard } from "../blackboard";
+import { registryContextStore } from "../blackboard/context-store";
 import { initWorkbench } from "../commands/init";
+import { acquirePidLock } from "../fs/lockfile";
 import type { Checkpoint } from "../types/checkpoint";
 import { runOnce } from "./index";
+import { applyRollback, planRollback } from "./rollback";
 
 async function makeTempProject(): Promise<{
 	projectDir: string;
@@ -115,6 +118,128 @@ describe("runOnce", () => {
 			// round 3: verified checkpoint in hand → done
 			await runOnce(bb);
 			expect((await bb.goals.get(goal.id))?.status).toBe("done");
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("TF-0098: checkpoint apply 在效果落地前捕获上下文快照，回退可还原", async () => {
+		const { projectDir, cleanup } = await makeTempProject();
+		try {
+			await initWorkbench(projectDir);
+			const bb = openBlackboard(join(projectDir, ".workbench"));
+			const goal = await bb.goals.add({ title: "A" });
+			await mkdir(join(projectDir, "worktrees", "ws-a"), { recursive: true });
+			await writeFile(
+				join(projectDir, "worktrees", "ws-a", "script.js"),
+				"process.exit(0);\n",
+				"utf8",
+			);
+			await bb.state.workspots.save({
+				id: "ws-a",
+				branch: "ws/ws-a",
+				worktreePath: join("worktrees", "ws-a"),
+				primaryTask: goal.id,
+				binding: "primary",
+				status: "active",
+				contextNeeds: { decisions: [], interfaces: [] },
+			});
+
+			// 预置一个已存在的注册表条目 v1——它是上下文回退的「旧值」
+			await bb.interfaces.register({
+				key: "iface:demo",
+				canonicalPath: "interfaces/demo.yaml",
+				version: 1,
+				publishedBy: "human",
+				lastModified: new Date().toISOString(),
+				contentHash: "hash-v1",
+				subscribers: [],
+			});
+
+			const checkpoint: Checkpoint = {
+				id: "cp-1",
+				goal: goal.id,
+				workspot: "ws-a",
+				timestamp: new Date().toISOString(),
+				lifecycle: "draft",
+				assertion: "passes",
+				verification: { strategy: "test", command: "bun script.js" },
+				artifacts: [],
+				unblocks: [],
+				blackboardEffects: {
+					publish: [],
+					update: [
+						{ key: "iface:demo", field: "contentHash", value: "hash-v2" },
+					],
+				},
+			};
+			await bb.checkpoints.save(checkpoint, "staging");
+
+			// round 1: 验证通过 → verified（条目仍是 v1）
+			await runOnce(bb);
+			// round 2: verified → applied，apply 时刻采集上下文快照
+			const run2 = await runOnce(bb);
+			expect(
+				run2.transitions.some(
+					(t) => t.type === "checkpoint_lifecycle" && t.to === "applied",
+				),
+			).toBe(true);
+
+			// 效果落地（模拟写者推进版本 v1 → v2）——发生在快照采集**之后**
+			await bb.interfaces.updateVersion("iface:demo", "hash-v2");
+
+			// applied checkpoint 携带的是采集时的旧值 v1
+			const applied = (await bb.checkpoints.scanZone("verified")).find(
+				(cp) => cp.id === "cp-1",
+			);
+			const snap = applied?.rollback?.context?.["iface:demo"] as
+				| { contentHash?: string; version?: number }
+				| undefined;
+			expect(snap?.contentHash).toBe("hash-v1");
+			expect(snap?.version).toBe(1);
+
+			// 用快照回退上下文：v2 → v1
+			const store = registryContextStore(bb);
+			const plan = await planRollback(applied!, "context", { store });
+			expect(plan.error).toBeUndefined();
+			expect(plan.pending).toBe(1);
+			const result = await applyRollback(plan, applied!, { store });
+			expect(result.ok).toBe(true);
+			expect(result.context).toEqual(["iface:demo"]);
+			const restored = await bb.interfaces.getEntry("iface:demo");
+			expect(restored?.contentHash).toBe("hash-v1");
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("is single-writer: a held run lock makes the cycle report busy, not race", async () => {
+		const { projectDir, cleanup } = await makeTempProject();
+		try {
+			await initWorkbench(projectDir);
+			const bb = openBlackboard(join(projectDir, ".workbench"));
+			await bb.goals.add({ title: "锁测试" });
+			const goalBefore = (await bb.goals.list())[0];
+
+			const holder = await acquirePidLock(join(bb.paths.root, "run.lock"));
+			expect(holder.acquired).toBe(true);
+			try {
+				const busy = await runOnce(bb);
+				expect(busy.busy).toBe(true);
+				expect(busy.lockHolder).toBe(process.pid);
+				expect(busy.applied).toBe(0);
+				// nothing was evaluated or applied behind the caller's back
+				expect((await bb.goals.get(goalBefore?.id ?? ""))?.status).toBe(
+					"planned",
+				);
+			} finally {
+				await holder.release();
+			}
+
+			// freed lock → the cycle runs normally
+			const run = await runOnce(bb);
+			expect(run.busy).toBeUndefined();
+			expect(run.applied).toBe(1);
 		} finally {
 			await cleanup();
 		}

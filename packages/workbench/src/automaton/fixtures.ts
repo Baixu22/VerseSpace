@@ -27,6 +27,7 @@ export function mkGoal(overrides: Partial<Goal> & { id: string }): Goal {
 		checkpoints: [],
 		verifiedAgainst: { interfaces: {}, decisions: [] },
 		...overrides,
+		version: overrides.version ?? 0,
 	};
 }
 

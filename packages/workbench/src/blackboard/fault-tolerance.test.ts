@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openBlackboard } from "../blackboard";
 import { initWorkbench } from "../commands/init";
+import { BlackboardConflictError } from "../errors";
 import { runOnce } from "../runtime";
 
 /**
@@ -93,34 +94,92 @@ describe("fault tolerance", () => {
 		}
 	});
 
-	test("concurrent writers serialize through atomic rename (last write wins intact)", async () => {
+	test("20 concurrent writers: no lost updates (CAS retries) and every enqueue survives", async () => {
 		const { projectDir, cleanup } = await makeProject();
 		try {
 			const bbA = openBlackboard(join(projectDir, ".workbench"));
 			const goal = await bbA.goals.add({ title: "竞争目标" });
 
-			// 20 racing status updates through independent blackboard handles
+			// 20 racing writers through independent blackboard handles: even
+			// indices CAS-retry a goal title change, odd indices enqueue their
+			// own queue entry — the previous single-file queue lost updates here
 			const writers = Array.from({ length: 20 }, (_, i) => async () => {
 				const bb = openBlackboard(join(projectDir, ".workbench"));
 				if (i % 2 === 0) {
-					await bb.goals.update(goal.id, { title: `版本-${i}` });
-				} else {
-					await bb.state.queue.enqueue(`g-noise-${i}`);
+					// optimistic CAS loop: rebase on the current version until
+					// the write lands — updates are never silently lost
+					for (;;) {
+						try {
+							const current = await bb.goals.get(goal.id);
+							await bb.goals.update(
+								goal.id,
+								{ title: `版本-${i}` },
+								{ expectedVersion: current?.version },
+							);
+							return;
+						} catch (error) {
+							if (error instanceof BlackboardConflictError) {
+								continue; // raced: retry with the fresh version
+							}
+							throw error;
+						}
+					}
 				}
+				await bb.state.queue.enqueue(`g-noise-${i}`);
 			});
 			await Promise.all(writers.map((write) => write()));
 
 			const bbFinal = openBlackboard(join(projectDir, ".workbench"));
-			// the goal file is intact (parses) regardless of which title won
+			// all 10 enqueues survived — the old queue.yaml lost up to half
+			expect(await bbFinal.state.queue.get()).toHaveLength(10);
+			// the goal is intact and its version advanced once per landed update
 			const final = await bbFinal.goals.get(goal.id);
 			expect(final?.id).toBe(goal.id);
 			expect(final?.title).toMatch(/^版本-\d+$/);
+			expect(final?.version).toBe(1 + 10);
 			// no temp residue anywhere
 			const goalsDir = join(projectDir, ".workbench", "blackboard", "goals");
 			const files = await import("node:fs/promises").then((m) =>
 				m.readdir(goalsDir),
 			);
 			expect(files.filter((name) => name.endsWith(".tmp"))).toEqual([]);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("stale expectedVersion fails with a conflict carrying the current goal", async () => {
+		const { projectDir, cleanup } = await makeProject();
+		try {
+			const bb = openBlackboard(join(projectDir, ".workbench"));
+			const goal = await bb.goals.add({ title: "CAS" });
+			await bb.goals.update(goal.id, { title: "第二版" });
+			expect(goal.version).toBe(1);
+
+			let conflict: BlackboardConflictError | null = null;
+			try {
+				await bb.goals.update(
+					goal.id,
+					{ title: "过时写入" },
+					{ expectedVersion: 1 },
+				);
+			} catch (error) {
+				if (error instanceof BlackboardConflictError) {
+					conflict = error;
+				} else {
+					throw error;
+				}
+			}
+			expect(conflict).not.toBeNull();
+			// the conflict carries the object that IS on disk
+			expect(
+				(conflict?.current as { title: string; version: number }).title,
+			).toBe("第二版");
+			expect(
+				(conflict?.current as { title: string; version: number }).version,
+			).toBe(2);
+			// the overtake write never landed
+			expect((await bb.goals.get(goal.id))?.title).toBe("第二版");
 		} finally {
 			await cleanup();
 		}

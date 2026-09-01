@@ -1,3 +1,4 @@
+import { envelopes } from "../tribunal/envelopes";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Transition } from "../types/transitions";
 
@@ -30,6 +31,10 @@ export function evaluateCheckpoints(snapshot: WorldSnapshot): Transition[] {
 					type: "notify_human",
 					message: `checkpoint ${checkpoint.id} 没有 verification 策略，停留在 draft`,
 					severity: "warning",
+					tribunal: envelopes.checkpointWithoutPolicy(
+						checkpoint.id,
+						checkpoint.workspot,
+					),
 				});
 			}
 		} else if (checkpoint.lifecycle === "awaiting_review") {
@@ -37,6 +42,7 @@ export function evaluateCheckpoints(snapshot: WorldSnapshot): Transition[] {
 				type: "notify_human",
 				message: `checkpoint ${checkpoint.id} 等待人工审查（workbench checkpoint review ${checkpoint.id}）`,
 				severity: "info",
+				tribunal: envelopes.checkpointAwaitingReview(checkpoint.id),
 			});
 		}
 		// pending: owned by the Verifier runtime

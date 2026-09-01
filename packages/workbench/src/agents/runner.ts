@@ -1,7 +1,20 @@
-import { spawn } from "node:child_process";
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
+import {
+	extractFootprint,
+	hashPathClaim,
+	type ParsedStreamFootprint,
+} from "../blackboard/footprint";
+import { derive, foldUsage } from "../blackboard/metrics";
+import {
+	crashLoopTripped,
+	type ProcHandle,
+	spawnSupervised,
+} from "../supervisor";
+import { envelopes } from "../tribunal/envelopes";
+import { assessLane, shouldSuspend } from "../tribunal/lane-distress";
+import { extractUsage } from "./usage";
 
 export interface AgentSession {
 	workspot: string;
@@ -25,6 +38,11 @@ export interface AgentStartResult {
 
 function agentsRoot(bb: Blackboard): string {
 	return join(bb.paths.root, "agents");
+}
+
+/** pid records live here so a restarted runtime can reap orphaned agents. */
+function procRegistryDir(bb: Blackboard): string {
+	return join(bb.paths.root, "proc");
 }
 
 function latestFile(bb: Blackboard, workspotId: string): string {
@@ -59,13 +77,16 @@ export async function readLatestSession(
 /**
  * Non-interactive agent batch run (the first increment of the agent-session
  * layer): spawn the configured agent CLI inside the workspot worktree with
- * the prompt on stdin, capture its stream output to a JSONL log under
- * `.workbench/agents/<ws>/`, and track session status in latest.json.
+ * the prompt on stdin, stream its output to a JSONL log under
+ * `.workbench/agents/<ws>/` line by line (a long-running agent's log stays
+ * readable while it works), and track session status in latest.json.
  *
  * Fire-and-forget: returns as soon as the process spawns; completion lands
  * in latest.json and the event log. The default command is Claude Code's
  * non-interactive stream-json mode; `agent.command` in workbench.yaml
- * overrides it for other CLIs.
+ * overrides it for other CLIs. The spawn goes through the supervisor — pid
+ * registry (orphans are reaped on boot) and a crash-loop breaker that stops
+ * dispatching an agent that exits abnormally three times in a minute.
  */
 export async function startAgent(
 	bb: Blackboard,
@@ -77,6 +98,30 @@ export async function startAgent(
 	}
 	const config = await bb.config.load();
 	const command = config.agent.command;
+	const registryDir = procRegistryDir(bb);
+	const label = `agent:${workspot.id}`;
+	if (crashLoopTripped(registryDir, label)) {
+		// OTP-style upgrade abandonment: stop dispatching a crashing agent
+		return {
+			ok: false,
+			reason: `agent 连续崩溃，暂停派发（${label} 在 60 秒内异常退出 3 次）`,
+		};
+	}
+	const currentLane = derive(await bb.metrics.get(workspot.id));
+	if (shouldSuspend(currentLane)) {
+		await bb.tribunal.submit(
+			envelopes.metricSuspend(
+				workspot.id,
+				Math.max(currentLane.consecutiveFailures, currentLane.compactions),
+			),
+		);
+		return {
+			ok: false,
+			reason:
+				`车道 ${workspot.id} 已挂起（压缩 ${currentLane.compactions} 次 / 连续失败 ${currentLane.consecutiveFailures} 次）。` +
+				"从文件系统笔记 + git diff 重播种后再派发。",
+		};
+	}
 
 	const worktree = isAbsolute(workspot.worktreePath)
 		? workspot.worktreePath
@@ -104,48 +149,157 @@ export async function startAgent(
 		payload: { workspotId: workspot.id, goal: session.goal, agent: command },
 	});
 
-	const child = spawn(command, { cwd: worktree, shell: true });
-	let output = "";
-	const capture = (_kind: "out" | "err") => (chunk: Buffer) => {
-		output += chunk.toString("utf8");
-	};
-	child.stdout?.on("data", capture("out"));
-	child.stderr?.on("data", capture("err"));
+	// output streams to the JSONL log as lines arrive — nothing accumulates
+	// unbounded in memory
+	const logLine = (kind: "out" | "err") => (line: string) =>
+		appendFile(logFile, `${JSON.stringify({ kind, line })}\n`, "utf8").catch(
+			() => {},
+		);
 
-	child.stdin?.write(input.prompt);
-	child.stdin?.end();
-
-	child.on("close", async (exitCode) => {
-		const lines = output.split("\n").filter((line) => line.trim().length > 0);
-		for (const line of lines) {
-			await appendFile(
-				logFile,
-				`${JSON.stringify({ kind: "out", line })}\n`,
-				"utf8",
-			);
+	// R1: the runner path also feeds stream-json lines through the footprint
+	// extractor (the second capture channel — chat threads are the first)
+	const writerId = `agent:${workspot.id}`;
+	await bb.sessions.register(writerId, "agent", command, {
+		workspot: workspot.id,
+		task: session.goal,
+	});
+	const pending = new Map<string, ParsedStreamFootprint>();
+	let fpQueue: Promise<void> = Promise.resolve();
+	// R3 / TF-0084: each sample is folded as it arrives, never accumulated
+	// first — the cache hit rate is a per-turn number, and collapsing a run's
+	// turns into one sample would report every lane as 100% hits. The counters
+	// are flushed at the end of the run and on every `result` line, so a panel
+	// opened mid-run still shows numbers.
+	let laneMetrics = await bb.metrics.get(workspot.id);
+	let dirty = false;
+	const flushUsage = async (): Promise<void> => {
+		if (!dirty) {
+			return;
 		}
+		dirty = false;
+		await bb.metrics.save(workspot.id, laneMetrics).catch(() => {});
+	};
+
+	const capture = (raw: string) => {
+		let event: Record<string, unknown>;
+		try {
+			event = JSON.parse(raw) as Record<string, unknown>;
+		} catch {
+			return;
+		}
+		const sample = extractUsage(event);
+		if (sample) {
+			const previous = derive(laneMetrics);
+			laneMetrics = foldUsage(laneMetrics, sample);
+			dirty = true;
+			const distress = assessLane(derive(laneMetrics), previous);
+			if (event.type === "result") {
+				fpQueue = fpQueue.then(flushUsage);
+			}
+			if (distress.length > 0) {
+				fpQueue = fpQueue.then(async () => {
+					for (const item of distress) {
+						await bb.tribunal.submit(item.envelope).catch(() => {});
+					}
+				});
+			}
+		}
+		const fp = extractFootprint(event, writerId);
+		if (fp) {
+			pending.set(fp.activity, fp);
+			fpQueue = fpQueue.then(async () => {
+				for (const used of fp.used) {
+					Object.assign(
+						used,
+						await hashPathClaim(
+							bb.projectRoot,
+							used.path,
+							undefined,
+							used.span,
+						),
+					);
+				}
+			});
+			return;
+		}
+		if (event.type === "user") {
+			const message = event.message as
+				| { content?: Array<Record<string, unknown>> }
+				| undefined;
+			for (const block of message?.content ?? []) {
+				if (block.type === "tool_result") {
+					const toolCallId = String(block.tool_use_id ?? "");
+					const fpResult = pending.get(toolCallId);
+					if (fpResult) {
+						pending.delete(toolCallId);
+						fpQueue = fpQueue.then(async () => {
+							for (const gen of fpResult.generated) {
+								Object.assign(
+									gen,
+									await hashPathClaim(bb.projectRoot, gen.path),
+								);
+							}
+							await bb.sessions.recordActivity(writerId, fpResult);
+						});
+					}
+				}
+			}
+		}
+	};
+
+	const proc: ProcHandle = spawnSupervised(command, {
+		label,
+		registryDir,
+		cwd: worktree,
+		stdin: input.prompt,
+		stdinAfterFirstOutput: true,
+		onLine: (line, kind) => {
+			void logLine(kind)(line);
+			if (kind === "out") {
+				capture(line);
+			}
+		},
+	});
+
+	void proc.wait().then(async (outcome) => {
+		await fpQueue;
+		await flushUsage();
+		for (const fp of pending.values()) {
+			await bb.sessions.recordActivity(writerId, fp);
+		}
+		pending.clear();
+		await bb.sessions.setStatus(writerId, "idle");
 		const finished: AgentSession = {
 			...session,
-			status: exitCode === 0 ? "done" : "failed",
+			status: outcome.exitCode === 0 ? "done" : "failed",
 			finishedAt: new Date().toISOString(),
-			exitCode,
+			exitCode: outcome.exitCode,
+			error:
+				outcome.error ??
+				(outcome.exitCode !== 0 && outcome.exitCode !== null
+					? `异常退出（exitCode ${outcome.exitCode}）`
+					: undefined),
 		};
+		if (outcome.exitCode !== 0 && crashLoopTripped(registryDir, label)) {
+			finished.error = `agent 连续崩溃，已熔断暂停派发（60 秒内异常退出 3 次）；${finished.error ?? ""}`;
+			await bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "agent",
+				type: "agent_crashloop",
+				payload: { workspotId: workspot.id, label },
+			});
+		}
 		await writeLatest(bb, finished);
 		await bb.events.append({
 			timestamp: new Date().toISOString(),
 			source: "agent",
 			type: "agent_finished",
-			payload: { workspotId: workspot.id, status: finished.status, exitCode },
+			payload: {
+				workspotId: workspot.id,
+				status: finished.status,
+				exitCode: finished.exitCode,
+			},
 		});
-	});
-	child.on("error", async (error) => {
-		const finished: AgentSession = {
-			...session,
-			status: "failed",
-			finishedAt: new Date().toISOString(),
-			error: String(error),
-		};
-		await writeLatest(bb, finished);
 	});
 
 	return { ok: true, logFile };

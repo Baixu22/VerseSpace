@@ -8,6 +8,11 @@ export interface WorkbenchEvent {
 	source: string;
 	type: string;
 	payload: unknown;
+	/**
+	 * Line number in the append-only log, assigned at read time: monotonic,
+	 * serves as the causal order shared by footprints and DOI decay (R1/L1).
+	 */
+	seq?: number;
 }
 
 export interface EventFilter {

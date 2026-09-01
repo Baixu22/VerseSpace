@@ -1,3 +1,4 @@
+import { envelopes } from "../tribunal/envelopes";
 import type { Goal } from "../types/goal";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Transition } from "../types/transitions";
@@ -12,6 +13,11 @@ import type { Transition } from "../types/transitions";
  *   work), surfaced as notify_human warnings instead of silent readiness.
  * - a goal completes when a checkpoint anchored to it reaches the `verified`
  *   zone; per-criterion completion is a later refinement.
+ *
+ * R3: each notify_human carries a `tribunal` envelope, because this machine is
+ * the only place that knows which goal is stuck and what unsticks it. The
+ * message stays for logs and the CLI; the envelope is what the adjudication
+ * queue rationalizes.
  */
 export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 	const transitions: Transition[] = [];
@@ -49,6 +55,7 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 						type: "notify_human",
 						message: `目标 ${goal.id} 依赖的目标不存在：${missing.join(", ")}`,
 						severity: "error",
+						tribunal: envelopes.missingDependency(goal.id, missing),
 					});
 				}
 				const dead = deadDependencies(goal);
@@ -59,6 +66,11 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 							.map((dep) => `${dep.id}(${dep.status})`)
 							.join(", ")} 已失效`,
 						severity: "warning",
+						tribunal: envelopes.deadDependency(
+							goal.id,
+							"planned",
+							dead.map((dep) => ({ id: dep.id, status: dep.status })),
+						),
 					});
 				}
 				break;
@@ -72,6 +84,11 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 							.map((dep) => `${dep.id}(${dep.status})`)
 							.join(", ")}；派发前请先处理`,
 						severity: "warning",
+						tribunal: envelopes.deadDependency(
+							goal.id,
+							"ready",
+							dead.map((dep) => ({ id: dep.id, status: dep.status })),
+						),
 					});
 				}
 				const workedOn = snapshot.workspots.some(

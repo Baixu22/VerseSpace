@@ -155,7 +155,7 @@ export async function runDoctor(bb: Blackboard): Promise<DoctorReport> {
 			issues.push({
 				check: "dangling_queue_entry",
 				severity: "error",
-				message: `执行队列引用不存在的目标 ${goalId}（sync 或手工清理 queue.yaml）`,
+				message: `执行队列引用不存在的目标 ${goalId}（sync 或清理 state/queue/ 条目文件）`,
 				subject: goalId,
 			});
 		} else if (goal.status !== "ready") {

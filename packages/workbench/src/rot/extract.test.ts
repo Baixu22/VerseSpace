@@ -1,0 +1,56 @@
+import { describe, expect, test } from "bun:test";
+import { extractRefs, normalizeRef } from "./extract";
+
+describe("extractRefs", () => {
+	test("inline backticks that look like paths are citations", () => {
+		const refs = extractRefs(
+			"see `src/foo.ts` and `packages/workbench/src/cli.ts` please",
+		);
+		expect(refs.map((item) => item.ref)).toEqual([
+			"src/foo.ts",
+			"packages/workbench/src/cli.ts",
+		]);
+	});
+
+	test("a basename with a source extension counts; a bare identifier does not", () => {
+		const refs = extractRefs("call `runDoctor` then open `queue.ts`");
+		expect(refs.map((item) => item.ref)).toEqual(["queue.ts"]);
+		expect(refs[0]?.kind).toBe("file");
+	});
+
+	test("fenced examples are not citations", () => {
+		const refs = extractRefs(
+			["prose `src/keep.ts`", "```ts", "import './src/example.ts'", "```"].join(
+				"\n",
+			),
+		);
+		expect(refs.map((item) => item.ref)).toEqual(["src/keep.ts"]);
+	});
+
+	test("markdown links to relative files count", () => {
+		const refs = extractRefs("see [the cli](packages/workbench/src/cli.ts)");
+		expect(refs.map((item) => item.ref)).toEqual([
+			"packages/workbench/src/cli.ts",
+		]);
+	});
+
+	test("http links and npm scopes are ignored", () => {
+		const refs = extractRefs(
+			"read [`docs`](https://example.com/x) and `@scope/pkg` and `src/real.ts`",
+		);
+		expect(refs.map((item) => item.ref)).toEqual(["src/real.ts"]);
+	});
+
+	test("duplicates collapse to the first line", () => {
+		const refs = extractRefs("`src/a.ts`\n\nlater `src/a.ts` again");
+		expect(refs).toHaveLength(1);
+		expect(refs[0]?.line).toBe(1);
+	});
+});
+
+describe("normalizeRef", () => {
+	test("strips ./, backslashes, wrapping quotes, trailing punctuation", () => {
+		expect(normalizeRef("./src\\\\foo.ts.")).toBe("src/foo.ts");
+		expect(normalizeRef("'src/foo.ts'")).toBe("src/foo.ts");
+	});
+});

@@ -1,8 +1,23 @@
-import { type ChildProcess, spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Blackboard } from "../blackboard";
+import {
+	extractFootprint,
+	hashPathClaim,
+	type ParsedStreamFootprint,
+} from "../blackboard/footprint";
+import { type ProcHandle, spawnSupervised } from "../supervisor";
 import type { WorkbenchConfig } from "../types/config";
+import {
+	collectSignals,
+	countUserTurns,
+	evaluatePromotion,
+	type PromotionRecord,
+	type PromotionSignal,
+	promotionPatch,
+	UNNAMED_TITLE,
+} from "./promote";
 
 /**
  * The chat runtime: threads owned by the workbench server, backed by a
@@ -22,12 +37,26 @@ export interface ThreadMeta {
 	id: string;
 	title: string;
 	createdAt: string;
-	/** Only meaningful for the claude provider (session resume). */
+	/**
+	 * The claude session id. New threads mint a uuid at creation and pass it
+	 * to the CLI via --session-id, so the thread directory name IS the claude
+	 * session id (R1: the dual identifier is collapsed). --resume reuses it;
+	 * a reload mints a fresh uuid (the conversation diverged).
+	 */
 	claudeSessionId?: string;
+	/** Set once a run completed — the next run uses --resume. */
+	hasResumableSession?: boolean;
 	status: "idle" | "running";
 	/** plan 模式下跑出的最后回复即计划，UI 渲染批准卡 */
 	permissionMode: PermissionMode;
 	archived?: boolean;
+	/**
+	 * 分叉计数（TF-0092 触发信号「同一条消息上第二次分叉」）：
+	 * message id → 在该消息上分叉（含 reload）的次数。
+	 */
+	forks?: Record<string, number>;
+	/** 晋升记录（TF-0092）：何时、因哪些信号、命名成什么。可观测，不参与自动动作。 */
+	promotion?: PromotionRecord;
 }
 
 export type MessagePart =
@@ -52,14 +81,44 @@ export interface StoredMessage {
 
 export type RunEvent = Record<string, unknown>;
 
-const CHAT_COMMAND =
-	process.env.WORKBENCH_CHAT_COMMAND ??
+/** How long an idle claude session stays alive between turns. */
+const SESSION_IDLE_CLOSE_MS =
+	Number(process.env.WORKBENCH_SESSION_IDLE_MS) || 5 * 60_000;
+
+/** One in-flight user turn on a live claude session. */
+interface ActiveTurn {
+	assistantTexts: string[];
+	messageParts: MessagePart[];
+	stderr: string;
+	pendingFootprints: Map<string, ParsedStreamFootprint>;
+	fpQueue: Promise<void>;
+	sawInit: boolean;
+	finished: boolean;
+	emit: (event: RunEvent) => void;
+	resolve: () => void;
+}
+
+/** A persistent claude child process owned by one thread. */
+interface LiveClaudeSession {
+	proc: ProcHandle;
+	claudeSessionId: string | undefined;
+	turn: ActiveTurn | null;
+	idleTimer?: ReturnType<typeof setTimeout>;
+}
+
+const CHAT_COMMAND_DEFAULT =
 	"claude -p --verbose --output-format stream-json --include-partial-messages";
+// read lazily (not at module load) so tests can retarget the command per run
+const chatCommand = () =>
+	process.env.WORKBENCH_CHAT_COMMAND ?? CHAT_COMMAND_DEFAULT;
 
 export class ChatThreads {
 	private meta = new Map<string, ThreadMeta>();
 	private queues = new Map<string, Promise<unknown>>();
-	private running = new Map<string, ChildProcess | AbortController>();
+	private running = new Map<string, ProcHandle | AbortController>();
+	/** Live claude sessions (R2): the child persists across turns so the
+	 * runtime can deliver notices into it between turns (streaming input). */
+	private live = new Map<string, LiveClaudeSession>();
 
 	constructor(private bb: Blackboard) {}
 
@@ -89,12 +148,13 @@ export class ChatThreads {
 	}
 
 	async create(title?: string): Promise<ThreadMeta> {
-		const { newId } = await import("../ids");
-		const id = newId("t");
+		// the thread id IS the claude session id: one identifier everywhere
+		const id = randomUUID();
 		const meta: ThreadMeta = {
 			id,
 			title: title?.trim() || "新对话",
 			createdAt: new Date().toISOString(),
+			claudeSessionId: id,
 			status: "idle",
 			permissionMode: "default",
 		};
@@ -102,6 +162,8 @@ export class ChatThreads {
 		await writeFile(this.metaFile(id), JSON.stringify(meta, null, 2), "utf8");
 		await writeFile(this.messagesFile(id), "", "utf8");
 		this.meta.set(id, meta);
+		// register the thread as an agent writer (R1: citizens, not ghosts)
+		await this.bb.sessions.register(id, "agent", meta.title);
 		return meta;
 	}
 
@@ -162,7 +224,9 @@ export class ChatThreads {
 		if (handle instanceof AbortController) {
 			handle.abort();
 		} else if (handle) {
-			handle.kill();
+			// supervisor kill = tree kill: on Windows the cmd.exe shim AND the
+			// claude process under it both die (a bare kill() orphaned claude)
+			void handle.kill();
 		}
 	}
 
@@ -185,9 +249,71 @@ export class ChatThreads {
 		return meta;
 	}
 
+	// ── 加法式晋升（TF-0092）───────────────────────────────────────────
+	// 对话默认无名；命名发生在触发信号命中的**完成的轮次边界**，直接做
+	// 不问（ADR-0009：B=3ms << K），撤销 = 改回标题，对话本身零变化。
+
+	/**
+	 * 在完成的轮次边界评估晋升信号并（命中时）直接晋升。
+	 * 信号来源：轮次跨越、隔天恢复（从消息列表推导）+ meta.forks 里的
+	 * 二次分叉。重复测试失败与提交信号由足迹侧喂入（本层暂未接入）。
+	 */
+	private async maybePromote(
+		id: string,
+		extraSignals: PromotionSignal[] = [],
+	): Promise<ThreadMeta> {
+		const meta = await this.get(id);
+		const messages = await this.messages(id);
+		// 二次分叉信号：任意一条消息被分叉（含 reload）达到 2 次
+		const forkSignals: PromotionSignal[] = Object.entries(meta.forks ?? {})
+			.filter(([, count]) => count >= 2)
+			.map(([atMessageId]) => ({ kind: "second-fork", atMessageId }));
+		const signals = collectSignals(messages, {
+			extraSignals: [...forkSignals, ...extraSignals],
+		});
+		const verdict = evaluatePromotion({
+			title: meta.title,
+			userTurnCount: countUserTurns(messages),
+			signals,
+		});
+		if (!verdict.promote) {
+			return meta;
+		}
+		const patch = promotionPatch(messages, verdict.signals);
+		meta.title = patch.title;
+		meta.promotion = patch.promotion;
+		await this.saveMeta(meta);
+		return meta;
+	}
+
+	/**
+	 * 手动晋升：任意时刻可把无名对话命名（一个手势，零仪式）。
+	 * 已命名的对话原样返回——不覆盖用户可能改过的标题。
+	 */
+	async promote(id: string): Promise<ThreadMeta> {
+		return this.enqueue(id, async () => {
+			const meta = await this.get(id);
+			if (meta.title !== UNNAMED_TITLE) {
+				return meta;
+			}
+			const messages = await this.messages(id);
+			const patch = promotionPatch(messages, [], new Date());
+			if (patch.title === UNNAMED_TITLE) {
+				return meta; // 空对话没有可派生的名字
+			}
+			meta.title = patch.title;
+			meta.promotion = patch.promotion;
+			await this.saveMeta(meta);
+			return meta;
+		});
+	}
+
 	/** Hard-delete a thread directory (guard: not while running). */
 	async remove(id: string): Promise<{ ok: boolean; reason?: string }> {
-		if (this.running.get(id)) {
+		if (this.live.get(id)) {
+			// a live session dies with its thread (the transcript lives here)
+			this.cancel(id);
+		} else if (this.running.get(id)) {
 			return { ok: false, reason: "线程正在运行" };
 		}
 		const { rm } = await import("node:fs/promises");
@@ -219,9 +345,29 @@ export class ChatThreads {
 				`${kept.map((m) => JSON.stringify(m)).join("\n")}${kept.length ? "\n" : ""}`,
 				"utf8",
 			);
-			// claude resume context diverges after truncation — start fresh
+			// TF-0092 触发信号「同一条消息上第二次分叉」：分叉锚点消息计数。
+			const anchor = kept.at(-1)?.id;
+			if (anchor) {
+				const meta0 = await this.get(id);
+				const forks = { ...(meta0.forks ?? {}) };
+				forks[anchor] = (forks[anchor] ?? 0) + 1;
+				meta0.forks = forks;
+				await this.saveMeta(meta0);
+			}
+			// claude resume context diverges after truncation — mint a fresh
+			// session id (the thread directory keeps its name; the NEXT claude
+			// session gets the new uuid via --session-id). A live session is
+			// killed first: it holds the OLD session.
+			if (this.live.get(id)) {
+				this.cancel(id);
+				const deadline = Date.now() + 3000;
+				while (this.live.get(id) && Date.now() < deadline) {
+					await new Promise((resolve) => setTimeout(resolve, 25));
+				}
+			}
 			const meta = await this.get(id);
-			meta.claudeSessionId = undefined;
+			meta.claudeSessionId = randomUUID();
+			meta.hasResumableSession = false;
 			await this.saveMeta(meta);
 			return { ok: true, userText };
 		});
@@ -250,10 +396,8 @@ export class ChatThreads {
 				};
 				await this.appendMessage(id, userMessage);
 				emit({ type: "user", message: userMessage });
-				if (meta.title === "新对话") {
-					meta.title = text.trim().slice(0, 24) || meta.title;
-					await this.saveMeta(meta);
-				}
+				// TF-0092：对话默认保持无名——命名延迟到触发信号命中的轮次边界
+				//（maybePromote），绝不要求用户先命名或分类。
 			}
 
 			meta.status = "running";
@@ -263,191 +407,13 @@ export class ChatThreads {
 			const chat = config.chat;
 
 			if (chat.provider === "claude") {
-				let claudeSessionId: string | undefined = meta.claudeSessionId;
-				await new Promise<void>((resolve) => {
-					const parts = CHAT_COMMAND.split(" ").filter(Boolean);
-					const bin = parts[0]!;
-					const args = parts.slice(1);
-					if (meta.permissionMode !== "default") {
-						args.push("--permission-mode", meta.permissionMode);
-					}
-					if (claudeSessionId) {
-						args.push("--resume", claudeSessionId);
-					}
-					let child: ChildProcess;
-					try {
-						child = spawn(bin, args, {
-							cwd: this.bb.projectRoot,
-							// npm-installed claude is a .cmd shim on Windows; shell resolves it
-							shell: process.platform === "win32",
-						});
-					} catch (error) {
-						emit({
-							type: "error",
-							message: `agent 启动失败：${String(error)}`,
-						});
-						resolve();
-						return;
-					}
-					this.running.set(id, child);
-
-					const assistantTexts: string[] = [];
-					const messageParts: MessagePart[] = [];
-					let buffer = "";
-					let stderr = "";
-					const handleLine = (line: string) => {
-						if (!line.trim()) {
-							return;
-						}
-						let event: Record<string, unknown>;
-						try {
-							event = JSON.parse(line) as Record<string, unknown>;
-						} catch {
-							return;
-						}
-						const sessionId =
-							typeof event.session_id === "string"
-								? event.session_id
-								: undefined;
-						if (sessionId) {
-							claudeSessionId = sessionId;
-						}
-						if (event.type === "stream_event") {
-							const inner = event.event as
-								| { type?: string; delta?: { type?: string; text?: string } }
-								| undefined;
-							if (
-								inner?.type === "content_block_delta" &&
-								inner.delta?.type === "text_delta" &&
-								inner.delta.text
-							) {
-								const last = messageParts.at(-1);
-								if (last?.type === "text") {
-									last.text += inner.delta.text;
-								} else {
-									messageParts.push({ type: "text", text: inner.delta.text });
-								}
-								assistantTexts.push(inner.delta.text);
-								emit({ type: "delta", text: inner.delta.text });
-							}
-						} else if (event.type === "assistant") {
-							const message = event.message as
-								| { content?: Array<Record<string, unknown>> }
-								| undefined;
-							for (const block of message?.content ?? []) {
-								if (block.type === "tool_use") {
-									const part: MessagePart = {
-										type: "tool-call",
-										toolCallId: String(block.id ?? ""),
-										toolName: String(block.name ?? "tool"),
-										args: block.input ?? {},
-									};
-									messageParts.push(part);
-									emit({ type: "tool", part });
-								}
-							}
-						} else if (event.type === "user") {
-							// tool_result blocks ride on transcript "user" events
-							const message = event.message as
-								| { content?: Array<Record<string, unknown>> }
-								| undefined;
-							for (const block of message?.content ?? []) {
-								if (block.type === "tool_result") {
-									const toolCallId = String(block.tool_use_id ?? "");
-									const part = messageParts.find(
-										(p) =>
-											p.type === "tool-call" && p.toolCallId === toolCallId,
-									);
-									if (part && part.type === "tool-call") {
-										part.result = block.content ?? null;
-										emit({ type: "tool_result", part });
-									}
-								}
-							}
-						} else if (event.type === "result") {
-							const result =
-								typeof event.result === "string" ? event.result : undefined;
-							if (result && assistantTexts.length === 0) {
-								assistantTexts.push(result);
-								messageParts.push({ type: "text", text: result });
-								emit({ type: "delta", text: result });
-							}
-						}
-					};
-
-					child.stdout?.on("data", (chunk: Buffer) => {
-						buffer += chunk.toString("utf8");
-						const lines = buffer.split("\n");
-						buffer = lines.pop() ?? "";
-						for (const line of lines) {
-							handleLine(line);
-						}
-					});
-					child.stderr?.on("data", (chunk: Buffer) => {
-						stderr += chunk.toString("utf8");
-					});
-					// cmd.exe forwards stdin only after it has spawned the child:
-					// an immediate write+end can be swallowed. Send once the first
-					// output chunk proves the pipe is live (500ms fallback).
-					let promptSent = false;
-					const sendPrompt = () => {
-						if (promptSent) {
-							return;
-						}
-						promptSent = true;
-						child.stdin?.write(text);
-						child.stdin?.end();
-					};
-					child.stdout?.once("data", sendPrompt);
-					const promptTimer = setTimeout(sendPrompt, 500);
-
-					child.on("close", async (code) => {
-						clearTimeout(promptTimer);
-						this.running.delete(id);
-						if (stderr.trim() && assistantTexts.length === 0) {
-							emit({ type: "error", message: stderr.trim().slice(0, 500) });
-						}
-						const full = assistantTexts.join("");
-						if (
-							full ||
-							messageParts.some((part) => part.type === "tool-call")
-						) {
-							const assistantMessage: StoredMessage = {
-								id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-								role: "assistant",
-								text: full,
-								at: new Date().toISOString(),
-								parts: messageParts,
-							};
-							await this.appendMessage(id, assistantMessage);
-							emit({
-								type: "done",
-								message: assistantMessage,
-								claudeSessionId,
-							});
-						} else if (code !== 0 && assistantTexts.length === 0) {
-							emit({
-								type: "error",
-								message: `agent 退出码 ${code}${stderr.trim() ? `：${stderr.trim().slice(0, 200)}` : "（无输出）"}`,
-							});
-						}
-						const latest = await this.get(id);
-						latest.status = "idle";
-						latest.claudeSessionId = claudeSessionId ?? latest.claudeSessionId;
-						if (latest.permissionMode === "acceptEdits") {
-							latest.permissionMode = "default";
-						}
-						await this.saveMeta(latest);
-						resolve();
-					});
-					child.on("error", (error) => {
-						this.running.delete(id);
-						emit({
-							type: "error",
-							message: `agent 进程错误：${String(error)}`,
-						});
-						resolve();
-					});
+				// notices queued while the thread was idle are delivered as
+				// context turns BEFORE the user's message (KV-cache safe: the
+				// session only ever appends)
+				const notices = await this.drainNotices(id);
+				await this.runClaudeTurn(id, meta, text, emit, {
+					resend: Boolean(opts.resend),
+					precedingNotices: notices,
 				});
 				return;
 			}
@@ -480,8 +446,392 @@ export class ChatThreads {
 				const latest = await this.get(id);
 				latest.status = "idle";
 				await this.saveMeta(latest);
+				// 完成的轮次边界：评估加法式晋升（TF-0092）
+				await this.maybePromote(id);
 			}
 		});
+	}
+
+	// ── claude provider: one persistent streaming-input session per thread ──
+	// The child stays alive between turns, so the runtime can deliver notices
+	// into it between turns (R2 premise invalidation) — the S0-proven channel
+	// after the messaging socket turned out to be headless-unavailable.
+
+	private turnLine(text: string): string {
+		return JSON.stringify({
+			type: "user",
+			message: { role: "user", content: text },
+		});
+	}
+
+	private async runClaudeTurn(
+		id: string,
+		meta: ThreadMeta,
+		text: string,
+		emit: (event: RunEvent) => void,
+		opts: { resend: boolean; precedingNotices: string[] },
+	): Promise<void> {
+		const userTurn = this.turnLine(text);
+		const noticeTurns = opts.precedingNotices.map((n) => this.turnLine(n));
+		let live = this.live.get(id);
+		if (!live) {
+			live = await this.ensureClaudeSession(id, meta, [
+				...noticeTurns,
+				userTurn,
+			]);
+		} else {
+			// deliver queued notices first, then the user's turn
+			for (const line of noticeTurns) {
+				live.proc.writeStdin(line);
+				emit({ type: "notice_delivered" });
+			}
+			live.proc.writeStdin(userTurn);
+		}
+		const session = live;
+		if (session.idleTimer) {
+			clearTimeout(session.idleTimer);
+			session.idleTimer = undefined;
+		}
+
+		// per-turn state; the session-level line router fills it
+		let resolveTurn!: () => void;
+		const turn: ActiveTurn = {
+			assistantTexts: [],
+			messageParts: [],
+			stderr: "",
+			pendingFootprints: new Map(),
+			fpQueue: Promise.resolve(),
+			sawInit: false,
+			finished: false,
+			emit,
+			resolve: () => {
+				if (!turn.finished) {
+					turn.finished = true;
+					resolveTurn();
+				}
+			},
+		};
+		session.turn = turn;
+
+		// the turn ends when the CLI reports this turn's result (or the
+		// session dies) — the child itself stays alive for the next turn
+		await new Promise<void>((resolve) => {
+			resolveTurn = resolve;
+			void session.proc.wait().then((outcome) => {
+				if (!turn.finished) {
+					if (outcome.error) {
+						emit({
+							type: "error",
+							message: `agent 进程错误：${outcome.error}`,
+						});
+					} else if (!outcome.killed && outcome.exitCode !== 0) {
+						emit({
+							type: "error",
+							message: `agent 退出码 ${outcome.exitCode}（会话已结束）`,
+						});
+					}
+					turn.resolve();
+				}
+			});
+		});
+
+		// finalize the turn: footprints, messages, meta
+		await turn.fpQueue;
+		for (const fp of turn.pendingFootprints.values()) {
+			await this.bb.sessions.recordActivity(id, fp);
+		}
+		turn.pendingFootprints.clear();
+		const full = turn.assistantTexts.join("");
+		if (full || turn.messageParts.some((part) => part.type === "tool-call")) {
+			const assistantMessage: StoredMessage = {
+				id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+				role: "assistant",
+				text: full,
+				at: new Date().toISOString(),
+				parts: turn.messageParts,
+			};
+			await this.appendMessage(id, assistantMessage);
+			emit({ type: "done", message: assistantMessage });
+		}
+		const latest = await this.get(id);
+		latest.status = "idle";
+		latest.claudeSessionId = session.claudeSessionId ?? latest.claudeSessionId;
+		latest.hasResumableSession = turn.sawInit || latest.hasResumableSession;
+		if (latest.permissionMode === "acceptEdits") {
+			latest.permissionMode = "default";
+		}
+		await this.saveMeta(latest);
+
+		// 完成的轮次边界：评估加法式晋升（TF-0092）
+		await this.maybePromote(id);
+
+		// the session lives on between turns; close it after idle so orphaned
+		// children don't accumulate (it exits cleanly via stdin close)
+		if (this.live.get(id) === session) {
+			session.idleTimer = setTimeout(() => {
+				session.proc.closeStdin();
+			}, SESSION_IDLE_CLOSE_MS);
+		}
+	}
+
+	/** Spawn (or adopt) the thread's persistent claude session. */
+	private async ensureClaudeSession(
+		id: string,
+		meta: ThreadMeta,
+		firstTurnLines: string[],
+	): Promise<LiveClaudeSession> {
+		const existing = this.live.get(id);
+		if (existing) {
+			return existing;
+		}
+		const claudeSessionId: string | undefined = meta.claudeSessionId;
+		let commandLine = chatCommand();
+		if (meta.permissionMode !== "default") {
+			commandLine += ` --permission-mode ${meta.permissionMode}`;
+		}
+		// streaming input keeps the session alive across turns; the first
+		// turn mints the session id (--session-id), respawns resume it
+		commandLine += " --input-format stream-json";
+		if (claudeSessionId) {
+			commandLine += meta.hasResumableSession
+				? ` --resume ${claudeSessionId}`
+				: ` --session-id ${claudeSessionId}`;
+		}
+
+		const proc = spawnSupervised(commandLine, {
+			label: `chat:${id}`,
+			registryDir: join(this.bb.paths.root, "proc"),
+			cwd: this.bb.projectRoot,
+			stdin: firstTurnLines.join("\n"),
+			keepStdinOpen: true,
+			stdinGate: (line) => line.includes('"subtype":"init"'),
+			onLine: (line, kind) => {
+				if (kind === "out") {
+					this.lineRouters.get(id)?.(line);
+				} else {
+					const turn = this.live.get(id)?.turn;
+					if (turn) {
+						turn.stderr += `${line}\n`;
+					}
+				}
+			},
+		});
+		this.running.set(id, proc);
+		const session: LiveClaudeSession = { proc, claudeSessionId, turn: null };
+		this.live.set(id, session);
+		this.registerTurnRouter(id, session);
+		await this.bb.sessions.register(id, "agent", meta.title);
+		await this.bb.sessions.setStatus(id, "active");
+
+		// reap on exit: cleanup happens once per process lifetime
+		void proc.wait().then(async () => {
+			this.live.delete(id);
+			this.running.delete(id);
+			const active = session.turn;
+			if (active) {
+				await active.fpQueue;
+				for (const fp of active.pendingFootprints.values()) {
+					await this.bb.sessions.recordActivity(id, fp);
+				}
+				active.resolve();
+			}
+			if (session.idleTimer) {
+				clearTimeout(session.idleTimer);
+			}
+			const latest = await this.get(id);
+			if (latest.status === "running") {
+				latest.status = "idle";
+				await this.saveMeta(latest);
+			}
+		});
+		return session;
+	}
+
+	/** Wire the session-level stdout router (footprints + turn events). */
+	private registerTurnRouter(id: string, session: LiveClaudeSession): void {
+		const handleLine = (line: string): void => {
+			if (!line.trim()) {
+				return;
+			}
+			let event: Record<string, unknown>;
+			try {
+				event = JSON.parse(line) as Record<string, unknown>;
+			} catch {
+				return;
+			}
+			const sessionId =
+				typeof event.session_id === "string" ? event.session_id : undefined;
+			if (sessionId) {
+				session.claudeSessionId = sessionId;
+			}
+			const turn = session.turn;
+			if (!turn) {
+				return; // no turn in flight: session-level noise
+			}
+			if (event.type === "system" && event.subtype === "init") {
+				turn.sawInit = true;
+			}
+			if (event.type === "stream_event") {
+				const inner = event.event as
+					| { type?: string; delta?: { type?: string; text?: string } }
+					| undefined;
+				if (
+					inner?.type === "content_block_delta" &&
+					inner.delta?.type === "text_delta" &&
+					inner.delta.text
+				) {
+					const last = turn.messageParts.at(-1);
+					if (last?.type === "text") {
+						last.text += inner.delta.text;
+					} else {
+						turn.messageParts.push({ type: "text", text: inner.delta.text });
+					}
+					turn.assistantTexts.push(inner.delta.text);
+					turn.emit({ type: "delta", text: inner.delta.text });
+				}
+			} else if (event.type === "assistant") {
+				const message = event.message as
+					| { content?: Array<Record<string, unknown>> }
+					| undefined;
+				for (const block of message?.content ?? []) {
+					if (block.type === "tool_use") {
+						const part: MessagePart = {
+							type: "tool-call",
+							toolCallId: String(block.id ?? ""),
+							toolName: String(block.name ?? "tool"),
+							args: block.input ?? {},
+						};
+						turn.messageParts.push(part);
+						turn.emit({ type: "tool", part });
+						const fp = extractFootprint(event, id);
+						if (fp) {
+							turn.pendingFootprints.set(fp.activity, fp);
+							turn.fpQueue = turn.fpQueue.then(async () => {
+								// hash reads at call time: the version the agent's
+								// premise is built on (spooled for R2 diffs)
+								for (const used of fp.used) {
+									Object.assign(
+										used,
+										await hashPathClaim(
+											this.bb.projectRoot,
+											used.path,
+											join(this.bb.paths.root, "sessions", id, "spool"),
+											used.span,
+										),
+									);
+								}
+							});
+						}
+					}
+				}
+			} else if (event.type === "user") {
+				// tool_result blocks ride on transcript "user" events
+				const message = event.message as
+					| { content?: Array<Record<string, unknown>> }
+					| undefined;
+				for (const block of message?.content ?? []) {
+					if (block.type === "tool_result") {
+						const toolCallId = String(block.tool_use_id ?? "");
+						const part = turn.messageParts.find(
+							(p) => p.type === "tool-call" && p.toolCallId === toolCallId,
+						);
+						if (part && part.type === "tool-call") {
+							part.result = block.content ?? null;
+							turn.emit({ type: "tool_result", part });
+						}
+						const fp = turn.pendingFootprints.get(toolCallId);
+						if (fp) {
+							turn.pendingFootprints.delete(toolCallId);
+							turn.fpQueue = turn.fpQueue.then(async () => {
+								// hash writes at result time: the state the write
+								// actually produced
+								for (const gen of fp.generated) {
+									Object.assign(
+										gen,
+										await hashPathClaim(this.bb.projectRoot, gen.path),
+									);
+								}
+								await this.bb.sessions.recordActivity(id, fp);
+							});
+						}
+					}
+				}
+			} else if (event.type === "result") {
+				const result =
+					typeof event.result === "string" ? event.result : undefined;
+				if (result && turn.assistantTexts.length === 0) {
+					turn.assistantTexts.push(result);
+					turn.messageParts.push({ type: "text", text: result });
+					turn.emit({ type: "delta", text: result });
+				}
+				// one result = one finished turn (streaming input mode)
+				turn.resolve();
+			}
+		};
+		this.lineRouters.set(id, handleLine);
+	}
+
+	/** Per-session line routers (the proc onLine delegates here). */
+	private lineRouters = new Map<string, (line: string) => void>();
+
+	/**
+	 * R2: deliver a premise-invalidation notice into a writer's session.
+	 * Live session → injected as a user turn between turns (KV-cache safe:
+	 * append-only). Idle thread → queued; delivered before its next turn.
+	 */
+	async notifySession(
+		writerId: string,
+		notice: string,
+	): Promise<"delivered" | "queued"> {
+		const session = this.live.get(writerId);
+		if (session) {
+			try {
+				session.proc.writeStdin(this.turnLine(notice));
+				await this.bb.events.append({
+					timestamp: new Date().toISOString(),
+					source: "runtime",
+					type: "premise_notice_delivered",
+					payload: { writer: writerId, via: "live-session" },
+				});
+				return "delivered";
+			} catch {
+				// stdin already closed — fall through to the queue
+			}
+		}
+		const { appendFile, mkdir } = await import("node:fs/promises");
+		await mkdir(this.dir(writerId), { recursive: true });
+		await appendFile(
+			this.noticesFile(writerId),
+			`${JSON.stringify({ notice, at: new Date().toISOString() })}\n`,
+			"utf8",
+		);
+		return "queued";
+	}
+
+	private noticesFile(id: string): string {
+		return join(this.dir(id), "notices.jsonl");
+	}
+
+	/** Drain and clear queued notices (called at the start of a run). */
+	private async drainNotices(id: string): Promise<string[]> {
+		try {
+			const { readFile, rm } = await import("node:fs/promises");
+			const raw = await readFile(this.noticesFile(id), "utf8");
+			await rm(this.noticesFile(id), { force: true });
+			return raw
+				.split("\n")
+				.filter((line) => line.trim())
+				.map((line) => {
+					try {
+						return (JSON.parse(line) as { notice: string }).notice;
+					} catch {
+						return line;
+					}
+				})
+				.filter((notice) => notice.trim().length > 0);
+		} catch {
+			return [];
+		}
 	}
 
 	/** History for HTTP providers: flat text turns from the stored transcript. */

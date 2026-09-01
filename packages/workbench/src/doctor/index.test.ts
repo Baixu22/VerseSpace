@@ -141,20 +141,22 @@ describe("runDoctor", () => {
 		try {
 			const goal = await ws.bb.goals.add({ title: "A" });
 			await ws.bb.goals.update(goal.id, { status: "ready" });
-			// duplicate by writing the file directly through the state API twice
 			await ws.bb.state.queue.enqueue(goal.id);
-			const { readFile, writeFile } = await import("node:fs/promises");
-			const queuePath = join(
+			// corruption vector: a second entry file naming the same goal —
+			// the queue directory now holds one file per entry, so a duplicate
+			// can only appear as a crafted stray file
+			const { writeFile, mkdir } = await import("node:fs/promises");
+			const queueDir = join(
 				ws.projectDir,
 				".workbench",
 				"blackboard",
 				"state",
-				"queue.yaml",
+				"queue",
 			);
-			const raw = await readFile(queuePath, "utf8");
+			await mkdir(queueDir, { recursive: true });
 			await writeFile(
-				queuePath,
-				raw.replace("queue:", `queue:\n  - ${goal.id}`),
+				join(queueDir, `${goal.id}.stray.yaml`),
+				`goalId: ${goal.id}\nseq: 999\n`,
 				"utf8",
 			);
 

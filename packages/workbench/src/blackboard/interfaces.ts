@@ -1,11 +1,14 @@
+import { createHash } from "node:crypto";
+import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { BlackboardDataError } from "../errors";
-import { pathExists } from "../fs/atomic";
+import { BlackboardConflictError, BlackboardDataError } from "../errors";
+import { pathExists, safeReaddir } from "../fs/atomic";
+import { withPidLock } from "../fs/lockfile";
 import { hashFile } from "../hash";
 import type { WorkbenchPaths } from "../paths";
 import {
-	type Registry,
 	type RegistryEntry,
+	registryEntrySchema,
 	registrySchema,
 	type Subscriber,
 } from "../types/interface-registry";
@@ -19,16 +22,78 @@ export interface DriftReport {
 	missing: boolean;
 }
 
+export interface UpdateVersionOptions {
+	/**
+	 * CAS precondition: the update only lands when the stored version still
+	 * matches. On mismatch the write fails with `BlackboardConflictError`
+	 * carrying the current entry instead of silently overwriting it.
+	 */
+	expectedVersion?: number;
+}
+
+/** Interface keys may contain any characters; file names may not. */
+function entryFileFor(registryDir: string, key: string): string {
+	const safe = key.replace(/[^A-Za-z0-9._-]/g, "_");
+	const digest = createHash("sha1").update(key).digest("hex").slice(0, 8);
+	return join(registryDir, `${safe}-${digest}.yaml`);
+}
+
 export function interfacesApi(paths: WorkbenchPaths, projectRoot: string) {
-	async function loadRegistry(): Promise<Registry> {
-		if (!(await pathExists(paths.registry))) {
-			return registrySchema.parse({});
+	const legacyRegistryFile = join(paths.interfaces, "registry.yaml");
+	const lockFor = (key: string) =>
+		join(
+			paths.root,
+			"locks",
+			"registry",
+			`${createHash("sha1").update(key).digest("hex").slice(0, 8)}.lock`,
+		);
+
+	/**
+	 * Pre-0.3 workspaces kept the whole registry in one registry.yaml; split
+	 * it into one file per entry on first touch. Concurrent migrators
+	 * converge: entry writes are keyed per entry and the legacy remove is
+	 * idempotent.
+	 */
+	async function migrateLegacyRegistry(): Promise<void> {
+		if (!(await pathExists(legacyRegistryFile))) {
+			return;
 		}
-		return readYamlFile(paths.registry, registrySchema);
+		const legacy = await readYamlFile(legacyRegistryFile, registrySchema);
+		await mkdir(paths.registry, { recursive: true });
+		for (const entry of legacy.entries) {
+			await writeYamlFile(
+				entryFileFor(paths.registry, entry.key),
+				registryEntrySchema,
+				entry,
+			);
+		}
+		await rm(legacyRegistryFile, { force: true });
 	}
 
-	async function saveRegistry(registry: Registry): Promise<void> {
-		await writeYamlFile(paths.registry, registrySchema, registry);
+	async function loadEntry(key: string): Promise<RegistryEntry | null> {
+		try {
+			return await readYamlFile(
+				entryFileFor(paths.registry, key),
+				registryEntrySchema,
+			);
+		} catch (error) {
+			if (
+				error instanceof BlackboardDataError &&
+				error.message === "file not found"
+			) {
+				return null;
+			}
+			throw error;
+		}
+	}
+
+	async function saveEntry(entry: RegistryEntry): Promise<void> {
+		await mkdir(paths.registry, { recursive: true });
+		await writeYamlFile(
+			entryFileFor(paths.registry, entry.key),
+			registryEntrySchema,
+			entry,
+		);
 	}
 
 	function resolveCanonical(entry: RegistryEntry): string {
@@ -39,28 +104,34 @@ export function interfacesApi(paths: WorkbenchPaths, projectRoot: string) {
 
 	return {
 		async list(): Promise<RegistryEntry[]> {
-			const registry = await loadRegistry();
-			return [...registry.entries].sort((a, b) => a.key.localeCompare(b.key));
+			await migrateLegacyRegistry();
+			const names = await safeReaddir(paths.registry);
+			const entries = await Promise.all(
+				names
+					.filter((name) => name.endsWith(".yaml"))
+					.map((name) =>
+						readYamlFile(join(paths.registry, name), registryEntrySchema).catch(
+							() => null,
+						),
+					),
+			);
+			return entries
+				.filter((entry): entry is RegistryEntry => entry !== null)
+				.sort((a, b) => a.key.localeCompare(b.key));
 		},
 
 		async getEntry(key: string): Promise<RegistryEntry | null> {
-			const registry = await loadRegistry();
-			return registry.entries.find((entry) => entry.key === key) ?? null;
+			await migrateLegacyRegistry();
+			return loadEntry(key);
 		},
 
 		/** Insert or replace the entry for `key`. */
 		async register(entry: RegistryEntry): Promise<RegistryEntry> {
-			const registry = await loadRegistry();
+			await migrateLegacyRegistry();
 			const canonical = registryEntryCanonical(entry);
-			const index = registry.entries.findIndex(
-				(existing) => existing.key === entry.key,
-			);
-			if (index >= 0) {
-				registry.entries[index] = canonical;
-			} else {
-				registry.entries.push(canonical);
-			}
-			await saveRegistry(registry);
+			await withPidLock(lockFor(entry.key), async () => {
+				await saveEntry(canonical);
+			});
 			return canonical;
 		},
 
@@ -73,20 +144,35 @@ export function interfacesApi(paths: WorkbenchPaths, projectRoot: string) {
 		async updateVersion(
 			key: string,
 			contentHash: string,
+			options: UpdateVersionOptions = {},
 		): Promise<RegistryEntry> {
-			const registry = await loadRegistry();
-			const entry = registry.entries.find((existing) => existing.key === key);
-			if (!entry) {
-				throw new BlackboardDataError(
-					`interface not registered: ${key}`,
-					paths.registry,
-				);
-			}
-			entry.version += 1;
-			entry.contentHash = contentHash;
-			entry.lastModified = new Date().toISOString();
-			await saveRegistry(registry);
-			return entry;
+			return withPidLock(lockFor(key), async () => {
+				const entry = await loadEntry(key);
+				if (!entry) {
+					throw new BlackboardDataError(
+						`interface not registered: ${key}`,
+						entryFileFor(paths.registry, key),
+					);
+				}
+				if (
+					options.expectedVersion !== undefined &&
+					entry.version !== options.expectedVersion
+				) {
+					throw new BlackboardConflictError(
+						`interface ${key} 版本前置条件不匹配（期望 v${options.expectedVersion}，当前 v${entry.version}）`,
+						entryFileFor(paths.registry, key),
+						entry,
+					);
+				}
+				const next = registryEntryCanonical({
+					...entry,
+					version: entry.version + 1,
+					contentHash,
+					lastModified: new Date().toISOString(),
+				});
+				await saveEntry(next);
+				return next;
+			});
 		},
 
 		/** Compare the registered hash against the interface file on disk. */
