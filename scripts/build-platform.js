@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { posix, win32 } from "node:path";
 
 export const TARGET_TRIPLE_ENV_KEYS = Object.freeze([
 	"TAURI_TARGET_TRIPLE",
@@ -50,33 +50,47 @@ export function cliBinaryNameForPlatform(platform = process.platform) {
 	return platform === "win32" ? "helmor-cli.exe" : "helmor-cli";
 }
 
+function platformPath(platform) {
+	return platform === "win32" ? win32 : posix;
+}
+
 export function resolveBundleArtifacts(options) {
-	const repoRoot = resolve(options.repoRoot);
+	const platform = options.platform ?? process.platform;
+	// Build paths for the target platform, not for the host running the
+	// planner. Cross-platform tests and macOS release planning run on Windows
+	// in CI/dev environments, but their artifact paths must remain POSIX.
+	const path = platformPath(platform);
+	const repoRoot = path.resolve(options.repoRoot);
 	const targetTriple = options.targetTriple;
 	const profile = options.profile ?? "release";
-	const platform = options.platform ?? process.platform;
-	const sidecarDir = resolve(repoRoot, "sidecar");
-	const srcTauriDir = resolve(repoRoot, "src-tauri");
+	const sidecarDir = path.resolve(repoRoot, "sidecar");
+	const srcTauriDir = path.resolve(repoRoot, "src-tauri");
 	// Bun's `--compile` and cargo both append `.exe` on Windows, and Tauri's
 	// `externalBin` resolution expects the `-<triple>` artifacts to carry it too.
 	const exe = platform === "win32" ? ".exe" : "";
 	const cliBinaryName = cliBinaryNameForPlatform(platform);
 	const cliSource =
 		profile === "release"
-			? resolve(srcTauriDir, "target", targetTriple, "release", cliBinaryName)
-			: resolve(srcTauriDir, "target", "debug", cliBinaryName);
+			? path.resolve(
+					srcTauriDir,
+					"target",
+					targetTriple,
+					"release",
+					cliBinaryName,
+				)
+			: path.resolve(srcTauriDir, "target", "debug", cliBinaryName);
 
 	return {
 		targetTriple,
 		profile,
-		sidecarSource: resolve(sidecarDir, "dist", `helmor-sidecar${exe}`),
-		sidecarExternalBin: resolve(
+		sidecarSource: path.resolve(sidecarDir, "dist", `helmor-sidecar${exe}`),
+		sidecarExternalBin: path.resolve(
 			sidecarDir,
 			"dist",
 			`helmor-sidecar-${targetTriple}${exe}`,
 		),
 		cliSource,
-		cliExternalBin: resolve(
+		cliExternalBin: path.resolve(
 			srcTauriDir,
 			"target",
 			"bundled",

@@ -90,17 +90,26 @@ export default defineConfig(async () => ({
 		// load. Retry twice in CI so a single scheduling hiccup does not
 		// fail the whole run; local dev stays strict.
 		retry: process.env.CI ? 2 : 0,
-		// Sidecar tests are written for `bun:test`, not vitest. Exclude them
-		// so `bun run test:frontend` doesn't trip on `import ... from "bun:test"`.
+		hookTimeout: 60_000,
+		// `bun:test` suites must not reach vitest: the runner cannot bundle the
+		// `bun:test` built-in and every one of those files errors out during
+		// collection. sidecar/ was excluded for this reason; packages/workbench
+		// and packages/context-rot (56 spec files) are the same case and are
+		// covered by `test:workbench` / `test:context-rot`.
 		// Same for the Rust + fixtures trees which contain no TS tests.
+		// `worktrees/` is a gitignored dispatch-output tree holding full copies of
+		// the repo: without this it doubles the suite (221 extra spec files) and
+		// every one of them fails on broken module resolution.
 		exclude: [
 			"**/node_modules/**",
 			"**/dist/**",
 			"sidecar/**",
+			"packages/**",
 			"apps/**",
 			"src-tauri/**",
 			"fixtures/**",
 			"e2e/**",
+			"worktrees/**",
 		],
 	},
 }));
