@@ -59,3 +59,15 @@ test-results/
 
 # Nix/direnv
 .direnv/
+# workbench linked worktrees (dispatch outputs)
+/worktrees/
+# workbench runtime state (workbench.yaml + blackboard/checkpoints/events/locks)
+/.workbench/
+# nested task-forest written under packages/workbench when the CLI runs there
+/packages/workbench/.agent-workbench/
+# throwaway scratch scripts and export intermediates
+/.agent-workbench/tmp/
+/.agent-workbench/task-forest/exports/_tmp_*.json
+/.agent-workbench/task-forest/exports/.*.tmp.*
+# local session work log — personal workspace memory, not repo history
+/.workbuddy/memory/

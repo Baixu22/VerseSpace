@@ -15,6 +15,7 @@
 			"!**/node_modules",
 			"!!**/.claude",
 			"!!**/.agent-workbench",
+			"!!**/worktrees",
 			"!!**/coverage",
 			"!storybook-static",
 			"!**/.local-data",

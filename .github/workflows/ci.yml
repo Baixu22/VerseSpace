@@ -43,10 +43,10 @@ jobs:
       biome: ${{ steps.filter.outputs.biome }}
       typecheck: ${{ steps.filter.outputs.typecheck }}
       frontend: ${{ steps.filter.outputs.frontend }}
-	      e2e: ${{ steps.filter.outputs.e2e }}
-	      sidecar: ${{ steps.filter.outputs.sidecar }}
-	      workbench: ${{ steps.filter.outputs.workbench }}
-	      rust: ${{ steps.filter.outputs.rust }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+      sidecar: ${{ steps.filter.outputs.sidecar }}
+      workbench: ${{ steps.filter.outputs.workbench }}
+      rust: ${{ steps.filter.outputs.rust }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -70,12 +70,12 @@ jobs:
               - 'vitest.shims.d.ts'
               - 'components.json'
               - '.storybook/**'
-	            sidecar: &sidecar
-	              - *global
-	              - 'sidecar/**'
-	            workbench: &workbench
-	              - *global
-	              - 'packages/workbench/**'
+            sidecar: &sidecar
+              - *global
+              - 'sidecar/**'
+            workbench: &workbench
+              - *global
+              - 'packages/workbench/**'
             # Agent SDK bumps land in sidecar/package.json + sidecar/bun.lock;
             # the SDK event shape is the contract the Rust accumulator depends
             # on, so those two files must re-run the pipeline snapshot tests
@@ -93,11 +93,11 @@ jobs:
               - 'vite.e2e.config.ts'
             # Root tsc also checks playwright.config.ts via tsconfig.node.json
             # references (vite configs are already in `frontend`).
-	            typecheck:
-	              - *frontend
-	              - *sidecar
-	              - *workbench
-	              - 'playwright.config.ts'
+            typecheck:
+              - *frontend
+              - *sidecar
+              - *workbench
+              - 'playwright.config.ts'
             # Biome lints the whole repo (biome.json includes: ["**"]), so gate
             # on every extension Biome can parse, anywhere — this mirrors
             # `biome check .` instead of trying to enumerate directories.

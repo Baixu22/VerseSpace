@@ -1,1 +1,3 @@
-bunx lint-staged
+# --no-stash: git stash is unusable on machines where the host's delete hook
+# removes .git/refs along with git's internal temp files, which corrupts the repo.
+bunx lint-staged --no-stash
