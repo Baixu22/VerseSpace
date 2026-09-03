@@ -357,68 +357,6 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.83,
-    "context_tags": [
-      "seal",
-      "observability",
-      "degrade"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0134",
-    "kind": "task",
-    "next_action": "修改 runtime/seal.ts 与 commands/premises.ts",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
-    "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "封印观测与降级模式"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "adr",
-      "architecture",
-      "boundary"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0138",
-    "kind": "task",
-    "next_action": "新增 docs/decisions/0010-premise-custody.md",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
-    "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "ADR：前提守护架构与产品边界"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
       "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
@@ -726,7 +664,13 @@
     "remaining_minutes_max": 2880,
     "remaining_minutes_min": 1440,
     "status": "in_progress",
-    "success_metrics": [],
+    "success_metrics": [
+      "阶段 A 的三个基础件全部收口并可通过测试",
+      "恢复卡事实段的每条事实可溯源",
+      "分支继承不再把 UI 前缀误当 agent 前提",
+      "通知单轮注入不超过配置预算",
+      "L3 砍留决策有真实使用数据支撑"
+    ],
     "title": "Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一"
   },
   {
@@ -757,7 +701,12 @@
     "remaining_minutes_max": 720,
     "remaining_minutes_min": 360,
     "status": "in_progress",
-    "success_metrics": [],
+    "success_metrics": [
+      "只读 stats 能输出基线或 insufficient-history",
+      "事件身份在并发追加下无重复且旧日志可读",
+      "fork 的三种继承事实与实际运行语义一致",
+      "生命周期事件不进入世界投影"
+    ],
     "title": "阶段 A：证据与架构地基"
   },
   {
@@ -788,7 +737,9 @@
     "remaining_minutes_max": 180,
     "remaining_minutes_min": 90,
     "status": "ready",
-    "success_metrics": [],
+    "success_metrics": [
+      "在含历史线程的仓库上输出可解释基线；无数据时明确 insufficient-history"
+    ],
     "title": "stats fold：分叉 / 切换 / 恢复基线"
   },
   {
@@ -811,7 +762,7 @@
     "difficulty": "high",
     "id": "TF-0123",
     "kind": "task",
-    "next_action": "修改 packages/workbench/src/blackboard/events.ts 与 fs/atomic.ts",
+    "next_action": "修改 blackboard/events.ts 与 fs/atomic.ts",
     "priority": 1,
     "progress": 0.0,
     "purpose": "让会话事件、世界足迹和恢复事实能被同一条因果链引用，不再靠墙钟或行号猜。",
@@ -819,7 +770,9 @@
     "remaining_minutes_max": 360,
     "remaining_minutes_min": 180,
     "status": "ready",
-    "success_metrics": [],
+    "success_metrics": [
+      "并发追加无重复 ID，读侧成本有基准数据"
+    ],
     "title": "稳定事件身份与因果时钟"
   },
   {
@@ -850,7 +803,9 @@
     "remaining_minutes_max": 300,
     "remaining_minutes_min": 120,
     "status": "ready",
-    "success_metrics": [],
+    "success_metrics": [
+      "三种继承事实在类型与运行时均不可混淆"
+    ],
     "title": "fork 继承事实拆分：transcript / agent context / premise"
   },
   {
@@ -863,26 +818,28 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.85,
+    "confidence": 0.83,
     "context_tags": [
-      "delivery",
-      "budget",
-      "flooding"
+      "seal",
+      "observability",
+      "degrade"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0133",
+    "id": "TF-0134",
     "kind": "task",
-    "next_action": "修改 runtime/delivery.ts",
+    "next_action": "修改 runtime/seal.ts 与 commands/premises.ts",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
+    "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
     "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "通知预算：每轮一束 + 家族折叠"
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "ready",
+    "success_metrics": [
+      "封印抖动可在事件中观测并自动降级"
+    ],
+    "title": "封印观测与降级模式"
   },
   {
     "alignment": {
@@ -894,26 +851,28 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.85,
+    "confidence": 0.88,
     "context_tags": [
-      "fit",
-      "ledger",
-      "decision"
+      "delivery",
+      "semantics",
+      "tests"
     ],
     "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0137",
+    "difficulty": "high",
+    "id": "TF-0142",
     "kind": "task",
-    "next_action": "新建 scripts/fit-ledger.ts 或 docs/fit-ledger.md",
+    "next_action": "先补测试，再改实现",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
+    "purpose": "先定义 notifySession 的正确行为，再往上叠加预算和家族折叠。",
     "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "fit 账本与砍留决策"
+    "remaining_minutes_max": 300,
+    "remaining_minutes_min": 120,
+    "status": "ready",
+    "success_metrics": [
+      "通知通道测试覆盖 live/idle/多通知/turn-in-flight 四种状态"
+    ],
+    "title": "通知通道语义与测试"
   },
   {
     "alignment": {
@@ -978,8 +937,47 @@
     "remaining_minutes_max": 180,
     "remaining_minutes_min": 90,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "覆盖率行与实际可比对前提数一致"
+    ],
     "title": "恢复覆盖率行与指标"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0125",
+      "TF-0123",
+      "TF-0140"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "adr",
+      "architecture",
+      "boundary"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0138",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0125, TF-0123, TF-0140",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
+    "ready": false,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "proposed",
+    "success_metrics": [
+      "后续设计评审能引用同一 ADR 裁决边界问题"
+    ],
+    "title": "ADR：前提守护架构与产品边界"
   },
   {
     "alignment": {
@@ -1011,7 +1009,9 @@
     "remaining_minutes_max": 360,
     "remaining_minutes_min": 180,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "世界投影测试证明 thread.* 不进入调度、前提和上下文生成"
+    ],
     "title": "会话生命周期事件与投影边界"
   },
   {
@@ -1044,7 +1044,12 @@
     "remaining_minutes_max": 720,
     "remaining_minutes_min": 360,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "隔天恢复能列出已变前提",
+      "恢复卡事实段每条可溯源",
+      "无分歧时整卡不渲染",
+      "恢复到首条消息的中位间隔不因卡片上升超过 20%"
+    ],
     "title": "阶段 B：恢复处境（R2′ + 恢复卡）"
   },
   {
@@ -1077,7 +1082,9 @@
     "remaining_minutes_max": 360,
     "remaining_minutes_min": 180,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "恢复卡事实段的每条失效前提都有版本证据"
+    ],
     "title": "恢复时读集 diff（R2′）"
   },
   {
@@ -1110,7 +1117,9 @@
     "remaining_minutes_max": 360,
     "remaining_minutes_min": 180,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "恢复卡每条事实可点击溯源"
+    ],
     "title": "双通道恢复卡：叙事 + 事实 + 证据"
   },
   {
@@ -1144,7 +1153,12 @@
     "remaining_minutes_max": 960,
     "remaining_minutes_min": 480,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "无合法继承路径时 inherited 事件为 0",
+      "merge-back 空分支零痕迹",
+      "单轮通知不超过配置 token 上限",
+      "封印决策可查询且可降级"
+    ],
     "title": "阶段 C：分支与并发收敛"
   },
   {
@@ -1157,7 +1171,9 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0125"
+      "TF-0125",
+      "TF-0140",
+      "TF-0142"
     ],
     "confidence": 0.85,
     "context_tags": [
@@ -1169,7 +1185,7 @@
     "difficulty": "high",
     "id": "TF-0131",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0125",
+    "next_action": "先完成依赖：TF-0125, TF-0140, TF-0142",
     "priority": 1,
     "progress": 0.0,
     "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
@@ -1177,7 +1193,9 @@
     "remaining_minutes_max": 300,
     "remaining_minutes_min": 120,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "没有合法继承路径时，inherited 事件数量为 0"
+    ],
     "title": "分支读集继承与诚实开关"
   },
   {
@@ -1190,7 +1208,8 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0127"
+      "TF-0127",
+      "TF-0142"
     ],
     "confidence": 0.82,
     "context_tags": [
@@ -1202,7 +1221,7 @@
     "difficulty": "high",
     "id": "TF-0132",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0127",
+    "next_action": "先完成依赖：TF-0127, TF-0142",
     "priority": 1,
     "progress": 0.0,
     "purpose": "把分支留下的执行事实带回主线，同时避免内容合并污染上下文。",
@@ -1210,8 +1229,45 @@
     "remaining_minutes_max": 480,
     "remaining_minutes_min": 240,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "分支摘要只由可溯源事实组成"
+    ],
     "title": "merge-back L1：恢复卡上的分支摘要"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0142"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "delivery",
+      "budget",
+      "flooding"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0133",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0142",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
+    "ready": false,
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
+    "success_metrics": [
+      "单轮注入不超过配置 token 上限"
+    ],
+    "title": "通知预算：每轮一束 + 家族折叠"
   },
   {
     "alignment": {
@@ -1243,8 +1299,49 @@
     "remaining_minutes_max": 480,
     "remaining_minutes_min": 240,
     "status": "proposed",
-    "success_metrics": [],
+    "success_metrics": [
+      "有明确日用起点和 14 天样本",
+      "每个 fit 结论可追溯到事件或 stats 输出",
+      "L3 有继续/延后结论",
+      "fit unknown 占比下降"
+    ],
     "title": "阶段 D：fit 门与范围仲裁"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0122",
+      "TF-0141"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "l3",
+      "gate",
+      "fit"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0136",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0122, TF-0141",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
+    "ready": false,
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
+    "success_metrics": [
+      "L3 的继续/延后决策可追溯到 stats 输出"
+    ],
+    "title": "两周真实使用门与 L3 证据门"
   },
   {
     "alignment": {
@@ -1260,23 +1357,128 @@
     ],
     "confidence": 0.85,
     "context_tags": [
-      "l3",
-      "gate",
-      "fit"
+      "fit",
+      "ledger",
+      "decision"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0136",
+    "id": "TF-0137",
     "kind": "task",
     "next_action": "先完成依赖：TF-0122",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
+    "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
     "ready": false,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
     "status": "proposed",
-    "success_metrics": [],
-    "title": "两周真实使用门与 L3 证据门"
+    "success_metrics": [
+      "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
+    ],
+    "title": "fit 账本与砍留决策"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0123"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "instrumentation",
+      "fit"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0139",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0123",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把真实使用行为变成可统计事件，而不是靠事后猜测。",
+    "ready": false,
+    "remaining_minutes_max": 360,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [
+      "两周内至少产出可统计的 switch/restored/恢复事实消费样本"
+    ],
+    "title": "会话观测埋点：switch / restored / 恢复事实消费"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0125"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "claude",
+      "inheritance",
+      "experiment"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0140",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0125",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "解决 fresh fork 与真实上下文继承之间的语义落差，避免把 UI 前缀伪装成 agent 前提。",
+    "ready": false,
+    "remaining_minutes_max": 420,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [
+      "能给出可复现实验结果，而非仅静态推断"
+    ],
+    "title": "Claude 真实上下文继承与前缀匹配裁决"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0139"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "fit",
+      "dogfooding"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0141",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0139",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
+    "ready": false,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 60,
+    "status": "proposed",
+    "success_metrics": [
+      "两周窗口结束时能输出可判定的 fit 数据"
+    ],
+    "title": "日用起点与两周观察窗口"
   }
 ]
