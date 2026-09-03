@@ -1,5 +1,6 @@
 import { unstable_useComposerInput } from "@assistant-ui/react";
 import { useEffect, useRef, useState } from "react";
+import type { ResumeBeat } from "../../chat/store";
 import { useChatStore } from "../../chat/store";
 
 /**
@@ -30,6 +31,70 @@ function DraftMirror() {
 		}
 	}, [activeId, composer.value]);
 	return null;
+}
+
+/** 恢复笔记（TF-0097）：离开时 agent 起草，返回时呈现为有序叙事。 */
+const BEAT_LABEL: Record<ResumeBeat["kind"], string> = {
+	doing: "你在做什么",
+	decided: "你决定了什么",
+	shifted: "脚下什么动了",
+	next: "下一步",
+};
+
+function ResumeNoteBar() {
+	const note = useChatStore((s) => s.resumeNote);
+	const delta = useChatStore((s) => s.resumeDelta);
+	const [expanded, setExpanded] = useState(false);
+	if (!note) {
+		return null;
+	}
+	const draftedAt = new Date(note.draftedAt).toLocaleString();
+	const confirmed = Boolean(note.confirmedAt);
+	return (
+		<div className="mx-6 mb-2 rounded-xl border border-border-subtle bg-bg-surface px-3 py-2">
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={() => setExpanded(!expanded)}
+					className="text-micro text-fg-muted hover:text-fg-default"
+				>
+					{expanded ? "▾" : "▸"} 恢复笔记 · 离开于 {draftedAt}
+				</button>
+				<span className="flex-1 text-micro text-fg-subtle">
+					{confirmed ? "· 已确认" : "· 待确认"}
+					{delta > 0 ? ` · 你不在时多了 ${delta} 条` : ""}
+				</span>
+				{!confirmed ? (
+					<button
+						type="button"
+						onClick={() => void useChatStore.getState().confirmResumeNote()}
+						className="text-micro text-fg-subtle hover:text-status-success"
+					>
+						确认
+					</button>
+				) : null}
+			</div>
+			{expanded ? (
+				<ol className="mt-1.5 space-y-1.5">
+					{delta > 0 ? (
+						<li className="text-micro text-fg-subtle">
+							你不在时这条对话多了 {delta} 条——往下翻看新内容。
+						</li>
+					) : null}
+					{note.beats.map((beat, i) => (
+						<li key={`${beat.kind}-${i}`} className="flex items-start gap-2">
+							<span className="shrink-0 rounded bg-muted px-1 text-micro text-fg-subtle">
+								{BEAT_LABEL[beat.kind]}
+							</span>
+							<span className="flex-1 text-micro text-fg-muted">
+								{beat.text}
+							</span>
+						</li>
+					))}
+				</ol>
+			) : null}
+		</div>
+	);
 }
 
 /** 决策账本（TF-0095）：自动填充、默认折叠、无分歧时完全不渲染。 */
@@ -184,11 +249,12 @@ function SuggestionChips() {
 	);
 }
 
-/** composer 上方的安静层：账本 → 停放快照 → 建议条。 */
+/** composer 上方的安静层：恢复笔记 → 账本 → 停放快照 → 建议条。 */
 export function ThreadSidecar() {
 	return (
 		<>
 			<DraftMirror />
+			<ResumeNoteBar />
 			<DecisionLedger />
 			<ParkedBar />
 			<SuggestionChips />

@@ -26,6 +26,7 @@ import {
 	promotionPatch,
 	UNNAMED_TITLE,
 } from "./promote";
+import { buildResumeNote, type ResumeBeat, type ResumeNote } from "./resume";
 
 /**
  * The chat runtime: threads owned by the workbench server, backed by a
@@ -40,6 +41,8 @@ import {
  */
 
 export type PermissionMode = "default" | "plan" | "acceptEdits";
+
+export type { ResumeBeat, ResumeNote } from "./resume";
 
 export interface ThreadMeta {
 	id: string;
@@ -67,6 +70,8 @@ export interface ThreadMeta {
 	promotion?: PromotionRecord;
 	/** 分叉血统（TF-0093）：本线程由哪个线程的哪条消息分叉而来。 */
 	forkOf?: ForkLineage;
+	/** 准备恢复笔记（TF-0097）：离开车道时由 agent 起草，返回时呈现为有序叙事。 */
+	resumeNote?: ResumeNote;
 }
 
 export type MessagePart =
@@ -259,6 +264,55 @@ export class ChatThreads {
 		}
 		await this.saveMeta(meta);
 		return meta;
+	}
+
+	// ── 准备恢复笔记（TF-0097）─────────────────────────────────────────
+	// 离开车道的那一刻从既有事实推导一份恢复笔记（agent 起草），写进 meta。
+	// 返回时呈现为有序叙事，用户可确认/编辑——确认不阻塞。笔记在离开时
+	// 生成，不在返回时索取；返回时的『你不在时变了什么』由呈现层对比
+	// leaveSignature 检测，不写回 meta。
+
+	/**
+	 * 离开车道时生成恢复笔记。空对话（无消息）不生成，返回 null。
+	 * 幂等：重复调用只是覆盖（最新离开时刻为准）。
+	 */
+	async leave(id: string, now: Date = new Date()): Promise<ResumeNote | null> {
+		return this.enqueue(id, async () => {
+			const meta = await this.get(id);
+			const messages = await this.messages(id);
+			const note = buildResumeNote(messages, meta, now);
+			if (!note) {
+				return null;
+			}
+			meta.resumeNote = note;
+			await this.saveMeta(meta);
+			return note;
+		});
+	}
+
+	/**
+	 * 用户编辑/确认恢复笔记。编辑替换 beats；确认置 confirmedAt。
+	 * 没有笔记时返回 undefined（UI 不应到达此路径）。
+	 */
+	async setResumeNote(
+		id: string,
+		patch: { beats?: ResumeBeat[]; confirmed?: boolean },
+		now: Date = new Date(),
+	): Promise<ResumeNote | undefined> {
+		return this.enqueue(id, async () => {
+			const meta = await this.get(id);
+			if (!meta.resumeNote) {
+				return undefined;
+			}
+			if (patch.beats !== undefined) {
+				meta.resumeNote.beats = patch.beats;
+			}
+			if (patch.confirmed && !meta.resumeNote.confirmedAt) {
+				meta.resumeNote.confirmedAt = now.toISOString();
+			}
+			await this.saveMeta(meta);
+			return meta.resumeNote;
+		});
 	}
 
 	// ── 加法式晋升（TF-0092）───────────────────────────────────────────

@@ -41,6 +41,8 @@ export interface ThreadMeta {
 		inheritedMessages: number;
 		at: string;
 	};
+	/** 准备恢复笔记（TF-0097）：离开时 agent 起草，返回时呈现为有序叙事。 */
+	resumeNote?: ResumeNote;
 }
 
 /** 服务端推导的续写建议（TF-0095，chat/suggest.ts）。 */
@@ -63,6 +65,23 @@ export interface ParkedItem {
 	kind: "draft";
 	text: string;
 	parkedAt: string;
+}
+
+/** 恢复笔记的一个节拍（TF-0097，packages/workbench chat/resume.ts 的镜像）。 */
+export interface ResumeBeat {
+	kind: "doing" | "decided" | "shifted" | "next";
+	text: string;
+}
+
+/** 离开车道时 agent 起草的恢复笔记（TF-0097）。 */
+export interface ResumeNote {
+	beats: ResumeBeat[];
+	draftedAt: string;
+	confirmedAt?: string;
+	leaveSignature: {
+		lastMessageAt: string;
+		messageCount: number;
+	};
 }
 
 /** 分叉响应携带的继承声明（packages/workbench fork.ts 的 ForkDeclaration）。 */
@@ -91,6 +110,10 @@ interface ChatState {
 	drafts: Record<string, string>;
 	/** 各线程的停放快照（TF-0096）：切换离开时收起的产物。 */
 	parked: Record<string, ParkedItem[]>;
+	/** 当前线程的恢复笔记（TF-0097）：离开时生成、返回时呈现。null = 无笔记。 */
+	resumeNote: ResumeNote | null;
+	/** 返回时检测『你不在时变了什么』（TF-0097）：离开后新增的消息条数。 */
+	resumeDelta: number;
 	init(): Promise<void>;
 	createThread(): Promise<void>;
 	switchThread(id: string): Promise<void>;
@@ -103,6 +126,10 @@ interface ChatState {
 	parkDraft(threadId: string, text: string): void;
 	discardParked(threadId: string, itemId: string): void;
 	clearParked(threadId: string): void;
+	/** 确认恢复笔记（TF-0097）：置 confirmedAt，不阻塞。 */
+	confirmResumeNote(): Promise<void>;
+	/** 编辑恢复笔记的一个节拍（TF-0097）。 */
+	editResumeBeat(index: number, text: string): Promise<void>;
 	cancel(): void;
 	setPlanMode(enabled: boolean): Promise<void>;
 	deleteThread(id: string): Promise<void>;
@@ -113,12 +140,13 @@ interface ChatState {
 
 const EMPTY: StoredMessage[] = [];
 
-/** 线程 GET 载荷：meta + messages + 服务端推导的建议与决策账本（TF-0095）。 */
+/** 线程 GET 载荷：meta + messages + 服务端推导的建议与决策账本（TF-0095）+ 恢复笔记（TF-0097）。 */
 interface ThreadGetResponse {
 	meta: ThreadMeta;
 	messages: StoredMessage[];
 	suggestions: Suggestion[];
 	decisionPoints: DecisionPoint[];
+	resumeNote: ResumeNote | null;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -131,6 +159,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	decisionPoints: [],
 	drafts: {},
 	parked: {},
+	resumeNote: null,
+	resumeDelta: 0,
 
 	async init() {
 		const threads = await apiFetch("/api/chat/threads").then(
@@ -162,6 +192,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		}
 		// TF-0096 清场：离开的车道收起草稿进停放快照，composer 从干净开始。
 		// 返回时快照以可筛选列表呈现，恢复或丢弃由用户决定。
+		const prevId = get().activeId;
 		set((s) => {
 			const parked = { ...s.parked };
 			const drafts = { ...s.drafts };
@@ -188,19 +219,39 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				forkNotice: null,
 				suggestions: [],
 				decisionPoints: [],
+				resumeNote: null,
+				resumeDelta: 0,
 			};
 		});
+		// TF-0097：离开 prev 时 fire-and-forget 生成恢复笔记（agent 起草）。
+		// 不阻塞切换、失败吞掉——笔记是余光，不是切换的前置条件。
+		if (prevId && prevId !== id) {
+			void apiFetch(`/api/chat/threads/${prevId}/leave`, {
+				method: "POST",
+			}).catch(() => {});
+		}
 		const data = await apiFetch(`/api/chat/threads/${id}`).then(
 			(r) => r.json() as Promise<ThreadGetResponse>,
 		);
-		set((s) => ({
-			messages: { ...s.messages, [id]: data.messages },
-			suggestions: data.suggestions,
-			decisionPoints: data.decisionPoints,
-			threads: s.threads.some((t) => t.id === id)
-				? s.threads.map((t) => (t.id === id ? { ...t, ...data.meta } : t))
-				: [data.meta, ...s.threads],
-		}));
+		set((s) => {
+			// TF-0097：返回时检测『你不在时变了什么』——对比离开签名与当前消息数。
+			// 纯呈现层，不写回 meta（笔记在离开时生成，不在返回时索取）。
+			const delta =
+				data.resumeNote &&
+				data.messages.length > data.resumeNote.leaveSignature.messageCount
+					? data.messages.length - data.resumeNote.leaveSignature.messageCount
+					: 0;
+			return {
+				messages: { ...s.messages, [id]: data.messages },
+				suggestions: data.suggestions,
+				decisionPoints: data.decisionPoints,
+				resumeNote: data.resumeNote,
+				resumeDelta: delta,
+				threads: s.threads.some((t) => t.id === id)
+					? s.threads.map((t) => (t.id === id ? { ...t, ...data.meta } : t))
+					: [data.meta, ...s.threads],
+			};
+		});
 	},
 
 	setDraft(threadId, text) {
@@ -242,6 +293,42 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			delete parked[threadId];
 			return { parked };
 		});
+	},
+
+	async confirmResumeNote() {
+		const threadId = get().activeId;
+		if (!threadId) {
+			return;
+		}
+		const updated = await apiFetch(
+			`/api/chat/threads/${threadId}/resume-note`,
+			{
+				method: "PATCH",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ confirmed: true }),
+			},
+		).then((r) => r.json() as Promise<ResumeNote>);
+		set({ resumeNote: updated });
+	},
+
+	async editResumeBeat(index, text) {
+		const threadId = get().activeId;
+		const note = get().resumeNote;
+		if (!threadId || !note || index < 0 || index >= note.beats.length) {
+			return;
+		}
+		const beats = note.beats.map((beat, i) =>
+			i === index ? { ...beat, text } : beat,
+		);
+		const updated = await apiFetch(
+			`/api/chat/threads/${threadId}/resume-note`,
+			{
+				method: "PATCH",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ beats }),
+			},
+		).then((r) => r.json() as Promise<ResumeNote>);
+		set({ resumeNote: updated });
 	},
 
 	cancel() {

@@ -266,3 +266,98 @@ describe("自动扇出变体（TF-0094）", () => {
 		}
 	});
 });
+
+describe("ChatThreads 恢复笔记（TF-0097）", () => {
+	test("leave：从既有消息推导笔记并写进 meta", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			await appendMessages(workbenchRoot, thread.id, [
+				msg("user", "调研上下文回退方案"),
+				msg("assistant", "可以分两步：\n1. 先写纯函数\n2. 再接线"),
+			]);
+
+			const note = await chat.leave(thread.id);
+			expect(note).not.toBeNull();
+			expect(note!.beats.length).toBeGreaterThanOrEqual(2);
+			expect(note!.beats[0]!.kind).toBe("doing");
+			expect(note!.confirmedAt).toBeUndefined();
+
+			const meta = await chat.get(thread.id);
+			expect(meta.resumeNote).toEqual(note!);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("leave 空对话：返回 null，不写笔记", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			const note = await chat.leave(thread.id);
+			expect(note).toBeNull();
+			const meta = await chat.get(thread.id);
+			expect(meta.resumeNote).toBeUndefined();
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("setResumeNote 确认：置 confirmedAt", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			await appendMessages(workbenchRoot, thread.id, [
+				msg("user", "做恢复笔记"),
+				msg("assistant", "好"),
+			]);
+			await chat.leave(thread.id);
+
+			const confirmed = await chat.setResumeNote(thread.id, {
+				confirmed: true,
+			});
+			expect(confirmed?.confirmedAt).toBeDefined();
+
+			const meta = await chat.get(thread.id);
+			expect(meta.resumeNote?.confirmedAt).toBeDefined();
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("setResumeNote 编辑：替换 beats", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			await appendMessages(workbenchRoot, thread.id, [
+				msg("user", "做恢复笔记"),
+				msg("assistant", "好"),
+			]);
+			await chat.leave(thread.id);
+
+			const edited = await chat.setResumeNote(thread.id, {
+				beats: [{ kind: "doing", text: "用户改写的节拍" }],
+			});
+			expect(edited?.beats).toHaveLength(1);
+			expect(edited?.beats[0]?.text).toBe("用户改写的节拍");
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("setResumeNote 无笔记时返回 undefined", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			const result = await chat.setResumeNote(thread.id, { confirmed: true });
+			expect(result).toBeUndefined();
+		} finally {
+			await cleanup();
+		}
+	});
+});

@@ -430,7 +430,7 @@ export async function createUiServer(
 			return Response.json(await chat.create(body.title));
 		}
 		const chatMatch = url.pathname.match(
-			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork))?$/,
+			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|resume-note))?$/,
 		);
 		if (chatMatch) {
 			const threadId = decodeURIComponent(chatMatch[1] ?? "");
@@ -442,11 +442,13 @@ export async function createUiServer(
 				]);
 				// TF-0095：建议与决策账本由同一组纯函数在服务端推导，
 				// UI 是纯渲染层——无分歧时账本为空数组（完全不渲染）
+				// TF-0097：resumeNote 随 meta 持久化，离开时生成、返回时呈现
 				return Response.json({
 					meta,
 					messages,
 					suggestions: suggestNext(messages),
 					decisionPoints: collectDecisionPoints(messages, meta),
+					resumeNote: meta.resumeNote ?? null,
 				});
 			}
 			if (sub === "cancel" && request.method === "POST") {
@@ -472,6 +474,28 @@ export async function createUiServer(
 					);
 				}
 				return Response.json(await chat.fork(threadId, body.anchorMessageId));
+			}
+			if (sub === "leave" && request.method === "POST") {
+				// TF-0097：离开车道时生成恢复笔记（agent 起草），空对话返回 null
+				return Response.json(await chat.leave(threadId));
+			}
+			if (sub === "resume-note" && request.method === "PATCH") {
+				// TF-0097：用户编辑/确认恢复笔记
+				const body = (await request.json().catch(() => ({}))) as {
+					beats?: {
+						kind: "doing" | "decided" | "shifted" | "next";
+						text: string;
+					}[];
+					confirmed?: boolean;
+				};
+				const result = await chat.setResumeNote(threadId, body);
+				if (!result) {
+					return Response.json(
+						{ ok: false, reason: "该线程没有恢复笔记" },
+						{ status: 404 },
+					);
+				}
+				return Response.json(result);
 			}
 			if (sub === undefined && request.method === "DELETE") {
 				const outcome = await chat.remove(threadId);

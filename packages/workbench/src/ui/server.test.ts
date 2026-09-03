@@ -367,6 +367,10 @@ describe("ui chat routes", () => {
 		await writeFile(
 			join(fakeDir, "fp-agent.js"),
 			[
+				// A *persistent* fake agent: the real claude CLI stays alive
+				// across turns (streaming stdin), so this stand-in must too —
+				// otherwise every turn after the first writes to a dead child
+				// and nothing observable happens.
 				'const { appendFileSync, writeFileSync } = require("node:fs");',
 				'const { join } = require("node:path");',
 				'appendFileSync(join(__dirname, "argv.log"), JSON.stringify(process.argv.slice(1)) + "\\n");',
@@ -377,13 +381,51 @@ describe("ui chat routes", () => {
 				'  ? process.argv[process.argv.indexOf("--session-id") + 1]',
 				'  : process.argv[process.argv.indexOf("--resume") + 1];',
 				'line({ type: "system", subtype: "init", session_id: sessionArg });',
-				'line({ type: "assistant", message: { content: [{ type: "tool_use", id: "t1", name: "Read", input: { file_path: readTarget } }] } });',
-				'line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", content: "readme content" }] } });',
-				'line({ type: "assistant", message: { content: [{ type: "tool_use", id: "t2", name: "Write", input: { file_path: writeTarget, content: "new" } }] } });',
-				'writeFileSync(writeTarget, "written by fake agent");',
-				'line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t2", content: "ok" }] } });',
-				'line({ type: "assistant", message: { content: [{ type: "text", text: "done" }] } });',
-				'line({ type: "result", subtype: "success", result: "done" });',
+				"let turn = 0;",
+				// behaviour is keyed on the prompt text, not the turn counter:
+				// the respawned child starts counting at 1 again
+				"const onTurn = (raw) => {",
+				'  let text = "";',
+				'  try { text = JSON.parse(raw)?.message?.content ?? ""; } catch {}',
+				"  turn += 1;",
+				'  if (text === "go") {',
+				'    line({ type: "assistant", message: { content: [{ type: "tool_use", id: "t1", name: "Read", input: { file_path: readTarget } }] } });',
+				'    line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", content: "readme content" }] } });',
+				'    line({ type: "assistant", message: { content: [{ type: "tool_use", id: "t2", name: "Write", input: { file_path: writeTarget, content: "new" } }] } });',
+				'    writeFileSync(writeTarget, "written by fake agent");',
+				'    line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t2", content: "ok" }] } });',
+				'    line({ type: "assistant", message: { content: [{ type: "text", text: "done" }] } });',
+				'    line({ type: "result", subtype: "success", result: "done" });',
+				"    return;",
+				"  }",
+				'  line({ type: "assistant", message: { content: [{ type: "text", text: "reply " + turn }] } });',
+				'  line({ type: "result", subtype: "success", result: "reply " + turn });',
+				// the last prompt exits the child so the test can clean up its
+				// cwd (a live process keeps the directory locked on Windows)
+				'  if (text === "again" || text === "once more") { setTimeout(() => process.exit(0), 10); }',
+				"};",
+				'let buf = "";',
+				'process.stdin.setEncoding("utf8");',
+				'process.stdin.on("data", (chunk) => {',
+				"  buf += chunk;",
+				// one JSON per line, but the very first turn is written without
+				// a trailing newline, so also accept a complete value with none
+				"  for (;;) {",
+				'    const nl = buf.indexOf("\\n");',
+				"    if (nl >= 0) {",
+				"      const raw = buf.slice(0, nl).trim();",
+				"      buf = buf.slice(nl + 1);",
+				"      if (raw) { onTurn(raw); }",
+				"      continue;",
+				"    }",
+				"    const trimmed = buf.trim();",
+				"    if (!trimmed) { break; }",
+				"    try { JSON.parse(trimmed); } catch { break; }",
+				'    buf = "";',
+				"    onTurn(trimmed);",
+				"  }",
+				"});",
+				'process.stdin.on("end", () => process.exit(0));',
 			].join("\n"),
 			"utf8",
 		);
@@ -448,7 +490,8 @@ describe("ui chat routes", () => {
 			const writer = await ws.bb.sessions.get(id);
 			expect(writer?.kind).toBe("agent");
 
-			// second run resumes the same claude session id
+			// second turn reuses the live session: the child is still running,
+			// so nothing respawns and argv.log keeps its single entry
 			await fetch(`${base}/api/chat/threads/${id}/messages`, {
 				method: "POST",
 				headers: auth,
@@ -457,7 +500,29 @@ describe("ui chat routes", () => {
 			const argvLines = (await readFile(join(fakeDir, "argv.log"), "utf8"))
 				.trim()
 				.split("\n");
-			const argv2 = JSON.parse(argvLines[1] ?? "[]") as string[];
+			expect(argvLines).toHaveLength(1);
+
+			// the fake agent exits after turn 2; once the runtime reaps the
+			// child, the next turn respawns and resumes the same session id
+			const respawnDeadline = Date.now() + 5000;
+			let respawnCount = 0;
+			do {
+				await new Promise((resolve) => setTimeout(resolve, 50));
+				respawnCount = (await readFile(join(fakeDir, "argv.log"), "utf8"))
+					.trim()
+					.split("\n")
+					.filter(Boolean).length;
+			} while (respawnCount < 2 && Date.now() < respawnDeadline);
+			await fetch(`${base}/api/chat/threads/${id}/messages`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({ text: "once more" }),
+			}).then((r) => r.text());
+			const respawnLines = (await readFile(join(fakeDir, "argv.log"), "utf8"))
+				.trim()
+				.split("\n");
+			expect(respawnLines).toHaveLength(2);
+			const argv2 = JSON.parse(respawnLines[1] ?? "[]") as string[];
 			expect(argv2).toContain("--resume");
 			expect(argv2).toContain(id);
 		} finally {
@@ -559,6 +624,121 @@ describe("ui chat routes", () => {
 				"m-2",
 				"m-3",
 			]);
+		} finally {
+			server.stop(true);
+			await ws.cleanup();
+		}
+	}, 20000);
+});
+
+describe("resume note routes (TF-0097)", () => {
+	test("leave generates a resume note; GET carries it; PATCH confirms", async () => {
+		const ws: TempWorkbench = await makeTempWorkbench();
+		const server = await createUiServer(ws.bb, 0);
+		try {
+			const base = `http://127.0.0.1:${server.port}`;
+			const token = await fetch(`${base}/api/bootstrap`)
+				.then((r) => r.json())
+				.then((b: { token: string }) => b.token);
+			const auth = {
+				"x-workbench-token": token,
+				"content-type": "application/json",
+			};
+
+			const thread = await fetch(`${base}/api/chat/threads`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({}),
+			}).then((r) => r.json());
+			const id = (thread as { id: string }).id;
+
+			// seed a 2-message transcript
+			const mk = (mid: string, role: "user" | "assistant", text: string) => ({
+				id: mid,
+				role,
+				text,
+				at: new Date().toISOString(),
+			});
+			const { appendFile } = await import("node:fs/promises");
+			for (const m of [
+				mk("m-1", "user", "调研恢复笔记"),
+				mk("m-2", "assistant", "好"),
+			]) {
+				await appendFile(
+					join(ws.workbenchRoot, "threads", id, "messages.jsonl"),
+					`${JSON.stringify(m)}\n`,
+					"utf8",
+				);
+			}
+
+			// leave → resume note present
+			const note = (await fetch(`${base}/api/chat/threads/${id}/leave`, {
+				method: "POST",
+				headers: auth,
+			}).then((r) => r.json())) as {
+				beats: { kind: string }[];
+				draftedAt: string;
+				confirmedAt?: string;
+			} | null;
+			expect(note).not.toBeNull();
+			expect(note!.beats.length).toBeGreaterThanOrEqual(1);
+			expect(note!.confirmedAt).toBeUndefined();
+
+			// GET carries resumeNote
+			const got = (await fetch(`${base}/api/chat/threads/${id}`, {
+				headers: auth,
+			}).then((r) => r.json())) as { resumeNote: { beats: unknown[] } | null };
+			expect(got.resumeNote).not.toBeNull();
+			expect(got.resumeNote!.beats.length).toBe(note!.beats.length);
+
+			// PATCH confirm → confirmedAt set
+			const confirmed = (await fetch(
+				`${base}/api/chat/threads/${id}/resume-note`,
+				{
+					method: "PATCH",
+					headers: auth,
+					body: JSON.stringify({ confirmed: true }),
+				},
+			).then((r) => r.json())) as { confirmedAt?: string };
+			expect(confirmed.confirmedAt).toBeDefined();
+		} finally {
+			server.stop(true);
+			await ws.cleanup();
+		}
+	}, 20000);
+
+	test("leave on empty thread returns null; PATCH on note-less thread returns 404", async () => {
+		const ws: TempWorkbench = await makeTempWorkbench();
+		const server = await createUiServer(ws.bb, 0);
+		try {
+			const base = `http://127.0.0.1:${server.port}`;
+			const token = await fetch(`${base}/api/bootstrap`)
+				.then((r) => r.json())
+				.then((b: { token: string }) => b.token);
+			const auth = {
+				"x-workbench-token": token,
+				"content-type": "application/json",
+			};
+
+			const thread = await fetch(`${base}/api/chat/threads`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({}),
+			}).then((r) => r.json());
+			const id = (thread as { id: string }).id;
+
+			const empty = await fetch(`${base}/api/chat/threads/${id}/leave`, {
+				method: "POST",
+				headers: auth,
+			}).then((r) => r.json());
+			expect(empty).toBeNull();
+
+			const noNote = await fetch(`${base}/api/chat/threads/${id}/resume-note`, {
+				method: "PATCH",
+				headers: auth,
+				body: JSON.stringify({ confirmed: true }),
+			});
+			expect(noNote.status).toBe(404);
 		} finally {
 			server.stop(true);
 			await ws.cleanup();
