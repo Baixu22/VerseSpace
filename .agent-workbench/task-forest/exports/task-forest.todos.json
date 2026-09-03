@@ -2,38 +2,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.5,
-    "context_tags": [
-      "l3",
-      "前端",
-      "高风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0099",
-    "kind": "milestone",
-    "next_action": "任一衍生产物都能一键『对着来源轨迹重放并 diff』",
-    "priority": 5,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -62,7 +31,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -91,65 +60,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0094",
-    "kind": "task",
-    "next_action": "用户在不做任何选择的情况下拿到结果，且随时能一键看到备选",
-    "priority": 4,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "生成 N 个、展示 1 个、其余留在一个按键之外"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0095",
-    "kind": "task",
-    "next_action": "账本在无分歧时完全不可见",
-    "priority": 4,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "系统提议的下一步（每个一次点击）+ 安静的决策账本"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -180,124 +91,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.75,
-    "context_tags": [
-      "l2",
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0090",
-    "kind": "milestone",
-    "next_action": "接受任何提议后，对话的滚动位置与内容排布不发生任何变化",
-    "priority": 3,
-    "progress": 0.4,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "里程碑 L2：晋升、分叉与恢复（加法式的一层）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0093",
-    "kind": "task",
-    "next_action": "从任意历史消息分叉只需一个手势，且分叉后原线程完全不受影响",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "追溯式分叉，零仪式"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0096",
-    "kind": "task",
-    "next_action": "返回一条停放的车道时，打开的无关产物数量显著低于不做清场的基线",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "切换时自动关闭，返回时带筛选还原"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0097",
-    "kind": "task",
-    "next_action": "恢复一条隔天的车道时，无需翻 git log 即可重建上下文",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "离开时生成『准备恢复』笔记 + 返回时给有序叙事"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -327,7 +121,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -356,7 +150,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -385,7 +179,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -414,7 +208,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -443,7 +237,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -472,7 +266,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -501,7 +295,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -532,7 +326,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -570,6 +364,68 @@
       "why_this_task": ""
     },
     "blocked_by": [],
+    "confidence": 0.83,
+    "context_tags": [
+      "seal",
+      "observability",
+      "degrade"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0134",
+    "kind": "task",
+    "next_action": "修改 runtime/seal.ts 与 commands/premises.ts",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "封印观测与降级模式"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "adr",
+      "architecture",
+      "boundary"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0138",
+    "kind": "task",
+    "next_action": "新增 docs/decisions/0010-premise-custody.md",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "ADR：前提守护架构与产品边界"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
     "confidence": 0.9,
     "context_tags": [
       "workbench",
@@ -593,7 +449,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -623,7 +479,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -653,7 +509,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -706,21 +562,21 @@
     "difficulty": "very_high",
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "v5 与 v6 的证伪实验各跑一轮并有记账数据",
+    "next_action": "阶段 A 三件并行：TF-0122/0123/0125",
     "priority": 1,
     "progress": 0.0,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）"
   },
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -750,7 +606,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -781,7 +637,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -811,7 +667,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -837,5 +693,590 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "要求 L0：线性对话是默认且不动它"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.88,
+    "context_tags": [
+      "architecture",
+      "premise-custody",
+      "fable-5-1"
+    ],
+    "desired_outcomes": [
+      "用户回到旧线程时先看到“哪些前提变了”，其次才是叙事",
+      "分支不再被误当成上下文继承，读集只在真实继承时传递",
+      "并发通知保持精度优先且不淹没注意力"
+    ],
+    "difficulty": "very_high",
+    "id": "TF-0120",
+    "kind": "milestone",
+    "next_action": "阶段 A 三件并行：TF-0122/0123/0125",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
+    "ready": true,
+    "remaining_minutes_max": 2880,
+    "remaining_minutes_min": 1440,
+    "status": "in_progress",
+    "success_metrics": [],
+    "title": "Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "phase-a",
+      "foundation",
+      "instrumentation"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0121",
+    "kind": "milestone",
+    "next_action": "先做 stats 和 event clock，fork 拆分可与二者并行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "先补齐因果时钟、事件身份、真实使用统计和 fork 继承事实，避免后续设计建立在名义继承上。",
+    "ready": true,
+    "remaining_minutes_max": 720,
+    "remaining_minutes_min": 360,
+    "status": "in_progress",
+    "success_metrics": [],
+    "title": "阶段 A：证据与架构地基"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "stats",
+      "fit",
+      "baseline"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0122",
+    "kind": "task",
+    "next_action": "新增 packages/workbench/src/commands/stats.ts",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把“有没有人真的分叉、回看、比较”变成可执行数据，而不是靠架构叙事推断。",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "stats fold：分叉 / 切换 / 恢复基线"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "events",
+      "causality",
+      "append-only"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0123",
+    "kind": "task",
+    "next_action": "修改 packages/workbench/src/blackboard/events.ts 与 fs/atomic.ts",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让会话事件、世界足迹和恢复事实能被同一条因果链引用，不再靠墙钟或行号猜。",
+    "ready": true,
+    "remaining_minutes_max": 360,
+    "remaining_minutes_min": 180,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "稳定事件身份与因果时钟"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.88,
+    "context_tags": [
+      "fork",
+      "inheritance",
+      "provider-truth"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0125",
+    "kind": "task",
+    "next_action": "修改 chat/fork.ts 与 chat/threads.ts",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "消除“UI 前缀已复制”被误当作“模型上下文已继承”的架构谎言。",
+    "ready": true,
+    "remaining_minutes_max": 300,
+    "remaining_minutes_min": 120,
+    "status": "ready",
+    "success_metrics": [],
+    "title": "fork 继承事实拆分：transcript / agent context / premise"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "delivery",
+      "budget",
+      "flooding"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0133",
+    "kind": "task",
+    "next_action": "修改 runtime/delivery.ts",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
+    "ready": true,
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "通知预算：每轮一束 + 家族折叠"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "fit",
+      "ledger",
+      "decision"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0137",
+    "kind": "task",
+    "next_action": "新建 scripts/fit-ledger.ts 或 docs/fit-ledger.md",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "fit 账本与砍留决策"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0136"
+    ],
+    "confidence": 0.5,
+    "context_tags": [
+      "l3",
+      "前端",
+      "高风险"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0099",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0136",
+    "priority": 5,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0128"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "coverage",
+      "metrics",
+      "restore"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0129",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0128",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "防止“没消息”被误读为“安全”，并度量恢复卡是否真的省时间。",
+    "ready": false,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "恢复覆盖率行与指标"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0123"
+    ],
+    "confidence": 0.82,
+    "context_tags": [
+      "events",
+      "projection",
+      "boundary"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0124",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0123",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把 fork/leave/restore/merge-back 变成一等会话事件，同时守住世界投影不读会话拓扑的边界。",
+    "ready": false,
+    "remaining_minutes_max": 360,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "会话生命周期事件与投影边界"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0121"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "restore",
+      "r2-prime",
+      "premise-custody"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0126",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0121",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
+    "ready": false,
+    "remaining_minutes_max": 720,
+    "remaining_minutes_min": 360,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "阶段 B：恢复处境（R2′ + 恢复卡）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0123"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "r2-prime",
+      "restore",
+      "read-set"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0127",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0123",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让用户回来时知道“这场对话依赖的哪些文件已经变了”，而不是只知道仓库整体变了。",
+    "ready": false,
+    "remaining_minutes_max": 360,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "恢复时读集 diff（R2′）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0127"
+    ],
+    "confidence": 0.83,
+    "context_tags": [
+      "resume-card",
+      "ui",
+      "evidence"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0128",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0127",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把现有恢复笔记升级为可核验的恢复卡，同时保持安静加法式。",
+    "ready": false,
+    "remaining_minutes_max": 360,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "双通道恢复卡：叙事 + 事实 + 证据"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0121",
+      "TF-0126"
+    ],
+    "confidence": 0.83,
+    "context_tags": [
+      "branch",
+      "concurrency",
+      "merge-back"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0130",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0121, TF-0126",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "在真实继承语义之上，让分支成为并发事实的一部分，而不是一棵只会长熵的叙事树。",
+    "ready": false,
+    "remaining_minutes_max": 960,
+    "remaining_minutes_min": 480,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "阶段 C：分支与并发收敛"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0125"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "branch",
+      "read-set",
+      "honest-inheritance"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0131",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0125",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
+    "ready": false,
+    "remaining_minutes_max": 300,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "分支读集继承与诚实开关"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0127"
+    ],
+    "confidence": 0.82,
+    "context_tags": [
+      "merge-back",
+      "restore-card",
+      "facts"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0132",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0127",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把分支留下的执行事实带回主线，同时避免内容合并污染上下文。",
+    "ready": false,
+    "remaining_minutes_max": 480,
+    "remaining_minutes_min": 240,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "merge-back L1：恢复卡上的分支摘要"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0121"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "fit",
+      "gate",
+      "roadmap"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0135",
+    "kind": "milestone",
+    "next_action": "先完成依赖：TF-0121",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "用真实使用数据决定三支柱继续、收缩还是砍掉，结束 117/119 fit unknown 的结构性风险。",
+    "ready": false,
+    "remaining_minutes_max": 480,
+    "remaining_minutes_min": 240,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "阶段 D：fit 门与范围仲裁"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [
+      "TF-0122"
+    ],
+    "confidence": 0.85,
+    "context_tags": [
+      "l3",
+      "gate",
+      "fit"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0136",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0122",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
+    "ready": false,
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "两周真实使用门与 L3 证据门"
   }
 ]

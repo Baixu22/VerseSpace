@@ -1,0 +1,41 @@
+{
+  "applied_at": "2026-09-02T04:35:22.916Z",
+  "base_graph_hash": "dcfc6a7b54527ec604653c430ca8876ca40506982c8a64176b58a02b23f6a355",
+  "base_summary": {
+    "edge_count": 144,
+    "node_count": 119,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "实现：chat/resume.ts（buildResumeNote/resumeDelta 纯函数，复用 suggestNext + collectDecisionPoints 推导 3-5 个有序节拍 doing/decided/shifted/next）+ threads.ts leave()/setResumeNote()（离开时推导并写 meta.resumeNote，幂等；setResumeNote 编辑/确认）+ ui/server.ts POST /leave + PATCH /resume-note 路由，线程 GET 携带 resumeNote",
+          "接线：apps/workbench-ui store.switchThread 离开 prev 时 fire-and-forget POST /leave（不阻塞切换、失败吞掉），进入时从 GET 拿 resumeNote + 算 resumeDelta（对比 leaveSignature.messageCount，纯呈现层不写回 meta）",
+          "UI：sidecar.tsx ResumeNoteBar——默认折叠条「恢复笔记 · 离开于 X · 待确认/已确认 · 你不在时多了 N 条」，展开显示节拍（kind 标签：你在做什么/你决定了什么/脚下什么动了/下一步）+ 确认按钮；位置在 DecisionLedger 之前（返回时第一眼）；无笔记不渲染",
+          "测试：resume.test.ts 11 个 + threads.test.ts 5 个 + server.test.ts 2 个；typecheck 5 段干净、biome 干净、workbench-ui vite build 通过",
+          "纪律：笔记在离开时生成（POST /leave）不在返回时索取；返回时『你不在时变了什么』由 resumeDelta 呈现层对比不写回 meta；agent 起草（纯推导）用户确认（不阻塞）；叙事不是 diff（shifted 从 tool-call 推导叙事短语）"
+        ],
+        "progress": 1,
+        "status": "done",
+        "summary": "离开车道的那一刻从既有事实推导一份恢复笔记（agent 起草），写进 meta 持久化——3-5 个有序节拍：你在做什么（最后一条 user）/你决定了什么（分叉+晋升）/脚下什么动了（最后一条 assistant 的 tool-call）/下一步（复用 suggestNext）。返回时随线程 GET 呈现为折叠条，展开看叙事；用户可确认（置 confirmedAt，不阻塞）。返回时若离开后又有新消息，呈现层对比 leaveSignature 显示『你不在时多了 N 条』，不写回 meta——严格满足『笔记在离开时生成，不在返回时索取』。"
+      },
+      "id": "TF-0097"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 1,
+        "status": "done",
+        "summary": "L2 里程碑完成（8 个子任务全 done）。TF-0091 实测 B/C/K → ADR-0009；TF-0098 回退 + diff 主安全网；TF-0092 加法式晋升；TF-0093 追溯式分叉；TF-0094 生成 N 展示 1（fanout）；TF-0095 提议下一步 + 决策账本；TF-0096 切换清场 + 停放快照；TF-0097 恢复笔记 + 有序叙事。"
+      },
+      "id": "TF-0090"
+    }
+  ],
+  "created_at": "2026-09-02T04:35:22.916Z",
+  "proposal_id": "TFP-tf0097-resume",
+  "rationale": "TF-0097 收口 L2 里程碑最后一个子任务。恢复笔记在离开车道时由纯函数推导（buildResumeNote 复用 suggestNext + collectDecisionPoints），写进 meta.resumeNote 持久化，隔天返回仍在。3-5 个有序节拍是叙事不是 diff：你在做什么（最后 user 消息）/你决定了什么（分叉+晋升）/脚下什么动了（最后 assistant 的 tool-call）/下一步（suggestNext 第一条）。返回时随线程 GET 呈现为 sidecar 折叠条，用户可确认（不阻塞）。『你不在时变了什么』由 resumeDelta 呈现层对比 leaveSignature 检测，不写回 meta——严格满足『笔记在离开时生成，不在返回时索取』。全套测试绿、typecheck 5 段干净、biome 干净、workbench-ui vite build 通过。",
+  "session_id": "session-2026-09-02-tf0097-resume",
+  "status": "applied"
+}
