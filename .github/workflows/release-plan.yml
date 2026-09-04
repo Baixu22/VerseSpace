@@ -47,11 +47,19 @@ jobs:
     name: Create release PR or publish
     runs-on: ubuntu-latest
     steps:
+      # `secrets.HELMOR_RELEASE_PAT` is a required input for actions/checkout —
+      # when the secret is unset the expression resolves to an empty string and
+      # checkout aborts with "Input required and not supplied: token", which
+      # turns every push to main red. `secrets.* || github.token` falls back to
+      # the ephemeral GITHUB_TOKEN so the job can still run; the guard step
+      # below then skips the publish half, because a GITHUB_TOKEN-authored tag
+      # push does NOT trigger publish.yml (GitHub's recursion guard) and would
+      # silently produce a tag nobody builds.
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.HELMOR_RELEASE_PAT }}
+          token: ${{ secrets.HELMOR_RELEASE_PAT || github.token }}
 
       - name: Setup JS toolchain
         uses: ./.github/actions/setup-js
@@ -59,7 +67,18 @@ jobs:
       - name: Verify release config tooling
         run: bun run release:verify
 
+      - name: Check release PAT
+        id: pat
+        run: |
+          if [ -z "${{ secrets.HELMOR_RELEASE_PAT }}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::HELMOR_RELEASE_PAT is not configured — skipping release PR/tag. A GITHUB_TOKEN-authored tag push would not trigger publish.yml, so nothing would be built. Create a PAT with contents:write + pull-requests:write and add it as the HELMOR_RELEASE_PAT repository secret to enable releases."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create release PR or tag + release
+        if: steps.pat.outputs.available == 'true'
         uses: changesets/action@v1
         with:
           version: bun run release:version
