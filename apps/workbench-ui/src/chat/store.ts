@@ -40,6 +40,20 @@ export interface ThreadMeta {
 		anchorMessageId: string;
 		inheritedMessages: number;
 		at: string;
+		agentContextPlan?: {
+			provider: "claude";
+			mode: "fork-session";
+			sourceThreadId: string;
+			sourceSessionId: string;
+			sourceFootprintSeq: number;
+		};
+	};
+	forkInheritance?: {
+		transcriptInherited: true;
+		agentContextInherited: boolean | null;
+		premiseInherited: boolean | null;
+		observedAt?: string;
+		provider?: string;
 	};
 	/** 准备恢复笔记（TF-0097）：离开时 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
@@ -81,13 +95,50 @@ export interface ResumeNote {
 	leaveSignature: {
 		lastMessageAt: string;
 		messageCount: number;
+		footprintSeq?: number;
+		eventSeq?: number;
+		eventId?: string;
 	};
+}
+
+export interface ReadSetDiffFact {
+	path: string;
+	observedVersion: string;
+	currentVersion: string | null;
+	writerId: string | null;
+	writerKind: string | null;
+	writerLabel: string | null;
+	diff?: string;
+	refs: string[];
+	observedFootprintSeq: number;
+	currentEventSeq: number | null;
+}
+
+export interface ReadSetDiff {
+	status: "available" | "unknown";
+	baseline: {
+		footprintSeq: number;
+		eventSeq: number | null;
+		eventId: string | null;
+	} | null;
+	checkedAt: string;
+	compared: number;
+	comparable: number;
+	excludedDurable: number;
+	unsupported: number;
+	uncoveredTools: string[];
+	stale: ReadSetDiffFact[];
 }
 
 /** 分叉响应携带的继承声明（packages/workbench fork.ts 的 ForkDeclaration）。 */
 interface ForkDeclaration {
 	inheritedMessages: number;
 	anchor: { id: string; role: string; at: string };
+	transcriptInherited: true;
+	agentContextInherited: boolean | null;
+	premiseInherited: boolean | null;
+	inheritanceObserved: boolean;
+	agentContextPlan?: "fork-session";
 	freshAgentSession: true;
 	freshPromotion: true;
 	freshForkCounts: true;
@@ -114,6 +165,10 @@ interface ChatState {
 	resumeNote: ResumeNote | null;
 	/** 返回时检测『你不在时变了什么』（TF-0097）：离开后新增的消息条数。 */
 	resumeDelta: number;
+	/** R2′ restore-time read-set facts; null means no card or unknown baseline. */
+	readSetDiff: ReadSetDiff | null;
+	/** Local additive dismissal for the current restore; the event remains durable. */
+	resumeCardDismissed: boolean;
 	init(): Promise<void>;
 	createThread(): Promise<void>;
 	switchThread(id: string): Promise<void>;
@@ -130,6 +185,9 @@ interface ChatState {
 	confirmResumeNote(): Promise<void>;
 	/** 编辑恢复笔记的一个节拍（TF-0097）。 */
 	editResumeBeat(index: number, text: string): Promise<void>;
+	consumeResumeNote(surface: string): Promise<void>;
+	dismissResumeCard(): Promise<void>;
+	recordResumeAction(action: string): Promise<void>;
 	cancel(): void;
 	setPlanMode(enabled: boolean): Promise<void>;
 	deleteThread(id: string): Promise<void>;
@@ -140,6 +198,60 @@ interface ChatState {
 
 const EMPTY: StoredMessage[] = [];
 
+const PARKED_STORAGE_KEY = "workbench.chat.parked.v1";
+
+/** Parked drafts are local UI state, but they must survive an app restart. */
+function loadParked(): Record<string, ParkedItem[]> {
+	try {
+		const storage = globalThis.localStorage;
+		if (!storage) {
+			return {};
+		}
+		const parsed: unknown = JSON.parse(
+			storage.getItem(PARKED_STORAGE_KEY) ?? "{}",
+		);
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+			return {};
+		}
+		const result: Record<string, ParkedItem[]> = {};
+		for (const [threadId, value] of Object.entries(parsed)) {
+			if (!Array.isArray(value)) {
+				continue;
+			}
+			const items = value.filter(
+				(item): item is ParkedItem =>
+					Boolean(item) &&
+					typeof item === "object" &&
+					(item as ParkedItem).kind === "draft" &&
+					typeof (item as ParkedItem).id === "string" &&
+					typeof (item as ParkedItem).text === "string" &&
+					typeof (item as ParkedItem).parkedAt === "string",
+			);
+			if (items.length > 0) {
+				result[threadId] = items;
+			}
+		}
+		return result;
+	} catch {
+		// Private browsing and disabled webviews can reject storage access.
+		return {};
+	}
+}
+
+function persistParked(parked: Record<string, ParkedItem[]>): void {
+	try {
+		globalThis.localStorage?.setItem(
+			PARKED_STORAGE_KEY,
+			JSON.stringify(parked),
+		);
+	} catch {
+		// A full/disabled storage area must not block composing or switching.
+	}
+}
+
+/** Invalidate in-flight selection work whenever the visible lane changes. */
+let switchGeneration = 0;
+
 /** 线程 GET 载荷：meta + messages + 服务端推导的建议与决策账本（TF-0095）+ 恢复笔记（TF-0097）。 */
 interface ThreadGetResponse {
 	meta: ThreadMeta;
@@ -147,6 +259,7 @@ interface ThreadGetResponse {
 	suggestions: Suggestion[];
 	decisionPoints: DecisionPoint[];
 	resumeNote: ResumeNote | null;
+	readSetDiff?: ReadSetDiff;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -158,9 +271,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	suggestions: [],
 	decisionPoints: [],
 	drafts: {},
-	parked: {},
+	parked: loadParked(),
 	resumeNote: null,
 	resumeDelta: 0,
+	readSetDiff: null,
+	resumeCardDismissed: false,
 
 	async init() {
 		const threads = await apiFetch("/api/chat/threads").then(
@@ -173,23 +288,36 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async createThread() {
+		const generation = ++switchGeneration;
 		const thread = await apiFetch("/api/chat/threads", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({}),
 		}).then((r) => r.json() as Promise<ThreadMeta>);
-		set((s) => ({
-			threads: [thread, ...s.threads],
-			activeId: thread.id,
-			messages: { ...s.messages, [thread.id]: [] },
-			runningThreadId: null,
-		}));
+		set((s) => {
+			const stale = generation !== switchGeneration;
+			return {
+				threads: [thread, ...s.threads.filter((item) => item.id !== thread.id)],
+				messages: { ...s.messages, [thread.id]: [] },
+				...(stale
+					? {}
+					: {
+							activeId: thread.id,
+							runningThreadId: null,
+							resumeNote: null,
+							resumeDelta: 0,
+							readSetDiff: null,
+							resumeCardDismissed: false,
+						}),
+			};
+		});
 	},
 
 	async switchThread(id) {
 		if (get().activeId === id) {
 			return;
 		}
+		const generation = ++switchGeneration;
 		// TF-0096 清场：离开的车道收起草稿进停放快照，composer 从干净开始。
 		// 返回时快照以可筛选列表呈现，恢复或丢弃由用户决定。
 		const prevId = get().activeId;
@@ -212,6 +340,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				}
 				delete drafts[prev];
 			}
+			persistParked(parked);
 			return {
 				parked,
 				drafts,
@@ -221,6 +350,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				decisionPoints: [],
 				resumeNote: null,
 				resumeDelta: 0,
+				readSetDiff: null,
+				resumeCardDismissed: false,
 			};
 		});
 		// TF-0097：离开 prev 时 fire-and-forget 生成恢复笔记（agent 起草）。
@@ -233,6 +364,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		const data = await apiFetch(`/api/chat/threads/${id}`).then(
 			(r) => r.json() as Promise<ThreadGetResponse>,
 		);
+		if (generation !== switchGeneration || get().activeId !== id) {
+			return;
+		}
 		set((s) => {
 			// TF-0097：返回时检测『你不在时变了什么』——对比离开签名与当前消息数。
 			// 纯呈现层，不写回 meta（笔记在离开时生成，不在返回时索取）。
@@ -247,11 +381,31 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				decisionPoints: data.decisionPoints,
 				resumeNote: data.resumeNote,
 				resumeDelta: delta,
+				readSetDiff: data.readSetDiff ?? null,
+				resumeCardDismissed: false,
 				threads: s.threads.some((t) => t.id === id)
 					? s.threads.map((t) => (t.id === id ? { ...t, ...data.meta } : t))
 					: [data.meta, ...s.threads],
 			};
 		});
+		if (generation !== switchGeneration || get().activeId !== id) {
+			return;
+		}
+		// Lifecycle observations are best-effort and only record a switch that
+		// actually loaded its target; stale/failed races must not inflate stats.
+		await apiFetch(`/api/chat/threads/${id}/switch`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ fromThreadId: prevId }),
+		}).catch(() => {});
+		if (generation !== switchGeneration || get().activeId !== id) {
+			return;
+		}
+		await apiFetch(`/api/chat/threads/${id}/restore`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ fromThreadId: prevId }),
+		}).catch(() => {});
 	},
 
 	setDraft(threadId, text) {
@@ -274,23 +428,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				];
 			}
 			delete drafts[threadId];
+			persistParked(parked);
 			return { parked, drafts };
 		});
 	},
 
 	discardParked(threadId, itemId) {
-		set((s) => ({
-			parked: {
+		set((s) => {
+			const parked = {
 				...s.parked,
 				[threadId]: (s.parked[threadId] ?? []).filter((p) => p.id !== itemId),
-			},
-		}));
+			};
+			if (parked[threadId]?.length === 0) {
+				delete parked[threadId];
+			}
+			persistParked(parked);
+			return { parked };
+		});
 	},
 
 	clearParked(threadId) {
 		set((s) => {
 			const parked = { ...s.parked };
 			delete parked[threadId];
+			persistParked(parked);
 			return { parked };
 		});
 	},
@@ -300,6 +461,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!threadId) {
 			return;
 		}
+		const generation = switchGeneration;
 		const updated = await apiFetch(
 			`/api/chat/threads/${threadId}/resume-note`,
 			{
@@ -308,7 +470,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				body: JSON.stringify({ confirmed: true }),
 			},
 		).then((r) => r.json() as Promise<ResumeNote>);
-		set({ resumeNote: updated });
+		if (generation === switchGeneration && get().activeId === threadId) {
+			set({ resumeNote: updated });
+		}
 	},
 
 	async editResumeBeat(index, text) {
@@ -317,6 +481,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!threadId || !note || index < 0 || index >= note.beats.length) {
 			return;
 		}
+		const generation = switchGeneration;
 		const beats = note.beats.map((beat, i) =>
 			i === index ? { ...beat, text } : beat,
 		);
@@ -328,7 +493,48 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				body: JSON.stringify({ beats }),
 			},
 		).then((r) => r.json() as Promise<ResumeNote>);
-		set({ resumeNote: updated });
+		if (generation === switchGeneration && get().activeId === threadId) {
+			set({ resumeNote: updated });
+		}
+	},
+
+	async consumeResumeNote(surface) {
+		const threadId = get().activeId;
+		if (!threadId) {
+			return;
+		}
+		await apiFetch(`/api/chat/threads/${threadId}/resume-note/consume`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ surface }),
+		}).catch(() => {});
+	},
+
+	async dismissResumeCard() {
+		const threadId = get().activeId;
+		if (!threadId) {
+			return;
+		}
+		const generation = switchGeneration;
+		set({ resumeCardDismissed: true });
+		await apiFetch(`/api/chat/threads/${threadId}/resume-note/dismiss`, {
+			method: "POST",
+		}).catch(() => {});
+		if (generation !== switchGeneration || get().activeId !== threadId) {
+			return;
+		}
+	},
+
+	async recordResumeAction(action) {
+		const threadId = get().activeId;
+		if (!threadId) {
+			return;
+		}
+		await apiFetch(`/api/chat/threads/${threadId}/resume-action`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ action }),
+		}).catch(() => {});
 	},
 
 	cancel() {
@@ -434,7 +640,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				}
 			}
 		} finally {
-			set({ runningThreadId: null });
+			set((s) => ({
+				runningThreadId:
+					s.runningThreadId === threadId ? null : s.runningThreadId,
+			}));
 			// 轮次边界刷新：meta（标题/晋升）+ 建议 + 决策账本（TF-0095）
 			await refreshThread(threadId);
 		}
@@ -450,6 +659,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!threadId || get().runningThreadId) {
 			return;
 		}
+		const generation = switchGeneration;
 		const outcome = await apiFetch(`/api/chat/threads/${threadId}/fork`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
@@ -466,15 +676,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			return;
 		}
 		// 先入列表再切换：switchThread 见缓存未命中会拉取新线程的消息
-		set((s) => ({ threads: [outcome.thread as ThreadMeta, ...s.threads] }));
+		set((s) => ({
+			threads: [
+				outcome.thread as ThreadMeta,
+				...s.threads.filter((item) => item.id !== outcome.thread!.id),
+			],
+		}));
+		if (generation !== switchGeneration || get().activeId !== threadId) {
+			return;
+		}
 		await get().switchThread(outcome.thread.id);
 		// 继承声明（硬要求）：分叉完成了什么、继承了什么、什么从新开始
 		const d = outcome.declaration;
-		set({
-			forkNotice: d
-				? `已分叉：继承「${outcome.thread.forkOf?.sourceTitle ?? "原对话"}」的前 ${d.inheritedMessages} 条消息（含锚点）；agent 会话从新开始，原对话保持不变。`
-				: null,
-		});
+		if (get().activeId === outcome.thread.id) {
+			set({
+				forkNotice: d
+					? `已分叉：继承「${outcome.thread.forkOf?.sourceTitle ?? "原对话"}」的前 ${d.inheritedMessages} 条消息（含锚点）；agent 会话从新开始，原对话保持不变。`
+					: null,
+			});
+		}
 	},
 
 	dismissForkNotice() {
@@ -504,15 +724,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async deleteThread(id: string) {
+		if (get().activeId === id) {
+			++switchGeneration;
+		}
 		await apiFetch(`/api/chat/threads/${id}`, { method: "DELETE" });
 		set((s) => {
 			const messages = { ...s.messages };
 			delete messages[id];
 			const threads = s.threads.filter((t) => t.id !== id);
+			const parked = { ...s.parked };
+			delete parked[id];
+			persistParked(parked);
+			const deletingActive = s.activeId === id;
 			return {
 				threads,
 				messages,
-				activeId: s.activeId === id ? (threads[0]?.id ?? null) : s.activeId,
+				parked,
+				activeId: deletingActive ? (threads[0]?.id ?? null) : s.activeId,
+				...(deletingActive
+					? {
+							suggestions: [],
+							decisionPoints: [],
+							resumeNote: null,
+							resumeDelta: 0,
+							readSetDiff: null,
+							resumeCardDismissed: false,
+						}
+					: {}),
 			};
 		});
 	},
@@ -556,6 +794,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		if (!threadId || get().runningThreadId) {
 			return;
 		}
+		const generation = switchGeneration;
 		const userMessage: StoredMessage = {
 			id: `local-${Date.now()}`,
 			role: "user",
@@ -681,7 +920,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			}
 		} finally {
 			set((s) => ({
-				runningThreadId: null,
+				runningThreadId:
+					s.runningThreadId === threadId ? null : s.runningThreadId,
 				threads: s.threads.map((t) =>
 					t.id === threadId ? { ...t, status: "idle" as const } : t,
 				),
@@ -690,7 +930,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			const threads = await apiFetch("/api/chat/threads").then(
 				(r) => r.json() as Promise<ThreadMeta[]>,
 			);
-			set({ threads });
+			if (generation === switchGeneration) {
+				set({ threads });
+			}
 			// 轮次边界刷新：meta + 建议 + 决策账本（TF-0095）
 			await refreshThread(threadId);
 		}
@@ -704,8 +946,13 @@ async function refreshThread(threadId: string): Promise<void> {
 	);
 	useChatStore.setState((s) => ({
 		messages: { ...s.messages, [threadId]: data.messages },
-		suggestions: data.suggestions,
-		decisionPoints: data.decisionPoints,
+		...(s.activeId === threadId
+			? {
+					suggestions: data.suggestions,
+					decisionPoints: data.decisionPoints,
+					readSetDiff: data.readSetDiff ?? null,
+				}
+			: {}),
 		threads: s.threads.map((t) =>
 			t.id === threadId ? { ...t, ...data.meta } : t,
 		),

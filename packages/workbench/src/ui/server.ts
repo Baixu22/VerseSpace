@@ -9,6 +9,7 @@ import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
 import { drainPremiseQueue } from "../runtime/delivery";
 import { reconcilePremises } from "../runtime/premises";
+import { diffReadSet } from "../runtime/read-set-diff";
 import { workbenchConfigSchema } from "../types/config";
 import { WORKBENCH_VERSION } from "../version";
 
@@ -430,7 +431,7 @@ export async function createUiServer(
 			return Response.json(await chat.create(body.title));
 		}
 		const chatMatch = url.pathname.match(
-			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|resume-note))?$/,
+			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-action))?$/,
 		);
 		if (chatMatch) {
 			const threadId = decodeURIComponent(chatMatch[1] ?? "");
@@ -440,6 +441,11 @@ export async function createUiServer(
 					chat.get(threadId),
 					chat.messages(threadId),
 				]);
+				const readSetDiff = await diffReadSet(
+					bb,
+					threadId,
+					meta.resumeNote?.leaveSignature,
+				);
 				// TF-0095：建议与决策账本由同一组纯函数在服务端推导，
 				// UI 是纯渲染层——无分歧时账本为空数组（完全不渲染）
 				// TF-0097：resumeNote 随 meta 持久化，离开时生成、返回时呈现
@@ -449,6 +455,7 @@ export async function createUiServer(
 					suggestions: suggestNext(messages),
 					decisionPoints: collectDecisionPoints(messages, meta),
 					resumeNote: meta.resumeNote ?? null,
+					readSetDiff,
 				});
 			}
 			if (sub === "cancel" && request.method === "POST") {
@@ -478,6 +485,49 @@ export async function createUiServer(
 			if (sub === "leave" && request.method === "POST") {
 				// TF-0097：离开车道时生成恢复笔记（agent 起草），空对话返回 null
 				return Response.json(await chat.leave(threadId));
+			}
+			if (sub === "switch" && request.method === "POST") {
+				const body = (await request.json().catch(() => ({}))) as {
+					fromThreadId?: string | null;
+				};
+				await chat.recordSwitch(body.fromThreadId ?? null, threadId);
+				return Response.json({ ok: true });
+			}
+			if (sub === "restore" && request.method === "POST") {
+				const body = (await request.json().catch(() => ({}))) as {
+					fromThreadId?: string | null;
+				};
+				await chat.recordRestored(threadId, body.fromThreadId ?? null);
+				return Response.json({ ok: true });
+			}
+			if (sub === "resume-note/consume" && request.method === "POST") {
+				const body = (await request.json().catch(() => ({}))) as {
+					surface?: string;
+				};
+				await chat.recordResumeNoteConsumed(
+					threadId,
+					typeof body.surface === "string" && body.surface.trim()
+						? body.surface.slice(0, 80)
+						: "card",
+				);
+				return Response.json({ ok: true });
+			}
+			if (sub === "resume-note/dismiss" && request.method === "POST") {
+				await chat.recordResumeAction(threadId, "resume_card_dismissed");
+				return Response.json({ ok: true });
+			}
+			if (sub === "resume-action" && request.method === "POST") {
+				const body = (await request.json().catch(() => ({}))) as {
+					action?: string;
+				};
+				if (typeof body.action !== "string" || !body.action.trim()) {
+					return Response.json(
+						{ ok: false, reason: "缺少 action" },
+						{ status: 400 },
+					);
+				}
+				await chat.recordResumeAction(threadId, body.action.slice(0, 80));
+				return Response.json({ ok: true });
 			}
 			if (sub === "resume-note" && request.method === "PATCH") {
 				// TF-0097：用户编辑/确认恢复笔记
@@ -599,9 +649,11 @@ export async function createUiServer(
 	const reconcileTimer = setInterval(() => {
 		void (async () => {
 			await reconcilePremises(bb).catch(() => {});
+			const config = await bb.config.load().catch(() => null);
 			await drainPremiseQueue(bb, {
-				deliver: async (writerId, message) =>
-					(await chat.notifySession(writerId, message)) === "delivered",
+				tokenBudget: config?.chat.noticeTokenBudget,
+				deliver: (writerId, message, noticeId) =>
+					chat.notifySession(writerId, message, noticeId),
 			}).catch(() => {});
 		})();
 	}, RECONCILE_INTERVAL_MS);
