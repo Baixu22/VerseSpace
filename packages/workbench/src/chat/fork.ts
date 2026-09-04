@@ -20,6 +20,26 @@ export interface ForkLineage {
 	anchorMessageId: string;
 	inheritedMessages: number;
 	at: string;
+	/** Optional provider plan; only the Claude tail-fork path can use it. */
+	agentContextPlan?: ForkAgentPlan;
+}
+
+/** A concrete provider instruction, kept separate from transcript lineage. */
+export interface ForkAgentPlan {
+	provider: "claude";
+	mode: "fork-session";
+	sourceThreadId: string;
+	sourceSessionId: string;
+	sourceFootprintSeq: number;
+}
+
+/** Provider 事实在 fork 时可能尚未观测；null 明确表示 pending。 */
+export interface ForkInheritance {
+	transcriptInherited: true;
+	agentContextInherited: boolean | null;
+	premiseInherited: boolean | null;
+	observedAt?: string;
+	provider?: string;
 }
 
 /**
@@ -31,6 +51,14 @@ export interface ForkDeclaration {
 	inheritedMessages: number;
 	/** 继承的终点（锚点消息本身）。 */
 	anchor: { id: string; role: StoredMessage["role"]; at: string };
+	/** UI transcript 前缀的事实，fork 动作完成时即可观测。 */
+	transcriptInherited: true;
+	/** 首次 provider run 前为 null，绝不静默猜测。 */
+	agentContextInherited: boolean | null;
+	premiseInherited: boolean | null;
+	inheritanceObserved: boolean;
+	/** Planned provider path, if one was available at fork time. */
+	agentContextPlan?: ForkAgentPlan["mode"];
 	/** 不继承 agent 会话：新线程下次运行铸造全新会话（上下文已分叉）。 */
 	freshAgentSession: true;
 	/** 不继承晋升记录（标题从继承前缀重新推导）。 */
@@ -73,10 +101,21 @@ export function forkSlice(
 export function buildForkDeclaration(
 	anchor: StoredMessage,
 	inheritedCount: number,
+	inheritance: ForkInheritance = {
+		transcriptInherited: true,
+		agentContextInherited: null,
+		premiseInherited: null,
+	},
+	plan?: ForkAgentPlan,
 ): ForkDeclaration {
 	return {
 		inheritedMessages: inheritedCount,
 		anchor: { id: anchor.id, role: anchor.role, at: anchor.at },
+		transcriptInherited: inheritance.transcriptInherited,
+		agentContextInherited: inheritance.agentContextInherited,
+		premiseInherited: inheritance.premiseInherited,
+		inheritanceObserved: inheritance.agentContextInherited !== null,
+		...(plan ? { agentContextPlan: plan.mode } : {}),
 		freshAgentSession: true,
 		freshPromotion: true,
 		freshForkCounts: true,

@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { appendFile, readFile } from "node:fs/promises";
+import { appendFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathExists } from "../fs/atomic";
 import { makeTempWorkbench } from "../test/fixtures";
 import { workbenchConfigSchema } from "../types/config";
 import { UNNAMED_TITLE } from "./promote";
@@ -39,6 +41,33 @@ async function readTranscript(
 	id: string,
 ): Promise<string> {
 	return readFile(join(threadDir(workbenchRoot, id), "messages.jsonl"), "utf8");
+}
+
+type NoticeInternals = {
+	drainNotices(id: string): Promise<{
+		entries: Array<{ id: string; notice: string; at: string }>;
+	}>;
+	ackNotices(id: string, ids: string[]): Promise<boolean>;
+};
+
+type ThreadEventInternals = {
+	appendThreadEvent(
+		type: string,
+		threadId: string,
+		payload: Record<string, unknown>,
+	): Promise<{ payload?: unknown }>;
+};
+
+function noticeInternals(chat: ChatThreads): NoticeInternals {
+	return chat as unknown as NoticeInternals;
+}
+
+function threadEventInternals(chat: ChatThreads): ThreadEventInternals {
+	return chat as unknown as ThreadEventInternals;
+}
+
+function noticesFile(workbenchRoot: string, id: string): string {
+	return join(threadDir(workbenchRoot, id), "notices.jsonl");
 }
 
 describe("ChatThreads 晋升（TF-0092）", () => {
@@ -183,6 +212,100 @@ describe("ChatThreads 追溯式分叉（TF-0093）", () => {
 			expect(missing.reason).toBe("找不到锚点消息");
 		} finally {
 			await cleanup();
+		}
+	});
+
+	test("Claude 尾部分叉只在真实 --fork-session 后记录继承足迹", async () => {
+		const ws = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-fork-agent-"));
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			await writeFile(
+				join(ws.projectDir, "readme.md"),
+				"source facts\n",
+				"utf8",
+			);
+			const fake = String.raw`
+const { appendFileSync } = require("node:fs");
+const { join } = require("node:path");
+const args = process.argv.slice(1);
+appendFileSync(join(__dirname, "argv.log"), JSON.stringify(args) + "\n");
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+const session = args.includes("--fork-session") ? "child-session" : (args[args.indexOf("--session-id") + 1] || "parent-session");
+line({ type: "system", subtype: "init", session_id: session });
+let buffer = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  buffer += chunk;
+  for (;;) {
+    const end = buffer.indexOf("\n");
+    if (end < 0) { try { JSON.parse(buffer.trim()); } catch { break; } }
+    const raw = end < 0 ? buffer.trim() : buffer.slice(0, end).trim();
+    buffer = end < 0 ? "" : buffer.slice(end + 1);
+    if (!raw) continue;
+    const prompt = JSON.parse(raw)?.message?.content || "";
+    if (prompt === "source") {
+      line({ type: "assistant", message: { content: [{ type: "tool_use", id: "read-1", name: "Read", input: { file_path: join(process.cwd(), "readme.md") } }] } });
+      line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "read-1", content: "source facts" }] } });
+    }
+    line({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] } });
+    line({ type: "result", subtype: "success", result: "ok" });
+    setTimeout(() => process.exit(0), 5);
+    break;
+  }
+});
+
+`;
+			await writeFile(join(fakeDir, "agent.js"), fake, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+			const chat = new ChatThreads(ws.bb);
+			const source = await chat.create();
+			await chat.run(source.id, "source", () => {});
+			for (let attempt = 0; attempt < 40; attempt += 1) {
+				if (
+					!(chat as unknown as { live: Map<string, unknown> }).live.has(
+						source.id,
+					)
+				) {
+					break;
+				}
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			}
+			const sourceMessages = await chat.messages(source.id);
+			const outcome = await chat.fork(source.id, sourceMessages.at(-1)!.id);
+			expect(outcome.ok).toBe(true);
+			expect(outcome.thread?.forkOf?.agentContextPlan?.mode).toBe(
+				"fork-session",
+			);
+			await chat.run(outcome.thread!.id, "child", () => {});
+
+			const argv = (await readFile(join(fakeDir, "argv.log"), "utf8"))
+				.trim()
+				.split("\n")
+				.map((line) => JSON.parse(line) as string[]);
+			expect(argv[1]).toContain("--fork-session");
+			expect(argv[1]).toContain(source.id);
+			const child = await chat.get(outcome.thread!.id);
+			expect(child.forkInheritance).toMatchObject({
+				agentContextInherited: true,
+				premiseInherited: true,
+			});
+			expect(
+				await ws.bb.events.query({ type: "footprint.inherited" }),
+			).toHaveLength(1);
+			const childFootprint = await ws.bb.sessions.footprint(outcome.thread!.id);
+			expect(
+				childFootprint.some((line) => line.facets?.inherited === true),
+			).toBe(true);
+			expect(childFootprint.at(-1)?.used[0]?.spool).toBeUndefined();
+		} finally {
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
 		}
 	});
 });
@@ -356,6 +479,415 @@ describe("ChatThreads 恢复笔记（TF-0097）", () => {
 			const thread = await chat.create();
 			const result = await chat.setResumeNote(thread.id, { confirmed: true });
 			expect(result).toBeUndefined();
+		} finally {
+			await cleanup();
+		}
+	});
+});
+
+describe("ChatThreads 前提通知队列（R2）", () => {
+	test("Claude 只在完整 provider 轮次后确认通知，并保持 NDJSON 分帧", async () => {
+		const ws = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-notice-agent-"));
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			const fake = String.raw`
+const { appendFileSync } = require("node:fs");
+const { join } = require("node:path");
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "notice-session" });
+let buffer = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  buffer += chunk;
+  for (;;) {
+    const end = buffer.indexOf("\n");
+    if (end < 0) break;
+    const raw = buffer.slice(0, end).trim();
+    buffer = buffer.slice(end + 1);
+    if (!raw) continue;
+    appendFileSync(join(__dirname, "prompts.log"), raw + "\n");
+    const content = String(JSON.parse(raw)?.message?.content || "");
+    const text = content.includes("first") ? "first ok" : "second ok";
+    line({ type: "assistant", message: { content: [{ type: "text", text }] } });
+    line({ type: "result", subtype: "success", result: text });
+    if (content.includes("second")) setTimeout(() => process.exit(0), 10);
+  }
+});
+`;
+			await writeFile(join(fakeDir, "agent.js"), fake, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await chat.run(thread.id, "first", () => {});
+			await chat.notifySession(thread.id, "前提已经变化");
+			await chat.run(thread.id, "second", () => {});
+
+			const prompts = (await readFile(join(fakeDir, "prompts.log"), "utf8"))
+				.trim()
+				.split("\n")
+				.map((raw) => JSON.parse(raw) as { message?: { content?: string } });
+			expect(prompts).toHaveLength(2);
+			expect(prompts[1]?.message?.content).toContain("前提已经变化");
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				false,
+			);
+			expect(
+				await ws.bb.events.query({ type: "premise_notice_delivered" }),
+			).toHaveLength(1);
+		} finally {
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	});
+
+	test("Claude 没有 assistant/result 时保留通知，下一次仍可重试", async () => {
+		const ws = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-notice-fail-"));
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			const fake = String.raw`
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "failed-notice-session" });
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", () => setTimeout(() => process.exit(0), 5));
+`;
+			await writeFile(join(fakeDir, "agent.js"), fake, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "失败后不可丢");
+			await chat.run(thread.id, "try", () => {});
+
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+			expect(
+				(await noticeInternals(chat).drainNotices(thread.id)).entries.map(
+					(entry) => entry.notice,
+				),
+			).toEqual(["失败后不可丢"]);
+			expect(
+				await ws.bb.events.query({ type: "premise_notice_delivered" }),
+			).toHaveLength(0);
+		} finally {
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	});
+
+	test("Claude 只有 tool-use 后崩溃时不提前确认通知", async () => {
+		const ws = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(
+			join(tmpdir(), "workbench-notice-tool-fail-"),
+		);
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			const fake = String.raw`
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "tool-fail-session" });
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  if (!chunk.trim()) return;
+  line({ type: "assistant", message: { content: [{ type: "tool_use", id: "read-1", name: "Read", input: { file_path: "README.md" } }] } });
+  setTimeout(() => process.exit(1), 5);
+});
+`;
+			await writeFile(join(fakeDir, "agent.js"), fake, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "tool-use 后仍需重试");
+			await chat.run(thread.id, "try", () => {});
+
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+			expect(
+				await ws.bb.events.query({ type: "premise_notice_delivered" }),
+			).toHaveLength(0);
+		} finally {
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	});
+
+	test("HTTP provider 只有完整成功响应才确认通知", async () => {
+		const ws = await makeTempWorkbench();
+		const originalFetch = globalThis.fetch;
+		try {
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				chat: { provider: "openai-chat", apiKey: "test-key" },
+			});
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "HTTP 前提变化");
+
+			globalThis.fetch = (async () =>
+				new Response("bad gateway", {
+					status: 502,
+				})) as unknown as typeof fetch;
+			await chat.run(thread.id, "failed status", () => {});
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+
+			globalThis.fetch = (async () => {
+				throw new Error("network reset");
+			}) as unknown as typeof fetch;
+			await chat.run(thread.id, "failed network", () => {});
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+
+			// A 2xx body that ends without an SSE frame delimiter is partial, not
+			// evidence that the provider accepted the turn.
+			globalThis.fetch = (async () =>
+				new Response(
+					`data: ${JSON.stringify({ choices: [{ delta: { content: "partial" } }] })}\n`,
+					{ status: 200, headers: { "content-type": "text/event-stream" } },
+				)) as unknown as typeof fetch;
+			await chat.run(thread.id, "truncated", () => {});
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+
+			// Explicit provider error events are failures even when a proxy appends
+			// the normal [DONE] sentinel afterwards.
+			globalThis.fetch = (async () =>
+				new Response(
+					`data: ${JSON.stringify({ error: { message: "stream failed" } })}\n\ndata: [DONE]\n\n`,
+					{ status: 200, headers: { "content-type": "text/event-stream" } },
+				)) as unknown as typeof fetch;
+			await chat.run(thread.id, "stream error", () => {});
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+
+			globalThis.fetch = (async () =>
+				new Response(
+					`data: ${JSON.stringify({ choices: [{ delta: { content: "ok" } }] })}\n\ndata: [DONE]\n\n`,
+					{ status: 200, headers: { "content-type": "text/event-stream" } },
+				)) as unknown as typeof fetch;
+			await chat.run(thread.id, "successful retry", () => {});
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				false,
+			);
+		} finally {
+			globalThis.fetch = originalFetch;
+			await ws.cleanup();
+		}
+	});
+
+	test("通知先持久化；drain 不删除，ack 只删除已发送批次", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			expect(await chat.notifySession(thread.id, "文件已变化")).toBe("queued");
+
+			const file = noticesFile(workbenchRoot, thread.id);
+			const drained = await noticeInternals(chat).drainNotices(thread.id);
+			expect(drained.entries).toHaveLength(1);
+			expect(drained.entries[0]?.notice).toBe("文件已变化");
+			expect(await pathExists(file)).toBe(true);
+
+			await noticeInternals(chat).ackNotices(thread.id, [
+				drained.entries[0]!.id,
+			]);
+			expect(await pathExists(file)).toBe(false);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("相同通知只入队一次，并可用稳定 id 升级通知正文", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "简略前提");
+			await chat.notifySession(thread.id, "简略前提");
+			const first = await noticeInternals(chat).drainNotices(thread.id);
+			expect(first.entries).toHaveLength(1);
+
+			await chat.notifySession(thread.id, "完整前提证据", first.entries[0]!.id);
+			const upgraded = await noticeInternals(chat).drainNotices(thread.id);
+			expect(upgraded.entries).toHaveLength(1);
+			expect(upgraded.entries[0]?.notice).toBe("完整前提证据");
+			expect(upgraded.entries[0]?.id).toBe(first.entries[0]?.id);
+			expect(await pathExists(noticesFile(workbenchRoot, thread.id))).toBe(
+				true,
+			);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("provider 通知预算只确认实际进入本轮的条目", async () => {
+		const ws = await makeTempWorkbench();
+		const originalFetch = globalThis.fetch;
+		try {
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				chat: {
+					provider: "openai-chat",
+					apiKey: "test-key",
+					noticeTokenBudget: 5,
+				},
+			});
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "短通知");
+			await chat.notifySession(
+				thread.id,
+				"这个通知太长，不能进入五个 token 的预算",
+			);
+			let requestBody: { messages?: Array<{ content?: string }> } | undefined;
+			globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
+				requestBody = JSON.parse(String(init?.body));
+				return new Response("data: [DONE]\n\n", {
+					status: 200,
+					headers: { "content-type": "text/event-stream" },
+				});
+			}) as unknown as typeof fetch;
+
+			await chat.run(thread.id, "ask", () => {});
+			const prompt = requestBody?.messages?.at(-1)?.content ?? "";
+			expect(prompt).toContain("短通知");
+			expect(prompt).not.toContain("这个通知太长");
+			expect(
+				(await noticeInternals(chat).drainNotices(thread.id)).entries.map(
+					(entry) => entry.notice,
+				),
+			).toEqual(["这个通知太长，不能进入五个 token 的预算"]);
+		} finally {
+			globalThis.fetch = originalFetch;
+			await ws.cleanup();
+		}
+	});
+
+	test("ack 期间追加的新通知不会被误删", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "旧通知 A");
+			await chat.notifySession(thread.id, "旧通知 B");
+			const batch = await noticeInternals(chat).drainNotices(thread.id);
+			await chat.notifySession(thread.id, "并发追加 C");
+			await noticeInternals(chat).ackNotices(
+				thread.id,
+				batch.entries.map((entry) => entry.id),
+			);
+
+			const remaining = await noticeInternals(chat).drainNotices(thread.id);
+			expect(remaining.entries.map((entry) => entry.notice)).toEqual([
+				"并发追加 C",
+			]);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("发送失败时不 ack，下一轮仍能读到通知", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "不要丢失");
+			const batch = await noticeInternals(chat).drainNotices(thread.id);
+			// 模拟 provider 在发送前崩溃：故意不调用 ackNotices。
+			expect(batch.entries[0]?.notice).toBe("不要丢失");
+			expect(
+				(await noticeInternals(chat).drainNotices(thread.id)).entries,
+			).toHaveLength(1);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("旧的纯文本通知仍可迁移读取并 ack", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			const file = noticesFile(workbenchRoot, thread.id);
+			await writeFile(file, "legacy notice\n", "utf8");
+			const batch = await noticeInternals(chat).drainNotices(thread.id);
+			expect(batch.entries).toHaveLength(1);
+			expect(batch.entries[0]?.notice).toBe("legacy notice");
+			await noticeInternals(chat).ackNotices(thread.id, [batch.entries[0]!.id]);
+			expect(await pathExists(file)).toBe(false);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("未知形状的通知行也保留为可重试的原文", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			const file = noticesFile(workbenchRoot, thread.id);
+			await writeFile(file, '{"futureField":"keep me"}\n', "utf8");
+			const batch = await noticeInternals(chat).drainNotices(thread.id);
+			expect(batch.entries).toHaveLength(1);
+			expect(batch.entries[0]?.notice).toBe('{"futureField":"keep me"}');
+			await noticeInternals(chat).ackNotices(thread.id, [batch.entries[0]!.id]);
+			expect(await pathExists(file)).toBe(false);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("非聊天写者没有 transcript 时不伪造已投递", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			await bb.sessions.register("batch-agent", "agent", "批处理 agent");
+			expect(await chat.notifySession("batch-agent", "应保持待投递")).toBe(
+				false,
+			);
+			expect(
+				await pathExists(
+					join(workbenchRoot, "threads", "batch-agent", "notices.jsonl"),
+				),
+			).toBe(false);
+		} finally {
+			await cleanup();
+		}
+	});
+});
+
+describe("ChatThreads 生命周期事件", () => {
+	test("目标 threadId 不会被调用方 payload 覆盖", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const event = await threadEventInternals(chat).appendThreadEvent(
+				"thread.restored",
+				"thread-target",
+				{ threadId: "thread-injected" },
+			);
+
+			expect(event.payload).toMatchObject({ threadId: "thread-target" });
 		} finally {
 			await cleanup();
 		}

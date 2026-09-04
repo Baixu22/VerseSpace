@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Blackboard } from "../blackboard";
 import {
@@ -7,11 +7,18 @@ import {
 	hashPathClaim,
 	type ParsedStreamFootprint,
 } from "../blackboard/footprint";
+import { type FootprintUsed, writerSpoolDir } from "../blackboard/sessions";
+import { pathExists, writeFileAtomic } from "../fs/atomic";
+import { withPidLock } from "../fs/lockfile";
+import { noticeIdForText } from "../runtime/notice-id";
 import { type ProcHandle, spawnSupervised } from "../supervisor";
 import type { WorkbenchConfig } from "../types/config";
+import type { WorkbenchEvent } from "../types/event";
 import { buildVariants, clampFanout } from "./fanout";
 import {
 	buildForkDeclaration,
+	type ForkAgentPlan,
+	type ForkInheritance,
 	type ForkLineage,
 	type ForkOutcome,
 	forkSlice,
@@ -70,6 +77,8 @@ export interface ThreadMeta {
 	promotion?: PromotionRecord;
 	/** 分叉血统（TF-0093）：本线程由哪个线程的哪条消息分叉而来。 */
 	forkOf?: ForkLineage;
+	/** 分叉后的真实 provider 继承观测；首次运行前字段为 pending。 */
+	forkInheritance?: ForkInheritance;
 	/** 准备恢复笔记（TF-0097）：离开车道时由 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
 }
@@ -111,6 +120,12 @@ interface ActiveTurn {
 	fpQueue: Promise<void>;
 	sawInit: boolean;
 	finished: boolean;
+	noticeAcked: boolean;
+	noticeAckPromise: Promise<void>;
+	noticeCount: number;
+	onNoticesSent?: () => Promise<boolean>;
+	inheritanceStarted: boolean;
+	inheritancePromise: Promise<void>;
 	emit: (event: RunEvent) => void;
 	resolve: () => void;
 }
@@ -120,7 +135,66 @@ interface LiveClaudeSession {
 	proc: ProcHandle;
 	claudeSessionId: string | undefined;
 	turn: ActiveTurn | null;
+	/** Lines emitted before the first turn is attached (startup race buffer). */
+	initialLines: string[];
+	bufferInitialLines: boolean;
+	/** Whether this process was started with --fork-session. */
+	agentContextMode: "fresh" | "fork-session";
+	forkPlan?: ForkAgentPlan;
 	idleTimer?: ReturnType<typeof setTimeout>;
+}
+
+interface QueuedNotice {
+	id: string;
+	notice: string;
+	at: string;
+}
+
+interface NoticeBatch {
+	entries: QueuedNotice[];
+}
+
+interface NoticeSelection {
+	entries: QueuedNotice[];
+	/** Entries that fit the provider-side notice budget, in original order. */
+	notices: string[];
+}
+
+/**
+ * Keep the durable queue at-least-once when a caller enqueues more evidence
+ * than one provider turn can reasonably carry. Oversized entries stay on disk
+ * for a later attempt; only entries actually included in the prompt may be
+ * acknowledged.
+ */
+function selectNoticeEntries(
+	entries: QueuedNotice[],
+	tokenBudget: number | undefined,
+): NoticeSelection {
+	const budget = Number.isFinite(tokenBudget)
+		? Math.max(0, Math.trunc((tokenBudget as number) * 4))
+		: 300 * 4;
+	if (budget === 0) {
+		return { entries: [], notices: [] };
+	}
+	let used = 0;
+	const selected: QueuedNotice[] = [];
+	for (const entry of entries) {
+		const separator = selected.length === 0 ? 0 : 2;
+		if (used + separator + entry.notice.length > budget) {
+			continue;
+		}
+		selected.push(entry);
+		used += separator + entry.notice.length;
+	}
+	return {
+		entries: selected,
+		notices: selected.map((entry) => entry.notice),
+	};
+}
+
+interface SseConsumeResult {
+	/** False when EOF arrived with an unterminated SSE frame. */
+	complete: boolean;
 }
 
 const CHAT_COMMAND_DEFAULT =
@@ -136,8 +210,19 @@ export class ChatThreads {
 	/** Live claude sessions (R2): the child persists across turns so the
 	 * runtime can deliver notices into it between turns (streaming input). */
 	private live = new Map<string, LiveClaudeSession>();
+	private observingInheritance = new Set<string>();
 
 	constructor(private bb: Blackboard) {}
+
+	private async appendThreadEvent(
+		type: string,
+		threadId: string,
+		payload: Record<string, unknown> = {},
+	): Promise<WorkbenchEvent> {
+		// The method's id is authoritative; a caller-supplied threadId must not
+		// be able to redirect an observation to another thread.
+		return this.bb.events.appendThread(type, { ...payload, threadId });
+	}
 
 	private dir(id: string): string {
 		return join(this.bb.paths.root, "threads", id);
@@ -181,6 +266,7 @@ export class ChatThreads {
 		this.meta.set(id, meta);
 		// register the thread as an agent writer (R1: citizens, not ghosts)
 		await this.bb.sessions.register(id, "agent", meta.title);
+		await this.appendThreadEvent("thread.created", id, { title: meta.title });
 		return meta;
 	}
 
@@ -194,6 +280,113 @@ export class ChatThreads {
 		) as ThreadMeta;
 		this.meta.set(id, meta);
 		return meta;
+	}
+
+	/** Copy only the parent's read-set facts; never copy its spool contents. */
+	private async inheritParentFootprint(
+		id: string,
+		plan: ForkAgentPlan,
+	): Promise<{ refs: string[]; comparable: boolean }> {
+		const [view, lines] = await Promise.all([
+			this.bb.sessions.readSetView(
+				plan.sourceThreadId,
+				plan.sourceFootprintSeq,
+			),
+			this.bb.sessions.footprint(plan.sourceThreadId),
+		]);
+		const lineRefs = new Map(
+			lines.map((line) => [
+				line.seq,
+				line.eventId ? `footprint:${line.eventId}` : `footprintSeq:${line.seq}`,
+			]),
+		);
+		const refs = new Set<string>();
+		const used: FootprintUsed[] = [];
+		for (const [, claim] of view.reads) {
+			const { seq: _seq, spool: _spool, ...withoutLocalOnly } = claim;
+			used.push(withoutLocalOnly);
+			const ref = lineRefs.get(claim.seq);
+			if (ref) {
+				refs.add(ref);
+			}
+		}
+		if (used.length === 0) {
+			return { refs: [], comparable: false };
+		}
+		const refList = [...refs];
+		await this.bb.sessions.recordActivity(id, {
+			activity: `inherited-${randomUUID()}`,
+			agent: id,
+			used,
+			generated: [],
+			facets: {
+				tool: "inherited",
+				inherited: true,
+				sourceWriter: plan.sourceThreadId,
+				refs: refList,
+			},
+		});
+		await this.bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "sessions",
+			type: "footprint.inherited",
+			payload: {
+				writer: id,
+				sourceWriter: plan.sourceThreadId,
+				sourceFootprintSeq: plan.sourceFootprintSeq,
+				refs: refList,
+				paths: used.map((claim) => claim.path),
+			},
+		});
+		return {
+			refs: refList,
+			comparable: used.some((claim) => claim.version != null),
+		};
+	}
+
+	/** Record provider truth only after the first real assistant/result event. */
+	private async observeForkInheritance(
+		id: string,
+		provider: string,
+		observation: {
+			agentContextInherited: boolean;
+			premiseInherited: boolean;
+			mode?: string;
+			refs?: string[];
+		},
+	): Promise<void> {
+		if (this.observingInheritance.has(id)) {
+			return;
+		}
+		this.observingInheritance.add(id);
+		try {
+			const meta = await this.get(id);
+			if (
+				!meta.forkInheritance ||
+				meta.forkInheritance.agentContextInherited !== null
+			) {
+				return;
+			}
+			const observed: ForkInheritance = {
+				transcriptInherited: true,
+				agentContextInherited: observation.agentContextInherited,
+				premiseInherited: observation.premiseInherited,
+				observedAt: new Date().toISOString(),
+				provider,
+			};
+			meta.forkInheritance = observed;
+			await this.saveMeta(meta);
+			await this.appendThreadEvent("thread.inheritance_observed", id, {
+				provider,
+				transcriptInherited: true,
+				agentContextInherited: observed.agentContextInherited,
+				premiseInherited: observed.premiseInherited,
+				...(observation.mode ? { mode: observation.mode } : {}),
+				...(observation.refs?.length ? { refs: observation.refs } : {}),
+			});
+		} finally {
+			this.observingInheritance.delete(id);
+		}
 	}
 
 	async messages(id: string): Promise<StoredMessage[]> {
@@ -280,10 +473,19 @@ export class ChatThreads {
 		return this.enqueue(id, async () => {
 			const meta = await this.get(id);
 			const messages = await this.messages(id);
+			const footprintSeq = (await this.bb.sessions.footprint(id)).length;
 			const note = buildResumeNote(messages, meta, now);
+			const leaveEvent = await this.appendThreadEvent("thread.left", id, {
+				messageCount: messages.length,
+				footprintSeq,
+				lastMessageAt: messages.at(-1)?.at ?? null,
+			});
 			if (!note) {
 				return null;
 			}
+			note.leaveSignature.footprintSeq = footprintSeq;
+			note.leaveSignature.eventSeq = leaveEvent.eventSeq;
+			note.leaveSignature.eventId = leaveEvent.id;
 			meta.resumeNote = note;
 			await this.saveMeta(meta);
 			return note;
@@ -394,11 +596,31 @@ export class ChatThreads {
 				return { ok: false, reason: "线程正在运行" };
 			}
 			const source = await this.get(id);
-			const sliced = forkSlice(await this.messages(id), anchorMessageId);
+			const sourceMessages = await this.messages(id);
+			const sliced = forkSlice(sourceMessages, anchorMessageId);
 			if (!sliced.ok) {
 				return { ok: false, reason: "找不到锚点消息" };
 			}
 			const { inherited, anchor } = sliced;
+			const config = await this.bb.config.load();
+			const sourceFootprint = await this.bb.sessions.footprint(id);
+			// Claude can only give a child the exact provider context when the
+			// anchor is the current tail and the parent has a resumable session.
+			// Older/mid-transcript forks stay fresh rather than claiming inheritance.
+			const agentContextPlan: ForkAgentPlan | undefined =
+				config.chat.provider === "claude" &&
+				!this.live.get(id) &&
+				source.hasResumableSession === true &&
+				typeof source.claudeSessionId === "string" &&
+				anchor.id === sourceMessages.at(-1)?.id
+					? {
+							provider: "claude",
+							mode: "fork-session",
+							sourceThreadId: id,
+							sourceSessionId: source.claudeSessionId,
+							sourceFootprintSeq: sourceFootprint.length,
+						}
+					: undefined;
 
 			// 新线程：全新 uuid / 全新 agent 会话 / 无晋升记录 / 未归档；
 			// 标题从继承前缀确定性推导（与晋升同规则）——零仪式，随时可改。
@@ -416,6 +638,12 @@ export class ChatThreads {
 					anchorMessageId,
 					inheritedMessages: inherited.length,
 					at: new Date().toISOString(),
+					...(agentContextPlan ? { agentContextPlan } : {}),
+				},
+				forkInheritance: {
+					transcriptInherited: true,
+					agentContextInherited: null,
+					premiseInherited: null,
 				},
 			};
 			await mkdir(this.dir(forkId), { recursive: true });
@@ -437,13 +665,62 @@ export class ChatThreads {
 			forks[anchorMessageId] = (forks[anchorMessageId] ?? 0) + 1;
 			source.forks = forks;
 			await this.saveMeta(source);
+			await this.appendThreadEvent("thread.forked", forkId, {
+				sourceThreadId: id,
+				anchorMessageId,
+				transcriptInherited: true,
+				...(agentContextPlan
+					? {
+							agentContextPlan: agentContextPlan.mode,
+							sourceFootprintSeq: agentContextPlan.sourceFootprintSeq,
+						}
+					: {}),
+			});
 
 			return {
 				ok: true,
 				thread: forkMeta,
-				declaration: buildForkDeclaration(anchor, inherited.length),
+				declaration: buildForkDeclaration(
+					anchor,
+					inherited.length,
+					undefined,
+					agentContextPlan,
+				),
 			};
 		});
+	}
+
+	/** UI observation hooks; all are append-only and intentionally fire-and-forget safe. */
+	async recordSwitch(
+		fromThreadId: string | null,
+		toThreadId: string,
+	): Promise<void> {
+		await this.appendThreadEvent("thread.switch", toThreadId, {
+			fromThreadId,
+			toThreadId,
+		});
+	}
+
+	async recordRestored(
+		threadId: string,
+		fromThreadId: string | null = null,
+	): Promise<void> {
+		await this.appendThreadEvent("thread.restored", threadId, {
+			fromThreadId,
+		});
+	}
+
+	async recordResumeNoteConsumed(
+		threadId: string,
+		surface: string,
+	): Promise<void> {
+		await this.appendThreadEvent("thread.resume_note_consumed", threadId, {
+			surface,
+		});
+	}
+
+	async recordResumeAction(threadId: string, action: string): Promise<void> {
+		await this.appendThreadEvent("thread.resume_action", threadId, { action });
 	}
 
 	/** Hard-delete a thread directory (guard: not while running). */
@@ -548,16 +825,57 @@ export class ChatThreads {
 
 			const config = await this.bb.config.load();
 			const chat = config.chat;
+			const noticeBatch = await this.drainNotices(id);
+			const selectedNotices = selectNoticeEntries(
+				noticeBatch.entries,
+				chat.noticeTokenBudget,
+			);
+			const notices = selectedNotices.notices;
+			const noticeIds = selectedNotices.entries.map((entry) => entry.id);
+			const ackNotices = async (): Promise<boolean> => {
+				// Acknowledgement is cleanup, not a provider gate. If the process
+				// dies or the lock is busy, keeping the file gives at-least-once
+				// delivery and may repeat one notice rather than lose it.
+				try {
+					const acknowledged = await this.ackNotices(id, noticeIds);
+					if (!acknowledged) {
+						return false;
+					}
+					await this.bb.events.append({
+						timestamp: new Date().toISOString(),
+						source: "runtime",
+						type: "premise_notice_delivered",
+						payload: {
+							writer: id,
+							noticeIds,
+							count: noticeIds.length,
+						},
+					});
+					return true;
+				} catch {
+					return false;
+				}
+			};
 
 			if (chat.provider === "claude") {
-				// notices queued while the thread was idle are delivered as
-				// context turns BEFORE the user's message (KV-cache safe: the
-				// session only ever appends)
-				const notices = await this.drainNotices(id);
-				await this.runClaudeTurn(id, meta, text, emit, {
-					resend: Boolean(opts.resend),
-					precedingNotices: notices,
-				});
+				// Notices are folded into the next user turn (append-only, so the
+				// provider's existing context remains cache-safe).
+				try {
+					await this.runClaudeTurn(id, meta, text, emit, {
+						resend: Boolean(opts.resend),
+						precedingNotices: notices,
+						onNoticesSent: ackNotices,
+					});
+				} catch (error) {
+					emit({ type: "error", message: String(error).slice(0, 400) });
+					// A spawn/finalization failure must not leave the durable thread
+					// marked running forever. The provider notice file remains intact.
+					const failed = await this.get(id).catch(() => null);
+					if (failed) {
+						failed.status = "idle";
+						await this.saveMeta(failed).catch(() => {});
+					}
+				}
 				return;
 			}
 
@@ -566,7 +884,21 @@ export class ChatThreads {
 			this.running.set(id, controller);
 			const messageParts: MessagePart[] = [];
 			try {
-				await this.runHttp(chat, id, emit, messageParts, controller.signal);
+				await this.runHttp(
+					chat,
+					id,
+					emit,
+					messageParts,
+					controller.signal,
+					notices,
+					() =>
+						this.observeForkInheritance(id, chat.provider, {
+							agentContextInherited: true,
+							premiseInherited: false,
+							mode: "http-history",
+						}),
+					ackNotices,
+				);
 			} catch (error) {
 				emit({ type: "error", message: String(error).slice(0, 400) });
 			} finally {
@@ -606,9 +938,42 @@ export class ChatThreads {
 	// after the messaging socket turned out to be headless-unavailable.
 
 	private turnLine(text: string): string {
-		return JSON.stringify({
+		// `--input-format stream-json` is newline-delimited. Keeping the delimiter
+		// on every frame matters when a persistent session receives more than one
+		// turn; without it, two writes can be buffered as one invalid JSON value.
+		return `${JSON.stringify({
 			type: "user",
 			message: { role: "user", content: text },
+		})}\n`;
+	}
+
+	private promptWithNotices(text: string, notices: string[]): string {
+		if (notices.length === 0) {
+			return text;
+		}
+		return [
+			"[Workbench 前提通知；先核对事实，再处理当前请求]",
+			notices.join("\n\n"),
+			"[当前用户请求]",
+			text,
+		].join("\n\n");
+	}
+
+	/** Ack a notice only after the provider emitted a real assistant/result line. */
+	private acknowledgeClaudeNotices(turn: ActiveTurn): void {
+		if (!turn.onNoticesSent || turn.noticeAcked) {
+			return;
+		}
+		turn.noticeAcked = true;
+		turn.noticeAckPromise = (async () => {
+			const acknowledged = await turn.onNoticesSent?.();
+			if (acknowledged === false) {
+				return;
+			}
+			turn.emit({ type: "notice_delivered", count: turn.noticeCount });
+		})().catch(() => {
+			// The provider already accepted the turn; a logging failure must not
+			// strand the chat turn. The durable notice ack itself is best effort.
 		});
 	}
 
@@ -617,25 +982,18 @@ export class ChatThreads {
 		meta: ThreadMeta,
 		text: string,
 		emit: (event: RunEvent) => void,
-		opts: { resend: boolean; precedingNotices: string[] },
+		opts: {
+			resend: boolean;
+			precedingNotices: string[];
+			onNoticesSent?: () => Promise<boolean>;
+		},
 	): Promise<void> {
-		const userTurn = this.turnLine(text);
-		const noticeTurns = opts.precedingNotices.map((n) => this.turnLine(n));
-		let live = this.live.get(id);
-		if (!live) {
-			live = await this.ensureClaudeSession(id, meta, [
-				...noticeTurns,
-				userTurn,
-			]);
-		} else {
-			// deliver queued notices first, then the user's turn
-			for (const line of noticeTurns) {
-				live.proc.writeStdin(line);
-				emit({ type: "notice_delivered" });
-			}
-			live.proc.writeStdin(userTurn);
-		}
-		const session = live;
+		const userTurn = this.turnLine(
+			this.promptWithNotices(text, opts.precedingNotices),
+		);
+		const existing = this.live.get(id);
+		const session =
+			existing ?? (await this.ensureClaudeSession(id, meta, [userTurn]));
 		if (session.idleTimer) {
 			clearTimeout(session.idleTimer);
 			session.idleTimer = undefined;
@@ -643,6 +1001,9 @@ export class ChatThreads {
 
 		// per-turn state; the session-level line router fills it
 		let resolveTurn!: () => void;
+		const turnPromise = new Promise<void>((resolve) => {
+			resolveTurn = resolve;
+		});
 		const turn: ActiveTurn = {
 			assistantTexts: [],
 			messageParts: [],
@@ -651,6 +1012,12 @@ export class ChatThreads {
 			fpQueue: Promise.resolve(),
 			sawInit: false,
 			finished: false,
+			noticeAcked: opts.precedingNotices.length === 0,
+			noticeAckPromise: Promise.resolve(),
+			noticeCount: opts.precedingNotices.length,
+			onNoticesSent: opts.onNoticesSent,
+			inheritanceStarted: false,
+			inheritancePromise: Promise.resolve(),
 			emit,
 			resolve: () => {
 				if (!turn.finished) {
@@ -660,28 +1027,44 @@ export class ChatThreads {
 			},
 		};
 		session.turn = turn;
+		if (existing) {
+			try {
+				session.proc.writeStdin(userTurn);
+			} catch (error) {
+				emit({
+					type: "error",
+					message: `agent stdin 不可写：${String(error)}`,
+				});
+				turn.resolve();
+			}
+		} else {
+			// The first line was queued by ensureClaudeSession. Replay any output
+			// that raced the turn attachment before waiting for the result.
+			session.bufferInitialLines = false;
+			for (const line of session.initialLines.splice(0)) {
+				this.lineRouters.get(id)?.(line);
+			}
+		}
 
 		// the turn ends when the CLI reports this turn's result (or the
 		// session dies) — the child itself stays alive for the next turn
-		await new Promise<void>((resolve) => {
-			resolveTurn = resolve;
-			void session.proc.wait().then((outcome) => {
-				if (!turn.finished) {
-					if (outcome.error) {
-						emit({
-							type: "error",
-							message: `agent 进程错误：${outcome.error}`,
-						});
-					} else if (!outcome.killed && outcome.exitCode !== 0) {
-						emit({
-							type: "error",
-							message: `agent 退出码 ${outcome.exitCode}（会话已结束）`,
-						});
-					}
-					turn.resolve();
+		void session.proc.wait().then((outcome) => {
+			if (!turn.finished) {
+				if (outcome.error) {
+					emit({
+						type: "error",
+						message: `agent 进程错误：${outcome.error}`,
+					});
+				} else if (!outcome.killed && outcome.exitCode !== 0) {
+					emit({
+						type: "error",
+						message: `agent 退出码 ${outcome.exitCode}（会话已结束）`,
+					});
 				}
-			});
+				turn.resolve();
+			}
 		});
+		await turnPromise;
 
 		// finalize the turn: footprints, messages, meta
 		// the child stays alive between turns, but the turn is over — detach
@@ -689,6 +1072,8 @@ export class ChatThreads {
 		// idle thread (SESSION_IDLE_CLOSE_MS keeps the child for minutes)
 		session.turn = null;
 		await turn.fpQueue;
+		await turn.inheritancePromise;
+		await turn.noticeAckPromise;
 		for (const fp of turn.pendingFootprints.values()) {
 			await this.bb.sessions.recordActivity(id, fp);
 		}
@@ -737,6 +1122,12 @@ export class ChatThreads {
 			return existing;
 		}
 		const claudeSessionId: string | undefined = meta.claudeSessionId;
+		const forkPlan =
+			!meta.hasResumableSession &&
+			meta.forkOf?.agentContextPlan?.provider === "claude"
+				? meta.forkOf.agentContextPlan
+				: undefined;
+		let agentContextMode: LiveClaudeSession["agentContextMode"] = "fresh";
 		let commandLine = chatCommand();
 		if (meta.permissionMode !== "default") {
 			commandLine += ` --permission-mode ${meta.permissionMode}`;
@@ -744,12 +1135,18 @@ export class ChatThreads {
 		// streaming input keeps the session alive across turns; the first
 		// turn mints the session id (--session-id), respawns resume it
 		commandLine += " --input-format stream-json";
-		if (claudeSessionId) {
+		if (forkPlan) {
+			// Claude creates a new provider session while inheriting the parent's
+			// transcript/context. This is deliberately limited to a tail fork.
+			commandLine += ` --resume ${forkPlan.sourceSessionId} --fork-session`;
+			agentContextMode = "fork-session";
+		} else if (claudeSessionId) {
 			commandLine += meta.hasResumableSession
 				? ` --resume ${claudeSessionId}`
 				: ` --session-id ${claudeSessionId}`;
 		}
 
+		const initialLines: string[] = [];
 		const proc = spawnSupervised(commandLine, {
 			label: `chat:${id}`,
 			registryDir: join(this.bb.paths.root, "proc"),
@@ -759,7 +1156,14 @@ export class ChatThreads {
 			stdinGate: (line) => line.includes('"subtype":"init"'),
 			onLine: (line, kind) => {
 				if (kind === "out") {
-					this.lineRouters.get(id)?.(line);
+					const router = this.lineRouters.get(id);
+					if (router) {
+						router(line);
+					} else if (initialLines.length < 512) {
+						// The child can emit its init line before the router is installed.
+						// Keep a bounded startup buffer rather than dropping the first turn.
+						initialLines.push(line);
+					}
 				} else {
 					const turn = this.live.get(id)?.turn;
 					if (turn) {
@@ -769,7 +1173,15 @@ export class ChatThreads {
 			},
 		});
 		this.running.set(id, proc);
-		const session: LiveClaudeSession = { proc, claudeSessionId, turn: null };
+		const session: LiveClaudeSession = {
+			proc,
+			claudeSessionId,
+			turn: null,
+			initialLines,
+			bufferInitialLines: true,
+			agentContextMode,
+			forkPlan,
+		};
 		this.live.set(id, session);
 		this.registerTurnRouter(id, session);
 		await this.bb.sessions.register(id, "agent", meta.title);
@@ -818,10 +1230,47 @@ export class ChatThreads {
 			}
 			const turn = session.turn;
 			if (!turn) {
+				if (session.bufferInitialLines && session.initialLines.length < 512) {
+					session.initialLines.push(line);
+				}
 				return; // no turn in flight: session-level noise
 			}
 			if (event.type === "system" && event.subtype === "init") {
 				turn.sawInit = true;
+			}
+			// An assistant/result line is the first proof that the provider
+			// actually consumed the fork context. Do not mark inheritance at fork
+			// time or merely when stdin is queued behind the init gate.
+			if (
+				(event.type === "assistant" || event.type === "result") &&
+				!turn.inheritanceStarted
+			) {
+				turn.inheritanceStarted = true;
+				turn.inheritancePromise = (async () => {
+					let inherited: { refs: string[]; comparable: boolean } = {
+						refs: [],
+						comparable: false,
+					};
+					if (session.agentContextMode === "fork-session" && session.forkPlan) {
+						try {
+							inherited = await this.inheritParentFootprint(
+								id,
+								session.forkPlan,
+							);
+						} catch {
+							// Provider context may still be inherited even when the local
+							// footprint mirror is unavailable; record that distinction.
+						}
+					}
+					await this.observeForkInheritance(id, "claude", {
+						agentContextInherited: session.agentContextMode === "fork-session",
+						premiseInherited:
+							session.agentContextMode === "fork-session" &&
+							inherited.comparable,
+						mode: session.agentContextMode,
+						refs: inherited.refs,
+					});
+				})().catch(() => {});
 			}
 			if (event.type === "stream_event") {
 				const inner = event.event as
@@ -867,7 +1316,7 @@ export class ChatThreads {
 										await hashPathClaim(
 											this.bb.projectRoot,
 											used.path,
-											join(this.bb.paths.root, "sessions", id, "spool"),
+											writerSpoolDir(this.bb.paths, id),
 											used.span,
 										),
 									);
@@ -909,6 +1358,12 @@ export class ChatThreads {
 					}
 				}
 			} else if (event.type === "result") {
+				// A tool-use assistant event proves only that the provider started a
+				// turn. Ack queued notices at the terminal result, so a crash between
+				// tool invocation and the final result leaves them retryable.
+				if (event.subtype === "success" && event.is_error !== true) {
+					this.acknowledgeClaudeNotices(turn);
+				}
 				const result =
 					typeof event.result === "string" ? event.result : undefined;
 				if (result && turn.assistantTexts.length === 0) {
@@ -928,62 +1383,169 @@ export class ChatThreads {
 
 	/**
 	 * R2: deliver a premise-invalidation notice into a writer's session.
-	 * Live session → injected as a user turn between turns (KV-cache safe:
-	 * append-only). Idle thread → queued; delivered before its next turn.
+	 * Notices are always queued and folded into the next real user turn. This
+	 * keeps every tool read under an ActiveTurn and avoids a hidden result from
+	 * ending the user's following turn early.
 	 */
 	async notifySession(
 		writerId: string,
 		notice: string,
-	): Promise<"delivered" | "queued"> {
-		const session = this.live.get(writerId);
-		if (session) {
-			try {
-				session.proc.writeStdin(this.turnLine(notice));
-				await this.bb.events.append({
-					timestamp: new Date().toISOString(),
-					source: "runtime",
-					type: "premise_notice_delivered",
-					payload: { writer: writerId, via: "live-session" },
-				});
-				return "delivered";
-			} catch {
-				// stdin already closed — fall through to the queue
-			}
+		noticeId?: string,
+	): Promise<"queued" | false> {
+		// Batch writers share the sessions registry but have no chat transcript or
+		// stdin channel. Leave their notice pending instead of falsely marking it
+		// delivered into a directory nobody will ever drain.
+		if (!(await pathExists(this.metaFile(writerId)))) {
+			return false;
 		}
-		const { appendFile, mkdir } = await import("node:fs/promises");
-		await mkdir(this.dir(writerId), { recursive: true });
-		await appendFile(
-			this.noticesFile(writerId),
-			`${JSON.stringify({ notice, at: new Date().toISOString() })}\n`,
-			"utf8",
-		);
-		return "queued";
+		const noticeFile = this.noticesFile(writerId);
+		return withPidLock<"queued">(`${noticeFile}.lock`, async () => {
+			const session = this.live.get(writerId);
+			await mkdir(this.dir(writerId), { recursive: true });
+			const id = noticeId ?? noticeIdForText(writerId, notice);
+			const existing = await this.readNoticeEntries(writerId);
+			const sameId = existing.findIndex((entry) => entry.id === id);
+			if (sameId >= 0) {
+				// A reconcile pass may have queued the compact header before the
+				// delivery pass rendered evidence. Keep the stable identity, but
+				// upgrade the queued body so the provider receives the richest facts.
+				if (existing[sameId]?.notice !== notice) {
+					existing[sameId] = {
+						...existing[sameId]!,
+						notice,
+						at: new Date().toISOString(),
+					};
+					await writeFileAtomic(
+						noticeFile,
+						`${existing.map((entry) => JSON.stringify(entry)).join("\n")}\n`,
+					);
+				}
+				return "queued";
+			}
+			if (existing.some((entry) => entry.notice === notice)) {
+				return "queued";
+			}
+			await appendFile(
+				noticeFile,
+				`${JSON.stringify({
+					id,
+					notice,
+					at: new Date().toISOString(),
+				})}\n`,
+				"utf8",
+			);
+			await this.bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "runtime",
+				type: "premise_notice_queued",
+				payload: {
+					writer: writerId,
+					noticeId: id,
+					reason: session?.turn ? "turn-in-flight" : "next-user-turn",
+				},
+			});
+			return "queued";
+		});
 	}
 
 	private noticesFile(id: string): string {
 		return join(this.dir(id), "notices.jsonl");
 	}
 
-	/** Drain and clear queued notices (called at the start of a run). */
-	private async drainNotices(id: string): Promise<string[]> {
-		try {
-			const { readFile, rm } = await import("node:fs/promises");
-			const raw = await readFile(this.noticesFile(id), "utf8");
-			await rm(this.noticesFile(id), { force: true });
-			return raw
-				.split("\n")
-				.filter((line) => line.trim())
-				.map((line) => {
-					try {
-						return (JSON.parse(line) as { notice: string }).notice;
-					} catch {
-						return line;
+	private parseNoticeEntries(raw: string): QueuedNotice[] {
+		const legacy = (line: string): QueuedNotice => ({
+			id: `legacy-${createHash("sha256")
+				.update(line, "utf8")
+				.digest("hex")
+				.slice(0, 16)}`,
+			notice: line,
+			at: "",
+		});
+		return raw
+			.split("\n")
+			.map((line) => {
+				if (!line.trim()) {
+					return null;
+				}
+				try {
+					const parsed = JSON.parse(line) as {
+						id?: unknown;
+						notice?: unknown;
+						at?: unknown;
+					};
+					if (typeof parsed.notice !== "string" || !parsed.notice.trim()) {
+						// A syntactically valid but unknown row is still durable user
+						// evidence. Keep the raw line during schema migrations instead
+						// of silently deleting it on the next acknowledgement.
+						return legacy(line);
 					}
-				})
-				.filter((notice) => notice.trim().length > 0);
-		} catch {
-			return [];
+					const id =
+						typeof parsed.id === "string" && parsed.id.length > 0
+							? parsed.id
+							: `legacy-${createHash("sha256")
+									.update(line, "utf8")
+									.digest("hex")
+									.slice(0, 16)}`;
+					return {
+						id,
+						notice: parsed.notice,
+						at: typeof parsed.at === "string" ? parsed.at : "",
+					};
+				} catch {
+					// Keep a legacy/plain-text line deliverable instead of silently
+					// dropping it during a migration.
+					return legacy(line);
+				}
+			})
+			.filter((entry): entry is QueuedNotice => entry !== null);
+	}
+
+	private async readNoticeEntries(id: string): Promise<QueuedNotice[]> {
+		try {
+			return this.parseNoticeEntries(
+				await readFile(this.noticesFile(id), "utf8"),
+			);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+				return [];
+			}
+			throw error;
 		}
+	}
+
+	/**
+	 * Read queued notices without deleting them. The caller acknowledges only
+	 * after the combined provider turn has been accepted. This is at-least-once
+	 * delivery: a crash after send and before ack may repeat a notice, but never
+	 * loses one during the pre-send window.
+	 */
+	private async drainNotices(id: string): Promise<NoticeBatch> {
+		const noticeFile = this.noticesFile(id);
+		return withPidLock(`${noticeFile}.lock`, async () => {
+			return { entries: await this.readNoticeEntries(id) };
+		});
+	}
+
+	/** Remove only the batch that was actually sent; concurrent appends survive. */
+	private async ackNotices(id: string, ids: string[]): Promise<boolean> {
+		if (ids.length === 0) {
+			return true;
+		}
+		const acknowledged = new Set(ids);
+		const noticeFile = this.noticesFile(id);
+		await withPidLock(`${noticeFile}.lock`, async () => {
+			const entries = await this.readNoticeEntries(id);
+			const remaining = entries.filter((entry) => !acknowledged.has(entry.id));
+			if (remaining.length === 0) {
+				await rm(noticeFile, { force: true });
+				return;
+			}
+			await writeFileAtomic(
+				noticeFile,
+				`${remaining.map((entry) => JSON.stringify(entry)).join("\n")}\n`,
+			);
+		});
+		return true;
 	}
 
 	/** History for HTTP providers: flat text turns from the stored transcript. */
@@ -1002,6 +1564,9 @@ export class ChatThreads {
 		emit: (event: RunEvent) => void,
 		messageParts: MessagePart[],
 		signal: AbortSignal,
+		precedingNotices: string[],
+		onContextObserved?: () => Promise<void>,
+		onNoticesSent?: () => Promise<boolean>,
 	): Promise<void> {
 		const provider = chat.provider;
 		const key = chat.apiKey ?? "";
@@ -1014,6 +1579,11 @@ export class ChatThreads {
 		}
 
 		const history = await this.history(id);
+		const noticesIncluded = precedingNotices.length === 0 || history.length > 0;
+		if (precedingNotices.length > 0 && noticesIncluded) {
+			const last = history.at(-1)!;
+			last.content = this.promptWithNotices(last.content, precedingNotices);
+		}
 		const fanout = clampFanout(chat.fanout);
 		const { url, headers, body } = this.buildHttpRequest(
 			provider,
@@ -1022,14 +1592,27 @@ export class ChatThreads {
 			history,
 		);
 
+		let streamErrored = false;
+		let streamMalformed = false;
+		let streamTerminal = false;
+		let malformedReported = false;
 		const onSseData = (payload: string) => {
+			if (!payload) {
+				return;
+			}
 			if (payload === "[DONE]") {
+				streamTerminal = true;
 				return;
 			}
 			let event: Record<string, unknown>;
 			try {
 				event = JSON.parse(payload) as Record<string, unknown>;
 			} catch {
+				streamMalformed = true;
+				if (!malformedReported) {
+					malformedReported = true;
+					emit({ type: "error", message: "provider 返回了损坏的 SSE 数据" });
+				}
 				return;
 			}
 			let delta: string | undefined;
@@ -1039,7 +1622,10 @@ export class ChatThreads {
 					if (d?.type === "text_delta" && d.text) {
 						delta = d.text;
 					}
+				} else if (event.type === "message_stop") {
+					streamTerminal = true;
 				} else if (event.type === "error") {
+					streamErrored = true;
 					const err = event.error as { message?: string } | undefined;
 					emit({
 						type: "error",
@@ -1047,15 +1633,40 @@ export class ChatThreads {
 					});
 				}
 			} else if (provider === "openai-chat") {
+				if (event.type === "error" || event.error) {
+					streamErrored = true;
+					const err = event.error as { message?: string } | undefined;
+					emit({
+						type: "error",
+						message:
+							err?.message ?? String(event.message ?? "openai stream error"),
+					});
+				}
 				const choices = event.choices as
-					| Array<{ delta?: { content?: string } }>
+					| Array<{
+							delta?: { content?: string };
+							finish_reason?: string | null;
+					  }>
 					| undefined;
 				delta = choices?.[0]?.delta?.content;
+				if (choices?.[0]?.finish_reason) {
+					streamTerminal = true;
+				}
 			} else {
 				// openai-responses
 				if (event.type === "response.output_text.delta") {
 					delta = event.delta as string;
-				} else if (event.type === "error") {
+				} else if (
+					event.type === "response.completed" ||
+					event.type === "response.done"
+				) {
+					streamTerminal = true;
+				} else if (
+					event.type === "error" ||
+					event.type === "response.failed" ||
+					event.type === "response.incomplete"
+				) {
+					streamErrored = true;
 					emit({
 						type: "error",
 						message: String(event.message ?? "responses error"),
@@ -1097,7 +1708,34 @@ export class ChatThreads {
 					)
 				: [];
 
-		await this.consumeSse(response, onSseData);
+		const stream = await this.consumeSse(response, onSseData);
+		// Only a completely consumed, non-error stream proves that the provider
+		// accepted the combined turn. Header-level 2xx is not enough: a truncated
+		// body must leave the notice for the next attempt.
+		if (!stream.complete || !streamTerminal) {
+			if (!streamErrored) {
+				emit({
+					type: "error",
+					message: stream.complete
+						? "provider 流没有结束标记，通知保留待重试"
+						: "provider SSE 流在完整帧前结束，通知保留待重试",
+				});
+			}
+		} else if (!streamErrored && !streamMalformed) {
+			try {
+				await onContextObserved?.();
+			} catch {
+				// Observability is additive; it must not turn a successful provider
+				// response into a failed chat turn.
+			}
+			if (precedingNotices.length > 0 && noticesIncluded) {
+				try {
+					await onNoticesSent?.();
+				} catch {
+					// A failed acknowledgement leaves the durable queue for retry.
+				}
+			}
+		}
 		// 主回答结束：收下 shadow 文本，备选挂在 run() 的 finally 里组装
 		const shadowTexts = await Promise.all(shadowPromises);
 		const primaryText = messageParts
@@ -1239,25 +1877,38 @@ export class ChatThreads {
 	private async consumeSse(
 		response: Response,
 		onSseData: (payload: string) => void,
-	): Promise<void> {
+	): Promise<SseConsumeResult> {
 		const reader = response.body!.getReader();
 		const decoder = new TextDecoder();
 		let buffer = "";
+		let complete = true;
+		const dispatch = (chunk: string): void => {
+			for (const line of chunk.split(/\r?\n/)) {
+				if (line.startsWith("data:")) {
+					onSseData(line.slice(5).trim());
+				}
+			}
+		};
 		for (;;) {
 			const { done, value } = await reader.read();
 			if (done) {
 				break;
 			}
 			buffer += decoder.decode(value, { stream: true });
-			const chunks = buffer.split("\n\n");
+			const chunks = buffer.split(/\r?\n\r?\n/);
 			buffer = chunks.pop() ?? "";
 			for (const chunk of chunks) {
-				for (const line of chunk.split("\n")) {
-					if (line.startsWith("data:")) {
-						onSseData(line.slice(5).trim());
-					}
-				}
+				dispatch(chunk);
 			}
 		}
+		buffer += decoder.decode();
+		if (buffer.trim()) {
+			// A final frame without the SSE blank-line delimiter may still contain
+			// useful partial text, so feed it to the renderer but mark the stream
+			// incomplete. Callers must not acknowledge durable notices in this case.
+			complete = false;
+			dispatch(buffer);
+		}
+		return { complete };
 	}
 }

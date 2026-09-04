@@ -37,6 +37,12 @@ export interface ResumeNote {
 	leaveSignature: {
 		lastMessageAt: string;
 		messageCount: number;
+		/** Per-thread footprint line at the exact leave observation. */
+		footprintSeq?: number;
+		/** Shared events clock at leave; absent on pre-R2 notes. */
+		eventSeq?: number;
+		/** Stable lifecycle event that established the leave boundary. */
+		eventId?: string;
 	};
 }
 
