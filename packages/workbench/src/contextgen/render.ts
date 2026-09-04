@@ -1,6 +1,6 @@
 import { isAbsolute, join } from "node:path";
 import type { Decision } from "../types/decision";
-import type { WorkbenchEvent } from "../types/event";
+import { isWorldEvent, type WorkbenchEvent } from "../types/event";
 import type { Goal } from "../types/goal";
 import type { RegistryEntry } from "../types/interface-registry";
 import type { Conflict } from "../types/state";
@@ -37,9 +37,10 @@ export function renderContext(input: ContextInput): string {
 		decisions,
 		interfaces,
 		projectRoot,
-		events,
+		events: inputEvents,
 		conflicts,
 	} = input;
+	const events = inputEvents.filter(isWorldEvent);
 
 	lines.push("# 工作上下文（自动生成，请勿手动编辑）");
 	lines.push("");

@@ -55,12 +55,14 @@ export interface RunOnceResult {
 }
 
 function event(bb: Blackboard, type: string, payload: unknown): Promise<void> {
-	return bb.events.append({
-		timestamp: new Date().toISOString(),
-		source: "runtime",
-		type,
-		payload,
-	});
+	return bb.events
+		.append({
+			timestamp: new Date().toISOString(),
+			source: "runtime",
+			type,
+			payload,
+		})
+		.then(() => undefined);
 }
 
 function worktreePath(bb: Blackboard, workspotId: string): string {

@@ -1,4 +1,4 @@
-import { mkdir, open, readFile, rm } from "node:fs/promises";
+import { mkdir, open, readFile, rm, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 export interface PidLock {
@@ -19,7 +19,17 @@ function isProcessAlive(pid: number): boolean {
 	}
 }
 
+async function lockPathExists(lockPath: string): Promise<boolean> {
+	try {
+		await stat(lockPath);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 const staleLockMessage = "另一个进程持有锁（pid 已存活）或锁文件无法接管";
+const INCOMPLETE_LOCK_GRACE_MS = 1000;
 
 /**
  * Mutual exclusion via a pid lock file with O_EXCL creation semantics.
@@ -42,7 +52,17 @@ export async function acquirePidLock(
 			await mkdir(dirname(lockPath), { recursive: true });
 			handle = await open(lockPath, "wx");
 		} catch (error) {
-			if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+			const code = (error as NodeJS.ErrnoException).code;
+			// Windows can surface an existing O_EXCL target as EPERM/EACCES while
+			// another process still has the handle open. Treat it as contention only
+			// when the target really exists; unrelated permission failures still throw.
+			if (
+				code !== "EEXIST" &&
+				!(
+					(code === "EPERM" || code === "EACCES") &&
+					(await lockPathExists(lockPath))
+				)
+			) {
 				throw error;
 			}
 		}
@@ -69,19 +89,75 @@ export async function acquirePidLock(
 		// file means another acquirer just won the O_EXCL race and is between
 		// create and write — it is alive; never remove its lock here (that
 		// would resurrect the check-then-write race this lock exists to kill).
+		let stale = false;
+		let observedRaw = "";
+		let observedMtimeMs = 0;
 		try {
+			observedMtimeMs = (await stat(lockPath)).mtimeMs;
 			const raw = await readFile(lockPath, "utf8");
+			observedRaw = raw;
 			if (raw.trim() === "") {
-				return { acquired: false, release: async () => {} };
-			}
-			const holder = JSON.parse(raw) as { pid?: number };
-			if (typeof holder.pid === "number" && isProcessAlive(holder.pid)) {
-				return { acquired: false, holder: holder.pid, release: async () => {} };
+				if (Date.now() - observedMtimeMs < INCOMPLETE_LOCK_GRACE_MS) {
+					return { acquired: false, release: async () => {} };
+				}
+				stale = true;
+			} else {
+				const holder = JSON.parse(raw) as { pid?: number };
+				if (typeof holder.pid !== "number") {
+					if (Date.now() - observedMtimeMs < INCOMPLETE_LOCK_GRACE_MS) {
+						return { acquired: false, release: async () => {} };
+					}
+					stale = true;
+				} else if (isProcessAlive(holder.pid)) {
+					return {
+						acquired: false,
+						holder: holder.pid,
+						release: async () => {},
+					};
+				} else {
+					stale = true;
+				}
 			}
 		} catch {
-			// unparseable non-empty lock file: treat as stale
+			// A partially-written lock is likely a live contender. Give it a
+			// moment to finish; an old unchanged remnant can be reclaimed.
+			if (
+				observedMtimeMs === 0 ||
+				Date.now() - observedMtimeMs < INCOMPLETE_LOCK_GRACE_MS
+			) {
+				return { acquired: false, release: async () => {} };
+			}
+			stale = true;
 		}
-		await rm(lockPath, { force: true });
+		if (!stale) {
+			continue;
+		}
+		// Re-read before takeover so a new owner cannot be deleted merely because
+		// the old pid was observed in an earlier read.
+		try {
+			const current = await stat(lockPath);
+			if (
+				current.mtimeMs !== observedMtimeMs ||
+				(await readFile(lockPath, "utf8")) !== observedRaw
+			) {
+				continue;
+			}
+			await rm(lockPath, { force: true });
+		} catch (error) {
+			const code = (error as NodeJS.ErrnoException).code;
+			// Windows may report a transient EFAULT/ sharing violation when another
+			// contender removed or replaced the file. Treat it as contention and let
+			// the caller retry under withPidLock rather than failing the append.
+			if (
+				code === "ENOENT" ||
+				code === "EFAULT" ||
+				code === "EPERM" ||
+				code === "EACCES"
+			) {
+				return { acquired: false, release: async () => {} };
+			}
+			throw error;
+		}
 	}
 	throw new Error(staleLockMessage);
 }

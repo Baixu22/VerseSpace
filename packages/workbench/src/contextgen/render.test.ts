@@ -104,4 +104,27 @@ describe("renderContext", () => {
 		expect(markdown).toContain("goals 读写往返一致〔验证：test〕");
 		expect(markdown).toContain("- 原子写不留临时文件\n");
 	});
+
+	test("does not leak thread lifecycle events into agent context", () => {
+		const markdown = renderContext({
+			...baseInput(),
+			events: [
+				{
+					timestamp: "2026-08-28T01:00:00.000Z",
+					source: "threads",
+					type: "thread.left",
+					payload: { threadId: "t-1", messageCount: 4 },
+				},
+				{
+					timestamp: "2026-08-28T01:01:00.000Z",
+					source: "runtime",
+					type: "checkpoint_moved",
+					payload: { summary: "cp-1 verified" },
+				},
+			],
+		});
+		expect(markdown).toContain("checkpoint_moved: cp-1 verified");
+		expect(markdown).not.toContain("thread.left");
+		expect(markdown).not.toContain("messageCount");
+	});
 });

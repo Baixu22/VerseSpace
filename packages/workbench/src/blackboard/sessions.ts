@@ -1,6 +1,8 @@
+import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { appendJsonlLine, pathExists, safeReaddir } from "../fs/atomic";
+import { withPidLock } from "../fs/lockfile";
 import { deriveInteractions } from "../interactions/derive";
 import {
 	INTERACTIONS_SOURCE,
@@ -8,6 +10,7 @@ import {
 	type InteractionEvent,
 } from "../interactions/types";
 import type { WorkbenchPaths } from "../paths";
+import type { WorkbenchEvent } from "../types/event";
 import { type Writer, writerSchema } from "../types/session";
 import { readYamlFile, writeYamlFile } from "../yamlio";
 
@@ -22,9 +25,8 @@ import { readYamlFile, writeYamlFile } from "../yamlio";
  * - `sessions/<writer>/footprint.jsonl` — the writer's raw activity log;
  * - the shared `events.jsonl` — one PROV-shaped `footprint` event per
  *   activity, so cross-writer views are a fold over a single log.
- * `seq` is the line number in the respective append-only file: monotonic
- * by construction, no write-time coordination, and the same clock L1's
- * DOI decay will use.
+ * Each local footprint line keeps its own monotonic `seq` for read-set replay;
+ * `eventId`/`eventSeq` point at the shared event clock for cross-writer joins.
  */
 
 /**
@@ -60,6 +62,10 @@ export interface FootprintUsed {
 
 export interface FootprintEntry {
 	timestamp: string;
+	/** Stable join key shared with the mirrored events.jsonl footprint row. */
+	eventId?: string;
+	/** Global event clock observed when the mirror was appended. */
+	eventSeq?: number;
 	/** One tool call / batched editor change / ref update. */
 	activity: string;
 	/** The writer (or subagent via parent_tool_use_id) that acted. */
@@ -81,7 +87,17 @@ export interface SessionsEvents {
 		source: string;
 		type: string;
 		payload: unknown;
-	}): Promise<void>;
+		id?: string;
+	}): Promise<WorkbenchEvent>;
+	appendMany(
+		batch: ReadonlyArray<{
+			timestamp: string;
+			source: string;
+			type: string;
+			payload: unknown;
+			id?: string;
+		}>,
+	): Promise<WorkbenchEvent[]>;
 }
 
 export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
@@ -214,29 +230,47 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 			writerId: string,
 			entry: Omit<FootprintEntry, "timestamp">,
 		): Promise<void> {
-			const full: FootprintEntry = {
-				...entry,
-				timestamp: new Date().toISOString(),
-			};
-			// keep single lines well under the 4KB atomic-append budget
-			await appendJsonlLine(footprintFileFor(writerId), full);
-			await events.append({
-				timestamp: full.timestamp,
-				source: "sessions",
-				type: "footprint",
-				payload: { writer: writerId, ...entry },
+			// A writer can emit tool results concurrently (for example, a streamed
+			// sub-agent and its parent). Serialize its local mirror so the per-writer
+			// line clock and the shared event join key cannot cross.
+			await withPidLock(`${dirFor(writerId)}.footprint.lock`, async () => {
+				const eventId = entry.eventId ?? `fp-${randomBytes(8).toString("hex")}`;
+				const timestamp = new Date().toISOString();
+				const full: FootprintEntry = { ...entry, eventId, timestamp };
+				// Inherited context is a provider fact, not a fresh human interaction;
+				// keep it out of DOI/attention projections while retaining the footprint.
+				// L1 (TF-0087): interaction projections share the event clock but are
+				// still separate world facts.
+				const interactions =
+					full.facets?.inherited === true
+						? []
+						: deriveInteractions(full, writerId);
+				// Append the shared facts first: if the process dies, an orphaned
+				// shared fact is preferable to a local footprint that has no causal
+				// identity. One lock and one cursor write for the whole activity —
+				// per-line appends cost ~4 lock round-trips per tool call (TF-0143).
+				const [mirrored] = await events.appendMany([
+					{
+						id: eventId,
+						timestamp,
+						source: "sessions",
+						type: "footprint",
+						payload: { writer: writerId, ...entry, eventId },
+					},
+					...interactions.map((interaction) => ({
+						timestamp: interaction.time,
+						source: INTERACTIONS_SOURCE,
+						type: INTERACTIONS_TYPE,
+						payload: interaction as InteractionEvent,
+					})),
+				]);
+				// Keep single lines well under the 4KB atomic-append budget.
+				await appendJsonlLine(footprintFileFor(writerId), {
+					...full,
+					...(mirrored ? { eventSeq: mirrored.eventSeq } : {}),
+				} satisfies FootprintEntry);
+				await touch(writerId);
 			});
-			// L1 (TF-0087): 与足迹共用同一条 events.jsonl 与同一个 seq 时钟，
-			// 把同一活动的 PROV 派生成交互事件（used→selection, generated→edit）。
-			for (const interaction of deriveInteractions(full, writerId)) {
-				await events.append({
-					timestamp: interaction.time,
-					source: INTERACTIONS_SOURCE,
-					type: INTERACTIONS_TYPE,
-					payload: interaction as InteractionEvent,
-				});
-			}
-			await touch(writerId);
 		},
 
 		async footprint(writerId: string): Promise<FootprintLine[]> {
@@ -316,4 +350,24 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 /** Writer ids become directory names: keep them filesystem-safe. */
 export function sanitizeWriterId(id: string): string {
 	return id.replace(/[^A-Za-z0-9._-]/g, "_");
+}
+
+/** Canonical location for read-time spool snapshots. */
+export function writerSpoolDir(
+	paths: WorkbenchPaths,
+	writerId: string,
+): string {
+	return join(paths.sessions, sanitizeWriterId(writerId), "spool");
+}
+
+/**
+ * Pre-R2 builds accidentally wrote chat spools below `.workbench/sessions`.
+ * Keep this read-only fallback so an existing workspace does not lose its
+ * diff evidence while all new writes use `writerSpoolDir`.
+ */
+export function legacyWriterSpoolDir(
+	paths: WorkbenchPaths,
+	writerId: string,
+): string {
+	return join(paths.root, "sessions", sanitizeWriterId(writerId), "spool");
 }

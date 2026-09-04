@@ -1,7 +1,7 @@
 import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { writeFileAtomic } from "../fs/atomic";
-import type { WorkbenchEvent } from "../types/event";
+import { isWorldEvent, type WorkbenchEvent } from "../types/event";
 import { renderContext } from "./render";
 
 export interface GenerateResult {
@@ -23,10 +23,11 @@ function selectEvents(
 	filter: { tags: string[]; lastN: number } | undefined,
 ): WorkbenchEvent[] {
 	const lastN = filter?.lastN ?? 10;
+	const worldEvents = events.filter(isWorldEvent);
 	if (!filter || filter.tags.length === 0) {
-		return events.slice(-lastN);
+		return worldEvents.slice(-lastN);
 	}
-	const tagged = events.filter((event) => {
+	const tagged = worldEvents.filter((event) => {
 		const tags = (event.payload as { tags?: unknown } | null)?.tags;
 		return (
 			Array.isArray(tags) &&

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { BlackboardDataError } from "../errors";
-import { appendJsonlLine, pathExists, safeReaddir } from "../fs/atomic";
+import { pathExists, safeReaddir } from "../fs/atomic";
 import type { WorkbenchPaths } from "../paths";
 import {
 	type Checkpoint,
@@ -20,7 +20,20 @@ export const ZONE_LIFECYCLES: Record<Zone, CheckpointLifecycle[]> = {
 	failed: ["failed", "rejected"],
 };
 
-export function checkpointsApi(paths: WorkbenchPaths) {
+/** Zone moves are world facts, so they go through the shared append lock. */
+export interface CheckpointEvents {
+	append(event: {
+		timestamp: string;
+		source: string;
+		type: string;
+		payload: unknown;
+	}): Promise<void>;
+}
+
+export function checkpointsApi(
+	paths: WorkbenchPaths,
+	events: CheckpointEvents,
+) {
 	const zoneDir = (zone: Zone) => join(paths.checkpoints, zone);
 	const fileFor = (zone: Zone, id: string) => join(zoneDir(zone), `${id}.yaml`);
 
@@ -86,7 +99,7 @@ export function checkpointsApi(paths: WorkbenchPaths) {
 				checkpointSchema,
 			);
 			await writeYamlFile(fileFor(to, cpId), checkpointSchema, checkpoint);
-			await appendJsonlLine(paths.eventsFile, {
+			await events.append({
 				timestamp: new Date().toISOString(),
 				source: "blackboard",
 				type: "checkpoint_moved",

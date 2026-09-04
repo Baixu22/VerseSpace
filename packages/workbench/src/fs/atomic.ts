@@ -75,6 +75,23 @@ export async function appendJsonlLine(
 	await appendFile(filePath, `${JSON.stringify(value)}\n`, "utf8");
 }
 
+/**
+ * One `appendFile` for a whole batch. Callers must already hold the file's
+ * append lock: a multi-line write can exceed the single-line atomic-append
+ * budget, so the lock — not the write size — is what keeps writers apart.
+ */
+export async function appendJsonlLines(
+	filePath: string,
+	values: readonly unknown[],
+): Promise<void> {
+	if (values.length === 0) {
+		return;
+	}
+	await mkdir(dirname(filePath), { recursive: true });
+	const body = values.map((value) => `${JSON.stringify(value)}\n`).join("");
+	await appendFile(filePath, body, "utf8");
+}
+
 export async function pathExists(target: string): Promise<boolean> {
 	try {
 		await stat(target);

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { acquirePidLock } from "./lockfile";
@@ -58,6 +58,29 @@ describe("acquirePidLock", () => {
 			const takeover = await acquirePidLock(lockPath);
 			expect(takeover.acquired).toBe(true);
 			await takeover.release();
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("fresh incomplete locks block; old unchanged remnants are reclaimed", async () => {
+		const { dir, cleanup } = await makeTempDir();
+		try {
+			for (const [name, contents] of [
+				["empty", ""],
+				["malformed", "{"],
+				["missing-pid", "{}"],
+			] as const) {
+				const lockPath = join(dir, `${name}.lock`);
+				await writeFile(lockPath, contents);
+				expect((await acquirePidLock(lockPath)).acquired).toBe(false);
+
+				const old = new Date(Date.now() - 5000);
+				await utimes(lockPath, old, old);
+				const recovered = await acquirePidLock(lockPath);
+				expect(recovered.acquired).toBe(true);
+				await recovered.release();
+			}
 		} finally {
 			await cleanup();
 		}

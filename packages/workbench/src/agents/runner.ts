@@ -7,6 +7,7 @@ import {
 	type ParsedStreamFootprint,
 } from "../blackboard/footprint";
 import { derive, foldUsage } from "../blackboard/metrics";
+import { writerSpoolDir } from "../blackboard/sessions";
 import {
 	crashLoopTripped,
 	type ProcHandle,
@@ -214,7 +215,7 @@ export async function startAgent(
 						await hashPathClaim(
 							bb.projectRoot,
 							used.path,
-							undefined,
+							writerSpoolDir(bb.paths, writerId),
 							used.span,
 						),
 					);
@@ -289,7 +290,6 @@ export async function startAgent(
 				payload: { workspotId: workspot.id, label },
 			});
 		}
-		await writeLatest(bb, finished);
 		await bb.events.append({
 			timestamp: new Date().toISOString(),
 			source: "agent",
@@ -300,6 +300,9 @@ export async function startAgent(
 				exitCode: finished.exitCode,
 			},
 		});
+		// Publish the user-visible terminal state only after its audit event is
+		// durable; readers that observe `done` can then safely query the event.
+		await writeLatest(bb, finished);
 	});
 
 	return { ok: true, logFile };

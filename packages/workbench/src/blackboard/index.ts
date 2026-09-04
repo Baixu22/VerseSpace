@@ -2,7 +2,11 @@ import { dirname } from "node:path";
 import { pathExists } from "../fs/atomic";
 import { type WorkbenchPaths, workbenchPaths } from "../paths";
 import { tribunalApi } from "../tribunal/queue";
-import { type WorkbenchConfig, workbenchConfigSchema } from "../types/config";
+import {
+	type WorkbenchConfig,
+	type WorkbenchConfigInput,
+	workbenchConfigSchema,
+} from "../types/config";
 import { readYamlFile, writeYamlFile } from "../yamlio";
 import { checkpointsApi } from "./checkpoints";
 import { decisionsApi } from "./decisions";
@@ -25,7 +29,7 @@ export interface Blackboard {
 	projectRoot: string;
 	config: {
 		load(): Promise<WorkbenchConfig>;
-		save(config: WorkbenchConfig): Promise<void>;
+		save(config: WorkbenchConfigInput): Promise<void>;
 	};
 	goals: ReturnType<typeof goalsApi>;
 	decisions: ReturnType<typeof decisionsApi>;
@@ -57,21 +61,29 @@ export function openBlackboard(workbenchRoot: string): Blackboard {
 				}
 				return readYamlFile(paths.config, workbenchConfigSchema);
 			},
-			async save(config: WorkbenchConfig): Promise<void> {
-				await writeYamlFile(paths.config, workbenchConfigSchema, config);
+			async save(config: WorkbenchConfigInput): Promise<void> {
+				const canonical = workbenchConfigSchema.parse(config);
+				await writeYamlFile(paths.config, workbenchConfigSchema, canonical);
 			},
 		},
 		goals: goalsApi(paths),
 		decisions: decisionsApi(paths),
 		interfaces: interfacesApi(paths, projectRoot),
 		state: stateApi(paths),
-		checkpoints: checkpointsApi(paths),
+		checkpoints: checkpointsApi(paths, {
+			append: async (event) => {
+				await events.append(event);
+			},
+		}),
 		events,
 		sessions: sessionsApi(paths, {
 			append: (event) => events.append(event),
+			appendMany: (batch) => events.appendMany(batch),
 		}),
 		tribunal: tribunalApi(paths, {
-			append: (event) => events.append(event),
+			append: async (event) => {
+				await events.append(event);
+			},
 		}),
 		metrics: metricsApi(paths),
 		snapshot() {
