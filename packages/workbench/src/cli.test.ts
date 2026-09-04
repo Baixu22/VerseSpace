@@ -16,6 +16,7 @@ describe("buildProgram", () => {
 			"tribunal",
 			"wip",
 			"metrics",
+			"stats",
 			"ws",
 			"checkpoint",
 			"dispatch",

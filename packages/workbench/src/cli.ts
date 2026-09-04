@@ -22,6 +22,7 @@ import {
 } from "./commands/premises";
 import { checkpointRestore } from "./commands/restore";
 import { sessionsListCommand, sessionsShowCommand } from "./commands/sessions";
+import { statsCommand } from "./commands/stats";
 import {
 	logCommand,
 	mapCommand,
@@ -279,6 +280,10 @@ export function buildProgram(): Command {
 			"per-lane usage: absolute tokens / cache hit rate / compactions (R3)",
 		)
 		.action((_options, command) => metricsCommand(command));
+	program
+		.command("stats")
+		.description("read-only chat/thread baseline for premise-custody fit")
+		.action((_options, command) => statsCommand(command));
 
 	const ws = program.command("ws").description("manage workspots");
 	ws.command("create <id>")
