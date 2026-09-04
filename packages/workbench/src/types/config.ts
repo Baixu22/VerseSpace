@@ -54,7 +54,15 @@ export const workbenchConfigSchema = z.object({
 			 * 主回答照常展示，备选挂在消息上一击展开。1 = 关（默认）。
 			 */
 			fanout: z.number().int().min(1).max(3).optional(),
+			/** Maximum approximate token budget for one premise notice bundle. */
+			noticeTokenBudget: z.number().int().positive().max(4000).default(300),
 		})
-		.default({ provider: "claude" }),
+		.default({ provider: "claude", noticeTokenBudget: 300 }),
 });
 export type WorkbenchConfig = z.infer<typeof workbenchConfigSchema>;
+/**
+ * Values accepted when saving config.  Zod defaults make nested fields
+ * optional on input, so callers can update just the setting they own while
+ * the persisted representation is still canonicalized by the schema.
+ */
+export type WorkbenchConfigInput = z.input<typeof workbenchConfigSchema>;

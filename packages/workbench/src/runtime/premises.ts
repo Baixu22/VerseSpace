@@ -4,7 +4,14 @@ import { isAbsolute, join } from "node:path";
 import { promisify } from "node:util";
 import type { Blackboard } from "../blackboard";
 import { hashPathClaim } from "../blackboard/footprint";
-import type { FootprintUsed, ReadSpan } from "../blackboard/sessions";
+import {
+	type FootprintUsed,
+	legacyWriterSpoolDir,
+	type ReadSpan,
+	writerSpoolDir,
+} from "../blackboard/sessions";
+import { pathExists } from "../fs/atomic";
+import { noticeIdForClaims } from "./notice-id";
 import { surfaceHash } from "./surface";
 
 /**
@@ -31,6 +38,7 @@ export interface StalePremiseClaim {
 }
 
 export interface StalePremiseNotice {
+	noticeId: string;
 	writerId: string;
 	writerKind: string;
 	stale: StalePremiseClaim[];
@@ -56,52 +64,68 @@ export interface ReconcileOptions {
 	activeWindowMs?: number;
 }
 
-function sanitizeDir(id: string): string {
-	return id.replace(/[^A-Za-z0-9._-]/g, "_");
+function spoolDirs(bb: Blackboard, writerId: string): string[] {
+	return [
+		...new Set([
+			writerSpoolDir(bb.paths, writerId),
+			legacyWriterSpoolDir(bb.paths, writerId),
+		]),
+	];
+}
+
+async function resolveSpoolPath(
+	bb: Blackboard,
+	writerId: string,
+	spoolName: string,
+): Promise<string | undefined> {
+	for (const dir of spoolDirs(bb, writerId)) {
+		const candidate = join(dir, spoolName);
+		if (await pathExists(candidate)) {
+			return candidate;
+		}
+	}
+	return undefined;
 }
 
 /** Newest spool snapshot of `path` within the writer's spool dir, if any. */
-async function findSpool(
+export async function findSpool(
 	bb: Blackboard,
 	writerId: string,
 	path: string,
 ): Promise<string | undefined> {
-	const spoolDir = join(
-		bb.paths.root,
-		"sessions",
-		sanitizeDir(writerId),
-		"spool",
-	);
-	try {
-		const safeName = path
-			.replace(/\\/g, "/")
-			.replace(/[^A-Za-z0-9._-]/g, "_")
-			.slice(-80);
-		const candidates = (await readdir(spoolDir))
-			.filter((name) => name.endsWith(`-${safeName}`))
-			.sort();
-		return candidates.at(-1);
-	} catch {
-		return undefined;
+	const safeName = path
+		.replace(/\\/g, "/")
+		.replace(/[^A-Za-z0-9._-]/g, "_")
+		.slice(-80);
+	const candidates: string[] = [];
+	for (const dir of spoolDirs(bb, writerId)) {
+		try {
+			for (const name of await readdir(dir)) {
+				if (name.endsWith(`-${safeName}`)) {
+					candidates.push(name);
+				}
+			}
+		} catch {
+			// A missing legacy or canonical spool is a normal downgrade path.
+		}
 	}
+	return candidates.sort().at(-1);
 }
 
 /** Unified diff between the read-time spool snapshot and the current file. */
-async function diffFor(
+export async function diffFor(
 	bb: Blackboard,
 	writerId: string,
 	claim: FootprintUsed,
 ): Promise<string | undefined> {
-	if (!claim.spool) {
+	const spoolName = claim.spool ?? (await findSpool(bb, writerId, claim.path));
+	if (!spoolName) {
 		return undefined;
 	}
-	const spoolFile = join(
-		bb.paths.root,
-		"sessions",
-		sanitizeDir(writerId),
-		"spool",
-		claim.spool,
-	);
+	const spoolFile = await resolveSpoolPath(bb, writerId, spoolName);
+	if (!spoolFile) {
+		return undefined;
+	}
 	const current = isAbsolute(claim.path)
 		? claim.path
 		: join(bb.projectRoot, claim.path);
@@ -181,18 +205,15 @@ async function surfaceUnchanged(
 	if (!SURFACE_EXTENSIONS.test(claim.path)) {
 		return false;
 	}
-	const spoolName = await findSpool(bb, writerId, claim.path);
+	const spoolName = claim.spool ?? (await findSpool(bb, writerId, claim.path));
 	if (!spoolName) {
 		return false; // no read-time snapshot: nothing to compare against
 	}
 	const { readFile } = await import("node:fs/promises");
-	const spoolPath = join(
-		bb.paths.root,
-		"sessions",
-		sanitizeDir(writerId),
-		"spool",
-		spoolName,
-	);
+	const spoolPath = await resolveSpoolPath(bb, writerId, spoolName);
+	if (!spoolPath) {
+		return false;
+	}
 	const currentPath = isAbsolute(claim.path)
 		? claim.path
 		: join(bb.projectRoot, claim.path);
@@ -219,7 +240,7 @@ async function surfaceUnchanged(
  *   layer 1 (whole-file) and report invalidated. Erring toward notifying is
  *   the right direction: a spurious notice costs one reasoning step.
  */
-async function spanInvalidated(
+export async function spanInvalidated(
 	bb: Blackboard,
 	claim: FootprintUsed,
 	span: ReadSpan,
@@ -248,26 +269,30 @@ async function spanInvalidated(
 }
 
 /** One notice per (writer, path, currentVersion) — cross-process dedup. */
-async function alreadyReported(
-	bb: Blackboard,
+function staleKey(
 	writerId: string,
-	claim: StalePremiseClaim,
-): Promise<boolean> {
-	const events = await bb.events.query({ type: "premise_stale" });
-	return events.some((event) => {
+	claim: Pick<StalePremiseClaim, "path" | "currentVersion">,
+): string {
+	return `${writerId}|${claim.path}|${claim.currentVersion ?? ""}`;
+}
+
+async function reportedStaleKeys(bb: Blackboard): Promise<Set<string>> {
+	const keys = new Set<string>();
+	for (const event of await bb.events.query({ type: "premise_stale" })) {
 		const payload = event.payload as
 			| {
 					writer?: string;
 					stale?: Array<{ path: string; currentVersion: string | null }>;
 			  }
 			| undefined;
-		if (payload?.writer !== writerId) {
-			return false;
+		if (!payload?.writer) {
+			continue;
 		}
-		return (payload.stale ?? []).some(
-			(s) => s.path === claim.path && s.currentVersion === claim.currentVersion,
-		);
-	});
+		for (const claim of payload.stale ?? []) {
+			keys.add(staleKey(payload.writer, claim));
+		}
+	}
+	return keys;
 }
 
 /**
@@ -283,6 +308,10 @@ export async function reconcilePremises(
 	const activeWindowMs = options.activeWindowMs ?? 30 * 60_000;
 	const cutoff = Date.now() - activeWindowMs;
 	const notices: StalePremiseNotice[] = [];
+	// Snapshot once per pass instead of rereading the whole event log for every
+	// candidate claim. A concurrent pass may still win the race; the next pass
+	// converges and the durable key prevents ordinary repeat delivery.
+	const reported = await reportedStaleKeys(bb);
 
 	for (const writer of await bb.sessions.list()) {
 		if (writer.kind !== "agent" && writer.kind !== "human") {
@@ -315,10 +344,7 @@ export async function reconcilePremises(
 			// actually read move? Span claims need the diff to answer that.
 			let diff: string | undefined;
 			if (claim.span) {
-				diff = await diffFor(bb, writer.id, {
-					...claim,
-					spool: await findSpool(bb, writer.id, claim.path),
-				});
+				diff = await diffFor(bb, writer.id, claim);
 				if (!(await spanInvalidated(bb, claim, claim.span, diff))) {
 					continue; // the edit landed outside the read range
 				}
@@ -333,7 +359,7 @@ export async function reconcilePremises(
 				observedVersion: claim.version ?? null,
 				currentVersion: current.version ?? null,
 			};
-			if (await alreadyReported(bb, writer.id, candidate)) {
+			if (reported.has(staleKey(writer.id, candidate))) {
 				continue;
 			}
 			stale.push({ ...candidate, claim, diff });
@@ -347,15 +373,11 @@ export async function reconcilePremises(
 			evidence.push({
 				...rest,
 				// span claims already have it; the rest pay one git call here
-				diff:
-					diff ??
-					(await diffFor(bb, writer.id, {
-						...claim,
-						spool: await findSpool(bb, writer.id, claim.path),
-					})),
+				diff: diff ?? (await diffFor(bb, writer.id, claim)),
 			});
 		}
 		const notice: StalePremiseNotice = {
+			noticeId: noticeIdForClaims(writer.id, evidence),
 			writerId: writer.id,
 			writerKind: writer.kind,
 			stale: evidence,
@@ -365,8 +387,15 @@ export async function reconcilePremises(
 			timestamp: new Date().toISOString(),
 			source: "runtime",
 			type: "premise_stale",
-			payload: { writer: writer.id, stale: evidence },
+			payload: {
+				writer: writer.id,
+				noticeId: notice.noticeId,
+				stale: evidence,
+			},
 		});
+		for (const claim of evidence) {
+			reported.add(staleKey(writer.id, claim));
+		}
 		const outcome = (await options.deliver?.(notice)) ?? "queued";
 		await bb.events.append({
 			timestamp: new Date().toISOString(),
@@ -377,6 +406,7 @@ export async function reconcilePremises(
 			// everything on every pass.
 			payload: {
 				writer: writer.id,
+				noticeId: notice.noticeId,
 				outcome,
 				stale: outcome === "delivered" ? evidence : [],
 			},

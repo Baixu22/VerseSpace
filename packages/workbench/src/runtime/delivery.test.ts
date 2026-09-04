@@ -2,7 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { makeTempWorkbench } from "../test/fixtures";
-import { drainPremiseQueue, pendingPremiseNotices } from "./delivery";
+import {
+	drainPremiseQueue,
+	pendingPremiseNotices,
+	renderNotice,
+} from "./delivery";
 import { reconcilePremises } from "./premises";
 
 /**
@@ -79,6 +83,27 @@ describe("前提失效通知投递（R2 · TF-0077）", () => {
 		}
 	});
 
+	test("provider 确认事件带稳定 id 后，待投递投影才清空", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await seedStalePremise(ws);
+			const pending = await pendingPremiseNotices(ws.bb);
+			expect(pending).toHaveLength(1);
+			await ws.bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "runtime",
+				type: "premise_notice_delivered",
+				payload: {
+					writer: pending[0]!.writerId,
+					noticeIds: [pending[0]!.noticeId],
+				},
+			});
+			expect(await pendingPremiseNotices(ws.bb)).toHaveLength(0);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
 	test("通道返回 false 时通知留在队列里，不丢", async () => {
 		const ws = await makeTempWorkbench();
 		try {
@@ -89,6 +114,24 @@ describe("前提失效通知投递（R2 · TF-0077）", () => {
 			expect(result.delivered).toHaveLength(0);
 			expect(result.pending).toHaveLength(1);
 			expect(await pendingPremiseNotices(ws.bb)).toHaveLength(1);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("通道只确认已入队时，通知仍显示为待 provider 消费", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await seedStalePremise(ws);
+			const result = await drainPremiseQueue(ws.bb, {
+				deliver: async () => "queued",
+			});
+			expect(result.delivered).toHaveLength(0);
+			expect(result.pending).toHaveLength(1);
+			expect(await pendingPremiseNotices(ws.bb)).toHaveLength(1);
+			expect(
+				await ws.bb.events.query({ type: "premise_notice_delivered" }),
+			).toHaveLength(0);
 		} finally {
 			await ws.cleanup();
 		}
@@ -191,5 +234,37 @@ describe("前提失效通知投递（R2 · TF-0077）", () => {
 		} finally {
 			await ws.cleanup();
 		}
+	});
+
+	test("notice rendering obeys the configured budget and keeps paths before diffs", () => {
+		const claims = [
+			{
+				path: "src/important.ts",
+				observedVersion: "old-version",
+				currentVersion: "new-version",
+				diff: "- old line\n+ new line\n".repeat(40),
+			},
+			{
+				path: "src/second.ts",
+				observedVersion: "old-2",
+				currentVersion: "new-2",
+				diff: "- x\n+ y\n".repeat(40),
+			},
+		];
+		const message = renderNotice(claims, 120);
+		expect(message.length).toBeLessThanOrEqual(120 * 4);
+		expect(message).toContain("src/important.ts");
+		expect(message).toContain("观察版本 old-version → 当前版本 new-version");
+		expect(message).toContain("diff");
+		expect(message).toContain("事件仍保留");
+	});
+
+	test("a zero budget emits no unbounded fallback text", () => {
+		expect(
+			renderNotice(
+				[{ path: "a", observedVersion: "x", currentVersion: "y" }],
+				0,
+			),
+		).toBe("");
 	});
 });
