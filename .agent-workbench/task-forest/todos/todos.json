@@ -394,43 +394,6 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
-      "validation_plan": [
-        "口径已写入 TF-0144 的要求",
-        "下一次功能提交的 diff 里不含 exports",
-        "若 gitignore，export 后 git status 干净"
-      ],
-      "why_not_enough": "口径只影响仓库卫生，不影响任何功能语义",
-      "why_this_task": "提交闸门要求 exports 不与功能提交混提，但『单独提交』还是『不提交』属于用户对仓库体积的取舍"
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "repo-hygiene",
-      "task-forest",
-      "open-question"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0147",
-    "kind": "question",
-    "next_action": "由用户裁决，不要自行改 .gitignore",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "在 TF-0144 提交闸门执行前定下口径，避免把约 100MB 的派生产物继续写进历史。",
-    "ready": true,
-    "remaining_minutes_max": 30,
-    "remaining_minutes_min": 15,
-    "status": "proposed",
-    "success_metrics": [
-      "功能提交里不再混入 exports 的整份重写"
-    ],
-    "title": "待答：task-forest exports 继续被 git 跟踪，还是转为 gitignore"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
       "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
@@ -975,6 +938,43 @@
       "通知通道测试覆盖 live/idle/多通知/turn-in-flight 四种状态"
     ],
     "title": "通知通道语义与测试"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
+      "validation_plan": [
+        "三类产物各有口径并写回 TF-0144",
+        "下一次 proposal-apply 后的提交体量可预期",
+        "若 gitignore，export 后 git status 干净"
+      ],
+      "why_not_enough": "口径只控制增量，已入历史的 blob 需要单独决定是否重写",
+      "why_this_task": "规划数据本身正在以每次约 100MB 的速度污染承载规划的仓库，GitHub 已开始警告"
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "repo-hygiene",
+      "task-forest",
+      "open-question"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0147",
+    "kind": "question",
+    "next_action": "先决定 exports，它是唯一可以零成本 gitignore 的一类",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "在继续往这个仓库写规划之前定下体量口径，否则每次 proposal-apply 都会往历史里再压进约 100–200MB。",
+    "ready": true,
+    "remaining_minutes_max": 60,
+    "remaining_minutes_min": 30,
+    "status": "proposed",
+    "success_metrics": [
+      "单次规划提交的新增体量从约 100MB 级降到可接受范围"
+    ],
+    "title": "待答：task-forest 历史与派生产物的体量口径（events / snapshots / exports）"
   },
   {
     "alignment": {
