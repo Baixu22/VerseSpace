@@ -71,3 +71,7 @@ test-results/
 /.agent-workbench/task-forest/exports/.*.tmp.*
 # local session work log — personal workspace memory, not repo history
 /.workbuddy/memory/
+# agent-kernel runtime state (session checkpoints, message blobs)
+/.agent-kernel/
+# WorkBuddy AI project data (session memory, logs)
+/.workbuddy-ai/
