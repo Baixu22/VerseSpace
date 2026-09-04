@@ -1,0 +1,149 @@
+{
+  "applied_at": "2026-09-04T03:44:03.501658Z",
+  "base_graph_hash": "a63336c5a49f5413763bac6eab6522c1dc3d55c09bf760165ec54df8440af9b0",
+  "base_summary": {
+    "edge_count": 206,
+    "node_count": 146,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "第一步只做 TF-0143 写路径预算 + TF-0144 提交闸门，让基线变绿并落库",
+          "随后并行 TF-0142（通道语义）与 TF-0140（继承裁决）",
+          "阶段 B 的事实段（TF-0127/0128/0129）上线后才登记 TF-0141 的日用起点",
+          "阶段 C 只在阶段 B 完成后进入；TF-0134 需等 TF-0123/0124 收口",
+          "估时按叶子上卷：阶段 A 2880 / B 900 / C 1260 / D 600，合计 5640 分钟"
+        ]
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "先 TF-0143（写侧预算）→ TF-0144（提交闸门），再谈其它",
+          "TF-0142 与 TF-0140 可与收口并行",
+          "TF-0139 必须在 TF-0124 之后，两者都定义 thread.restored",
+          "TF-0145 的 contextgen 载荷上限与 TF-0138 的 ADR 同为阶段 A 收口项",
+          "阶段 A 收口前不要做 merge-back"
+        ]
+      },
+      "id": "TF-0121"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "实现已在工作区，待 TF-0144 提交闸门通过后转 done",
+          "统计 forkOf 而不是 forks",
+          "把 thread.switch/restored 的产生留给 TF-0139，本节点只消费"
+        ],
+        "next_action": "随 TF-0144 提交并复核输出，再转 done。"
+      },
+      "id": "TF-0122"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "alignment": {
+          "fit": "unknown",
+          "fit_confidence": 0.0,
+          "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
+          "validation_plan": [
+            "多进程并发 append 无重复 eventSeq",
+            "读无 id/eventSeq 的旧日志不报错",
+            "TF-0143 的 ms/append 基准在预算内"
+          ],
+          "why_not_enough": "身份稳定不等于成本可接受，写侧预算必须单独证明",
+          "why_this_task": "没有稳定事件身份，恢复事实、足迹与通知就无法互相引用，只能靠墙钟猜"
+        },
+        "next_action": "先由 TF-0143 定写路径预算并修复超时，再随 TF-0144 提交。",
+        "requirements": [
+          "事件 ID 一旦落盘不可变",
+          "跨进程追加必须在锁内完成，避免撕裂与重复 ID",
+          "读旧日志必须向后兼容",
+          "必须评估 alreadyReported 与 pendingPremiseNotices 的重复全量读成本",
+          "写侧成本必须有预算与基准，由 TF-0143 承载并回写本节点验收"
+        ]
+      },
+      "id": "TF-0123"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "补 premises/delivery/wip 三个世界 fold 测试，再随 TF-0144 提交。"
+      },
+      "id": "TF-0124"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "随 TF-0144 提交并复核 Claude/HTTP 两套测试，再转 done。"
+      },
+      "id": "TF-0125"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "随 TF-0144 提交并复核隔天恢复用例，再转 done。"
+      },
+      "id": "TF-0127"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "随 TF-0144 提交，并在真实使用中确认三类事件都能落盘，再转 done。"
+      },
+      "id": "TF-0139"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "先做 TF-0143 的写路径预算，再提交",
+          "单节点一提交，便于后续 revert",
+          "exports 单独提交或先 gitignore"
+        ]
+      },
+      "id": "TF-0144"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "先做 TF-0143 写路径预算与 TF-0144 提交闸门，让阶段 A 基线变绿并落库，再并行 TF-0142 / TF-0140。"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "record_alignment",
+      "alignment": {
+        "created_at": "2026-09-04T03:44:03.285810Z",
+        "decisions": [
+          "TF-0143 足迹追加写路径预算与基准（ready，120 分钟）",
+          "TF-0144 提交闸门（ready，依赖 TF-0143，120 分钟）",
+          "TF-0145 contextgen 世界事件载荷上限（依赖 TF-0124，180 分钟）",
+          "TF-0146 决策：adopt 手势去留（阻塞 TF-0132，60 分钟）"
+        ],
+        "id": "TFA-0c7ee3a238",
+        "related_task_ids": [
+          "TF-0120"
+        ],
+        "summary": "更正上一条对齐记录里的节点编号：TF-0143 是写路径预算，TF-0144 是提交闸门（ID 按插入顺序分配，与提案里的叙述顺序相反）。",
+        "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
+        "validation_plan": [
+          "全图搜索 TF-0143/TF-0144 引用与实际节点语义一致",
+          "validate 通过",
+          "todo 中 TF-0143 为唯一新的 P1 可开工实现节点"
+        ]
+      }
+    }
+  ],
+  "created_at": "2026-09-04T03:44:03.276407Z",
+  "proposal_id": "TFP-fable51-idfix",
+  "rationale": "TFP-fable51-landable 应用后 ID 按插入顺序分配：TF-0143=写路径预算、TF-0144=提交闸门，与节点正文里的交叉引用互换。修正全部引用，并更新 TF-0057 的过期 next_action。",
+  "session_id": "session-2026-09-04-fable51-plan-repair",
+  "status": "applied"
+}

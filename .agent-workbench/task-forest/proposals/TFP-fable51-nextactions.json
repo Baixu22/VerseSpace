@@ -1,0 +1,134 @@
+{
+  "applied_at": "2026-09-04T05:30:36.825296Z",
+  "base_graph_hash": "ea6d06db53851154a9247e37858b07418b76c52d525495570228e89dbad5c31c",
+  "base_summary": {
+    "edge_count": 206,
+    "node_count": 146,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "波次 1（1320min）：TF-0143 写路径预算 → 同时 TF-0142 通道语义、TF-0146 adopt 裁决，并收口 TF-0122/0123/0125",
+          "波次 2（1680min）：TF-0144 提交闸门、TF-0124 投影边界、TF-0127 R2′、TF-0140 继承实验、TF-0133、TF-0137",
+          "波次 3（1860min）：TF-0128 恢复卡、TF-0139 埋点、TF-0145 contextgen 上限、TF-0131、TF-0132、TF-0134",
+          "波次 4（360min）：TF-0129 覆盖率行、TF-0138 ADR",
+          "波次 5（180min）：TF-0141 登记日用起点，两周窗口从此刻才开始计时",
+          "波次 6（240min）：TF-0136 L3 证据门",
+          "估时按叶子上卷：阶段 A 2880 / B 900 / C 1260 / D 600，合计 5640 分钟"
+        ],
+        "next_action": "先做 TF-0143 写路径预算让套件转绿，再用 TF-0144 提交闸门把已实现的约 4100 行按节点落库；之后按波次推进。"
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "先 TF-0143（写路径预算，唯一让套件转绿的节点）→ TF-0144（提交闸门）；TF-0142 与 TF-0140 可并行；TF-0122/0123/0125/0127/0139 待提交后转 done。"
+      },
+      "id": "TF-0121"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "diffReadSet 已实现（TF-0127 待提交复核），阶段 B 的实际余量是 TF-0128 的事实/叙事分区与 TF-0129 的覆盖率行。"
+      },
+      "id": "TF-0126"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "TF-0142 已移入阶段 A；本阶段先等 TF-0146 裁决 adopt，再按 TF-0131 → TF-0132 → TF-0133 推进，TF-0134 需 TF-0123/0124 先收口。"
+      },
+      "id": "TF-0130"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "两周窗口的起点不再是阶段 A：必须等 TF-0129 的事实段上线后由 TF-0141 登记 start_date，才开始采样。"
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "add_node",
+      "alias": "exports-question",
+      "node": {
+        "acceptance_criteria": [
+          "口径写回 TF-0144 的要求里",
+          "若选择 gitignore，.gitignore 已更新且 exports 从索引移除",
+          "若继续跟踪，明确 export 只在里程碑收口时提交"
+        ],
+        "alignment": {
+          "fit": "unknown",
+          "fit_confidence": 0.0,
+          "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
+          "validation_plan": [
+            "口径已写入 TF-0144 的要求",
+            "下一次功能提交的 diff 里不含 exports",
+            "若 gitignore，export 后 git status 干净"
+          ],
+          "why_not_enough": "口径只影响仓库卫生，不影响任何功能语义",
+          "why_this_task": "提交闸门要求 exports 不与功能提交混提，但『单独提交』还是『不提交』属于用户对仓库体积的取舍"
+        },
+        "assumptions": [
+          "exports 是派生产物，可由 export 命令随时重建"
+        ],
+        "confidence": 0.9,
+        "context_tags": [
+          "repo-hygiene",
+          "task-forest",
+          "open-question"
+        ],
+        "difficulty": "low",
+        "estimated_total_minutes": 30,
+        "evidence": [
+          "实测：exports/task-forest.html 42MB、task-forest.timeline.json 60MB，均在 git 索引中",
+          "实测：git log 显示 18 个提交触碰过 exports/；当前 pack 41.87 MiB",
+          "skill 契约：exports 由 export 命令重建，下游工具只读"
+        ],
+        "execution_hints": [
+          "由用户裁决，不要自行改 .gitignore",
+          "裁决后同步 TF-0144 的第四条要求"
+        ],
+        "kind": "question",
+        "next_action": "请用户在『继续跟踪』与『gitignore + 本地生成』之间二选一。",
+        "non_goals": [
+          "不做 git 历史重写",
+          "不改 export 的数据格式"
+        ],
+        "priority": 2,
+        "purpose": "在 TF-0144 提交闸门执行前定下口径，避免把约 100MB 的派生产物继续写进历史。",
+        "remaining_minutes_max": 30,
+        "remaining_minutes_min": 15,
+        "requirements": [
+          "两个选项：继续跟踪（历史体积换离线可读），或 gitignore 并改为本地生成/发布时生成",
+          "若选择 gitignore，需确认 gap-router 与 local-agent-control-room 的读取路径不依赖仓库内副本",
+          "本节点只做口径裁决，不做历史重写"
+        ],
+        "status": "proposed",
+        "success_metrics": [
+          "功能提交里不再混入 exports 的整份重写"
+        ],
+        "summary": "exports 下 task-forest.html 42MB + task-forest.timeline.json 60MB 均被 git 跟踪，历史上已有 18 个提交动过它们；每次 export 都整份重写。",
+        "title": "待答：task-forest exports 继续被 git 跟踪，还是转为 gitignore"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "澄清提交闸门第四条要求的执行口径；不阻塞 TF-0144，因为『单独提交』已是可用默认"
+      },
+      "from": "exports-question",
+      "to": "TF-0144",
+      "type": "clarifies"
+    }
+  ],
+  "created_at": "2026-09-04T05:30:36.599280Z",
+  "proposal_id": "TFP-fable51-nextactions",
+  "rationale": "TFP-fable51-landable 改了依赖与状态，但五个里程碑的 next_action 仍是旧顺序：TF-0120/0121 仍写『并行推进 stats/事件身份/fork 继承』（三者现已 review_needed/in_progress，真正的下一步是 TF-0143 写路径预算）、TF-0126 仍写『先实现 diffReadSet』（已实现）、TF-0130 未反映 TF-0142 移入阶段 A 与 TF-0146 的裁决、TF-0135 仍写『从阶段 A 的 stats 开始积累两周数据』（窗口起点已改为阶段 B 事实段之后）。同时把 6 个拓扑波次写成显式执行顺序，并把 exports 是否继续被 git 跟踪登记为待答问题。",
+  "session_id": "session-2026-09-04-fable51-plan-repair",
+  "status": "applied"
+}

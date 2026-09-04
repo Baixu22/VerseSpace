@@ -1,0 +1,29 @@
+{
+  "applied_at": "2026-09-04T03:44:50.352161Z",
+  "base_graph_hash": "159422f4ea375c591eff2bc26653f51a2c9e70cdbf4007eb9c5c3d3d1380a596",
+  "base_summary": {
+    "edge_count": 206,
+    "node_count": 146,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "assumptions": [
+          "Fable 5.1 的文献引用未重新联网复核",
+          "当前仓库没有可用的真实分叉样本，需先建立观测与日用起点",
+          "Claude fresh fork 不继承 agent 上下文，HTTP 有历史但当前无足迹",
+          "外部 CLI 行为可能随版本变化，需以运行时实验为准",
+          "阶段 A 的实现已在工作区完成但未提交，基线以 TF-0144 提交闸门为准"
+        ]
+      },
+      "id": "TF-0120"
+    }
+  ],
+  "created_at": "2026-09-04T03:44:50.158476Z",
+  "proposal_id": "TFP-fable51-idfix2",
+  "rationale": "补最后一处编号交叉引用：TF-0120 的 assumptions 里提交闸门应为 TF-0144。",
+  "session_id": "session-2026-09-04-fable51-plan-repair",
+  "status": "applied"
+}
