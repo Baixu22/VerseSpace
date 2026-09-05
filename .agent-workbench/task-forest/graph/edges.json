@@ -2626,5 +2626,17 @@
     "to": "TF-0149",
     "type": "depends_on",
     "updated_at": "2026-09-05T09:00:49.333725Z"
+  },
+  "TFE-0223": {
+    "blocking": true,
+    "confidence": 0.85,
+    "created_at": "2026-09-05T12:33:41.489049Z",
+    "created_from_session": null,
+    "from": "TF-0153",
+    "id": "TFE-0223",
+    "reason": "证据地基的一部分：hook 路径读不到真实黑板时，TF-0134 与 TF-0150 的验收结构性不可能通过",
+    "to": "TF-0121",
+    "type": "child_of",
+    "updated_at": "2026-09-05T12:33:41.489049Z"
   }
 }

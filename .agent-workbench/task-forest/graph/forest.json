@@ -2005,7 +2005,8 @@
         "TFE-0208",
         "TFE-0211",
         "TFE-0212",
-        "TFE-0213"
+        "TFE-0213",
+        "TFE-0223"
       ],
       "outgoing": [
         "TFE-0146"
@@ -2024,7 +2025,8 @@
         "TFE-0208",
         "TFE-0211",
         "TFE-0212",
-        "TFE-0213"
+        "TFE-0213",
+        "TFE-0223"
       ],
       "tree_parent_edge": "TFE-0146"
     },
@@ -2671,10 +2673,22 @@
       ],
       "tree_child_edges": [],
       "tree_parent_edge": null
+    },
+    "TF-0153": {
+      "blocking_edges": [
+        "TFE-0223"
+      ],
+      "cross_edges": [],
+      "incoming": [],
+      "outgoing": [
+        "TFE-0223"
+      ],
+      "tree_child_edges": [],
+      "tree_parent_edge": "TFE-0223"
     }
   },
   "edge_type_counts": {
-    "child_of": 149,
+    "child_of": 150,
     "clarifies": 1,
     "contributes_to": 1,
     "depends_on": 63,
@@ -5321,10 +5335,22 @@
       "to": "TF-0149",
       "type": "depends_on",
       "updated_at": "2026-09-05T09:00:49.333725Z"
+    },
+    "TFE-0223": {
+      "blocking": true,
+      "confidence": 0.85,
+      "created_at": "2026-09-05T12:33:41.489049Z",
+      "created_from_session": null,
+      "from": "TF-0153",
+      "id": "TFE-0223",
+      "reason": "证据地基的一部分：hook 路径读不到真实黑板时，TF-0134 与 TF-0150 的验收结构性不可能通过",
+      "to": "TF-0121",
+      "type": "child_of",
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-05T09:02:42.465749Z",
+  "generated_at": "2026-09-05T12:34:02.089232Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -8190,7 +8216,7 @@
       ],
       "created_at": "2026-08-30T06:24:44.590684Z",
       "deprecated_at": null,
-      "derived_progress": 55.9,
+      "derived_progress": 56.7,
       "desired_outcomes": [
         "多写者并存时，runtime 能指出谁基于已过时的前提在工作",
         "裁决项速率可持续在约 1 条/10 分钟以内",
@@ -11552,11 +11578,8 @@
       "display_order": 1950,
       "estimated_total_minutes": null,
       "evidence": [
-        "单次 unlinkSync：带钩子 110ms，去掉 NODE_OPTIONS 的 genie-safe-delete.cjs 后 70ms",
-        "100 个条目 rm -rf：忙时 35–49 秒，空闲时 14.7 秒（bun 与 node 一致）",
-        "watcher.test.ts 的 git 足迹用例：忙时必然撞 15 秒硬上限，空闲复测 6.1 秒通过",
-        "bunfig 的 [test] 段不认识 timeout 键；[test] preload 实测只作用于第一个测试文件，其余文件回落到默认 5000ms",
-        "2026-09-04 复现了这个坑的误诊后果：裸跑 bun test 时 interactions.test.ts 的一个月规模用例超时，被误判为 TF-0123 引入的回归；bun run test（含 --timeout 60000）在同一工作区是绿的。结论：任何『套件红了』的判断必须用 bun run test 复核"
+        "复现 2026-09-05：整包并发下 interactions.test.ts 的『一个月规模在 1 MB/人 量级』在 5000.7ms 超时失败；同一用例单独跑 5.1-6.0s 通过。整包共 495 个用例，这是唯一失败项，且并非每次触发（本轮最后两次整包跑分别为 1 fail 与 0 fail）",
+        "口径提示：该用例的耗时正好压在 bun 默认 5000ms 超时线上，因此它是负载相关的抖动而非回归；判断某次改动是否引入回归时应单独重跑该文件"
       ],
       "execution_hints": [
         "已落地的两道保险：package.json 的 `bun test --timeout 60000`（覆盖全部文件）+ bunfig.toml 的 [test] preload（覆盖直接执行 bun test 的第一个文件）",
@@ -11578,7 +11601,7 @@
       "success_metrics": [],
       "summary": "文件删除慢：单次 unlink 约 70ms，宿主注入的 safe-delete 钩子再叠加约 40ms（去掉 NODE_OPTIONS 里的 genie-safe-delete.cjs 后从 110ms 降到 70ms）。临时目录里 100 个条目的 rm -rf 实测 5–35 秒，随并发负载大幅波动。bun 默认 5000ms 的测试超时恰好卡在这个区间的边界上，所以凡用 makeTempWorkbench() 的用例会随机假失败。git 提交本身不慢（先前的 40–60 秒读数是并发负载污染，空闲复测为秒级）。",
       "title": "风险：本机文件删除慢一个数量级，bun 默认超时恰好卡在边界上",
-      "updated_at": "2026-09-04T06:51:36.207459Z"
+      "updated_at": "2026-09-05T12:33:41.490061Z"
     },
     "TF-0115": {
       "acceptance_criteria": [
@@ -11698,11 +11721,11 @@
     },
     "TF-0117": {
       "acceptance_criteria": [
-        "workspotSchema.branch 拒绝含斜杠的分支名并归一化，含单测",
-        "默认分支名不再含斜杠（fixtures.ts:59 与 scripts/measure-bc.ts 的注释同步）",
-        "createWorktree 前的 check-ref-format 预检失败时产出结构化错误并入裁决队列，不抛栈",
-        "dispatch.test.ts 的 3 个用例在本机恢复通过",
-        "本机两个 goal 派发到两个车道，两个 claude -p 会话并发跑完各自任务；sessions/ 出现两个 writer；R2 至少产生一条跨写者 premise_notice"
+        "新增 git/refname.ts 编码 git check-ref-format 的规则，且不比 git 更严（斜杠合法）",
+        "workspot schema 只归一化不拒绝：它同时是读路径，refine 会把历史坏数据变成每次读取都抛 BlackboardDataError",
+        "workbench ws create 当场拒绝坏名字（人还在看着的时候）",
+        "dispatch 在 createWorktree 之前跑本地谓词 + git check-ref-format 双层预检，失败返回 error.code = invalid_branch_name 并进裁决队列，不建半个 worktree、不抛栈",
+        "合法分支名照常派发，预检不挡路"
       ],
       "alignment": {
         "fit": "unknown",
@@ -11723,17 +11746,19 @@
       ],
       "created_at": "2026-08-30T22:44:27.157075Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "low",
       "display_order": 500,
       "estimated_total_minutes": null,
       "evidence": [
-        "git version 2.55.0.windows.3；git worktree add wt-y -b ws/ws-a → fatal: invalid reference: ws/ws-a；-b simple 正常",
-        "核对：workspot.ts:34 为 branch: z.string().min(1)，无 regex 无 transform；生产代码没有默认分支名",
-        "核对：`ws/${id}` 的唯一来源是 automaton/fixtures.ts:59（清单原写 dispatch.ts:89 有误）；packages/workbench/scripts/measure-bc.ts:22 的注释复述了同一默认值",
-        "核对：dispatch.ts:89-93 调 createWorktree(bb.projectRoot, workspot.worktreePath, workspot.branch)，是预检的正确插入点"
+        "实测本机 2026-09-05：git version 2.51.0.windows.1；git worktree add wt-y -b ws/ws-a 成功并建出 ws/ws-a；git check-ref-format --branch ws/ws-a 退出码 0",
+        "实测：bun test src/scheduler/dispatch.test.ts = 5 pass / 0 fail，节点原文第四条验收（『3 个用例在本机恢复通过』）没有失败可修",
+        "因此原证据栏里的 git 2.55.0.windows.3 与 fatal: invalid reference 无法在当前环境复现；砍留裁决由用户作出：只做健壮性那一半",
+        "新增 refname.ts：与真 git 的判定在 7 个名字上逐一对照一致（单测直接 spawn git check-ref-format）",
+        "新增 envelopes.invalidBranchName，复用 workspot_blocked 类型但用自己的 causeKey，避免与同车道的其他阻塞折叠",
+        "新增 scheduler/refname.test.ts 9 个用例：坏名字产出结构化错误 + 进裁决队列 + 不建 worktree + 工位与队列状态未变 + events 里留下 dispatch_refused{reason: invalid_branch_name}"
       ],
       "execution_hints": [],
       "id": "TF-0117",
@@ -11741,18 +11766,18 @@
       "non_goals": [],
       "primary_parent": "TF-0080",
       "priority": 2,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "把这条环境回归单独可见，避免把它误读成 R3 的 WIP 准入控制把派发拒了。",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "ready",
+      "status": "done",
       "success_metrics": [],
-      "summary": "git 2.55.0.windows.3 拒绝 `git worktree add <path> -b ws/ws-a`（fatal: invalid reference），而 `git branch feat/y` 正常。三处动作：types/workspot.ts 的 branch schema 加 `^[A-Za-z0-9._-]+$` 与归一化 transform；automaton/fixtures.ts:59 的默认分支名 `ws/${id}` 改为 `ws-<goalId>`；scheduler/dispatch.ts 在 createWorktree 前跑 `git check-ref-format --branch`，失败返回结构化错误进裁决队列而不是抛栈。",
-      "title": "修通派发链路：分支名归一化 + ref 预检（agent-agent 并发闸门）",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "summary": "按用户裁决只做健壮性半边。原节点的环境前提在本机不复现（git 2.51.0.windows.1 接受含斜杠分支名，dispatch.test.ts 5 个用例本就全绿），因此「改默认分支名 ws/${id} → ws-<goalId>」这条动作作废——那是某个 git 构建的环境问题的绕行，不是正确性修复，且会牵动约 20 个测试文件里硬写的 ws/ws-a。仍然成立的是另一半：分支名此前无任何校验，createWorktree 失败只把 git 的 stderr 原样当字符串返回，从不进裁决队列。",
+      "title": "派发链路健壮性：分支名校验 + ref 预检 + 结构化拒绝",
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     },
     "TF-0118": {
       "acceptance_criteria": [
@@ -11903,7 +11928,7 @@
       ],
       "created_at": "2026-09-03T05:36:39.285261Z",
       "deprecated_at": null,
-      "derived_progress": 29.8,
+      "derived_progress": 46.7,
       "desired_outcomes": [
         "用户回到旧线程时先看到“哪些前提变了”，其次才是叙事",
         "分支不再被误当成上下文继承，读集只在真实继承时传递",
@@ -11997,7 +12022,8 @@
         "TF-0145",
         "TF-0148",
         "TF-0149",
-        "TF-0150"
+        "TF-0150",
+        "TF-0153"
       ],
       "confidence": 0.85,
       "context_tags": [
@@ -12007,7 +12033,7 @@
       ],
       "created_at": "2026-09-03T05:36:39.285261Z",
       "deprecated_at": null,
-      "derived_progress": 64.3,
+      "derived_progress": 86.7,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -12379,7 +12405,7 @@
       ],
       "created_at": "2026-09-03T05:36:39.292127Z",
       "deprecated_at": null,
-      "derived_progress": 50.0,
+      "derived_progress": 75.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -12603,14 +12629,20 @@
       ],
       "created_at": "2026-09-03T05:36:39.293615Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
       "estimated_total_minutes": 180,
       "evidence": [
-        "TF-0127 已提供 comparable / compared / uncoveredTools 字段，覆盖率可直接由其派生",
-        "审计 D1：Grep/Glob 只产生 version:null 的目录 claim，reconcile 时恒判未变，必须剔除"
+        "验收六：覆盖率做成 ResumeCardView 上的独立字段 coverage 而非 facts[0]——既是 facts 段首行，又不可能被任何 preview 切法截掉，也不占 FACTS_PREVIEW_COUNT 槽位",
+        "验收三：comparable = 0 或无离开基线时 status = unknown，文案明说「覆盖范围未知……这张卡片没有依据判断你的前提是否还成立」",
+        "验收一、五：导出 FORBIDDEN_CARD_PHRASES（无变化 / 没有变化 / 没有改动 / 安全 / 一切正常），对六个渲染分支（有分歧、零分歧、零可比对、无基线、只有事实、全部剔除）逐个断言一条都不出现",
+        "验收四：新增 excludedDirectories 计数，把 Grep/Glob 的目录 claim 整个剔出覆盖率账目；uncoveredTools 改为按真正落进 unsupported 的路径反查工具，只声明过一个目录的 Grep 不再被列为未覆盖",
+        "推翻了一个既有测试的预期（原 compared:1 / unsupported:1 / uncoveredTools:[Grep] → 现 excludedDirectories:1 / compared:0 / uncoveredTools:[]），拆成两个用例，保留了「真实文件上的 null 版本仍算 unsupported 并列出工具」这一半",
+        "验收二：UI 直接把整个 resumeCard 作为 JSON 返回，覆盖率指标随之可导出；单测断言 JSON 往返后 coverage 不变",
+        "TF-0128 的不变式未被推翻：无笔记且无分歧仍然整卡不渲染",
+        "新增 resume-coverage.test.ts 15 个用例全绿"
       ],
       "execution_hints": [
         "新增 restore-metrics.ts",
@@ -12623,7 +12655,7 @@
       "non_goals": [],
       "primary_parent": "TF-0126",
       "priority": 2,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "防止“没消息”被误读为“安全”，并度量恢复卡是否真的省时间。",
       "remaining_minutes_max": 180,
@@ -12636,13 +12668,13 @@
         "本节点上线即为 TF-0141 两周窗口的起算条件：事实段消费必须可计数"
       ],
       "source_sessions": [],
-      "status": "ready",
+      "status": "done",
       "success_metrics": [
         "覆盖率行与实际可比对前提数一致"
       ],
       "summary": "chat/resume-card.ts 的 facts 段首行固定为覆盖率（compared / comparable，uncoveredTools 列出）；comparable = 0 时渲染『覆盖范围未知』，禁止出现『无变化 / 安全』字样；剔除 Grep/Glob 产生的 version: null 目录 claim。本节点收口即阶段 B 收口。",
       "title": "恢复覆盖率行与指标",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     },
     "TF-0130": {
       "acceptance_criteria": [
@@ -12679,7 +12711,7 @@
       ],
       "created_at": "2026-09-03T05:36:39.294871Z",
       "deprecated_at": null,
-      "derived_progress": 5.0,
+      "derived_progress": 25.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "high",
@@ -12976,16 +13008,20 @@
       ],
       "created_at": "2026-09-03T05:36:39.294871Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
       "estimated_total_minutes": 180,
       "evidence": [
-        "实测 2026-09-05：runtime/seal.ts 中 events.append 出现 0 次，seal.decided 将是第一条",
-        "实测：types/config.ts 无 seal 键，seal.mode 是全新配置项",
-        "该事件 source≠threads，因此不受 validateThreadEvent 约束，会经 isWorldEvent 进入 contextgen 的最近 10 条窗口",
-        "阻塞已解除：TF-0123 稳定事件身份与因果时钟已 done，无需等待更多身份工作"
+        "五条验收全过。judgeSeal 保持纯函数；新增 decideSeal 承载模式、降级与记账；新增 runtime/seal-counts.ts 持有 seal.decided 契约、fold 与连击计算",
+        "types/config.ts 新增 seal.mode（block|warn|off，默认 block）与 seal.consecutiveBlockLimit（默认 3）",
+        "验收四的实现选择：off 是 decision=pass 且 hit=true，理由与匹配到的声明照旧落库并写 stderr——关掉的是打断，不是观测",
+        "验收二：stats.seal 给出 decisions / blocked / warned / passed / hits / hitsAllowed / downgraded / byMode / lastDecisionAt",
+        "验收五：PreToolUse 接线随 context-rot 安装器与 plugin/hooks/hooks.json 分发；仓库没有 .workbench/ 时 premises seal 静默放行（NoWorkbenchError 捕获），因此 hook 可以默认开启",
+        "跑真 CLI 时改了一处设计：连击按「命中」计数而非「阻断」。按阻断算的话降级一触发就自己复位，变成 N 次阻断换 1 次放行的震荡而不是降级",
+        "端到端实测（临时仓库 + stdin hook 载荷）：连续 3 次 exit 2 并把证据写 stderr，第 4、5 次稳定 warn 且 exit 0；events.jsonl 里 5 条 seal.decided，单条 payload < 400 字符（TF-0145 行预算）",
+        "新增 seal-decided.test.ts 10 个用例全绿"
       ],
       "execution_hints": [
         "修改 runtime/seal.ts 与 commands/premises.ts",
@@ -12998,7 +13034,7 @@
       "non_goals": [],
       "primary_parent": "TF-0130",
       "priority": 1,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
       "remaining_minutes_max": 180,
@@ -13011,13 +13047,13 @@
         "seal.decided 是 seal.ts 的第一条事件：source 与 payload 形状须与 TF-0123/0124 的事件身份和校验边界一致，并明确它是世界事实"
       ],
       "source_sessions": [],
-      "status": "ready",
+      "status": "done",
       "success_metrics": [
         "封印抖动可在事件中观测并自动降级"
       ],
       "summary": "seal 观测：runtime/seal.ts 每次决策追加 seal.decided { writer, path, decision: block|warn|pass, matchedDeclarations[], mode }，复用现有 eventSeq，不等更多身份工作；types/config.ts 增 seal.mode: block|warn|off（默认 block）；commands/premises.ts 的 hook 接线 JSON 迁入 TF-0105 的 hooks 分发产物，安装即生效。连续被封超阈值自动降级为 warn。",
       "title": "封印观测与降级模式",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     },
     "TF-0135": {
       "acceptance_criteria": [
@@ -13498,7 +13534,9 @@
       "evidence": [
         "本机 .workbench 无 threads 目录、无 sessions 目录、events.jsonl 15 行且全为自举期 goal/checkpoint 事件、零 thread.* 事件：截至 2026-09-05T08:45Z t0 仍未开始",
         "全盘唯一历史线程在另一仓库，2 条、0 分叉、0 足迹，早于 fork/恢复功能",
-        "前置条件已满足：TF-0128 事实段本轮落库，窗口不再早于事实段上线"
+        "前置条件已满足：TF-0128 事实段本轮落库，窗口不再早于事实段上线",
+        "复测 2026-09-05（Week 1 与 Week 2-3 节点全部落库之后）：.workbench/ 仍无 threads/ 与 sessions/，events.jsonl 仍为同样的 15 行、零 thread.*。代码侧前置条件现已全部到位（四个护城河数字都有了事件来源），唯一剩下的阻塞是真的开始用它",
+        "四个数字当前实测全为零，且这是「没有样本」而不是「样本为零」：premises.notifiedRatio 为 null（no-sample），seal.decisions = 0，noticeOutcomes.rows = 0"
       ],
       "execution_hints": [
         "把 start_date 写入 fit ledger"
@@ -13529,7 +13567,7 @@
       ],
       "summary": "登记开始日常真实使用 Workbench 的 t0（日期 + 当时 eventSeq）与窗口截止日 t0+14d。前置条件『恢复卡事实段已上线』由 TF-0128 满足；t0 本身以本仓库 .workbench/threads/ 出现第一条真实线程为准，样本累积与判决归 TF-0136。",
       "title": "日用起点 t0 登记与两周观察窗口",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "updated_at": "2026-09-05T12:33:41.490061Z"
     },
     "TF-0142": {
       "acceptance_criteria": [
@@ -14013,14 +14051,19 @@
       ],
       "created_at": "2026-09-05T09:00:49.328665Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
       "estimated_total_minutes": null,
       "evidence": [
-        "人侧埋点已存在：TF-0139 done，thread.resume_note_consumed / dismissed / resume_action 三事件在白名单内",
-        "agent 侧结局依赖 seal.decided（TF-0134）判定 sealed 一态"
+        "新增 runtime/notice-outcome.ts：labelNoticeOutcomes + foldNoticeOutcomes。做成对日志的纯 fold 而不是 delivery.ts 里的实时观察——只读已有的足迹轮次与 seal.decided，不新增任何埋点（验收四），且旧日志可回溯标注",
+        "优先级 sealed > ignored > repaired > dismissed > unknown。ignored 高于 repaired 是刻意的：同一条通知里另一个路径修好了也盖不住一次未读直改（验收二）",
+        "窗口在同一写者的下一条通知处关闭，避免把一次反应重复计给两条通知",
+        "验收五的三种 unknown 各有原因：unobservable（HTTP 供应商无工具通道，TF-0142）、no-later-activity、unresolved-paths；不可观测的通道仍可被 seal 判为 sealed（seal 是 hook，不依赖读观测）",
+        "一处判断需留档：「通知后重读了但没改」计入 repaired（写者去核对过、结论是计划仍成立）。算成 dismissed 会虚高噪声比并冤枉检测器",
+        "验收三：stats.noticeOutcomes 并列 agent 结局与人侧动作（thread.resume_note_consumed / resume_action / resume_card_dismissed），commands/stats.ts 用显示宽度对齐渲染成两列校准表，并单独给出 ignored 与 ignoredRatio；rows 即 30 天护城河的「校准表行数」口径",
+        "新增 notice-outcome.test.ts 16 个用例全绿，四态各有一条真实事件样本"
       ],
       "execution_hints": [],
       "id": "TF-0148",
@@ -14028,18 +14071,18 @@
       "non_goals": [],
       "primary_parent": "TF-0121",
       "priority": 1,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "让 premise_notice 的效果可度量：没有结局标注，通知精度只能靠感觉，两周 fit 门无数可判。",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "runtime/delivery.ts 在 premise_notice_delivered 之后观察该 writer 下一轮 stream-json，四态标注：未再触碰受影响文件 → dismissed；Read 该文件后有 Edit → repaired；触发 seal block → sealed；未 Read 直接 Edit → ignored（最危险，单独计数）。人类侧 thread.resume_note_consumed / dismissed / resume_action 已由 TF-0139 埋点，只需在 stats 里并列输出，两列合成一张校准表。",
       "title": "通知结局标注（护城河 A 的数据源）",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     },
     "TF-0149": {
       "acceptance_criteria": [
@@ -14066,30 +14109,38 @@
       ],
       "created_at": "2026-09-05T09:00:49.328665Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "low",
       "estimated_total_minutes": null,
-      "evidence": [],
+      "evidence": [
+        "新增 runtime/premise-counts.ts：逐层计数契约 + 10-30% 目标区间 + judgeNotifyRatio + foldPremisePasses；reconcilePremises 记录每个候选 claim 死在哪一层，有重叠的 pass 追加一条 premise_pass 事件",
+        "零重叠的 pass 不写事件：watcher 每次文件改动都跑一轮，沉默必须保持沉默（单测钉住）",
+        "偏离节点原文两处，均为让账目对得上：新增第 6 个计数 suppressedDedup（少了它 overlaps 等不上各层之和），suppressedL1 有意留在恒等式之外（第 1 层在 hash 之前决定，算进分母意味着每轮给每个 node_modules/** claim 付一次 hash）",
+        "恒等式 overlaps = L2 + L3 + dedup + notified 由 expectBalanced() 在 5 个用例里逐一断言",
+        "stats.premises 进 workbench stats --json；人读输出无条件打印比值与调层建议（越界时说明往哪个方向调，不静默）",
+        "实测（临时仓库真跑 CLI）：premise_pass 落库为 {overlaps:1, suppressedL1:0, suppressedL2:0, suppressedL3:0, suppressedDedup:0, notified:1, writers:1}；stats 输出「通知过多：notified / overlaps = 100.0%，高于 30.0% 上界（样本 1 次重叠）」",
+        "新增 premise-counts.test.ts 11 个用例全绿"
+      ],
       "execution_hints": [],
       "id": "TF-0149",
       "kind": "task",
       "non_goals": [],
       "primary_parent": "TF-0121",
       "priority": 1,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "把『通知太多还是太少』从争论变成一个可读的比值，作为调层与砍层的唯一依据。",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "runtime/premises.ts 每个 pass 记录 { overlaps, suppressedL1, suppressedL2, suppressedL3, notified } 并写入 stats()。目标区间 notified / overlaps 落在 10-30%；否则调层。这个比值同时是 TF-0133（通知预算）的开工闸门与 L3 去留的判据来源。",
       "title": "三层谓词逐层计数",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     },
     "TF-0150": {
       "acceptance_criteria": [
@@ -14117,14 +14168,18 @@
       ],
       "created_at": "2026-09-05T09:00:49.328665Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
       "estimated_total_minutes": null,
       "evidence": [
-        "核对 cli.ts:154-177：sessions 子命令只有 list 与 show，record 需新增（清单称『零新抽象』仅对黑板层成立，CLI 面仍需一条子命令）",
-        "blackboard/sessions.ts 已支持 kind=git 的写者注册与 recordActivity"
+        "验收一：新增 workbench sessions record（--writer 默认 git / --kind 默认 git / --activity / 可重复 --generated 与 --used），路径也可从 stdin 逐行来；复用 bb.sessions.register + recordActivity，无新抽象",
+        "验收二：三个 git hook（post-merge / post-checkout / post-rewrite）随 context-rot 安装器分发，每个脚本无条件 exit 0；已存在且非本安装器写的 hook 保留原文件并提示，卸载只摘带标记的",
+        "验收三、四端到端实测：临时 git 仓库装上 hook，真跑一次 git merge --no-ff，6 个变更文件记到 git 写者名下，sessions list 里以 kind=git 出现，merge 退出码 0",
+        "三处不记账的边界：仓库无 .workbench/ 时静默返回（hook 装了就到处跑）、一轮没有任何路径时不记、.workbench/ 自己的文件一律剔掉（黑板不是它所描述的世界的一部分，与 watcher 的捕获排除一致）",
+        "顺带修掉一处归因错误：watcher 的人侧过滤器原本只排除 agent 声明过的路径，因此 git pull 落到工作树的文件即使 git 刚认领过，仍被记成编辑器前面那个人改的。recentGeneratedPaths 现接受多个 kind，watcher 问 [agent, git]。不修这条，hook 的认领会被人侧声明立刻盖掉，节点等于没做",
+        "新增 sessions-record.test.ts 9 个用例；context-rot 侧新增 3 个安装器用例（三个 hook 齐全且以 exit 0 收尾、用户自写 hook 不被覆盖也不被卸载删掉、非 git 仓库跳过不报错）"
       ],
       "execution_hints": [],
       "id": "TF-0150",
@@ -14132,18 +14187,18 @@
       "non_goals": [],
       "primary_parent": "TF-0121",
       "priority": 1,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "写者中立必须有一个非 agent、非人的写者真实产生过一条通知，否则它只是口号。",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "post-merge / post-rewrite / post-checkout hook 调 workbench sessions record --writer git，把变更文件注册为 generated。底层 bb.sessions.register / recordActivity 已存在，缺的是 CLI 子命令：当前 workbench sessions 只有 list 与 show。",
       "title": "git 作为写者：merge / rebase / checkout 后注册变更",
-      "updated_at": "2026-09-05T09:00:49.328665Z"
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     },
     "TF-0151": {
       "acceptance_criteria": [
@@ -14255,6 +14310,64 @@
       "summary": "两处修正，都在 skill 侧（C:/Users/27933/.claude/skills/task-forest/scripts/task_forest.py），不在本仓库：(1) record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表，历史留引用不留快照体；(2) derived_progress 的子节点分母排除 deprecated / archived——当前 deprecate 一个子节点会把父里程碑的进度按 0 算进平均，砍东西反而让进度下降。",
       "title": "task-forest 引擎侧修正：历史载荷与派生分母",
       "updated_at": "2026-09-05T09:00:49.329665Z"
+    },
+    "TF-0153": {
+      "acceptance_criteria": [
+        "findWorkbenchRoot 返回 <project>/.workbench 本身",
+        "接上 openBlackboard 后事件落在 .workbench/events/ 而不是仓库根",
+        "仓库根不再出现影子 events/ 树",
+        "回归测试覆盖这处交接（此前没有任何测试走这条组合）"
+      ],
+      "alignment": {
+        "fit": "unknown",
+        "fit_confidence": 0.0,
+        "user_goal": "",
+        "validation_plan": [],
+        "why_not_enough": "",
+        "why_this_task": ""
+      },
+      "alignment_records": [],
+      "assumptions": [],
+      "children": [],
+      "confidence": 0.95,
+      "context_tags": [
+        "premise",
+        "CLI",
+        "证据地基"
+      ],
+      "created_at": "2026-09-05T12:33:41.489049Z",
+      "deprecated_at": null,
+      "derived_progress": 100.0,
+      "desired_outcomes": [],
+      "deviations": [],
+      "difficulty": "low",
+      "estimated_total_minutes": null,
+      "evidence": [
+        "发现路径：为 TF-0134 验收一跑真 CLI 时，premises pending --json 对着日志里明明有的 premise_stale 返回 []，且 events.jsonl 一行未涨",
+        "定位：find 在临时仓库里发现两份 events.jsonl —— .workbench/events/events.jsonl（库写的）与 events/events.jsonl（CLI 写的）",
+        "根因：paths.ts 的 walkUpFor 返回 current（容器目录），而 blackboard/index.ts:50 的 projectRoot = dirname(workbenchRoot) 假定入参是 .workbench 本身；commands/init.ts:40 也印证了这一约定（workbenchPaths(join(projectDir, '.workbench'))）",
+        "为何没被测出：其余测试一律手工构造黑板（makeTempWorkbench / openBlackboard(join(dir, '.workbench'))），只有 CLI 走这条组合；cli.test.ts 只检查 commander 树的选项名，从不对真实工作区执行子命令",
+        "修复后实测：premises pending --json 返回真实通知；仓库根不再出现 events/；新增 paths.test.ts 3 个用例钉住这处交接",
+        "残留缺口（未开新节点，记在此处）：CLI 子命令的端到端覆盖仍然很薄，本轮只补了 paths 这一处交接"
+      ],
+      "execution_hints": [],
+      "id": "TF-0153",
+      "kind": "task",
+      "non_goals": [],
+      "primary_parent": "TF-0121",
+      "priority": 1,
+      "progress": 100.0,
+      "progress_source": "manual",
+      "purpose": "TF-0134 验收一与 TF-0150 验收三都要求「通过 hook 路径产生一条真实记录」，而 hook 调的是 workbench CLI。这个缺陷让所有 CLI 子命令读不到真实黑板，两个节点的验收结构性不可能通过。",
+      "remaining_minutes_max": null,
+      "remaining_minutes_min": null,
+      "requirements": [],
+      "source_sessions": [],
+      "status": "done",
+      "success_metrics": [],
+      "summary": "findWorkbenchRoot() 返回的是包含 .workbench 的那一层，而 openBlackboard() / workbenchPaths() 要的是 .workbench 本身（projectRoot 由其 dirname 推出）。于是每一条碰黑板的 workbench 子命令都打开了一个上移一级的影子黑板：读不到任何真实数据，还在 <project>/events/ 写一份平行日志。修在 paths.ts 一处，两个调用方（commands/context.ts 的 resolveBlackboard 与 commands/doctor.ts）同时修好。",
+      "title": "修掉 CLI 黑板根定位缺陷：每条子命令都在读一个影子黑板",
+      "updated_at": "2026-09-05T12:33:41.489049Z"
     }
   },
   "reason": "rebuild",
@@ -14287,8 +14400,6 @@
       "TF-0111",
       "TF-0112",
       "TF-0114",
-      "TF-0117",
-      "TF-0129",
       "TF-0151",
       "TF-0152",
       "TF-0018",
@@ -14298,19 +14409,15 @@
       "TF-0085",
       "TF-0120",
       "TF-0121",
-      "TF-0134",
+      "TF-0133",
       "TF-0137",
       "TF-0140",
       "TF-0141",
-      "TF-0148",
-      "TF-0149",
-      "TF-0150",
       "TF-0099",
       "TF-0138",
       "TF-0126",
       "TF-0130",
       "TF-0131",
-      "TF-0133",
       "TF-0135",
       "TF-0136"
     ],
@@ -14422,6 +14529,7 @@
         "TF-0113",
         "TF-0115",
         "TF-0116",
+        "TF-0117",
         "TF-0118",
         "TF-0122",
         "TF-0123",
@@ -14429,12 +14537,18 @@
         "TF-0125",
         "TF-0127",
         "TF-0128",
+        "TF-0129",
+        "TF-0134",
         "TF-0139",
         "TF-0142",
         "TF-0143",
         "TF-0144",
         "TF-0145",
-        "TF-0147"
+        "TF-0147",
+        "TF-0148",
+        "TF-0149",
+        "TF-0150",
+        "TF-0153"
       ],
       "in_progress": [
         "TF-0057",
@@ -14466,17 +14580,11 @@
         "TF-0135",
         "TF-0136",
         "TF-0137",
-        "TF-0148",
-        "TF-0149",
-        "TF-0150",
         "TF-0151",
         "TF-0152"
       ],
       "ready": [
         "TF-0114",
-        "TF-0117",
-        "TF-0129",
-        "TF-0134",
         "TF-0138",
         "TF-0140"
       ],
@@ -14501,33 +14609,24 @@
       "TF-0111",
       "TF-0112",
       "TF-0114",
-      "TF-0117",
       "TF-0119",
       "TF-0120",
       "TF-0121",
       "TF-0126",
-      "TF-0129",
       "TF-0130",
       "TF-0131",
       "TF-0133",
-      "TF-0134",
       "TF-0135",
       "TF-0136",
       "TF-0137",
       "TF-0138",
       "TF-0140",
       "TF-0141",
-      "TF-0148",
-      "TF-0149",
-      "TF-0150",
       "TF-0151",
       "TF-0152"
     ],
     "ready": [
       "TF-0114",
-      "TF-0117",
-      "TF-0129",
-      "TF-0134",
       "TF-0138",
       "TF-0140"
     ],
@@ -14535,10 +14634,10 @@
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 112,
-    "edge_count": 219,
-    "node_count": 152,
-    "open_count": 38,
+    "done_count": 119,
+    "edge_count": 220,
+    "node_count": 153,
+    "open_count": 32,
     "review_needed_count": 0
   },
   "tree_edges": [
@@ -14690,7 +14789,8 @@
     "TFE-0211",
     "TFE-0212",
     "TFE-0213",
-    "TFE-0215"
+    "TFE-0215",
+    "TFE-0223"
   ],
   "workspace_path": "D:\\helmor-main"
 }

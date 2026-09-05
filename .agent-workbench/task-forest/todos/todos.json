@@ -333,74 +333,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "r3",
-      "环境",
-      "git"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0117",
-    "kind": "task",
-    "next_action": "workspotSchema.branch 拒绝含斜杠的分支名并归一化，含单测",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "把这条环境回归单独可见，避免把它误读成 R3 的 WIP 准入控制把派发拒了。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "修通派发链路：分支名归一化 + ref 预检（agent-agent 并发闸门）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "覆盖率数字与 comparable 计数一致",
-        "含 Grep 目录 claim 的场景不虚高",
-        "指标可导出 JSON"
-      ],
-      "why_not_enough": "覆盖率只描述范围，不提高精度；Bash 侧的 sed/head 仍是盲区",
-      "why_this_task": "沉默不能伪装安全：不说清比对范围，用户会把『没提示』读成『没变化』"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "coverage",
-      "metrics",
-      "restore"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0129",
-    "kind": "task",
-    "next_action": "新增 restore-metrics.ts",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "防止“没消息”被误读为“安全”，并度量恢复卡是否真的省时间。",
-    "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "ready",
-    "success_metrics": [
-      "覆盖率行与实际可比对前提数一致"
-    ],
-    "title": "恢复覆盖率行与指标"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.8,
     "context_tags": [
       "恢复卡",
@@ -604,7 +536,7 @@
     "kind": "global_task",
     "next_action": "阶段 A 三件并行：TF-0122/0123/0125",
     "priority": 1,
-    "progress": 55.9,
+    "progress": 56.7,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -673,7 +605,7 @@
     "kind": "milestone",
     "next_action": "波次 1（1320min）：TF-0143 写路径预算 → 同时 TF-0142 通道语义、TF-0146 adopt 裁决，并收口 TF-0122/0123/0125",
     "priority": 1,
-    "progress": 29.8,
+    "progress": 46.7,
     "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
     "ready": true,
     "remaining_minutes_max": 5640,
@@ -714,7 +646,7 @@
     "kind": "milestone",
     "next_action": "先 TF-0143（写侧预算）→ TF-0144（提交闸门），再谈其它",
     "priority": 1,
-    "progress": 64.3,
+    "progress": 86.7,
     "purpose": "先补齐因果时钟、事件身份、真实使用统计和 fork 继承事实，避免后续设计建立在名义继承上。",
     "ready": true,
     "remaining_minutes_max": 2880,
@@ -734,36 +666,36 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "seal.decided 事件可查询",
-        "连续 blocked 超阈值自动降级为 warn 的单测",
-        "off/warn 模式仍输出原因"
+        "一轮多条失效合并为一条 notice 的单测",
+        "超预算折叠仍保留总数",
+        "通知不含未截断的 diff"
       ],
-      "why_not_enough": "降级只防误伤，不提高封印判定的精度",
-      "why_this_task": "封印是唯一会阻断用户动作的机制，抖动时必须能观测并自动降级，否则会被整体关掉"
+      "why_not_enough": "预算只防淹没，不解决通知是否被 agent 真正采纳",
+      "why_this_task": "共享工作树是唯一形态，三路分叉时逐文件通知会直接淹没注意力并挤掉用户轮"
     },
     "blocked_by": [],
-    "confidence": 0.83,
+    "confidence": 0.85,
     "context_tags": [
-      "seal",
-      "observability",
-      "degrade"
+      "delivery",
+      "budget",
+      "flooding"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0134",
+    "id": "TF-0133",
     "kind": "task",
-    "next_action": "修改 runtime/seal.ts 与 commands/premises.ts",
+    "next_action": "修改 runtime/delivery.ts",
     "priority": 1,
-    "progress": 0.0,
-    "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
+    "progress": 25.0,
+    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
     "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "ready",
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
     "success_metrics": [
-      "封印抖动可在事件中观测并自动降级"
+      "单轮注入不超过配置 token 上限"
     ],
-    "title": "封印观测与降级模式"
+    "title": "通知预算：每轮一束 + 家族折叠"
   },
   {
     "alignment": {
@@ -884,98 +816,6 @@
       "why_not_enough": "",
       "why_this_task": ""
     },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "premise",
-      "观测",
-      "护城河"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0148",
-    "kind": "task",
-    "next_action": "四态标注各有一条真实事件样本",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "让 premise_notice 的效果可度量：没有结局标注，通知精度只能靠感觉，两周 fit 门无数可判。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "通知结局标注（护城河 A 的数据源）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "premise",
-      "观测"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0149",
-    "kind": "task",
-    "next_action": "每个 reconcile pass 的五个计数写入 stats()",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把『通知太多还是太少』从争论变成一个可读的比值，作为调层与砍层的唯一依据。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "三层谓词逐层计数"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.75,
-    "context_tags": [
-      "premise",
-      "写者中立",
-      "护城河"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0150",
-    "kind": "task",
-    "next_action": "新增 workbench sessions record 子命令（--writer / --generated），复用 bb.sessions.recordActivity，不新建抽象",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "写者中立必须有一个非 agent、非人的写者真实产生过一条通知，否则它只是口号。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "git 作为写者：merge / rebase / checkout 后注册变更"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
     "blocked_by": [
       "TF-0136"
     ],
@@ -1067,7 +907,7 @@
     "kind": "milestone",
     "next_action": "先完成依赖：TF-0121",
     "priority": 1,
-    "progress": 50.0,
+    "progress": 75.0,
     "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
     "ready": false,
     "remaining_minutes_max": 900,
@@ -1110,7 +950,7 @@
     "kind": "milestone",
     "next_action": "先完成依赖：TF-0121, TF-0126",
     "priority": 1,
-    "progress": 5.0,
+    "progress": 25.0,
     "purpose": "在真实继承语义之上，让分支成为并发事实的一部分，而不是一棵只会长熵的叙事树。",
     "ready": false,
     "remaining_minutes_max": 1260,
@@ -1169,45 +1009,6 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "一轮多条失效合并为一条 notice 的单测",
-        "超预算折叠仍保留总数",
-        "通知不含未截断的 diff"
-      ],
-      "why_not_enough": "预算只防淹没，不解决通知是否被 agent 真正采纳",
-      "why_this_task": "共享工作树是唯一形态，三路分叉时逐文件通知会直接淹没注意力并挤掉用户轮"
-    },
-    "blocked_by": [
-      "TF-0149"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "delivery",
-      "budget",
-      "flooding"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0133",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0149",
-    "priority": 1,
-    "progress": 25.0,
-    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
-    "ready": false,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
-    "status": "proposed",
-    "success_metrics": [
-      "单轮注入不超过配置 token 上限"
-    ],
-    "title": "通知预算：每轮一束 + 家族折叠"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
         "两周窗口有明确 start_date 与 end_date",
         "每条 fit 结论引用 stats 输出或事件 ID",
         "L3 有明确继续或延后结论"
@@ -1258,9 +1059,7 @@
       "why_this_task": "L3 是最贵的一层，必须由行为证据而不是排期决定是否继续"
     },
     "blocked_by": [
-      "TF-0141",
-      "TF-0148",
-      "TF-0149"
+      "TF-0141"
     ],
     "confidence": 0.85,
     "context_tags": [
@@ -1272,7 +1071,7 @@
     "difficulty": "medium",
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0141, TF-0148, TF-0149",
+    "next_action": "先完成依赖：TF-0141",
     "priority": 1,
     "progress": 0.0,
     "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
