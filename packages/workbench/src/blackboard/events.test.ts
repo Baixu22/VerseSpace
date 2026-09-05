@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { appendFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { makeTempWorkbench } from "../test/fixtures";
 import { openBlackboard } from "./index";
 
@@ -92,6 +93,75 @@ describe("events blackboard API", () => {
 			const persisted = await bb.events.all();
 			expect(persisted).toHaveLength(24);
 			expect(new Set(persisted.map((item) => item.id)).size).toBe(24);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("跨进程并发追加：子进程与父进程共享连续无重复的 eventSeq 与 id（TF-0123）", async () => {
+		const { bb, workbenchRoot, cleanup } = await makeTempWorkbench();
+		try {
+			// 子进程脚本：打开同一个 blackboard，顺序追加 count 条后退出。
+			// 以绝对 file URL 导入包内模块，脚本本身放在 workbenchRoot 里随测试清理。
+			const childScript = join(workbenchRoot, "cross-append-child.js");
+			const entryUrl = pathToFileURL(join(import.meta.dir, "index.ts")).href;
+			const script = [
+				`const { openBlackboard } = await import(${JSON.stringify(entryUrl)});`,
+				"const bb = openBlackboard(process.argv[2]);",
+				"const count = Number(process.argv[3]);",
+				"const child = process.argv[4];",
+				"const step = async (i) => bb.events.append({",
+				"  timestamp: new Date().toISOString(),",
+				'  source: "cross-process",',
+				'  type: "child_append",',
+				"  payload: { child, n: i },",
+				"});",
+				"for (let i = 0; i < count; i++) {",
+				"  await step(i);",
+				"}",
+				"process.exit(0);",
+			].join("\n");
+			await writeFile(childScript, script, "utf8");
+
+			const CHILDREN = 3;
+			const PER_CHILD = 8;
+			const procs = Array.from({ length: CHILDREN }, (_, c) =>
+				Bun.spawn(
+					[
+						process.execPath,
+						childScript,
+						workbenchRoot,
+						String(PER_CHILD),
+						String(c),
+					],
+					{ stdout: "pipe", stderr: "pipe" },
+				),
+			);
+			// 父进程与子进程同时追加，锁竞争发生在真正的进程边界上
+			const parentAppended = await Promise.all(
+				Array.from({ length: 10 }, (_, n) =>
+					bb.events.append(event("parent_append", n)),
+				),
+			);
+			const exitCodes = await Promise.all(procs.map((p) => p.exited));
+			const stderrs = await Promise.all(
+				procs.map((p) => new Response(p.stderr).text()),
+			);
+			expect(stderrs.join("")).toBe("");
+			expect(exitCodes).toEqual([0, 0, 0]);
+
+			const expected = 10 + CHILDREN * PER_CHILD;
+			expect(parentAppended).toHaveLength(10);
+			const all = await bb.events.all();
+			expect(all).toHaveLength(expected);
+			// 无重复 id、无重复 eventSeq，且 1..N 连续（跨进程无缝隙）
+			expect(new Set(all.map((e) => e.id)).size).toBe(expected);
+			const seqs = all.map((e) => e.eventSeq as number).sort((a, b) => a - b);
+			expect(seqs).toEqual(Array.from({ length: expected }, (_, n) => n + 1));
+
+			// 子进程全部退出后，父进程游标从外部追加继续单调分配
+			const after = await bb.events.append(event("parent_append", 99));
+			expect(after.eventSeq).toBe(expected + 1);
 		} finally {
 			await cleanup();
 		}
