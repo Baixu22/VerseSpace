@@ -67,10 +67,21 @@ export function workbenchPaths(workbenchRoot: string): WorkbenchPaths {
  * Walk up from `startDir` (or cwd) until a `.workbench/` directory is found,
  * mirroring git's discovery behavior. Returns null when none is found.
  */
+/**
+ * Nearest `.workbench/` directory, walking up from `startDir`.
+ *
+ * Returns the marker directory itself, not its parent: every consumer feeds
+ * this straight into `openBlackboard` / `workbenchPaths`, which take
+ * `<project>/.workbench` and derive `projectRoot` from its dirname. Returning
+ * the container instead made the CLI open a phantom blackboard one level up —
+ * it read none of the existing data and wrote a parallel tree at
+ * `<project>/events/`, so no `workbench` subcommand ever saw the real log.
+ */
 export async function findWorkbenchRoot(
 	startDir = process.cwd(),
 ): Promise<string | null> {
-	return walkUpFor(startDir, ".workbench");
+	const container = await walkUpFor(startDir, ".workbench");
+	return container === null ? null : join(container, ".workbench");
 }
 
 /**
