@@ -3,6 +3,7 @@ import { appendFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathExists } from "../fs/atomic";
+import { hashFile } from "../hash";
 import { makeTempWorkbench } from "../test/fixtures";
 import { workbenchConfigSchema } from "../types/config";
 import { UNNAMED_TITLE } from "./promote";
@@ -890,6 +891,426 @@ describe("ChatThreads 生命周期事件", () => {
 			expect(event.payload).toMatchObject({ threadId: "thread-target" });
 		} finally {
 			await cleanup();
+		}
+	});
+});
+
+describe("通知通道语义（TF-0142：live / idle / 多通知 / turn-in-flight）", () => {
+	async function withFakeAgent(
+		script: string,
+		prefix: string,
+		run: (fakeDir: string) => Promise<void>,
+	): Promise<void> {
+		const fakeDir = await mkdtemp(join(tmpdir(), prefix));
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			await writeFile(join(fakeDir, "agent.js"), script, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+			await run(fakeDir);
+		} finally {
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+		}
+	}
+
+	async function readPrompts(
+		fakeDir: string,
+	): Promise<Array<{ message?: { content?: string } }>> {
+		const raw = await readFile(join(fakeDir, "prompts.log"), "utf8");
+		if (!raw.trim()) {
+			return [];
+		}
+		return raw
+			.trim()
+			.split("\n")
+			.map((line) => JSON.parse(line) as { message?: { content?: string } });
+	}
+
+	test("turn in flight：notifySession 只排队，不写入 live 通道", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const fake = String.raw`
+const { appendFileSync, existsSync } = require("node:fs");
+const { join } = require("node:path");
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "inflight-session" });
+let buffer = "";
+let turns = 0;
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  buffer += chunk;
+  for (;;) {
+    const end = buffer.indexOf("\n");
+    if (end < 0) break;
+    const raw = buffer.slice(0, end).trim();
+    buffer = buffer.slice(end + 1);
+    if (!raw) continue;
+    appendFileSync(join(__dirname, "prompts.log"), raw + "\n");
+    turns += 1;
+    if (turns === 1) {
+      const wait = () => {
+        if (existsSync(join(__dirname, "release.flag"))) {
+          line({ type: "assistant", message: { content: [{ type: "text", text: "first ok" }] } });
+          line({ type: "result", subtype: "success", result: "first ok" });
+        } else {
+          setTimeout(wait, 5);
+        }
+      };
+      wait();
+    } else {
+      line({ type: "assistant", message: { content: [{ type: "text", text: "second ok" }] } });
+      line({ type: "result", subtype: "success", result: "second ok" });
+      setTimeout(() => process.exit(0), 10);
+    }
+  }
+});
+`;
+			await withFakeAgent(
+				fake,
+				"workbench-notice-inflight-",
+				async (fakeDir) => {
+					const chat = new ChatThreads(ws.bb);
+					const thread = await chat.create();
+					const firstTurn = chat.run(thread.id, "first", () => {});
+					for (;;) {
+						const prompts = await readPrompts(fakeDir).catch(() => []);
+						if (prompts.length > 0) {
+							break;
+						}
+						await new Promise((resolve) => setTimeout(resolve, 10));
+					}
+					// 第一帧已被 provider 消费 ⇒ 本轮的 drainNotices 早已发生
+					expect(await readPrompts(fakeDir)).toHaveLength(1);
+
+					expect(await chat.notifySession(thread.id, "轮内通知")).toBe(
+						"queued",
+					);
+					// 通道 live，但通知不直接写入 stdin——它在下一轮折叠
+					expect(await readPrompts(fakeDir)).toHaveLength(1);
+					const queued = await ws.bb.events.query({
+						type: "premise_notice_queued",
+					});
+					expect(queued).toHaveLength(1);
+					expect(queued[0]?.payload).toMatchObject({
+						writer: thread.id,
+						reason: "turn-in-flight",
+					});
+
+					await writeFile(join(fakeDir, "release.flag"), "1", "utf8");
+					await firstTurn;
+					// 第一轮结束也不注入：通知只走「排队 → 下一轮折叠」一条路
+					expect(await readPrompts(fakeDir)).toHaveLength(1);
+
+					await chat.run(thread.id, "second", () => {});
+					const prompts = await readPrompts(fakeDir);
+					expect(prompts).toHaveLength(2);
+					expect(prompts[1]?.message?.content).toContain("轮内通知");
+					expect(prompts[1]?.message?.content).toContain("second");
+					expect(
+						await pathExists(noticesFile(ws.workbenchRoot, thread.id)),
+					).toBe(false);
+				},
+			);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("live 空闲：多条 preceding notices 折叠进同一个用户轮，不提前结束", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const fake = String.raw`
+const { appendFileSync } = require("node:fs");
+const { join } = require("node:path");
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "live-idle-session" });
+let buffer = "";
+let turns = 0;
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  buffer += chunk;
+  for (;;) {
+    const end = buffer.indexOf("\n");
+    if (end < 0) break;
+    const raw = buffer.slice(0, end).trim();
+    buffer = buffer.slice(end + 1);
+    if (!raw) continue;
+    appendFileSync(join(__dirname, "prompts.log"), raw + "\n");
+    turns += 1;
+    line({ type: "assistant", message: { content: [{ type: "text", text: "ok " + turns }] } });
+    line({ type: "result", subtype: "success", result: "ok " + turns });
+    if (turns >= 2) setTimeout(() => process.exit(0), 10);
+  }
+});
+`;
+			await withFakeAgent(
+				fake,
+				"workbench-notice-live-idle-",
+				async (fakeDir) => {
+					const chat = new ChatThreads(ws.bb);
+					const thread = await chat.create();
+					await chat.run(thread.id, "first", () => {});
+					expect(await readPrompts(fakeDir)).toHaveLength(1);
+
+					// 通道 live 且空闲：通知仍只排队，不写入 stdin
+					expect(await chat.notifySession(thread.id, "通知 A")).toBe("queued");
+					expect(await chat.notifySession(thread.id, "通知 B")).toBe("queued");
+					expect(await readPrompts(fakeDir)).toHaveLength(1);
+					const queued = await ws.bb.events.query({
+						type: "premise_notice_queued",
+					});
+					expect(
+						queued.map(
+							(event) => (event.payload as { reason?: string }).reason,
+						),
+					).toEqual(["next-user-turn", "next-user-turn"]);
+
+					const emitted: Array<Record<string, unknown>> = [];
+					await chat.run(thread.id, "second", (event) => emitted.push(event));
+					const prompts = await readPrompts(fakeDir);
+					// 两条通知与用户请求在同一个 stdin 帧：一帧 ⇒ 一个 provider 轮次
+					expect(prompts).toHaveLength(2);
+					const second = prompts[1]?.message?.content ?? "";
+					expect(second).toContain("通知 A");
+					expect(second).toContain("通知 B");
+					expect(second).toContain("second");
+					// 用户轮只在真实 result 之后结束一次
+					expect(emitted.filter((event) => event.type === "done")).toHaveLength(
+						1,
+					);
+					const noticeDeliveredAt = emitted.findIndex(
+						(event) => event.type === "notice_delivered",
+					);
+					const doneAt = emitted.findIndex((event) => event.type === "done");
+					expect(noticeDeliveredAt).toBeGreaterThanOrEqual(0);
+					expect(noticeDeliveredAt).toBeLessThan(doneAt);
+
+					const delivered = await ws.bb.events.query({
+						type: "premise_notice_delivered",
+					});
+					expect(delivered).toHaveLength(1);
+					expect(delivered[0]?.payload).toMatchObject({
+						writer: thread.id,
+						count: 2,
+						readObservability: "footprint",
+					});
+					expect(
+						await pathExists(noticesFile(ws.workbenchRoot, thread.id)),
+					).toBe(false);
+				},
+			);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("无 live 通道（idle）：通知先落盘，不唤醒任何 provider", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const fake = String.raw`
+const { appendFileSync } = require("node:fs");
+const { join } = require("node:path");
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "cold-session" });
+let buffer = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  buffer += chunk;
+  for (;;) {
+    const end = buffer.indexOf("\n");
+    if (end < 0) break;
+    const raw = buffer.slice(0, end).trim();
+    buffer = buffer.slice(end + 1);
+    if (!raw) continue;
+    appendFileSync(join(__dirname, "prompts.log"), raw + "\n");
+    line({ type: "assistant", message: { content: [{ type: "text", text: "done" }] } });
+    line({ type: "result", subtype: "success", result: "done" });
+    setTimeout(() => process.exit(0), 10);
+  }
+});
+`;
+			await withFakeAgent(fake, "workbench-notice-cold-", async (fakeDir) => {
+				const chat = new ChatThreads(ws.bb);
+				const thread = await chat.create();
+				expect(await chat.notifySession(thread.id, "冷通知")).toBe("queued");
+				expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+					true,
+				);
+				// 没有任何 provider 被唤醒
+				expect(await pathExists(join(fakeDir, "prompts.log"))).toBe(false);
+				const queued = await ws.bb.events.query({
+					type: "premise_notice_queued",
+				});
+				expect(queued[0]?.payload).toMatchObject({
+					reason: "next-user-turn",
+				});
+
+				await chat.run(thread.id, "first", () => {});
+				const prompts = await readPrompts(fakeDir);
+				expect(prompts).toHaveLength(1);
+				expect(prompts[0]?.message?.content).toContain("冷通知");
+				expect(prompts[0]?.message?.content).toContain("first");
+				const delivered = await ws.bb.events.query({
+					type: "premise_notice_delivered",
+				});
+				expect(delivered).toHaveLength(1);
+			});
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("通知投递后的 Read 进入足迹，携带投递后的新版本", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const target = join(ws.projectDir, "premise.txt");
+			await writeFile(target, "v1", "utf8");
+			const fake = String.raw`
+const { appendFileSync } = require("node:fs");
+const { join } = require("node:path");
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "reread-session" });
+let buffer = "";
+let turns = 0;
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  buffer += chunk;
+  for (;;) {
+    const end = buffer.indexOf("\n");
+    if (end < 0) break;
+    const raw = buffer.slice(0, end).trim();
+    buffer = buffer.slice(end + 1);
+    if (!raw) continue;
+    appendFileSync(join(__dirname, "prompts.log"), raw + "\n");
+    turns += 1;
+    if (turns === 1) {
+      line({ type: "assistant", message: { content: [{ type: "text", text: "first ok" }] } });
+      line({ type: "result", subtype: "success", result: "first ok" });
+      return;
+    }
+    line({ type: "assistant", message: { content: [{ type: "tool_use", id: "read-1", name: "Read", input: { file_path: "premise.txt" } }] } });
+    line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "read-1", content: "v2" }] } });
+    line({ type: "assistant", message: { content: [{ type: "text", text: "second ok" }] } });
+    line({ type: "result", subtype: "success", result: "second ok" });
+    setTimeout(() => process.exit(0), 10);
+  }
+});
+`;
+			await withFakeAgent(fake, "workbench-notice-reread-", async () => {
+				const chat = new ChatThreads(ws.bb);
+				const thread = await chat.create();
+				await chat.run(thread.id, "first", () => {});
+
+				// 外部写入使前提失效，通知排队后随下一轮投递
+				await writeFile(target, "v2", "utf8");
+				await chat.notifySession(thread.id, "premise.txt 已变化");
+				await chat.run(thread.id, "second", () => {});
+
+				// 投递后 agent 的重读进入了读集足迹，版本是投递后的新版本
+				const view = await ws.bb.sessions.readSetView(thread.id);
+				expect(view.reads.get("premise.txt")?.version).toBe(
+					await hashFile(target),
+				);
+				const delivered = await ws.bb.events.query({
+					type: "premise_notice_delivered",
+				});
+				expect(delivered[0]?.payload).toMatchObject({
+					readObservability: "footprint",
+				});
+			});
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("HTTP 通道投递通知后显式记录读不可观测", async () => {
+		const ws = await makeTempWorkbench();
+		const originalFetch = globalThis.fetch;
+		try {
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				chat: { provider: "openai-chat", apiKey: "test-key" },
+			});
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await chat.notifySession(thread.id, "HTTP 通知");
+			globalThis.fetch = (async () =>
+				new Response(
+					`data: ${JSON.stringify({ choices: [{ delta: { content: "ok" } }] })}\n\ndata: [DONE]\n\n`,
+					{ status: 200, headers: { "content-type": "text/event-stream" } },
+				)) as unknown as typeof fetch;
+
+			await chat.run(thread.id, "ask", () => {});
+			const delivered = await ws.bb.events.query({
+				type: "premise_notice_delivered",
+			});
+			expect(delivered).toHaveLength(1);
+			// HTTP provider 没有 tool 通道：投递后的 Read 无法进入足迹，
+			// 事件里必须显式记录为不可观测，而不是静默假设可观测。
+			expect(delivered[0]?.payload).toMatchObject({
+				readObservability: "unobservable",
+			});
+		} finally {
+			globalThis.fetch = originalFetch;
+			await ws.cleanup();
+		}
+	});
+
+	test("HTTP turn in flight 时 queued 事件也如实记录 turn-in-flight", async () => {
+		const ws = await makeTempWorkbench();
+		const originalFetch = globalThis.fetch;
+		try {
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				chat: { provider: "openai-chat", apiKey: "test-key" },
+			});
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			let started = false;
+			let resolveFetch!: (response: Response) => void;
+			globalThis.fetch = (() => {
+				started = true;
+				return new Promise<Response>((resolve) => {
+					resolveFetch = resolve;
+				});
+			}) as unknown as typeof fetch;
+
+			const turn = chat.run(thread.id, "ask", () => {});
+			while (!started) {
+				await new Promise((resolve) => setTimeout(resolve, 5));
+			}
+			expect(await chat.notifySession(thread.id, "轮内 HTTP 通知")).toBe(
+				"queued",
+			);
+			const queued = await ws.bb.events.query({
+				type: "premise_notice_queued",
+			});
+			expect(queued[0]?.payload).toMatchObject({
+				writer: thread.id,
+				reason: "turn-in-flight",
+			});
+
+			resolveFetch(
+				new Response(
+					`data: ${JSON.stringify({ choices: [{ delta: { content: "ok" } }] })}\n\ndata: [DONE]\n\n`,
+					{ status: 200, headers: { "content-type": "text/event-stream" } },
+				),
+			);
+			await turn;
+			// 本轮已 drain 过：通知留到下一轮，不随本轮投递
+			expect(
+				await ws.bb.events.query({ type: "premise_notice_delivered" }),
+			).toHaveLength(0);
+			expect(await pathExists(noticesFile(ws.workbenchRoot, thread.id))).toBe(
+				true,
+			);
+		} finally {
+			globalThis.fetch = originalFetch;
+			await ws.cleanup();
 		}
 	});
 });

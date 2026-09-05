@@ -589,10 +589,7 @@ export class ChatThreads {
 		return this.enqueue(id, async () => {
 			// claude sessions stay alive BETWEEN turns (running holds the live
 			// child for minutes) — refuse only when a turn is actually in flight
-			if (
-				this.running.get(id) instanceof AbortController ||
-				this.live.get(id)?.turn
-			) {
+			if (this.turnInFlight(id)) {
 				return { ok: false, reason: "线程正在运行" };
 			}
 			const source = await this.get(id);
@@ -744,10 +741,7 @@ export class ChatThreads {
 		return this.enqueue(id, async () => {
 			// claude sessions stay alive BETWEEN turns (running holds the live
 			// child for minutes) — refuse only when a turn is actually in flight
-			if (
-				this.running.get(id) instanceof AbortController ||
-				this.live.get(id)?.turn
-			) {
+			if (this.turnInFlight(id)) {
 				return { ok: false, reason: "线程正在运行" };
 			}
 			const messages = await this.messages(id);
@@ -849,6 +843,12 @@ export class ChatThreads {
 							writer: id,
 							noticeIds,
 							count: noticeIds.length,
+							// Reads after a notice come back as footprints on the claude
+							// channel. HTTP providers have no tool channel: their
+							// post-notice reads are explicitly unobservable, never
+							// silently assumed observable (TF-0142).
+							readObservability:
+								chat.provider === "claude" ? "footprint" : "unobservable",
 						},
 					});
 					return true;
@@ -1382,6 +1382,19 @@ export class ChatThreads {
 	private lineRouters = new Map<string, (line: string) => void>();
 
 	/**
+	 * A provider turn is actually executing: an HTTP controller is live, or a
+	 * turn is attached to the persistent claude session. A live but idle child
+	 * is NOT in flight — notices stay queue-and-fold regardless of channel
+	 * state (TF-0142).
+	 */
+	private turnInFlight(id: string): boolean {
+		return (
+			this.running.get(id) instanceof AbortController ||
+			Boolean(this.live.get(id)?.turn)
+		);
+	}
+
+	/**
 	 * R2: deliver a premise-invalidation notice into a writer's session.
 	 * Notices are always queued and folded into the next real user turn. This
 	 * keeps every tool read under an ActiveTurn and avoids a hidden result from
@@ -1400,7 +1413,6 @@ export class ChatThreads {
 		}
 		const noticeFile = this.noticesFile(writerId);
 		return withPidLock<"queued">(`${noticeFile}.lock`, async () => {
-			const session = this.live.get(writerId);
 			await mkdir(this.dir(writerId), { recursive: true });
 			const id = noticeId ?? noticeIdForText(writerId, notice);
 			const existing = await this.readNoticeEntries(writerId);
@@ -1441,7 +1453,9 @@ export class ChatThreads {
 				payload: {
 					writer: writerId,
 					noticeId: id,
-					reason: session?.turn ? "turn-in-flight" : "next-user-turn",
+					reason: this.turnInFlight(writerId)
+						? "turn-in-flight"
+						: "next-user-turn",
 				},
 			});
 			return "queued";
