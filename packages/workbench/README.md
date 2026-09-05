@@ -1,8 +1,8 @@
 # @baixu22/workbench
 
-**Workbench** 是一个 CLI + 文件系统状态管理器：为 AI 辅助开发提供项目的元结构管理——目标 DAG、架构决策、接口契约、工位（git worktree）、checkpoint 验证与事件审计。它不依赖任何编辑器、不用数据库，状态全部存放在仓库内的 `.workbench/` 目录（YAML + JSONL），git 可直接追踪、人类可直接阅读。
+**Workbench 是写者中立的前提账本**：记录 agent、人和 git 读写过哪些文件，在已记录的前提失效时给出证据。agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，无法回答的问题进入裁决队列。状态保存在仓库内 `.workbench/`（YAML + JSONL），不依赖数据库或指定编辑器。
 
-> 定位：不是 IDE，不是 IDE 插件，也不是 Agent。类比物：git、turborepo、nx——它们管理的是项目的元结构。
+默认直接开始线性对话；分叉、恢复和证据查看按需出现。足迹覆盖有限，沉默不代表前提全部有效。工程边界见 [ADR-0010](../../docs/decisions/0010-premise-custody.md)，真实使用数据见 [fit 账本](../../docs/fit-ledger.md)。
 
 ## 安装
 
@@ -63,6 +63,9 @@ workbench watch
 | `status` / `map` / `log` / `queue` | 状态概览 / DAG 文本图 / 事件流 / 执行队列 |
 | `doctor` | 全量一致性体检（错误退出码 1，可作 CI 闸门） |
 | `config set <key> <value>` | 修改 `workbench.yaml` |
+| `stats` | 分叉、恢复、通知结局与样本不足情况 |
+| `sessions list/record` | 写者记录；登记 git 或人的文件改动 |
+| `premises` | 查看前提失效与通知；显式封印点 |
 
 所有命令支持 `--json`（机器可读）与 `--quiet`。
 
@@ -73,7 +76,7 @@ workbench ui            # 打开 http://127.0.0.1:7700（自动开浏览器）
 workbench ui --port 8080 --ui-dir ./some-dist
 ```
 
-深色仪表盘：目标 DAG、工位、checkpoint 三区、接口漂移、决策、事件流、doctor 体检，右上角一键 Sync，每 2 秒自动刷新。前端基于仓库 React 19 + Vite + Tailwind + shadcn/ui 栈（`apps/workbench-ui`，开发用 `bun run dev:ui`），构建时资源内嵌进单文件二进制（ADR-0005）。
+本地聊天面板支持线性对话、消息处分叉与双通道恢复卡，事实可追溯到事件和足迹。Claude CLI 支持工具足迹；HTTP 纯文本 provider 可聊天但读集不可观测，不参与读集继承。前端在 `apps/workbench-ui`（开发用 `bun run dev:ui`），构建时资源内嵌进单文件二进制（ADR-0005）。
 
 ## `.workbench/` 目录结构
 
@@ -101,7 +104,7 @@ bun run test        # cd packages/workbench && bun test
 bun run build:all   # 交叉编译四平台二进制到 dist/
 ```
 
-架构决策记录见仓库 `docs/decisions/`（ADR-0001 至 0004）；实现顺序对应《Workbench 实现架构骨架》Phase 1-7。
+架构决策见 [ADR 目录](../../docs/decisions/README.md)。目标、工位与 checkpoint CLI 保留兼容，当前开发主线是 ADR-0010 的前提守护；存量处置见 [ADR-0011](../../docs/decisions/0011-legacy-retention.md)。
 
 ## License
 

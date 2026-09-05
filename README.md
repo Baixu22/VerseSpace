@@ -1,3 +1,6 @@
+> **本仓库当前开发主线：VerseSpace / Workbench，写者中立的前提账本。** agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，无法回答的问题进入裁决队列。
+> 使用入口见 [Workbench README](packages/workbench/README.md)，工程边界见 [ADR-0010](docs/decisions/0010-premise-custody.md)。以下 Helmor 桌面说明保留为存量产品资料；三块存量的处理结论见 [ADR-0011](docs/decisions/0011-legacy-retention.md)。
+
 <p align="center">
   <img src="src/assets/helmor-logo-light.png" alt="Helmor logo" width="120" />
 </p>

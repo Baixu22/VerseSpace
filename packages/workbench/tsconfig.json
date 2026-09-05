@@ -18,6 +18,10 @@
 		"src",
 		"scripts/build.ts",
 		"scripts/build-single.ts",
-		"scripts/ui-prepare.ts"
+		"scripts/ui-prepare.ts",
+		"scripts/measure-fork-inheritance.ts",
+		"scripts/fork-inheritance",
+		"scripts/fit-ledger.ts",
+		"scripts/fit-ledger"
 	]
 }

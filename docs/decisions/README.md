@@ -11,7 +11,9 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0003](./0003-helmor-legacy-freeze.md) | Helmor 存量处置 = MVP 期间冻结，v0.1.0 后再评估退役 | 已接受 | TF-0015（后继节点 TF-0055） |
 | [0004](./0004-foundation-strategy.md) | 基座策略 = 核心自研 + 组件级借库，不整体 fork | 已接受 | TF-0016 |
 | [0005](./0005-local-web-ui.md) | Workbench 增加本地 Web GUI（`workbench ui`），取代 ADR-0004 的 no-web-server 约束 | 已接受 | 森林 GUI 节点 |
-| [0006](./0006-advisory-concurrency-control.md) | 并发控制采用建议式（advisory），拒绝 single-writer 排他 | **提案** | 待建（随 positioning-v5 裁决） |
-| [0007](./0007-monotonicity-first.md) | 单调优先：与其协调，不如把操作改造成不需要协调（CALM） | **提案** | 待建（随 positioning-v5 裁决） |
-| [0008](./0008-structure-from-execution.md) | 结构从执行推导，不从对话推断；交互层只做加法 | **提案** | 待建（随 positioning-v6 裁决） |
+| [0006](./0006-advisory-concurrency-control.md) | 并发控制采用建议式（advisory），拒绝 single-writer 排他 | 由 ADR-0010 收敛 | TF-0138 |
+| [0007](./0007-monotonicity-first.md) | 单调优先：与其协调，不如把操作改造成不需要协调（CALM） | 由 ADR-0010 收敛 | TF-0138 |
+| [0008](./0008-structure-from-execution.md) | 结构从执行推导，不从对话推断；交互层只做加法 | 由 ADR-0010 收敛 | TF-0138 |
 | [0009](./0009-proposal-ask-costs.md) | 实测 B/C/K：提议区间为空，不建「要不要 X」式提议 UI，以廉价撤销替代 | 已裁决 | TF-0091 |
+| [0010](./0010-premise-custody.md) | 前提守护架构与产品边界：一条日志、两类事实、三个投影；禁内容级合并；继承以文件级复刻为准 | 已接受 | TF-0138 |
+| [0011](./0011-legacy-retention.md) | v0.1.0 后保留三块存量，按实际引用抽取，主题仍复用 | 已接受 | TF-0055 |

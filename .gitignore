@@ -69,8 +69,11 @@ test-results/
 /.agent-workbench/tmp/
 /.tf-tmp/
 # task-forest derived products stay out of history (TF-0147).
-# canonical state is graph/ + config.json + events/events.jsonl; both of these are
-# rebuildable from it via `task_forest.py export`. Measured 2026-09-05: exports
+# canonical state is graph/ + config.json + events/events.jsonl; exports are
+# rebuildable via `task_forest.py export`. Keep or back up local snapshots for
+# history playback: compact audit events reference them rather than embed them.
+# A fresh checkout can rebuild current state, not missing historical snapshots.
+# Measured 2026-09-05: exports
 # 109MB, snapshots 61MB against 864KB of canonical graph — GitHub was already
 # returning GH001 large-file warnings on every push.
 /.agent-workbench/task-forest/exports/
