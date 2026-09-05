@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { branchNameProblem, normalizeBranchName } from "../git/refname";
 import { emitJson, type GlobalOptions } from "../output";
 import type { Workspot } from "../types/workspot";
 import { resolveBlackboard } from "./context";
@@ -16,9 +17,17 @@ export async function wsCreate(
 	if (await bb.state.workspots.get(id)) {
 		throw new Error(`工位 ${id} 已存在`);
 	}
+	// TF-0117: refuse an unusable branch name here, where the person who typed
+	// it is still watching, instead of letting it surface as a bare `fatal:`
+	// from `git worktree add` at dispatch time.
+	const branch = normalizeBranchName(options.branch);
+	const problem = branchNameProblem(branch);
+	if (problem !== null) {
+		throw new Error(`分支名 ${options.branch} 不是合法 git ref：${problem}`);
+	}
 	const workspot: Workspot = {
 		id,
-		branch: options.branch,
+		branch,
 		worktreePath: options.worktree ?? `worktrees/${id}`,
 		primaryTask: options.task,
 		binding: "primary",

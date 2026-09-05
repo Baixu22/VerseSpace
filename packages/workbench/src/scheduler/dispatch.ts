@@ -1,6 +1,8 @@
 import type { Blackboard } from "../blackboard";
 import { generateContext } from "../contextgen/generate";
-import { createWorktree } from "../git";
+import { createWorktree, git } from "../git";
+import { branchNameProblem } from "../git/refname";
+import { envelopes } from "../tribunal/envelopes";
 import type { SchedulerPolicy } from "../types/config";
 import type { TribunalEnvelope } from "../types/tribunal";
 import type { Workspot } from "../types/workspot";
@@ -13,6 +15,42 @@ export interface DispatchResult {
 	workspotId?: string;
 	worktree?: string;
 	reason?: string;
+	/**
+	 * TF-0117: a machine-readable refusal, so a caller can branch on the cause
+	 * instead of matching substrings in `reason`. Present only on failures that
+	 * were diagnosed rather than relayed from git's stderr.
+	 */
+	error?: { code: "invalid_branch_name"; branch: string; detail: string };
+}
+
+/**
+ * Refuse an unusable branch name before anything is created (TF-0117).
+ *
+ * Two layers on purpose: the local predicate names the problem precisely and
+ * costs nothing, and `git check-ref-format --branch` is the authority — a git
+ * build that refuses a name our rules allow still gets caught, and the failure
+ * is a structured result rather than a bare `fatal:` line from
+ * `git worktree add`.
+ */
+async function checkBranchName(
+	projectRoot: string,
+	branch: string,
+): Promise<string | null> {
+	const problem = branchNameProblem(branch);
+	if (problem !== null) {
+		return problem;
+	}
+	const check = await git(
+		["check-ref-format", "--branch", branch],
+		projectRoot,
+	);
+	if (check.ok) {
+		return null;
+	}
+	return (
+		check.stderr.trim() ||
+		`git check-ref-format 拒绝了分支名（退出码 ${check.code ?? "未知"}）`
+	);
 }
 
 /**
@@ -83,6 +121,47 @@ export async function dispatchGoal(
 			goalId,
 			workspotId: workspot.id,
 			reason: `工位 ${workspot.id} 状态为 ${workspot.status}，不是空闲`,
+		};
+	}
+
+	const branchProblem = await checkBranchName(bb.projectRoot, workspot.branch);
+	if (branchProblem !== null) {
+		// Structured refusal, not a thrown stack: the queue gets a card a human
+		// can act on, and no worktree was created.
+		await bb.tribunal
+			.submit(
+				envelopes.invalidBranchName(
+					workspot.id,
+					workspot.branch,
+					branchProblem,
+				),
+			)
+			.catch(() => {
+				// The queue being unavailable must not turn a diagnosed refusal
+				// into a crash; the result below still carries the diagnosis.
+			});
+		await bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "scheduler",
+			type: "dispatch_refused",
+			payload: {
+				goalId,
+				workspotId: workspot.id,
+				branch: workspot.branch,
+				reason: "invalid_branch_name",
+				detail: branchProblem,
+			},
+		});
+		return {
+			ok: false,
+			goalId,
+			workspotId: workspot.id,
+			reason: `工位 ${workspot.id} 的分支名 ${workspot.branch} 不是合法 git ref：${branchProblem}`,
+			error: {
+				code: "invalid_branch_name",
+				branch: workspot.branch,
+				detail: branchProblem,
+			},
 		};
 	}
 

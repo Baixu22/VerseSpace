@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeBranchName } from "../git/refname";
 
 export const WORKSPOT_BINDINGS = ["primary", "borrowed", "idle"] as const;
 export type WorkspotBinding = (typeof WORKSPOT_BINDINGS)[number];
@@ -27,7 +28,17 @@ export type ContextNeeds = z.infer<typeof contextNeedsSchema>;
 
 export const workspotSchema = z.object({
 	id: z.string().min(1),
-	branch: z.string().min(1),
+	/**
+	 * TF-0117: normalized on the way in, but deliberately NOT rejected here.
+	 * This schema is also the read path (`workspots.get` parses stored YAML), so
+	 * a refinement would turn a hand-edited or pre-validation workspot into a
+	 * thrown `BlackboardDataError` on every read — replacing an opaque git
+	 * failure with an opaque parse failure. Validation lives at the two places
+	 * that can act on it: `workbench ws create` refuses new bad names, and
+	 * dispatch pre-checks before creating a worktree and returns a structured
+	 * refusal into the adjudication queue.
+	 */
+	branch: z.string().min(1).transform(normalizeBranchName),
 	worktreePath: z.string().min(1),
 	primaryTask: z.string().min(1),
 	currentTask: z.string().optional(),

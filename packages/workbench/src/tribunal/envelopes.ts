@@ -101,6 +101,37 @@ function blockedWorkspot(
 	};
 }
 
+/**
+ * TF-0117: the branch name a workspot carries is not a legal git ref, so
+ * dispatch refused before creating anything. Reuses `workspot_blocked` — the
+ * workspot genuinely cannot be dispatched — with its own cause key so it does
+ * not fold into an unrelated block on the same lane.
+ */
+function invalidBranchName(
+	workspotId: string,
+	branch: string,
+	problem: string,
+): TribunalEnvelope {
+	return {
+		kind: "workspot_blocked",
+		subject: workspotId,
+		causeKey: `workspot_blocked:invalid_branch:${workspotId}:${branch}`,
+		action: {
+			label: `把 ${workspotId} 的分支名改成合法 ref（当前 ${branch}）`,
+			command: `workbench ws create ${workspotId} --branch <legal-branch>`,
+		},
+		sbar: {
+			situation: `工位 ${workspotId} 的分支名 ${branch} 不是合法 git ref：${problem}`,
+			background:
+				"派发在 createWorktree 之前跑 git check-ref-format 预检，" +
+				"因此本次没有留下半个 worktree，工位状态未变",
+			assessment: `不改名的话 ${workspotId} 每次派发都会在同一处失败，且不会自动释放`,
+			recommendation: `改成合法分支名后重新派发；名字里的 ${problem} 是唯一要修的地方`,
+		},
+		evidence: { commands: [`git check-ref-format --branch ${branch}`] },
+	};
+}
+
 function checkpointWithoutPolicy(
 	cpId: string,
 	workspot?: string,
@@ -290,6 +321,7 @@ export const envelopes = {
 	deadDependency,
 	orphanTask,
 	blockedWorkspot,
+	invalidBranchName,
 	checkpointWithoutPolicy,
 	checkpointAwaitingReview,
 	staleQueueEntries,
