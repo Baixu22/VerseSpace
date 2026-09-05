@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type { Goal } from "../types/goal";
 import type { Workspot } from "../types/workspot";
 import type { ContextInput } from "./render";
-import { renderContext } from "./render";
+import { DEFAULT_EVENT_LINE_CHARS, renderContext } from "./render";
 
 const workspot: Workspot = {
 	id: "ws-a",
@@ -126,5 +126,67 @@ describe("renderContext", () => {
 		expect(markdown).toContain("checkpoint_moved: cp-1 verified");
 		expect(markdown).not.toContain("thread.left");
 		expect(markdown).not.toContain("messageCount");
+	});
+
+	test("a 1MB payload stays bounded to the per-event line budget (TF-0145)", () => {
+		const marker = "P".repeat(1024 * 1024);
+		const markdown = renderContext({
+			...baseInput(),
+			events: [
+				{
+					timestamp: "2026-08-28T01:00:00.000Z",
+					source: "runtime",
+					type: "checkpoint_moved",
+					payload: { blob: marker }, // no summary → JSON.stringify fallback
+				},
+			],
+		});
+		for (const line of markdown
+			.split("\n")
+			.filter((l) => l.startsWith("- ["))) {
+			expect(line.length).toBeLessThanOrEqual(DEFAULT_EVENT_LINE_CHARS);
+		}
+		expect(markdown).not.toContain(marker);
+		// the tail is an explicit ellipsis, not silent corruption
+		expect(markdown).toContain("…");
+	});
+
+	test("a long summary string is capped by the same budget", () => {
+		const markdown = renderContext({
+			...baseInput(),
+			events: [
+				{
+					timestamp: "2026-08-28T01:00:00.000Z",
+					source: "runtime",
+					type: "checkpoint_moved",
+					payload: { summary: "S".repeat(50_000) },
+				},
+			],
+		});
+		const eventLine = markdown
+			.split("\n")
+			.find((line) => line.startsWith("- ["))!;
+		expect(eventLine.length).toBe(DEFAULT_EVENT_LINE_CHARS);
+		expect(eventLine.endsWith("…")).toBe(true);
+	});
+
+	test("eventLineChars is configurable per render", () => {
+		const markdown = renderContext({
+			...baseInput(),
+			eventLineChars: 60,
+			events: [
+				{
+					timestamp: "2026-08-28T01:00:00.000Z",
+					source: "runtime",
+					type: "checkpoint_moved",
+					payload: { summary: "L".repeat(5000) },
+				},
+			],
+		});
+		const eventLine = markdown
+			.split("\n")
+			.find((line) => line.startsWith("- ["))!;
+		expect(eventLine.length).toBe(60);
+		expect(eventLine.endsWith("…")).toBe(true);
 	});
 });

@@ -65,6 +65,7 @@ export async function generateContext(
 	);
 	const events = selectEvents(await bb.events.all(), needs.eventsFilter);
 	const conflicts = await bb.state.conflicts.list();
+	const { eventLineChars } = (await bb.config.load()).contextgen;
 
 	const markdown = renderContext({
 		workspot,
@@ -74,6 +75,7 @@ export async function generateContext(
 		projectRoot: bb.projectRoot,
 		events,
 		conflicts,
+		eventLineChars,
 	});
 
 	// worktreePath may be recorded relative to the project root (e.g. ../ws-wt)

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { makeTempWorkbench, type TempWorkbench } from "../test/fixtures";
+import { workbenchConfigSchema } from "../types/config";
 import type { Workspot } from "../types/workspot";
 import { generateAllContexts, generateContext } from "./generate";
 
@@ -118,6 +119,69 @@ describe("generateAllContexts", () => {
 			const broken = results.find((r) => r.workspotId === "ws-broken");
 			expect(ok?.ok).toBe(true);
 			expect(broken?.ok).toBe(false);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+});
+
+describe("世界事件载荷上限（TF-0145）", () => {
+	test("1MB 级 payload 不会进入 .agent-context.md", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const goal = await ws.bb.goals.add({ title: "载荷上限" });
+			await seedWorkspot(ws, "ws-a", goal.id);
+			const blob = "X".repeat(1024 * 1024);
+			await ws.bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "runtime",
+				type: "checkpoint_moved",
+				payload: { blob },
+			});
+
+			const result = await generateContext(ws.bb, "ws-a");
+			expect(result.ok).toBe(true);
+			const markdown = await readFile(
+				join(ws.projectDir, "worktrees", "ws-a", ".agent-context.md"),
+				"utf8",
+			);
+			expect(markdown).toContain("checkpoint_moved");
+			expect(markdown).not.toContain(blob);
+			// 上下文体积不随 payload 线性增长：整份文件保持有界
+			expect(markdown.length).toBeLessThan(20_000);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("eventLineChars 可配置，默认 400", async () => {
+		expect(workbenchConfigSchema.parse({}).contextgen.eventLineChars).toBe(400);
+
+		const ws = await makeTempWorkbench();
+		try {
+			const goal = await ws.bb.goals.add({ title: "配置生效" });
+			await seedWorkspot(ws, "ws-a", goal.id);
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				contextgen: { eventLineChars: 60 },
+			});
+			await ws.bb.events.append({
+				timestamp: "2026-08-28T01:00:00.000Z",
+				source: "runtime",
+				type: "checkpoint_moved",
+				payload: { summary: "L".repeat(5000) },
+			});
+
+			await generateContext(ws.bb, "ws-a");
+			const markdown = await readFile(
+				join(ws.projectDir, "worktrees", "ws-a", ".agent-context.md"),
+				"utf8",
+			);
+			const eventLine = markdown
+				.split("\n")
+				.find((line) => line.startsWith("- ["))!;
+			expect(eventLine.length).toBe(60);
+			expect(eventLine.endsWith("…")).toBe(true);
 		} finally {
 			await ws.cleanup();
 		}

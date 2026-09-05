@@ -14,15 +14,34 @@ export interface ContextInput {
 	projectRoot: string;
 	events: WorkbenchEvent[];
 	conflicts: Conflict[];
+	/** Per-event line budget; defaults to DEFAULT_EVENT_LINE_CHARS. */
+	eventLineChars?: number;
 }
 
-function eventLine(event: WorkbenchEvent): string {
+/** Per-event line budget (TF-0145): context volume must not grow with
+ * payload size. Mirrors `contextgen.eventLineChars` in the config schema. */
+export const DEFAULT_EVENT_LINE_CHARS = 400;
+
+function truncateLine(text: string, maxChars: number): string {
+	if (text.length <= maxChars) {
+		return text;
+	}
+	if (maxChars <= 1) {
+		return "…";
+	}
+	return `${text.slice(0, maxChars - 1)}…`;
+}
+
+function eventLine(event: WorkbenchEvent, maxChars: number): string {
 	const payload = event.payload as { tags?: unknown; summary?: unknown } | null;
 	const summary =
 		typeof payload?.summary === "string"
 			? payload.summary
 			: JSON.stringify(event.payload);
-	return `- [${event.timestamp}] ${event.type}: ${summary}`;
+	return truncateLine(
+		`- [${event.timestamp}] ${event.type}: ${summary}`,
+		maxChars,
+	);
 }
 
 /**
@@ -39,6 +58,7 @@ export function renderContext(input: ContextInput): string {
 		projectRoot,
 		events: inputEvents,
 		conflicts,
+		eventLineChars = DEFAULT_EVENT_LINE_CHARS,
 	} = input;
 	const events = inputEvents.filter(isWorldEvent);
 
@@ -89,7 +109,7 @@ export function renderContext(input: ContextInput): string {
 	if (events.length > 0) {
 		lines.push("## 最近的相关事件");
 		for (const event of events) {
-			lines.push(eventLine(event));
+			lines.push(eventLine(event, eventLineChars));
 		}
 		lines.push("");
 	}

@@ -58,6 +58,16 @@ export const workbenchConfigSchema = z.object({
 			noticeTokenBudget: z.number().int().positive().max(4000).default(300),
 		})
 		.default({ provider: "claude", noticeTokenBudget: 300 }),
+	/**
+	 * Per-event line budget in characters for `.agent-context.md` (TF-0145):
+	 * a world event's payload never reaches the agent context unbounded —
+	 * context volume must not grow with payload size.
+	 */
+	contextgen: z
+		.object({
+			eventLineChars: z.number().int().positive().max(100_000).default(400),
+		})
+		.default({ eventLineChars: 400 }),
 });
 export type WorkbenchConfig = z.infer<typeof workbenchConfigSchema>;
 /**
