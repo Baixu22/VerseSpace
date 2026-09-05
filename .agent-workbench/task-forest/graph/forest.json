@@ -5060,8 +5060,8 @@
       "updated_at": "2026-09-04T05:30:36.810614Z"
     }
   },
-  "event_id": null,
-  "generated_at": "2026-09-04T08:26:46.294038Z",
+  "event_id": "tfevt_a660ba5f2b213e3f002d95",
+  "generated_at": "2026-09-05T05:38:48.899717Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -13730,11 +13730,9 @@
       "TF-0085",
       "TF-0120",
       "TF-0121",
-      "TF-0123",
       "TF-0128",
       "TF-0137",
       "TF-0140",
-      "TF-0142",
       "TF-0147",
       "TF-0099",
       "TF-0129",
@@ -13855,9 +13853,11 @@
         "TF-0116",
         "TF-0118",
         "TF-0122",
+        "TF-0123",
         "TF-0125",
         "TF-0127",
         "TF-0139",
+        "TF-0142",
         "TF-0143",
         "TF-0144"
       ],
@@ -13907,12 +13907,9 @@
         "TF-0147"
       ],
       "ready": [
-        "TF-0114",
-        "TF-0142"
+        "TF-0114"
       ],
-      "review_needed": [
-        "TF-0123"
-      ]
+      "review_needed": []
     },
     "evergreen_open_goals": [
       "TF-0057"
@@ -13942,7 +13939,6 @@
       "TF-0119",
       "TF-0120",
       "TF-0121",
-      "TF-0123",
       "TF-0124",
       "TF-0126",
       "TF-0128",
@@ -13958,26 +13954,22 @@
       "TF-0138",
       "TF-0140",
       "TF-0141",
-      "TF-0142",
       "TF-0145",
       "TF-0146",
       "TF-0147"
     ],
     "ready": [
-      "TF-0114",
-      "TF-0142"
+      "TF-0114"
     ],
-    "review_needed": [
-      "TF-0123"
-    ]
+    "review_needed": []
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 103,
+    "done_count": 105,
     "edge_count": 207,
     "node_count": 147,
-    "open_count": 44,
-    "review_needed_count": 1
+    "open_count": 42,
+    "review_needed_count": 0
   },
   "tree_edges": [
     "TFE-0001",

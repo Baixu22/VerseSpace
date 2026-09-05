@@ -6288,10 +6288,8 @@
     "difficulty": "high",
     "estimated_total_minutes": 360,
     "evidence": [
-      "已提交 8b960ff：types/event.ts 的 id/eventSeq、events.ts 的锁内序号分配与尾部校验游标、sessions.ts 足迹镜像 eventId/eventSeq",
-      "顺带修复：checkpoints.ts 的 checkpoint_moved 原先绕过锁与游标裸写 events.jsonl，现已走 events API",
-      "读侧已改：premises 的 reported 集合替代逐 claim 全量重读",
-      "剩余缺口：『并发追加』当前只用同进程两个 blackboard 实例验证，真正的跨进程并发未测"
+      "events.test.ts 新增跨进程测试：Bun.spawn 3 个子进程 × 8 条与父进程 10 条同时追加（真 pid 锁竞争），workbench 套件 394 pass / 0 fail（--timeout 60000），该测试重复 5 次全部稳定（234–283ms）",
+      "验收其余项此前已满足：旧 events.jsonl 可读（legacy 迁移测试）、读侧单次线性扫描无 O(n²)、footprint 与 thread 生命周期事件经 eventSeq/eventId 互引、写路径 4.41 ms/activity（TF-0143 基准）"
     ],
     "execution_hints": [
       "修改 blackboard/events.ts 与 fs/atomic.ts",
@@ -6300,13 +6298,13 @@
     ],
     "id": "TF-0123",
     "kind": "task",
-    "next_action": "补一条跨进程（子进程并发 append）测试，再转 done。",
+    "next_action": null,
     "non_goals": [
       "不压缩历史",
       "不引入数据库"
     ],
     "priority": 1,
-    "progress": 90.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让会话事件、世界足迹和恢复事实能被同一条因果链引用，不再靠墙钟或行号猜。",
     "remaining_minutes_max": 90,
@@ -6319,13 +6317,13 @@
       "写侧成本必须有预算与基准，由 TF-0143 承载并回写本节点验收"
     ],
     "source_sessions": [],
-    "status": "review_needed",
+    "status": "done",
     "success_metrics": [
       "并发追加无重复 ID，读侧成本有基准数据"
     ],
-    "summary": "为 events.jsonl 增加稳定 eventSeq/id，补跨进程追加锁与读侧兼容，并让 footprint 能引用事件身份。",
+    "summary": "补上最后一块验收证据：3 个子进程与父进程对同一 events.jsonl 并发追加，34 条事件 eventSeq 恰为 1..N 无重复无缝隙，id 全局唯一；子进程全部退出后父进程游标从外部追加继续单调分配。",
     "title": "稳定事件身份与因果时钟",
-    "updated_at": "2026-09-04T06:51:36.207459Z"
+    "updated_at": "2026-09-05T05:38:48.899717Z"
   },
   "TF-0124": {
     "acceptance_criteria": [
@@ -7606,10 +7604,11 @@
     "difficulty": "high",
     "estimated_total_minutes": 300,
     "evidence": [
-      "审计指出现有 notifySession 不检查 turn in flight 且通知响应会被丢弃",
-      "通知触发的 CLI 轮次因 session.turn === null 被当噪声丢弃，其中的 Read 不进足迹：检测信号会系统性漏计",
-      "notifySession / drainNotices 目前没有任何测试",
-      "run() 只在 Claude 分支 drain 通知，HTTP 线程的 notices.jsonl 永不被读：R2 事实上是 Claude-only"
+      "threads.test.ts 新增 6 个通道语义测试（live 空闲 / 无 live / turn-in-flight / 多通知 / 投递后 Read 进足迹 / HTTP 显式不可观测 + HTTP 轮内 reason），workbench 套件 393 pass / 0 fail（bun test --timeout 60000）",
+      "turn-in-flight：通知不写入 live stdin，premise_notice_queued.reason=turn-in-flight，下一轮折叠后 premise_notice_delivered 才落账",
+      "多通知：两条 preceding notices 与用户请求同帧，单个 done，notice_delivered 先于 done，count=2",
+      "footprint：投递后 Read 的 readSetView 版本哈希与磁盘一致（hashFile 断言）",
+      "HTTP：premise_notice_delivered.readObservability=unobservable 显式落账；HTTP 轮内 queued reason 亦为 turn-in-flight（旧行为误记 next-user-turn）"
     ],
     "execution_hints": [
       "先补测试，再改实现",
@@ -7617,12 +7616,12 @@
     ],
     "id": "TF-0142",
     "kind": "task",
-    "next_action": "为 notifySession 写 live/idle/turn-in-flight 三态测试，再修实现。",
+    "next_action": null,
     "non_goals": [
       "不在本节点实现 token 预算"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "先定义 notifySession 的正确行为，再往上叠加预算和家族折叠。",
     "remaining_minutes_max": 300,
@@ -7633,13 +7632,13 @@
       "多条通知必须合并且不截断用户轮"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [
       "通知通道测试覆盖 live/idle/多通知/turn-in-flight 四种状态"
     ],
-    "summary": "明确通知只能在轮间注入、不得在 turn in flight 时写入 stdin；补齐 notifySession 与 drainNotices 的单元测试和并发语义。",
+    "summary": "通知通道语义先钉测试再修实现：notifySession 在 live 空闲、无 live 通道、turn-in-flight、多通知四种状态下都只排队不直写；多条 preceding notices 与用户请求折叠进同一个 stdin 帧，用户轮只在真实 result 后结束一次；投递事件新增 readObservability（claude=footprint，HTTP=unobservable）；turn-in-flight 判定统一为 turnInFlight()，fork/reload/notifySession 共用。",
     "title": "通知通道语义与测试",
-    "updated_at": "2026-09-04T03:42:01.678767Z"
+    "updated_at": "2026-09-05T04:56:19.393280Z"
   },
   "TF-0143": {
     "acceptance_criteria": [

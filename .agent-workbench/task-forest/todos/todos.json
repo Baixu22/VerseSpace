@@ -760,43 +760,6 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "多进程并发 append 无重复 eventSeq",
-        "读无 id/eventSeq 的旧日志不报错",
-        "TF-0143 的 ms/append 基准在预算内"
-      ],
-      "why_not_enough": "身份稳定不等于成本可接受，写侧预算必须单独证明",
-      "why_this_task": "没有稳定事件身份，恢复事实、足迹与通知就无法互相引用，只能靠墙钟猜"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "events",
-      "causality",
-      "append-only"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0123",
-    "kind": "task",
-    "next_action": "复核产物并决定是否标记完成",
-    "priority": 1,
-    "progress": 90.0,
-    "purpose": "让会话事件、世界足迹和恢复事实能被同一条因果链引用，不再靠墙钟或行号猜。",
-    "ready": true,
-    "remaining_minutes_max": 90,
-    "remaining_minutes_min": 30,
-    "status": "review_needed",
-    "success_metrics": [
-      "并发追加无重复 ID，读侧成本有基准数据"
-    ],
-    "title": "稳定事件身份与因果时钟"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
         "渲染快照：每条事实行至少一个 refs",
         "叙事与事实冲突时的标注规则单测",
         "dismiss 后下一轮不重复注入"
@@ -901,43 +864,6 @@
       "能给出可复现实验结果，而非仅静态推断"
     ],
     "title": "Claude 真实上下文继承与前缀匹配裁决"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "turn in flight 时 notifySession 排队而非写 stdin 的单测",
-        "通知触发轮次的 Read 有明确归属或被记录为不可观测",
-        "多条 preceding notices 不提前结束用户轮"
-      ],
-      "why_not_enough": "通道正确不代表通知有用；采纳率要等真实使用",
-      "why_this_task": "通知通道是前提守护唯一的出口，语义未定义且零测试时，上面加预算只会放大不确定性"
-    },
-    "blocked_by": [],
-    "confidence": 0.88,
-    "context_tags": [
-      "delivery",
-      "semantics",
-      "tests"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0142",
-    "kind": "task",
-    "next_action": "先补测试，再改实现",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "先定义 notifySession 的正确行为，再往上叠加预算和家族折叠。",
-    "ready": true,
-    "remaining_minutes_max": 300,
-    "remaining_minutes_min": 120,
-    "status": "ready",
-    "success_metrics": [
-      "通知通道测试覆盖 live/idle/多通知/turn-in-flight 四种状态"
-    ],
-    "title": "通知通道语义与测试"
   },
   {
     "alignment": {
