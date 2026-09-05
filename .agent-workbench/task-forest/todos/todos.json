@@ -326,7 +326,7 @@
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -342,17 +342,17 @@
     "desired_outcomes": [],
     "difficulty": "low",
     "id": "TF-0117",
-    "kind": "risk",
-    "next_action": "确认绕行方案（先建分支再建 worktree，或改用不含斜杠的分支名）",
+    "kind": "task",
+    "next_action": "workspotSchema.branch 拒绝含斜杠的分支名并归一化，含单测",
     "priority": 2,
     "progress": 0.0,
     "purpose": "把这条环境回归单独可见，避免把它误读成 R3 的 WIP 准入控制把派发拒了。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "ready",
     "success_metrics": [],
-    "title": "风险：本机 git 2.55 的 worktree add 拒绝含斜杠的分支名，派发链路在本机不可用"
+    "title": "修通派发链路：分支名归一化 + ref 预检（agent-agent 并发闸门）"
   },
   {
     "alignment": {
@@ -360,36 +360,97 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "结论已写回 TF-0132 文案",
-        "若保留则有事件与撤销路径",
-        "若删除则全仓库无 adopt 承诺"
+        "覆盖率数字与 comparable 计数一致",
+        "含 Grep 目录 claim 的场景不虚高",
+        "指标可导出 JSON"
       ],
-      "why_not_enough": "决策本身不产生用户价值，只是把范围收敛到可验收",
-      "why_this_task": "merge-back 是阶段 C 的主要交付，带着一个无实现无验收的手势会让节点无法判定完成"
+      "why_not_enough": "覆盖率只描述范围，不提高精度；Bash 侧的 sed/head 仍是盲区",
+      "why_this_task": "沉默不能伪装安全：不说清比对范围，用户会把『没提示』读成『没变化』"
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "coverage",
+      "metrics",
+      "restore"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0129",
+    "kind": "task",
+    "next_action": "新增 restore-metrics.ts",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "防止“没消息”被误读为“安全”，并度量恢复卡是否真的省时间。",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "ready",
+    "success_metrics": [
+      "覆盖率行与实际可比对前提数一致"
+    ],
+    "title": "恢复覆盖率行与指标"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
     },
     "blocked_by": [],
     "confidence": 0.8,
     "context_tags": [
-      "merge-back",
-      "scope",
-      "decision"
+      "恢复卡",
+      "merge-back"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0151",
+    "kind": "task",
+    "next_action": "空分支零痕迹",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "把 TF-0132 里唯一值钱的部分（分支留下的执行事实回到主线）保留为恢复卡的一条规则，而不是一个里程碑级的指针语义工程。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "恢复卡规则 R10：兄弟分支在你离开后改了什么"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.7,
+    "context_tags": [
+      "task-forest",
+      "工具",
+      "载荷纪律"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0146",
-    "kind": "decision",
-    "next_action": "先看 TF-0136 的两周数据里有没有兄弟交替，没有就直接删",
+    "id": "TF-0152",
+    "kind": "task",
+    "next_action": "record_event 单行体量降到 KB 级，历史可回放（引用可解析到 snapshots/）",
     "priority": 2,
     "progress": 0.0,
-    "purpose": "消除一个无主承诺：要么补事件与验收，要么从 merge-back 摘要里删掉。",
+    "purpose": "森林自己违反了它给 Workbench 定的两条纪律（载荷上限、诚实的进度），修在工具侧一次，比每次 apply 付一次税便宜。",
     "ready": true,
-    "remaining_minutes_max": 60,
-    "remaining_minutes_min": 30,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
     "status": "proposed",
-    "success_metrics": [
-      "merge-back 节点不再包含任何没有事件与验收支撑的手势"
-    ],
-    "title": "决策：是否提供『以分支为主线』（adopt）手势"
+    "success_metrics": [],
+    "title": "task-forest 引擎侧修正：历史载荷与派生分母"
   },
   {
     "alignment": {
@@ -514,12 +575,16 @@
   },
   {
     "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
+      "fit": "aligned",
+      "fit_confidence": 0.75,
+      "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
+      "validation_plan": [
+        "t0+14d：TF-0136 四条判据",
+        "t0+30d：护城河四个数字存在且非零",
+        "任一数字缺失则先补它，不扩树"
+      ],
+      "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
+      "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
     },
     "blocked_by": [],
     "confidence": 0.8,
@@ -539,7 +604,7 @@
     "kind": "global_task",
     "next_action": "阶段 A 三件并行：TF-0122/0123/0125",
     "priority": 1,
-    "progress": 0.0,
+    "progress": 55.9,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -547,97 +612,6 @@
     "status": "in_progress",
     "success_metrics": [],
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "adr",
-      "并发控制"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0058",
-    "kind": "decision",
-    "next_action": "可对外声明隔离级别与其边界：不覆盖外部副作用与纯方法体语义变化",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "决策 ADR-0006：并发控制采用建议式，拒绝 single-writer 排他"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "adr",
-      "calm",
-      "单调性"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0059",
-    "kind": "decision",
-    "next_action": "操作注册表含单调性字段，且非单调操作均标注了所选逃生路",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "决策 ADR-0007：单调优先——与其协调，不如把操作改造成不需要协调"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "adr",
-      "交互层"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0060",
-    "kind": "decision",
-    "next_action": "杀死判据生效：无法通过执行检查且输出空间开放的产物一律不建",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "决策 ADR-0008：结构从执行推导，不从对话推断；交互层只做加法"
   },
   {
     "alignment": {
@@ -671,16 +645,16 @@
   },
   {
     "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
+      "fit": "aligned",
+      "fit_confidence": 0.75,
+      "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
       "validation_plan": [
-        "每阶段收口时跑 bun run test:workbench 与 bunx tsc --noEmit",
-        "两周窗口结束后用 stats --json 检验 fit 门",
-        "抽查每个渲染事实能溯源到事件 ID 或足迹行"
+        "t0+14d：TF-0136 四条判据",
+        "t0+30d：护城河四个数字存在且非零",
+        "任一数字缺失则先补它，不扩树"
       ],
-      "why_not_enough": "架构收敛不保证有人用；L3 的砍留必须由两周真实使用数据裁决",
-      "why_this_task": "三支柱收敛为一条日志、两类事实、三个投影后，前提失效才有单一可溯源来源"
+      "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
+      "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
     },
     "blocked_by": [],
     "confidence": 0.88,
@@ -699,7 +673,7 @@
     "kind": "milestone",
     "next_action": "波次 1（1320min）：TF-0143 写路径预算 → 同时 TF-0142 通道语义、TF-0146 adopt 裁决，并收口 TF-0122/0123/0125",
     "priority": 1,
-    "progress": 0.0,
+    "progress": 29.8,
     "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
     "ready": true,
     "remaining_minutes_max": 5640,
@@ -740,7 +714,7 @@
     "kind": "milestone",
     "next_action": "先 TF-0143（写侧预算）→ TF-0144（提交闸门），再谈其它",
     "priority": 1,
-    "progress": 0.0,
+    "progress": 64.3,
     "purpose": "先补齐因果时钟、事件身份、真实使用统计和 fork 继承事实，避免后续设计建立在名义继承上。",
     "ready": true,
     "remaining_minutes_max": 2880,
@@ -760,36 +734,36 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "渲染快照：每条事实行至少一个 refs",
-        "叙事与事实冲突时的标注规则单测",
-        "dismiss 后下一轮不重复注入"
+        "seal.decided 事件可查询",
+        "连续 blocked 超阈值自动降级为 warn 的单测",
+        "off/warn 模式仍输出原因"
       ],
-      "why_not_enough": "事实优先只解决可信度，不解决用户是否愿意读",
-      "why_this_task": "叙事拍是启发式的，只有把仓库事实并列呈现，用户才有理由相信卡片"
+      "why_not_enough": "降级只防误伤，不提高封印判定的精度",
+      "why_this_task": "封印是唯一会阻断用户动作的机制，抖动时必须能观测并自动降级，否则会被整体关掉"
     },
     "blocked_by": [],
     "confidence": 0.83,
     "context_tags": [
-      "resume-card",
-      "ui",
-      "evidence"
+      "seal",
+      "observability",
+      "degrade"
     ],
     "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0128",
+    "difficulty": "medium",
+    "id": "TF-0134",
     "kind": "task",
-    "next_action": "新增恢复卡数据结构",
+    "next_action": "修改 runtime/seal.ts 与 commands/premises.ts",
     "priority": 1,
-    "progress": 55.0,
-    "purpose": "把现有恢复笔记升级为可核验的恢复卡，同时保持安静加法式。",
+    "progress": 0.0,
+    "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
     "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
-    "status": "in_progress",
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "ready",
     "success_metrics": [
-      "恢复卡每条事实可点击溯源"
+      "封印抖动可在事件中观测并自动降级"
     ],
-    "title": "双通道恢复卡：叙事 + 事实 + 证据"
+    "title": "封印观测与降级模式"
   },
   {
     "alignment": {
@@ -849,7 +823,7 @@
       "experiment"
     ],
     "desired_outcomes": [],
-    "difficulty": "high",
+    "difficulty": "low",
     "id": "TF-0140",
     "kind": "task",
     "next_action": "先做 10 分钟上下文知情实验",
@@ -859,53 +833,144 @@
     "ready": true,
     "remaining_minutes_max": 420,
     "remaining_minutes_min": 180,
-    "status": "proposed",
+    "status": "ready",
     "success_metrics": [
       "能给出可复现实验结果，而非仅静态推断"
     ],
-    "title": "Claude 真实上下文继承与前缀匹配裁决"
+    "title": "Claude 上下文继承三问实验（10 分钟，成败皆 done）"
   },
   {
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
+      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "三类产物各有口径并写回 TF-0144",
-        "下一次 proposal-apply 后的提交体量可预期",
-        "若 gitignore，export 后 git status 干净"
+        "fit 账本里有 start_date 与 end_date",
+        "窗口内每周至少一次 stats 导出",
+        "样本不足时输出 insufficient-history"
       ],
-      "why_not_enough": "口径只控制增量，已入历史的 blob 需要单独决定是否重写",
-      "why_this_task": "规划数据本身正在以每次约 100MB 的速度污染承载规划的仓库，GitHub 已开始警告"
+      "why_not_enough": "起点只保证样本开始积累，不保证样本量足够",
+      "why_this_task": "两周门此前没有 t0，等于永远不会到期；起点必须是一个显式登记的日期"
     },
     "blocked_by": [],
-    "confidence": 0.9,
+    "confidence": 0.85,
     "context_tags": [
-      "repo-hygiene",
-      "task-forest",
-      "open-question"
+      "fit",
+      "dogfooding"
     ],
     "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0147",
-    "kind": "question",
-    "next_action": "先决定 exports，它是唯一可以零成本 gitignore 的一类",
+    "difficulty": "medium",
+    "id": "TF-0141",
+    "kind": "task",
+    "next_action": "把 start_date 写入 fit ledger",
     "priority": 1,
     "progress": 0.0,
-    "purpose": "在继续往这个仓库写规划之前定下体量口径，否则每次 proposal-apply 都会往历史里再压进约 100–200MB。",
+    "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
     "ready": true,
-    "remaining_minutes_max": 60,
-    "remaining_minutes_min": 30,
-    "status": "proposed",
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 60,
+    "status": "in_progress",
     "success_metrics": [
-      "单次规划提交的新增体量从约 100MB 级降到可接受范围"
+      "两周窗口结束时能输出可判定的 fit 数据"
     ],
-    "title": "待答：task-forest 历史与派生产物的体量口径（events / snapshots / exports）"
+    "title": "日用起点 t0 登记与两周观察窗口"
   },
   {
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.8,
+    "context_tags": [
+      "premise",
+      "观测",
+      "护城河"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0148",
+    "kind": "task",
+    "next_action": "四态标注各有一条真实事件样本",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "让 premise_notice 的效果可度量：没有结局标注，通知精度只能靠感觉，两周 fit 门无数可判。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "通知结局标注（护城河 A 的数据源）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "premise",
+      "观测"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0149",
+    "kind": "task",
+    "next_action": "每个 reconcile pass 的五个计数写入 stats()",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "把『通知太多还是太少』从争论变成一个可读的比值，作为调层与砍层的唯一依据。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "三层谓词逐层计数"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.75,
+    "context_tags": [
+      "premise",
+      "写者中立",
+      "护城河"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0150",
+    "kind": "task",
+    "next_action": "新增 workbench sessions record 子命令（--writer / --generated），复用 bb.sessions.recordActivity，不新建抽象",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "写者中立必须有一个非 agent、非人的写者真实产生过一条通知，否则它只是口号。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "git 作为写者：merge / rebase / checkout 后注册变更"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -941,45 +1006,6 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "覆盖率数字与 comparable 计数一致",
-        "含 Grep 目录 claim 的场景不虚高",
-        "指标可导出 JSON"
-      ],
-      "why_not_enough": "覆盖率只描述范围，不提高精度；Bash 侧的 sed/head 仍是盲区",
-      "why_this_task": "沉默不能伪装安全：不说清比对范围，用户会把『没提示』读成『没变化』"
-    },
-    "blocked_by": [
-      "TF-0128"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "coverage",
-      "metrics",
-      "restore"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0129",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0128",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "防止“没消息”被误读为“安全”，并度量恢复卡是否真的省时间。",
-    "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "proposed",
-    "success_metrics": [
-      "覆盖率行与实际可比对前提数一致"
-    ],
-    "title": "恢复覆盖率行与指标"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
         "ADR 每条边界都能指到代码或实验证据",
         "后续节点能引用 ADR 编号",
         "README/positioning 口径一致"
@@ -988,9 +1014,7 @@
       "why_this_task": "边界不写下来，后续评审会反复重开内容级合并与树导航"
     },
     "blocked_by": [
-      "TF-0123",
-      "TF-0140",
-      "TF-0145"
+      "TF-0140"
     ],
     "confidence": 0.85,
     "context_tags": [
@@ -1002,57 +1026,18 @@
     "difficulty": "medium",
     "id": "TF-0138",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0123, TF-0140, TF-0145",
+    "next_action": "先完成依赖：TF-0140",
     "priority": 2,
     "progress": 0.0,
     "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
     "ready": false,
     "remaining_minutes_max": 180,
     "remaining_minutes_min": 90,
-    "status": "proposed",
+    "status": "ready",
     "success_metrics": [
       "后续设计评审能引用同一 ADR 裁决边界问题"
     ],
     "title": "ADR：前提守护架构与产品边界"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "threads 事件带 status/verdict 时抛错的单测",
-        "四个世界消费者各有一条 fold 测试",
-        "快照确认 thread.* 不出现在 .agent-context.md"
-      ],
-      "why_not_enough": "方向性不变量只挡会话→世界，世界→agent 上下文这一侧由 TF-0145 负责",
-      "why_this_task": "世界投影一旦读到会话拓扑，调度与前提就会被对话结构污染，且难以事后拆开"
-    },
-    "blocked_by": [
-      "TF-0123"
-    ],
-    "confidence": 0.82,
-    "context_tags": [
-      "events",
-      "projection",
-      "boundary"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0124",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0123",
-    "priority": 1,
-    "progress": 80.0,
-    "purpose": "把 fork/leave/restore/merge-back 变成一等会话事件，同时守住世界投影不读会话拓扑的边界。",
-    "ready": false,
-    "remaining_minutes_max": 120,
-    "remaining_minutes_min": 60,
-    "status": "in_progress",
-    "success_metrics": [
-      "世界投影测试证明 thread.* 不进入调度、前提和上下文生成"
-    ],
-    "title": "会话生命周期事件与投影边界"
   },
   {
     "alignment": {
@@ -1082,12 +1067,12 @@
     "kind": "milestone",
     "next_action": "先完成依赖：TF-0121",
     "priority": 1,
-    "progress": 0.0,
+    "progress": 50.0,
     "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
     "ready": false,
     "remaining_minutes_max": 900,
     "remaining_minutes_min": 450,
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [
       "隔天恢复能列出已变前提",
       "恢复卡事实段每条可溯源",
@@ -1125,7 +1110,7 @@
     "kind": "milestone",
     "next_action": "先完成依赖：TF-0121, TF-0126",
     "priority": 1,
-    "progress": 0.0,
+    "progress": 5.0,
     "purpose": "在真实继承语义之上，让分支成为并发事实的一部分，而不是一棵只会长熵的叙事树。",
     "ready": false,
     "remaining_minutes_max": 1260,
@@ -1153,8 +1138,7 @@
       "why_this_task": "当前代码里 footprint.inherited 没有任何合法写入点，先建开关只会制造假继承"
     },
     "blocked_by": [
-      "TF-0140",
-      "TF-0142"
+      "TF-0140"
     ],
     "confidence": 0.85,
     "context_tags": [
@@ -1166,7 +1150,7 @@
     "difficulty": "high",
     "id": "TF-0131",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0140, TF-0142",
+    "next_action": "先完成依赖：TF-0140",
     "priority": 1,
     "progress": 0.0,
     "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
@@ -1185,46 +1169,6 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "空分支不渲染的单测",
-        "每行摘要可解析到事件 ID",
-        "新事件类型已在白名单内且校验通过"
-      ],
-      "why_not_enough": "摘要只呈现结构差异，不解决用户如何取舍",
-      "why_this_task": "分支的结果必须回到源线程可见，否则分叉等于失联；但内容级合并会引入不可控的冲突面"
-    },
-    "blocked_by": [
-      "TF-0142",
-      "TF-0146"
-    ],
-    "confidence": 0.82,
-    "context_tags": [
-      "merge-back",
-      "restore-card",
-      "facts"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0132",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0142, TF-0146",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把分支留下的执行事实带回主线，同时避免内容合并污染上下文。",
-    "ready": false,
-    "remaining_minutes_max": 480,
-    "remaining_minutes_min": 240,
-    "status": "proposed",
-    "success_metrics": [
-      "分支摘要只由可溯源事实组成"
-    ],
-    "title": "merge-back L1：恢复卡上的分支摘要"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
         "一轮多条失效合并为一条 notice 的单测",
         "超预算折叠仍保留总数",
         "通知不含未截断的 diff"
@@ -1233,7 +1177,7 @@
       "why_this_task": "共享工作树是唯一形态，三路分叉时逐文件通知会直接淹没注意力并挤掉用户轮"
     },
     "blocked_by": [
-      "TF-0142"
+      "TF-0149"
     ],
     "confidence": 0.85,
     "context_tags": [
@@ -1245,7 +1189,7 @@
     "difficulty": "medium",
     "id": "TF-0133",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0142",
+    "next_action": "先完成依赖：TF-0149",
     "priority": 1,
     "progress": 25.0,
     "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
@@ -1257,46 +1201,6 @@
       "单轮注入不超过配置 token 上限"
     ],
     "title": "通知预算：每轮一束 + 家族折叠"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "seal.decided 事件可查询",
-        "连续 blocked 超阈值自动降级为 warn 的单测",
-        "off/warn 模式仍输出原因"
-      ],
-      "why_not_enough": "降级只防误伤，不提高封印判定的精度",
-      "why_this_task": "封印是唯一会阻断用户动作的机制，抖动时必须能观测并自动降级，否则会被整体关掉"
-    },
-    "blocked_by": [
-      "TF-0123",
-      "TF-0124"
-    ],
-    "confidence": 0.83,
-    "context_tags": [
-      "seal",
-      "observability",
-      "degrade"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0134",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0123, TF-0124",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
-    "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "proposed",
-    "success_metrics": [
-      "封印抖动可在事件中观测并自动降级"
-    ],
-    "title": "封印观测与降级模式"
   },
   {
     "alignment": {
@@ -1354,7 +1258,9 @@
       "why_this_task": "L3 是最贵的一层，必须由行为证据而不是排期决定是否继续"
     },
     "blocked_by": [
-      "TF-0141"
+      "TF-0141",
+      "TF-0148",
+      "TF-0149"
     ],
     "confidence": 0.85,
     "context_tags": [
@@ -1366,7 +1272,7 @@
     "difficulty": "medium",
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0141",
+    "next_action": "先完成依赖：TF-0141, TF-0148, TF-0149",
     "priority": 1,
     "progress": 0.0,
     "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
@@ -1378,82 +1284,5 @@
       "L3 的继续/延后决策可追溯到 stats 输出"
     ],
     "title": "两周真实使用门与 L3 证据门"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "fit 账本里有 start_date 与 end_date",
-        "窗口内每周至少一次 stats 导出",
-        "样本不足时输出 insufficient-history"
-      ],
-      "why_not_enough": "起点只保证样本开始积累，不保证样本量足够",
-      "why_this_task": "两周门此前没有 t0，等于永远不会到期；起点必须是一个显式登记的日期"
-    },
-    "blocked_by": [
-      "TF-0129"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "fit",
-      "dogfooding"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0141",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0129",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
-    "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 60,
-    "status": "proposed",
-    "success_metrics": [
-      "两周窗口结束时能输出可判定的 fit 数据"
-    ],
-    "title": "日用起点与两周观察窗口"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "render 测试断言 1MB payload 不进上下文",
-        "premise_stale 在上下文里只剩 path+version+计数",
-        "四个世界消费者都有 fold 测试"
-      ],
-      "why_not_enough": "上限只防淹没，不保证上下文内容对 agent 有用",
-      "why_this_task": "三个投影里唯一还在无预算注入的一侧就是 contextgen，且当前没有任何节点承载它"
-    },
-    "blocked_by": [
-      "TF-0124"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "contextgen",
-      "projection",
-      "budget"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0145",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0124",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "把『世界 → agent 上下文』这一侧的泄漏也关上，否则前提守护在派发链路上仍然是无预算注入。",
-    "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "proposed",
-    "success_metrics": [
-      "派发 agent 的上下文体积不随事件 payload 线性增长"
-    ],
-    "title": "contextgen 世界事件载荷上限"
   }
 ]

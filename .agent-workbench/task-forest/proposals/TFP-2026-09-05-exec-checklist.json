@@ -1,0 +1,654 @@
+{
+  "applied_at": "2026-09-05T09:00:49.349993Z",
+  "base_graph_hash": "c21129da3e4f2d6d2988f3b9262f97df7f9aac4a1223b4a1ae45ff3e820c17dc",
+  "base_summary": {
+    "edge_count": 207,
+    "node_count": 147,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "已提交 b5720ed：resume-card.tsx 挂进 sidecar，store 侧 consume / dismiss / resume-action 三个调用与服务端路由已通",
+          "本轮补齐四条缺口：chat/resume-card.ts（398 行）分区 narrative/facts、每行 refs、ConflictRule R1-R9 标注、inject=!dismissed",
+          "resume.ts 的 ResumeBeat 增 refs（message/tool/path/ledger/promotion 指针）；无 refs 的旧笔记走 legacy:<kind> 兜底而非静默渲染",
+          "resume-card.ts:385 无叙事且无事实时整卡不渲染，满足『无笔记且无分歧时不渲染』",
+          "验收实测：bun test resume-card/render/generate/events/wip/server + premises 共 70 通过 0 失败（2026-09-05）"
+        ],
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done"
+      },
+      "id": "TF-0128"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived",
+        "status": "in_progress"
+      },
+      "id": "TF-0126"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "证据栏写入 t0 时间戳与当时 eventSeq，并写入 end_date = t0+14d",
+          "t0 的成立以 .workbench/threads/ 非空且 sessions/ 至少一个注册写者为准，不以『打算开始使用』为准",
+          "样本不足时明确 insufficient-history，不伪造结论（判定归 TF-0136）"
+        ],
+        "evidence": [
+          "本机 .workbench 无 threads 目录、无 sessions 目录、events.jsonl 15 行且全为自举期 goal/checkpoint 事件、零 thread.* 事件：截至 2026-09-05T08:45Z t0 仍未开始",
+          "全盘唯一历史线程在另一仓库，2 条、0 分叉、0 足迹，早于 fork/恢复功能",
+          "前置条件已满足：TF-0128 事实段本轮落库，窗口不再早于事实段上线"
+        ],
+        "status": "in_progress",
+        "summary": "登记开始日常真实使用 Workbench 的 t0（日期 + 当时 eventSeq）与窗口截止日 t0+14d。前置条件『恢复卡事实段已上线』由 TF-0128 满足；t0 本身以本仓库 .workbench/threads/ 出现第一条真实线程为准，样本累积与判决归 TF-0136。",
+        "title": "日用起点 t0 登记与两周观察窗口"
+      },
+      "id": "TF-0141"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "exports/ 与 snapshots/ 进 .gitignore，export 后 git status 干净",
+          "下一次 proposal-apply 的提交体量落在约 1-2MB（graph/ + config + 1 行 events），不再是 100-200MB",
+          "events.jsonl 的 before/after 冗余由 TF-0152 修，不在本仓库绕过 CLI 手改历史",
+          "口径写回 TF-0144 的第四条要求"
+        ],
+        "evidence": [
+          "实测 2026-09-05：events 67MB / snapshots 61MB / exports 109MB，canonical graph/ 仅 864KB",
+          "record_event 内嵌 before+after 全图（约 515KB/次）；write_snapshot 另存约 260KB；rebuild_generated 的 timeline.json 是全部 148 个快照的串联",
+          "推送 main 时 GitHub 返回 GH001 大文件警告，点名 events.jsonl 与 task-forest.timeline.json",
+          "裁决依据：proposal-save 不写事件，只有 proposal-apply 写；因此 gitignore 必须先于本 proposal 应用"
+        ],
+        "kind": "decision",
+        "status": "done",
+        "summary": "裁决：exports/ 与 snapshots/ 出仓（gitignore），canonical 只保留 graph/ + config + events.jsonl；events.jsonl 的 before/after 全图冗余属 task-forest 引擎缺陷，交 TF-0152 承载。对森林自身执行与 TF-0145 相同的载荷纪律：历史留引用，不留快照体。"
+      },
+      "id": "TF-0147"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived"
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived"
+      },
+      "id": "TF-0121"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived"
+      },
+      "id": "TF-0130"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived"
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress_source": "derived"
+      },
+      "id": "TF-0099"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "workspotSchema.branch 拒绝含斜杠的分支名并归一化，含单测",
+          "默认分支名不再含斜杠（fixtures.ts:59 与 scripts/measure-bc.ts 的注释同步）",
+          "createWorktree 前的 check-ref-format 预检失败时产出结构化错误并入裁决队列，不抛栈",
+          "dispatch.test.ts 的 3 个用例在本机恢复通过",
+          "本机两个 goal 派发到两个车道，两个 claude -p 会话并发跑完各自任务；sessions/ 出现两个 writer；R2 至少产生一条跨写者 premise_notice"
+        ],
+        "evidence": [
+          "git version 2.55.0.windows.3；git worktree add wt-y -b ws/ws-a → fatal: invalid reference: ws/ws-a；-b simple 正常",
+          "核对：workspot.ts:34 为 branch: z.string().min(1)，无 regex 无 transform；生产代码没有默认分支名",
+          "核对：`ws/${id}` 的唯一来源是 automaton/fixtures.ts:59（清单原写 dispatch.ts:89 有误）；packages/workbench/scripts/measure-bc.ts:22 的注释复述了同一默认值",
+          "核对：dispatch.ts:89-93 调 createWorktree(bb.projectRoot, workspot.worktreePath, workspot.branch)，是预检的正确插入点"
+        ],
+        "kind": "task",
+        "status": "ready",
+        "summary": "git 2.55.0.windows.3 拒绝 `git worktree add <path> -b ws/ws-a`（fatal: invalid reference），而 `git branch feat/y` 正常。三处动作：types/workspot.ts 的 branch schema 加 `^[A-Za-z0-9._-]+$` 与归一化 transform；automaton/fixtures.ts:59 的默认分支名 `ws/${id}` 改为 `ws-<goalId>`；scheduler/dispatch.ts 在 createWorktree 前跑 `git check-ref-format --branch`，失败返回结构化错误进裁决队列而不是抛栈。",
+        "title": "修通派发链路：分支名归一化 + ref 预检（agent-agent 并发闸门）"
+      },
+      "id": "TF-0117"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "三个问题各有一条真实运行时观测写入证据栏，含实测数字",
+          "无论成败都算 done：结论只决定 TF-0131 的形态，不阻塞本节点收口",
+          "1+2 成立 → TF-0131 退化为『fork 时复制 footprint 并标 inherited: true』，约一天工作量",
+          "1 不成立 → TF-0131 改为『fork 不继承读集，恢复卡显式提示 unknown coverage』并与 TF-0129 合并",
+          "结论写入 ADR（TF-0138）或本节点证据栏"
+        ],
+        "difficulty": "low",
+        "estimated_total_minutes": 10,
+        "evidence": [
+          "审计指出当前 Claude fresh fork 不继承上下文，HTTP 有历史但无足迹",
+          "本机 claude 2.1.251 的 --help 含 --fork-session：resume 时新建 session id 而非复用原 id",
+          "代码已承认前缀偏差：reload 后铸新 session id 的理由即『claude resume context diverges after truncation』",
+          "已预留：fork.ts 的 ForkAgentPlan（provider=claude、mode=fork-session、sourceFootprintSeq）"
+        ],
+        "status": "ready",
+        "summary": "把『三选一继承语义』窄化为三个可测问题：(1) `claude -p --input-format stream-json` 会话的 session id 能否被 `--resume <id> --fork-session` 接上？(2) fork 后第一轮 usage.cache_read_input_tokens 是否约等于源会话前缀长度（前缀 KV 命中）？(3) fork 后新进程的 tool_use_id 与源会话足迹是否可 join（命名空间是否重置）？三个都记录进证据栏，无论成败都算 done。",
+        "title": "Claude 上下文继承三问实验（10 分钟，成败皆 done）"
+      },
+      "id": "TF-0140"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "封印决策可查询：一次真实 block 在 events.jsonl 可见",
+          "stats() 新增 seal 命中/放行计数",
+          "连续 blocked 超阈值后自动降级为 warn",
+          "off/warn 模式不隐藏原因",
+          "hook 接线随 TF-0105 的 plugin/bundle 分发，安装即生效，不需要手改 JSON"
+        ],
+        "evidence": [
+          "实测 2026-09-05：runtime/seal.ts 中 events.append 出现 0 次，seal.decided 将是第一条",
+          "实测：types/config.ts 无 seal 键，seal.mode 是全新配置项",
+          "该事件 source≠threads，因此不受 validateThreadEvent 约束，会经 isWorldEvent 进入 contextgen 的最近 10 条窗口",
+          "阻塞已解除：TF-0123 稳定事件身份与因果时钟已 done，无需等待更多身份工作"
+        ],
+        "status": "ready",
+        "summary": "seal 观测：runtime/seal.ts 每次决策追加 seal.decided { writer, path, decision: block|warn|pass, matchedDeclarations[], mode }，复用现有 eventSeq，不等更多身份工作；types/config.ts 增 seal.mode: block|warn|off（默认 block）；commands/premises.ts 的 hook 接线 JSON 迁入 TF-0105 的 hooks 分发产物，安装即生效。连续被封超阈值自动降级为 warn。"
+      },
+      "id": "TF-0134"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "seal 的 hook 接线 JSON 复用 TF-0105 的 hooks 分发产物（Claude Code plugin + Cursor bundle），不新建安装路径"
+      },
+      "from": "TF-0134",
+      "to": "TF-0105",
+      "type": "related_to"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "卡片永远不出现安全或无变化措辞",
+          "指标可导出为 JSON",
+          "无覆盖时仍显示未知范围，而不是静默",
+          "覆盖率不会因 Grep/Glob 目录 claim 虚高",
+          "新增一条文案黑名单断言单测（『无变化』『安全』『没有变化』均不得出现在渲染输出）",
+          "覆盖率行是 facts 段首行，不可折叠进预览之外"
+        ],
+        "status": "ready",
+        "summary": "chat/resume-card.ts 的 facts 段首行固定为覆盖率（compared / comparable，uncoveredTools 列出）；comparable = 0 时渲染『覆盖范围未知』，禁止出现『无变化 / 安全』字样；剔除 Grep/Glob 产生的 version: null 目录 claim。本节点收口即阶段 B 收口。"
+      },
+      "id": "TF-0129"
+    },
+    {
+      "action": "add_node",
+      "alias": "notice-outcome",
+      "node": {
+        "acceptance_criteria": [
+          "四态标注各有一条真实事件样本",
+          "ignored 单独计数并在 stats 里显式暴露",
+          "stats 并列输出 agent 侧结局与人侧动作，构成一张校准表",
+          "标注只依据已有 stream-json 与 seal 事件，不新增用户输入",
+          "无法判定时标注 unknown，不猜测"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "premise",
+          "观测",
+          "护城河"
+        ],
+        "difficulty": "medium",
+        "evidence": [
+          "人侧埋点已存在：TF-0139 done，thread.resume_note_consumed / dismissed / resume_action 三事件在白名单内",
+          "agent 侧结局依赖 seal.decided（TF-0134）判定 sealed 一态"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "purpose": "让 premise_notice 的效果可度量：没有结局标注，通知精度只能靠感觉，两周 fit 门无数可判。",
+        "status": "proposed",
+        "summary": "runtime/delivery.ts 在 premise_notice_delivered 之后观察该 writer 下一轮 stream-json，四态标注：未再触碰受影响文件 → dismissed；Read 该文件后有 Edit → repaired；触发 seal block → sealed；未 Read 直接 Edit → ignored（最危险，单独计数）。人类侧 thread.resume_note_consumed / dismissed / resume_action 已由 TF-0139 埋点，只需在 stats 里并列输出，两列合成一张校准表。",
+        "title": "通知结局标注（护城河 A 的数据源）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "predicate-counts",
+      "node": {
+        "acceptance_criteria": [
+          "每个 reconcile pass 的五个计数写入 stats()",
+          "notified / overlaps 有真实值可读",
+          "比值落在 10-30% 区间外时给出调层建议，不静默",
+          "L3 若在真实数据里恒为零抑制，记录该事实供 TF-0136 判决"
+        ],
+        "confidence": 0.85,
+        "context_tags": [
+          "premise",
+          "观测"
+        ],
+        "difficulty": "low",
+        "kind": "task",
+        "priority": 1,
+        "purpose": "把『通知太多还是太少』从争论变成一个可读的比值，作为调层与砍层的唯一依据。",
+        "status": "proposed",
+        "summary": "runtime/premises.ts 每个 pass 记录 { overlaps, suppressedL1, suppressedL2, suppressedL3, notified } 并写入 stats()。目标区间 notified / overlaps 落在 10-30%；否则调层。这个比值同时是 TF-0133（通知预算）的开工闸门与 L3 去留的判据来源。",
+        "title": "三层谓词逐层计数"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "git-writer",
+      "node": {
+        "acceptance_criteria": [
+          "新增 workbench sessions record 子命令（--writer / --generated），复用 bb.sessions.recordActivity，不新建抽象",
+          "三个 hook（post-merge / post-rewrite / post-checkout）随 TF-0105 的分发产物安装",
+          "一次真实 git pull 后，正在跑的 agent 会话收到 premise_notice",
+          "git 写者在 workbench sessions list 中以 kind=git 出现"
+        ],
+        "confidence": 0.75,
+        "context_tags": [
+          "premise",
+          "写者中立",
+          "护城河"
+        ],
+        "difficulty": "medium",
+        "evidence": [
+          "核对 cli.ts:154-177：sessions 子命令只有 list 与 show，record 需新增（清单称『零新抽象』仅对黑板层成立，CLI 面仍需一条子命令）",
+          "blackboard/sessions.ts 已支持 kind=git 的写者注册与 recordActivity"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "purpose": "写者中立必须有一个非 agent、非人的写者真实产生过一条通知，否则它只是口号。",
+        "status": "proposed",
+        "summary": "post-merge / post-rewrite / post-checkout hook 调 workbench sessions record --writer git，把变更文件注册为 generated。底层 bb.sessions.register / recordActivity 已存在，缺的是 CLI 子命令：当前 workbench sessions 只有 list 与 show。",
+        "title": "git 作为写者：merge / rebase / checkout 后注册变更"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "card-r10",
+      "node": {
+        "acceptance_criteria": [
+          "空分支零痕迹",
+          "每个渲染行可解析到事件引用（refs 非空）",
+          "dismiss 后下一轮注入不再出现",
+          "无 Verifier 时不显示伪状态",
+          "代码注释注明 card rule R10 与约束表 R10 的命名空间区别"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "恢复卡",
+          "merge-back"
+        ],
+        "difficulty": "low",
+        "evidence": [
+          "thread.merged_back 已在本轮工作区落入 types/event.ts 白名单，并有 events.test.ts 校验单测（未知 thread 类型仍抛错）——TF-0132 五条验收里的第五条已完成，此证据随本节点保留",
+          "核对 resume-card.ts:14-23：ConflictRule 当前为 R1-R9，R10 是该联合的下一个空位",
+          "所有线程都在同一 projectRoot 下运行，fork 不建 worktree/分支：merge-tree 预测对线程不适用",
+          "checkpoint schema 只有 workspot 字段，没有线程/写者链接：Verifier 状态没有生产者"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "purpose": "把 TF-0132 里唯一值钱的部分（分支留下的执行事实回到主线）保留为恢复卡的一条规则，而不是一个里程碑级的指针语义工程。",
+        "status": "proposed",
+        "summary": "在 resume-card.ts 的 ConflictRule 联合上新增 R10：回到源线程时，若兄弟分支在你离开后写过你读集里的文件，facts 段追加一行分支摘要（指针、写集、账本差、已失效前提引用）。空分支零痕迹；不含 merge-tree 预测与 Verifier 状态。注意命名空间：这是恢复卡内部的 card rule R10（R1-R9 已用），与 docs/fable-brief 约束表里的 R10（产品必须可证明地不是编排器）不是同一个 R10，需在代码注释里写明。",
+        "title": "恢复卡规则 R10：兄弟分支在你离开后改了什么"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "tf-engine-fix",
+      "node": {
+        "acceptance_criteria": [
+          "record_event 单行体量降到 KB 级，历史可回放（引用可解析到 snapshots/）",
+          "derived_progress 分母排除 deprecated / archived 子节点",
+          "改动后 validate_task_forest_export.py 全量回归通过",
+          "旧 events.jsonl 不改写，只对新事件生效"
+        ],
+        "confidence": 0.7,
+        "context_tags": [
+          "task-forest",
+          "工具",
+          "载荷纪律"
+        ],
+        "difficulty": "medium",
+        "evidence": [
+          "实测：proposal_applied 单行 515KB（before 257KB + after 258KB），142 行累计 66.5MB",
+          "实测：本 proposal 若 deprecate TF-0132 与 TF-0146，TF-0130 的派生进度被两个 0% 子节点拉到 5.0%，砍节点反而降进度",
+          "TF-0147 的第四条验收明确要求另开 skill 侧节点承载该修正"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "purpose": "森林自己违反了它给 Workbench 定的两条纪律（载荷上限、诚实的进度），修在工具侧一次，比每次 apply 付一次税便宜。",
+        "status": "proposed",
+        "summary": "两处修正，都在 skill 侧（C:/Users/27933/.claude/skills/task-forest/scripts/task_forest.py），不在本仓库：(1) record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表，历史留引用不留快照体；(2) derived_progress 的子节点分母排除 deprecated / archived——当前 deprecate 一个子节点会把父里程碑的进度按 0 算进平均，砍东西反而让进度下降。",
+        "title": "task-forest 引擎侧修正：历史载荷与派生分母"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "通知结局标注是证据地基的一部分：没有它，两周门无数可判"
+      },
+      "from": "notice-outcome",
+      "to": "TF-0121",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "谓词逐层计数是证据地基的一部分：notified/overlaps 是调层与砍层的唯一依据"
+      },
+      "from": "predicate-counts",
+      "to": "TF-0121",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "git 写者是『写者中立』的第一条非 agent 证据，属证据地基"
+      },
+      "from": "git-writer",
+      "to": "TF-0121",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "R1『写者成为黑板公民』的延伸：把 git 补成第三类写者，不重开 R1 里程碑"
+      },
+      "from": "git-writer",
+      "to": "TF-0068",
+      "type": "contributes_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "merge-back 降级为恢复卡的一条规则，归入阶段 B 的 TF-0128 系而不是阶段 C"
+      },
+      "from": "card-r10",
+      "to": "TF-0126",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "TF-0147 裁决把 events.jsonl 冗余与派生分母问题外派到 skill 侧节点"
+      },
+      "from": "tf-engine-fix",
+      "to": "TF-0147",
+      "type": "derived_from"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "可对外声明隔离级别与其边界：不覆盖外部副作用与纯方法体语义变化",
+          "§5 已按 stream-json 重写",
+          "§1.5 已缩为 saga 仅限 pivot 动作，通用逆操作注册表列入 non-goal",
+          "相关工作含 CoAgent / ATM / S-Bus / AgentRoom 与四点差异陈述"
+        ],
+        "progress": 100,
+        "status": "done",
+        "summary": "已裁决 accepted。runtime 通知，写者修补。乐观姿态、写立即生效、读集追踪、失效通知。修正三处：§5 按 stream-json 重写（不再假设 HTTP 纯文本 provider）；§1.5 缩为『saga 仅限 pivot 动作（push / PR / 外部 API）』，不建通用逆操作注册表；四裁三，砍掉三个产不出读写集的 HTTP 纯文本 provider。相关工作补 CoAgent、ATM、S-Bus、AgentRoom，并明写差异 = 供应商外部采集 + 运行时预过滤 + 写者中立 + 人类通道。"
+      },
+      "id": "TF-0058"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100,
+        "status": "done",
+        "summary": "已裁决 accepted。CALM：程序存在无协调实现当且仅当它是单调的。判据一行：后到的事实会不会让这个结论变错？三条逃生路按优先级——改造成单调 > 封印分段 > 事后补偿。封印分段的唯一实现是 seal（TF-0134），事后补偿只对 pivot 动作单独注册。"
+      },
+      "id": "TF-0059"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100,
+        "status": "done",
+        "summary": "已裁决 accepted。对话是输入面，执行是结构的来源，仓库是结构的裁判，用户永远不画图。隐式层容忍 30% 噪声且永不请求批准；显式层必须能被执行验证。本轮起对森林自身生效：milestone / global_task 的 progress 由子节点派生（progress_source: derived），manual 只允许叶子——结构从执行推导，不从手填推断。"
+      },
+      "id": "TF-0060"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "ADR 入库并通过评审",
+          "后续任务可引用该 ADR",
+          "README/positioning 口径同步",
+          "ADR 中的每条边界都有代码或实验证据",
+          "一句话取舍标准入库：Helmor = 写者中立的前提账本；agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，都答不了的走裁决队列",
+          "non-goals 明写并保持：树导航 UI、agent 消息总线、CRDT 代码底座、LLM 语义合并、3-4 级告警、通用 saga 逆操作注册表、HTTP 纯文本 provider"
+        ],
+        "status": "ready",
+        "summary": "在阶段 A 末尾固化前提守护架构：一条日志、两类事实、三个投影、source=threads 生命周期事件、真实继承语义与内容级合并禁令。同时收口 ADR-0006/0007/0008 的裁决文本与 non-goals 清算。"
+      },
+      "id": "TF-0138"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "判决一 恢复卡值得继续投入：resume_note_consumed / thread.restored ≥ 0.3 且 resume_action > 0；否则恢复卡降为纯 facts 行，砍叙事段",
+          "判决二 前提检测精度可用：agent 侧 dismissed / notified ≤ 0.5 且 ignored ≤ 0.1；否则加第 4 层谓词（import 可达性）再评",
+          "判决三 阶段 C 是否开工：两周内真实 fork ≥ 5 次且 TF-0140 问题 1 成立；否则阶段 C 整体延后，只保留 TF-0134",
+          "判决四 L3 去留：无判据可满足（事件结构性为零）则砍 TF-0099",
+          "四条判决结论写回 Task Forest，所有指标都有事件来源"
+        ],
+        "evidence": [
+          "全仓库无 promotion_reverted / variant.promoted，原门槛结构性为零，已删除",
+          "事实消费事件由 TF-0139 产生、由 TF-0129 的事实段触发：窗口若早于事实段上线，该门槛会重复同一类错误——本轮 TF-0128 落库后前置条件已满足",
+          "判决二的两个比值依赖 TF-0148 的四态标注；notified 的分母依赖 TF-0149"
+        ],
+        "status": "ready",
+        "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。"
+      },
+      "id": "TF-0136"
+    },
+    {
+      "action": "remove_edge",
+      "from": "TF-0141",
+      "id": "TFE-0205",
+      "to": "TF-0129",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "更正前置：TFE-0205 写的是『窗口起点必须晚于事实段上线』，但事实段实际由 TF-0128 交付（resume-card.ts 的 facts 分区 + consume/dismiss 埋点已通），TF-0129 只补覆盖率行与文案黑名单。核对：卡片路径无『无变化/安全』措辞，read-set-diff.ts 已产出 compared/comparable/uncoveredTools。因此窗口可在 TF-0128 后开始，不必等 TF-0129。"
+      },
+      "from": "TF-0141",
+      "to": "TF-0128",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "分支摘要行的写集与失效前提引用来自读集 diff（承接 TFE-0167 在 TF-0132 上的同一依赖）"
+      },
+      "from": "card-r10",
+      "to": "TF-0127",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "判决二的 dismissed/notified 与 ignored 两个比值来自四态结局标注"
+      },
+      "from": "TF-0136",
+      "to": "notice-outcome",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "notified 的分母与 L3 抑制量来自逐层计数"
+      },
+      "from": "TF-0136",
+      "to": "predicate-counts",
+      "type": "depends_on"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "fit unknown 数量下降",
+          "每项砍留决策可追溯到数据",
+          "任务森林中的相关节点状态更新",
+          "本批新增节点自身也纳入 fit 账本",
+          "账本词表与 alignment.fit 的取值一一对应",
+          "第 30 天回看四个数字存在且非零：校准表行数 ≥ 50；至少一条 premise_notice 的推定写者是 git 或人；至少一次 seal.decided: block 来自真实会话且事后判定为正确封印；notified / overlaps 有真实值且落在 10-30%",
+          "四个数字齐备才开始写对外的 stale-premise benchmark；缺任何一个先补它，不扩树"
+        ]
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "deprecate_node",
+      "id": "TF-0146",
+      "reason": "裁决：删除 adopt 手势。供应商 /branch 已是原生手势，与 thread.switch 无可观测差异；全仓库无 thread.adopted / adoption_reverted 事件、无 UI、无验收项。结论已写回 TF-0132 与 TF-0151：merge-back 摘要不再提及 adopt。节点保留为 deprecated 以留审计痕迹（CLI 无删除动作，deprecate 是唯一出口）。"
+    },
+    {
+      "action": "deprecate_node",
+      "id": "TF-0132",
+      "reason": "降级：指针语义不值一个里程碑级节点。唯一值钱的部分（兄弟分支在你离开后改了什么）转为恢复卡规则 R10，由 TF-0151 承载并归入阶段 B 的 TF-0128 系。已完成的部分（thread.merged_back 入白名单 + events.test.ts 校验单测）随本轮工作区落库，证据已转记到 TF-0151。adopt 手势按 TF-0146 裁决删除。"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "R10 恢复卡规则取代 merge-back L1 节点，范围从里程碑缩为一条卡片规则"
+      },
+      "from": "card-r10",
+      "to": "TF-0132",
+      "type": "supersedes"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "任一衍生产物都能一键『对着来源轨迹重放并 diff』",
+          "用户拒绝一个占位符不需要审计整个产物",
+          "开工前置：TF-0136 判决四给出保留结论；否则本里程碑及 TF-0100 / TF-0101 一并砍掉"
+        ],
+        "priority": 5,
+        "summary": "风险最高的一层，明确超前于证据。保持 p5 不开工：供应商 fork + checkpoint 已覆盖大部分场景。去留由 TF-0136 判决四按写死的判据裁决——无判据可满足（事件结构性为零）则砍。"
+      },
+      "id": "TF-0099"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "一轮内多条失效合并为一条 notice",
+          "超预算折叠仍保留总数",
+          "三路分叉场景不产生逐文件洪泛",
+          "通知不包含未截断的 1MB diff",
+          "开工前置：TF-0149 的 notified / overlaps 实测值超过 30%"
+        ],
+        "summary": "同一写者一轮只注入一束通知；同一 fork 家族 30 分钟内折叠；超过预算显示『及另 N 条』，不静默丢弃。延后到有真实洪泛数据再做：没洪泛先做折叠是过早优化。开工闸门 = TF-0149 显示 notified / overlaps 超出 10-30% 区间上界。"
+      },
+      "id": "TF-0133"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "通知预算的开工闸门是真实洪泛数据，来自逐层计数"
+      },
+      "from": "TF-0133",
+      "to": "predicate-counts",
+      "type": "depends_on"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "Claude fresh fork 不产生 inherited 读集",
+          "HTTP fork 在无足迹情况下不产生 inherited 读集",
+          "真实继承路径有运行时证据后再开启",
+          "refs 展开取每路径最新观测",
+          "开工前置：TF-0140 三问已出结论，本节点形态已按结果分支选定"
+        ],
+        "summary": "形态由 TF-0140 的三问结果分支决定：问题 1+2 成立 → 退化为『fork 时复制 footprint 并标 inherited: true』，约一天；问题 1 不成立 → 改为『fork 不继承读集，恢复卡显式提示 unknown coverage』并与 TF-0129 合并。在结果出来前不写实现，仅保留诚实开关原则：仅当 agentContextInherited=true 时写 footprint.inherited。"
+      },
+      "id": "TF-0131"
+    },
+    {
+      "action": "record_alignment",
+      "alignment": {
+        "created_at": "2026-09-05T08:50:09.741111Z",
+        "decision": "以这句话作为所有取舍的唯一标准：agent 的答案走 R2 + stdin 通知；人的答案走 R2′ + 恢复卡；都答不了的走裁决队列。凡不服务于这句话的节点进入砍掉清单。",
+        "id": "TFA-95ffa76da4",
+        "node_alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.75,
+          "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
+          "validation_plan": [
+            "t0+14d：TF-0136 四条判据",
+            "t0+30d：护城河四个数字存在且非零",
+            "任一数字缺失则先补它，不扩树"
+          ],
+          "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
+          "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
+        },
+        "related_task_ids": [
+          "TF-0057",
+          "TF-0120"
+        ],
+        "user_goal": "Helmor = 写者中立的前提账本。对每个写者（agent / 人 / git / CI）回答同一个问题：你上次看到的东西，现在还成立吗。",
+        "validation_plan": [
+          "第 14 天（t0+14d）：TF-0136 四条写死判据裁决恢复卡、检测精度、阶段 C、L3",
+          "第 30 天回看：校准表行数 ≥ 50；至少一条 premise_notice 推定写者是 git 或人；至少一次真实且正确的 seal.decided: block；notified / overlaps 落在 10-30%",
+          "四个数字齐备才开始写对外的 stale-premise benchmark；缺任何一个先补它，不扩树"
+        ],
+        "why_not_enough": "四个数字（校准表行数、非 agent 写者的通知、真实正确封印、notified/overlaps 区间）在 2026-09-05 全部为零或不存在；结构齐备不等于护城河成立。t0 也尚未开始：.workbench 无 threads / 无 sessions。",
+        "why_this_task": "三条通道已各有代码与事件：R2（TF-0073 done）、R2′ + 恢复卡（TF-0127/0128 done）、裁决队列（TF-0080 done）。缺的不是设计而是真实写者与真实数字，因此本轮把工作重心从建结构转为采数据（TF-0148/0149/0150）与开闸门（TF-0117/0134/0140）。"
+      }
+    }
+  ],
+  "created_at": "2026-09-05T08:50:09.728195Z",
+  "proposal_id": "TFP-2026-09-05-exec-checklist",
+  "rationale": "把《执行清单》落成森林变更：Day 0 状态对齐 + progress 派生、Week 1 四条闸门开工、Week 2-3 三个新证据节点、ADR 三连裁决、两周 fit 门判据写死、砍留清算。一句话取舍标准（写者中立的前提账本）以 record_alignment 固化。",
+  "session_id": "session-2026-09-05-exec-checklist",
+  "status": "applied"
+}

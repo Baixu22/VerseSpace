@@ -1,0 +1,34 @@
+{
+  "applied_at": "2026-09-05T09:02:37.765737Z",
+  "base_graph_hash": "4832600eae69bf0dfc779da8d405aae970f0d219ae28bd83f4ca480aa4206d5e",
+  "base_summary": {
+    "edge_count": 219,
+    "node_count": 152,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "title": "裁决：task-forest 历史与派生产物的体量口径（events / snapshots / exports）"
+      },
+      "id": "TF-0147"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "不要提前开门：三条 depends_on（TF-0141 的 t0、TF-0148 的结局标注、TF-0149 的逐层计数）全部 done 后才转 ready",
+          "开门时只读 workbench stats --json 的真实输出，四条阈值已写死在验收里，不在开门当天重新议定"
+        ],
+        "status": "proposed"
+      },
+      "id": "TF-0136"
+    }
+  ],
+  "created_at": "2026-09-05T09:02:37.564075Z",
+  "proposal_id": "TFP-2026-09-05-exec-fixups",
+  "rationale": "两处应用后自查修正：TF-0147 已裁决但标题仍写『待答』；TF-0136 被我标成 ready，会把两周门放进 actionable 队列，等于允许第 1 天用零数据开门——它的三条 depends_on（t0、结局标注、逐层计数）全未 done，正确状态是 proposed。",
+  "session_id": "session-2026-09-05-exec-checklist",
+  "status": "applied"
+}
