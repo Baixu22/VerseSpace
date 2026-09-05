@@ -117,7 +117,10 @@ describe("restore-time read-set diff", () => {
 		}
 	});
 
-	test("marks null-version claims unsupported and does not compare post-leave reads", async () => {
+	// TF-0129: a Grep over `src/` used to count as one "read" that could never
+	// be compared, which made the coverage number describe searches instead of
+	// file reads. Directory claims are now out of the accounting entirely.
+	test("目录 claim（Grep/Glob）整个剔出覆盖率，不虚高也不虚低", async () => {
 		const ws = await makeTempWorkbench();
 		try {
 			await mkdir(join(ws.projectDir, "src"), { recursive: true });
@@ -143,11 +146,40 @@ describe("restore-time read-set diff", () => {
 			await writeFile(join(ws.projectDir, "src", "b.ts"), "changed", "utf8");
 			const result = await diffReadSet(ws.bb, thread.id, note?.leaveSignature);
 			expect(result.status).toBe("available");
+			expect(result.excludedDirectories).toBe(1);
+			expect(result.compared).toBe(0);
+			expect(result.comparable).toBe(0);
+			expect(result.unsupported).toBe(0);
+			// Grep 只声明了那个目录，它不是一次「未覆盖的文件读」
+			expect(result.uncoveredTools).toEqual([]);
+			expect(result.stale).toHaveLength(0);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("文件上的 null 版本仍算 unsupported，并列出该工具", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await mkdir(join(ws.projectDir, "src"), { recursive: true });
+			await writeFile(join(ws.projectDir, "src", "a.ts"), "a", "utf8");
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			await ws.bb.sessions.recordActivity(thread.id, {
+				activity: "read-unhashed",
+				agent: thread.id,
+				// 一个真实文件，但读的时候没算出版本（过大 / 当时缺失）
+				used: [{ path: "src/a.ts", version: null }],
+				generated: [],
+				facets: { tool: "Read" },
+			});
+			const note = await chat.leave(thread.id);
+			const result = await diffReadSet(ws.bb, thread.id, note?.leaveSignature);
+			expect(result.excludedDirectories).toBe(0);
 			expect(result.compared).toBe(1);
 			expect(result.comparable).toBe(0);
 			expect(result.unsupported).toBe(1);
-			expect(result.uncoveredTools).toEqual(["Grep"]);
-			expect(result.stale).toHaveLength(0);
+			expect(result.uncoveredTools).toEqual(["Read"]);
 		} finally {
 			await ws.cleanup();
 		}

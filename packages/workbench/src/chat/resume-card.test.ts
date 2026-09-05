@@ -47,6 +47,7 @@ function diff(stale: ReadSetFact[]): ReadSetDiff {
 		compared: stale.length,
 		comparable: stale.length,
 		excludedDurable: 0,
+		excludedDirectories: 0,
 		unsupported: 0,
 		uncoveredTools: [],
 		stale,

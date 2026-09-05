@@ -1,3 +1,5 @@
+import { stat } from "node:fs/promises";
+import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { hashPathClaim } from "../blackboard/footprint";
 import type { ResumeNote } from "../chat/resume";
@@ -34,11 +36,21 @@ export interface ReadSetDiff {
 		eventId: string | null;
 	} | null;
 	checkedAt: string;
+	/**
+	 * Read claims the coverage number is computed over: every recorded read
+	 * MINUS directory claims. A `Grep` over `src/` records `src` as read, and a
+	 * directory has no content version to compare — counting it either way
+	 * would make the coverage number describe searches instead of file reads
+	 * (TF-0129).
+	 */
 	compared: number;
+	/** Of `compared`, the ones that had a version and were actually checked. */
 	comparable: number;
 	excludedDurable: number;
+	/** Directory claims dropped before the coverage number (Grep / Glob). */
+	excludedDirectories: number;
 	unsupported: number;
-	/** Tools whose claims had no version and therefore were not compared. */
+	/** Tools whose FILE claims had no version and therefore were not compared. */
 	uncoveredTools: string[];
 	stale: ReadSetFact[];
 }
@@ -238,9 +250,17 @@ function baselineClaimRef(
 	return found;
 }
 
+/**
+ * Tools whose file reads could not be compared.
+ *
+ * Keyed by the paths that actually landed in `unsupported`, so a `Grep` whose
+ * only unversioned claim was the directory it searched does not show up as an
+ * uncovered tool — it was never a file read to begin with (TF-0129).
+ */
 function toolNamesForUnsupported(
 	lines: Awaited<ReturnType<Blackboard["sessions"]["footprint"]>>,
 	baselineSeq: number,
+	unsupportedPaths: Set<string>,
 ): string[] {
 	const names = new Set<string>();
 	for (const line of lines) {
@@ -250,12 +270,29 @@ function toolNamesForUnsupported(
 		const tool = line.facets?.tool;
 		if (
 			typeof tool === "string" &&
-			line.used.some((claim) => claim.version == null)
+			line.used.some((claim) =>
+				unsupportedPaths.has(claim.path.replace(/\\/g, "/")),
+			)
 		) {
 			names.add(tool);
 		}
 	}
 	return [...names].sort();
+}
+
+/** A read claim that names a directory can never be version-compared. */
+async function isDirectoryClaim(
+	projectRoot: string,
+	path: string,
+): Promise<boolean> {
+	const absolute = isAbsolute(path) ? path : join(projectRoot, path);
+	try {
+		return (await stat(absolute)).isDirectory();
+	} catch {
+		// Gone, or unreadable: we cannot prove it was a directory, so leave it
+		// in `unsupported` rather than quietly shrinking the denominator.
+		return false;
+	}
 }
 
 /**
@@ -280,6 +317,7 @@ export async function diffReadSet(
 			compared: 0,
 			comparable: 0,
 			excludedDurable: 0,
+			excludedDirectories: 0,
 			unsupported: 0,
 			uncoveredTools: [],
 			stale: [],
@@ -300,14 +338,24 @@ export async function diffReadSet(
 	const stale: ReadSetFact[] = [];
 	let comparable = 0;
 	let excludedDurable = 0;
+	let excludedDirectories = 0;
 	let unsupported = 0;
+	const unsupportedPaths = new Set<string>();
 	for (const [path, claim] of view.reads) {
 		if (claim.durability === "durable") {
 			excludedDurable += 1;
 			continue;
 		}
 		if (claim.version == null) {
+			// Grep / Glob record the directory they searched. It has no content
+			// version, so counting it would make the coverage number describe
+			// searches rather than file reads (TF-0129).
+			if (await isDirectoryClaim(bb.projectRoot, path)) {
+				excludedDirectories += 1;
+				continue;
+			}
 			unsupported += 1;
+			unsupportedPaths.add(path.replace(/\\/g, "/"));
 			continue;
 		}
 		comparable += 1;
@@ -362,11 +410,17 @@ export async function diffReadSet(
 			eventId: baseline.eventId,
 		},
 		checkedAt,
-		compared: view.reads.size,
+		// Directory claims are out of the denominator: see `compared` above.
+		compared: view.reads.size - excludedDirectories,
 		comparable,
 		excludedDurable,
+		excludedDirectories,
 		unsupported,
-		uncoveredTools: toolNamesForUnsupported(lines, baseline.footprintSeq),
+		uncoveredTools: toolNamesForUnsupported(
+			lines,
+			baseline.footprintSeq,
+			unsupportedPaths,
+		),
 		stale,
 	};
 }
