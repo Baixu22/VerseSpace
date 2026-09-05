@@ -746,6 +746,94 @@ describe("resume note routes (TF-0097)", () => {
 	}, 20000);
 });
 
+describe("resume card routes (TF-0128)", () => {
+	test("GET assembles a dual-channel card; dismiss suppresses the next inject", async () => {
+		const ws: TempWorkbench = await makeTempWorkbench();
+		const server = await createUiServer(ws.bb, 0);
+		try {
+			const base = `http://127.0.0.1:${server.port}`;
+			const token = await fetch(`${base}/api/bootstrap`)
+				.then((r) => r.json())
+				.then((b: { token: string }) => b.token);
+			const auth = {
+				"x-workbench-token": token,
+				"content-type": "application/json",
+			};
+
+			const thread = await fetch(`${base}/api/chat/threads`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({}),
+			}).then((r) => r.json());
+			const id = (thread as { id: string }).id;
+
+			const mk = (mid: string, role: "user" | "assistant", text: string) => ({
+				id: mid,
+				role,
+				text,
+				at: new Date().toISOString(),
+			});
+			const { appendFile } = await import("node:fs/promises");
+			for (const m of [
+				mk("m-1", "user", "resume card dual channel"),
+				mk("m-2", "assistant", "ok"),
+			]) {
+				await appendFile(
+					join(ws.workbenchRoot, "threads", id, "messages.jsonl"),
+					`${JSON.stringify(m)}\n`,
+					"utf8",
+				);
+			}
+
+			await fetch(`${base}/api/chat/threads/${id}/leave`, {
+				method: "POST",
+				headers: auth,
+			});
+
+			type CardPayload = {
+				resumeCard: {
+					inject: boolean;
+					narrative: unknown[];
+					facts: unknown[];
+				} | null;
+				resumeCardDismissed: boolean;
+			};
+			const first = (await fetch(`${base}/api/chat/threads/${id}`, {
+				headers: auth,
+			}).then((r) => r.json())) as CardPayload;
+			expect(first.resumeCard).not.toBeNull();
+			expect(first.resumeCard!.inject).toBe(true);
+			expect(first.resumeCardDismissed).toBe(false);
+			expect(
+				first.resumeCard!.narrative.length + first.resumeCard!.facts.length,
+			).toBeGreaterThan(0);
+
+			await fetch(`${base}/api/chat/threads/${id}/resume-note/dismiss`, {
+				method: "POST",
+				headers: auth,
+			});
+			const dismissed = (await fetch(`${base}/api/chat/threads/${id}`, {
+				headers: auth,
+			}).then((r) => r.json())) as CardPayload;
+			expect(dismissed.resumeCardDismissed).toBe(true);
+			expect(dismissed.resumeCard?.inject).toBe(false);
+
+			await fetch(`${base}/api/chat/threads/${id}/leave`, {
+				method: "POST",
+				headers: auth,
+			});
+			const nextVisit = (await fetch(`${base}/api/chat/threads/${id}`, {
+				headers: auth,
+			}).then((r) => r.json())) as CardPayload;
+			expect(nextVisit.resumeCardDismissed).toBe(false);
+			expect(nextVisit.resumeCard?.inject).toBe(true);
+		} finally {
+			server.stop(true);
+			await ws.cleanup();
+		}
+	}, 20000);
+});
+
 async function pollUntil(
 	predicate: () => boolean | Promise<boolean>,
 	timeoutMs: number,

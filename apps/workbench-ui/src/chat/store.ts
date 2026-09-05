@@ -85,6 +85,7 @@ export interface ParkedItem {
 export interface ResumeBeat {
 	kind: "doing" | "decided" | "shifted" | "next";
 	text: string;
+	refs?: string[];
 }
 
 /** 离开车道时 agent 起草的恢复笔记（TF-0097）。 */
@@ -112,6 +113,38 @@ export interface ReadSetDiffFact {
 	refs: string[];
 	observedFootprintSeq: number;
 	currentEventSeq: number | null;
+}
+
+export interface ResumeCardAnnotation {
+	rule: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9";
+	label: string;
+}
+
+export interface ResumeCardNarrativeRow {
+	kind: "doing" | "decided" | "next";
+	text: string;
+	refs: string[];
+	annotation?: ResumeCardAnnotation;
+}
+
+export interface ResumeCardFactRow {
+	path: string;
+	summary: string;
+	refs: string[];
+	observedVersion?: string;
+	currentVersion?: string | null;
+	writerId?: string | null;
+	writerLabel?: string | null;
+	diff?: string;
+	annotation?: ResumeCardAnnotation;
+	source: "read-set" | "shifted";
+}
+
+export interface ResumeCardView {
+	narrative: ResumeCardNarrativeRow[];
+	facts: ResumeCardFactRow[];
+	dismissed: boolean;
+	inject: boolean;
 }
 
 export interface ReadSetDiff {
@@ -167,8 +200,9 @@ interface ChatState {
 	resumeDelta: number;
 	/** R2′ restore-time read-set facts; null means no card or unknown baseline. */
 	readSetDiff: ReadSetDiff | null;
-	/** Local additive dismissal for the current restore; the event remains durable. */
+	resumeCard: ResumeCardView | null;
 	resumeCardDismissed: boolean;
+	resumeCardRevealed: boolean;
 	init(): Promise<void>;
 	createThread(): Promise<void>;
 	switchThread(id: string): Promise<void>;
@@ -187,6 +221,7 @@ interface ChatState {
 	editResumeBeat(index: number, text: string): Promise<void>;
 	consumeResumeNote(surface: string): Promise<void>;
 	dismissResumeCard(): Promise<void>;
+	revealResumeCard(): void;
 	recordResumeAction(action: string): Promise<void>;
 	cancel(): void;
 	setPlanMode(enabled: boolean): Promise<void>;
@@ -260,6 +295,8 @@ interface ThreadGetResponse {
 	decisionPoints: DecisionPoint[];
 	resumeNote: ResumeNote | null;
 	readSetDiff?: ReadSetDiff;
+	resumeCard?: ResumeCardView | null;
+	resumeCardDismissed?: boolean;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -275,7 +312,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	resumeNote: null,
 	resumeDelta: 0,
 	readSetDiff: null,
+	resumeCard: null,
 	resumeCardDismissed: false,
+	resumeCardRevealed: false,
 
 	async init() {
 		const threads = await apiFetch("/api/chat/threads").then(
@@ -307,7 +346,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							resumeNote: null,
 							resumeDelta: 0,
 							readSetDiff: null,
+							resumeCard: null,
 							resumeCardDismissed: false,
+							resumeCardRevealed: false,
 						}),
 			};
 		});
@@ -351,7 +392,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				resumeNote: null,
 				resumeDelta: 0,
 				readSetDiff: null,
+				resumeCard: null,
 				resumeCardDismissed: false,
+				resumeCardRevealed: false,
 			};
 		});
 		// TF-0097：离开 prev 时 fire-and-forget 生成恢复笔记（agent 起草）。
@@ -382,7 +425,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				resumeNote: data.resumeNote,
 				resumeDelta: delta,
 				readSetDiff: data.readSetDiff ?? null,
-				resumeCardDismissed: false,
+				resumeCard: data.resumeCard ?? null,
+				resumeCardDismissed: Boolean(data.resumeCardDismissed),
+				resumeCardRevealed: false,
 				threads: s.threads.some((t) => t.id === id)
 					? s.threads.map((t) => (t.id === id ? { ...t, ...data.meta } : t))
 					: [data.meta, ...s.threads],
@@ -510,13 +555,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		}).catch(() => {});
 	},
 
+	revealResumeCard() {
+		set({ resumeCardRevealed: true });
+	},
+
 	async dismissResumeCard() {
 		const threadId = get().activeId;
 		if (!threadId) {
 			return;
 		}
 		const generation = switchGeneration;
-		set({ resumeCardDismissed: true });
+		set({ resumeCardDismissed: true, resumeCardRevealed: false });
 		await apiFetch(`/api/chat/threads/${threadId}/resume-note/dismiss`, {
 			method: "POST",
 		}).catch(() => {});
@@ -748,7 +797,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							resumeNote: null,
 							resumeDelta: 0,
 							readSetDiff: null,
+							resumeCard: null,
 							resumeCardDismissed: false,
+							resumeCardRevealed: false,
 						}
 					: {}),
 			};
@@ -951,6 +1002,8 @@ async function refreshThread(threadId: string): Promise<void> {
 					suggestions: data.suggestions,
 					decisionPoints: data.decisionPoints,
 					readSetDiff: data.readSetDiff ?? null,
+					resumeCard: data.resumeCard ?? null,
+					resumeCardDismissed: Boolean(data.resumeCardDismissed),
 				}
 			: {}),
 		threads: s.threads.map((t) =>

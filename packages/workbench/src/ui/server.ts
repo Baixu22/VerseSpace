@@ -4,6 +4,7 @@ import { stat } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { collectDecisionPoints } from "../chat/ledger";
+import { buildResumeCard, isResumeCardDismissed } from "../chat/resume-card";
 import { suggestNext } from "../chat/suggest";
 import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
@@ -446,6 +447,17 @@ export async function createUiServer(
 					threadId,
 					meta.resumeNote?.leaveSignature,
 				);
+				const threadEvents = await bb.events.query({ source: "threads" });
+				const resumeCardDismissed = isResumeCardDismissed(
+					threadEvents,
+					threadId,
+					meta.resumeNote?.leaveSignature.eventId,
+				);
+				const resumeCard = buildResumeCard({
+					note: meta.resumeNote ?? null,
+					diff: readSetDiff,
+					dismissed: resumeCardDismissed,
+				});
 				// TF-0095：建议与决策账本由同一组纯函数在服务端推导，
 				// UI 是纯渲染层——无分歧时账本为空数组（完全不渲染）
 				// TF-0097：resumeNote 随 meta 持久化，离开时生成、返回时呈现
@@ -456,6 +468,8 @@ export async function createUiServer(
 					decisionPoints: collectDecisionPoints(messages, meta),
 					resumeNote: meta.resumeNote ?? null,
 					readSetDiff,
+					resumeCard,
+					resumeCardDismissed,
 				});
 			}
 			if (sub === "cancel" && request.method === "POST") {

@@ -25,6 +25,8 @@ export type ResumeBeatKind = "doing" | "decided" | "shifted" | "next";
 export interface ResumeBeat {
 	kind: ResumeBeatKind;
 	text: string;
+	/** Evidence pointers (message/tool/path/ledger). Required to render. */
+	refs?: string[];
 }
 
 export interface ResumeNote {
@@ -101,13 +103,19 @@ export function buildResumeNote(
 	// 你当时在做什么：最后一条 user 消息
 	const lastUser = lastOfRole(messages, "user");
 	if (lastUser) {
-		beats.push({ kind: "doing", text: truncate(lastUser.text) });
+		beats.push({
+			kind: "doing",
+			text: truncate(lastUser.text),
+			refs: [`message:${lastUser.id}`],
+		});
 	}
 
 	// 你决定了什么：决策点（分叉/备选）+ 晋升
 	const points = collectDecisionPoints(messages, meta);
 	const decidedTexts: string[] = [];
+	const decidedRefs: string[] = [];
 	for (const point of points.slice(0, 2)) {
+		decidedRefs.push(`ledger:${point.messageId}`);
 		if (point.kind === "fork") {
 			decidedTexts.push(
 				`在「${truncate(point.preview, 40)}」处分叉出 ${point.count} 条路径`,
@@ -119,12 +127,14 @@ export function buildResumeNote(
 		}
 	}
 	if (meta.promotion) {
+		decidedRefs.push("promotion");
 		decidedTexts.push(`把这条对话命名为「${meta.promotion.title}」`);
 	}
 	if (decidedTexts.length > 0) {
 		beats.push({
 			kind: "decided",
 			text: truncate(decidedTexts.join("；"), 100),
+			refs: decidedRefs,
 		});
 	}
 
@@ -146,6 +156,18 @@ export function buildResumeNote(
 			beats.push({
 				kind: "shifted",
 				text: `动了 ${toolParts.length} 处：${summary}`,
+				refs: [
+					`message:${lastAssistant.id}`,
+					...toolParts.slice(0, 3).flatMap((part) => {
+						const target = extractToolTarget(part);
+						return target
+							? [
+									`tool:${part.toolCallId}`,
+									`path:${target.replace(/\\/g, "/")}`,
+								]
+							: [`tool:${part.toolCallId}`];
+					}),
+				],
 			});
 		}
 	}
@@ -156,6 +178,7 @@ export function buildResumeNote(
 		beats.push({
 			kind: "next",
 			text: `下一步可以：${truncate(suggestions[0]!.text, 60)}`,
+			refs: lastAssistant ? [`message:${lastAssistant.id}`] : ["suggest:next"],
 		});
 	}
 
