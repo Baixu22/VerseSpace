@@ -67,8 +67,14 @@ test-results/
 /packages/workbench/.agent-workbench/
 # throwaway scratch scripts and export intermediates
 /.agent-workbench/tmp/
-/.agent-workbench/task-forest/exports/_tmp_*.json
-/.agent-workbench/task-forest/exports/.*.tmp.*
+/.tf-tmp/
+# task-forest derived products stay out of history (TF-0147).
+# canonical state is graph/ + config.json + events/events.jsonl; both of these are
+# rebuildable from it via `task_forest.py export`. Measured 2026-09-05: exports
+# 109MB, snapshots 61MB against 864KB of canonical graph — GitHub was already
+# returning GH001 large-file warnings on every push.
+/.agent-workbench/task-forest/exports/
+/.agent-workbench/task-forest/snapshots/
 # local session work log — personal workspace memory, not repo history
 /.workbuddy/memory/
 # agent-kernel runtime state (session checkpoints, message blobs)
