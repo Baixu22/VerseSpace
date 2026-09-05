@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { extractFootprint, hashPathClaim } from "../blackboard/footprint";
 import { makeTempWorkbench } from "../test/fixtures";
+import { drainPremiseQueue } from "./delivery";
 import { parseHunks, reconcilePremises } from "./premises";
 
 /** A big file the writer only ever reads a slice of. */
@@ -250,6 +251,77 @@ describe("跨度限定的读（R2 谓词第 2 层 · TF-0075）", () => {
 
 			const notices = await reconcilePremises(ws.bb);
 			expect(notices).toHaveLength(1);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+});
+
+describe("世界投影边界（TF-0124：thread.* 不进入前提与投递）", () => {
+	test("日志里的线程生命周期事件不改变前提 reconcile 与投递队列", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await mkdir(join(ws.projectDir, "src"), { recursive: true });
+			await writeFile(join(ws.projectDir, "src", "big.ts"), bigFile(), "utf8");
+			const spoolDir = join(ws.workbenchRoot, "sessions", "w", "spool");
+			const claim = await hashPathClaim(ws.projectDir, "src/big.ts", spoolDir, {
+				start: 100,
+				end: 120,
+			});
+			await ws.bb.sessions.register("w", "agent", "W");
+			await ws.bb.sessions.recordActivity("w", {
+				activity: "a1",
+				agent: "w",
+				used: [claim],
+				generated: [],
+			});
+			await writeFile(
+				join(ws.projectDir, "src", "big.ts"),
+				bigFile((lines) => {
+					lines[109] = "export const v110 = 9999;";
+				}),
+				"utf8",
+			);
+
+			// 会话拓扑事件先塞进同一条日志：fork/leave/restore/merge-back 全家福
+			const lifecycle: Array<[string, Record<string, unknown>]> = [
+				["thread.created", { threadId: "t-1", title: "会话" }],
+				["thread.forked", { threadId: "t-2", from: "t-1", atMessageId: "m-1" }],
+				["thread.left", { threadId: "t-1" }],
+				["thread.restored", { threadId: "t-1" }],
+				[
+					"thread.merged_back",
+					{ threadId: "t-2", from: "t-2", into: "t-1", level: "summary" },
+				],
+			];
+			for (const [type, payload] of lifecycle) {
+				await ws.bb.events.append({
+					timestamp: new Date().toISOString(),
+					source: "threads",
+					type,
+					payload,
+				});
+			}
+
+			// 前提投影与没有这些事件时完全一致：唯一的失效通知仍是 src/big.ts
+			const notices = await reconcilePremises(ws.bb);
+			expect(notices).toHaveLength(1);
+			expect(notices[0]!.writerId).toBe("w");
+			expect(notices[0]!.stale.map((s) => s.path)).toEqual(["src/big.ts"]);
+
+			// 投递通道同样对会话拓扑视而不见
+			const drain = await drainPremiseQueue(ws.bb);
+			expect(drain.delivered).toHaveLength(0);
+			expect(drain.pending).toHaveLength(1);
+			expect(drain.pending[0]!.writerId).toBe("w");
+			expect(drain.pending[0]!.claims.map((c) => c.path)).toEqual([
+				"src/big.ts",
+			]);
+
+			// 且两个 fold 自己没有发出任何线程事件
+			expect(await ws.bb.events.query({ source: "threads" })).toHaveLength(
+				lifecycle.length,
+			);
 		} finally {
 			await ws.cleanup();
 		}

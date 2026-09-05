@@ -270,4 +270,36 @@ describe("events blackboard API", () => {
 			await cleanup();
 		}
 	});
+
+	test("thread.merged_back joins the whitelist; unknown thread types still throw", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			await bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "threads",
+				type: "thread.merged_back",
+				payload: {
+					threadId: "thread-parent",
+					from: "thread-child",
+					into: "thread-parent",
+					level: "summary",
+					facts: { ledgerDiffRefs: ["e-1"] },
+				},
+			});
+			expect((await bb.events.all()).map((e) => e.type)).toEqual([
+				"thread.merged_back",
+			]);
+
+			await expect(
+				bb.events.append({
+					timestamp: new Date().toISOString(),
+					source: "threads",
+					type: "thread.merged_back_v2",
+					payload: { threadId: "t" },
+				}),
+			).rejects.toThrow("未知线程生命周期事件");
+		} finally {
+			await cleanup();
+		}
+	});
 });

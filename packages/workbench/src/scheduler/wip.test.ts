@@ -175,4 +175,48 @@ describe("WIP derivation and admission (TF-0083)", () => {
 	test("MIN_SAMPLES is the threshold between a guess and a derivation", () => {
 		expect(MIN_SAMPLES).toBeGreaterThan(1);
 	});
+
+	test("thread.* lifecycle events never enter the WIP projection (TF-0124)", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			for (const [i, minutes] of [30, 60, 90].entries()) {
+				await stamp(bb, "goal_dispatched", { goalId: `g-${i}` }, 200);
+				await stamp(
+					bb,
+					"goal_status",
+					{ goalId: `g-${i}`, to: "done" },
+					minutes,
+				);
+			}
+			const before = await observeFlow(bb);
+			expect(before.basis).toBe("little-law");
+
+			// a full house of session-topology observations in the same log
+			const lifecycle: Array<[string, Record<string, unknown>]> = [
+				["thread.created", { threadId: "t-1" }],
+				["thread.forked", { threadId: "t-2", from: "t-1" }],
+				["thread.left", { threadId: "t-1" }],
+				["thread.restored", { threadId: "t-1" }],
+				["thread.switch", { threadId: "t-2" }],
+				["thread.merged_back", { threadId: "t-2", into: "t-1" }],
+			];
+			for (const [type, payload] of lifecycle) {
+				await bb.events.append({
+					timestamp: new Date().toISOString(),
+					source: "threads",
+					type,
+					payload,
+				});
+			}
+
+			// λ × W reads the same stamps: topology is not flow
+			expect(await observeFlow(bb)).toEqual(before);
+			// and the fold emitted no thread events of its own
+			expect(await bb.events.query({ source: "threads" })).toHaveLength(
+				lifecycle.length,
+			);
+		} finally {
+			await cleanup();
+		}
+	});
 });
