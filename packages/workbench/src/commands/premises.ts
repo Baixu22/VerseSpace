@@ -1,8 +1,12 @@
 import type { Command } from "commander";
+import { NoWorkbenchError } from "../errors";
 import { emitJson, type GlobalOptions } from "../output";
 import { pendingPremiseNotices } from "../runtime/delivery";
-import { judgeSeal, targetOfHookInput } from "../runtime/seal";
+import { decideSeal, targetOfHookInput } from "../runtime/seal";
+import type { SealMode } from "../runtime/seal-counts";
 import { resolveBlackboard } from "./context";
+
+const SEAL_MODES: readonly string[] = ["block", "warn", "off"];
 
 /**
  * R2's inspection surface. Detection writes `premise_stale` events; this
@@ -47,23 +51,33 @@ export async function premisesPendingCommand(command: Command): Promise<void> {
 }
 
 /**
- * The seal point as a Claude Code PreToolUse hook. Wire it up with:
- *
- * ```json
- * { "hooks": { "PreToolUse": [{ "matcher": "Write|Edit|MultiEdit|NotebookEdit",
- *     "hooks": [{ "type": "command", "command": "workbench premises seal" }] }] } }
- * ```
+ * The seal point as a Claude Code PreToolUse hook. The wiring ships with the
+ * hooks distribution (TF-0105's installer and plugin bundle), so installing it
+ * is the whole setup — no hand-edited settings.json.
  *
  * Exit 0 lets the call through; exit 2 blocks it and feeds stderr back to the
  * model, which is the whole point — the writer needs the evidence, not a
- * refusal.
+ * refusal. `seal.mode` decides which of the two a match produces, and every
+ * decision (including passes) lands in events.jsonl as `seal.decided`.
  */
 export async function premisesSealCommand(
-	options: { writer?: string; target?: string },
+	options: { writer?: string; target?: string; mode?: string },
 	command: Command,
 ): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
-	const bb = await resolveBlackboard();
+	let bb: Awaited<ReturnType<typeof resolveBlackboard>>;
+	try {
+		bb = await resolveBlackboard();
+	} catch (error) {
+		if (error instanceof NoWorkbenchError) {
+			// The hook ships enabled by default (TF-0105 distribution), so it runs
+			// in repos that have no blackboard at all. No blackboard means no
+			// opinion — same rule as no target. Anything else here would put a
+			// stderr line in front of every write in every repo.
+			return;
+		}
+		throw error;
+	}
 
 	let target = options.target;
 	let writerId = options.writer;
@@ -96,20 +110,48 @@ export async function premisesSealCommand(
 			? pending.filter((notice) => notice.writerId === writerId)
 			: pending
 	).flatMap((notice) => notice.claims);
-	const verdict = judgeSeal(bb.projectRoot, target, claims);
-
-	if (!verdict.blocked) {
-		if (opts.json && !opts.quiet) {
-			emitJson({ blocked: false, target });
-		}
-		return;
-	}
+	const outcome = await decideSeal(bb, {
+		target,
+		writerId,
+		claims,
+		mode: SEAL_MODES.includes(options.mode as SealMode)
+			? (options.mode as SealMode)
+			: undefined,
+	});
 
 	if (opts.json && !opts.quiet) {
-		emitJson({ blocked: true, target, reason: verdict.reason });
+		emitJson({
+			blocked: outcome.decision === "block",
+			decision: outcome.decision,
+			hit: outcome.hit,
+			target: outcome.path,
+			mode: outcome.mode,
+			effectiveMode: outcome.effectiveMode,
+			downgraded: outcome.downgraded,
+			matchedDeclarations: outcome.matchedDeclarations,
+			reason: outcome.reason,
+		});
 	}
-	process.stderr.write(`${verdict.reason}\n`);
-	process.exit(2);
+
+	if (!outcome.hit) {
+		return;
+	}
+	// warn and off never hide the reason — they only decline to stop the write.
+	// stderr is where the host feeds text back to the model, so the evidence
+	// reaches the writer in all three modes.
+	process.stderr.write(`${outcome.reason}\n`);
+	if (outcome.downgraded) {
+		process.stderr.write(
+			`（连续 ${outcome.priorBlockStreak} 次封印后自动降级为 warn：本次不阻断，请自行判断。）\n`,
+		);
+	} else if (outcome.decision !== "block") {
+		process.stderr.write(
+			`（seal.mode = ${outcome.effectiveMode}：本次不阻断，只报告。）\n`,
+		);
+	}
+	if (outcome.decision === "block") {
+		process.exit(2);
+	}
 }
 
 async function readStdin(): Promise<string> {

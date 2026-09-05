@@ -21,6 +21,31 @@ export const workbenchConfigSchema = z.object({
 			gitHook: z.boolean().default(false),
 		})
 		.default({ readonlyAreas: [], gitHook: false }),
+	/**
+	 * The seal point (R2 · TF-0078, observability by TF-0134). It is the one
+	 * place the runtime may interrupt a writer, so its posture is configurable:
+	 *
+	 * - `block` (default): refuse the write, hand the evidence back on stderr;
+	 * - `warn`: let the write through, still hand the evidence back;
+	 * - `off`: let the write through, still record and print the reason.
+	 *
+	 * No mode is silent. `off` turns off the interruption, never the
+	 * observation — the runtime's posture everywhere else is observe and
+	 * notify, and a seal that hides what it saw would be worse than no seal.
+	 */
+	seal: z
+		.object({
+			mode: z.enum(["block", "warn", "off"]).default("block"),
+			/**
+			 * Consecutive unresolved hits against one writer before the seal
+			 * downgrades itself to `warn`. A seal that keeps stopping the same
+			 * writer has stopped being evidence and become an obstacle. The
+			 * downgrade holds until that writer clears the stale premise or
+			 * moves on, so it cannot oscillate block/warn/block.
+			 */
+			consecutiveBlockLimit: z.number().int().positive().default(3),
+		})
+		.default({ mode: "block", consecutiveBlockLimit: 3 }),
 	thresholds: z
 		.object({
 			idleNotification: z.string().default("15m"),

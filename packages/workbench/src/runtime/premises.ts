@@ -12,6 +12,7 @@ import {
 } from "../blackboard/sessions";
 import { pathExists } from "../fs/atomic";
 import { noticeIdForClaims } from "./notice-id";
+import { emptyPassCounts, PREMISE_PASS_EVENT } from "./premise-counts";
 import { surfaceHash } from "./surface";
 
 /**
@@ -300,6 +301,9 @@ async function reportedStaleKeys(bb: Blackboard): Promise<Set<string>> {
  * when a read-time spool snapshot exists) and hands notices to `deliver`;
  * writers that cannot be reached live keep the notice in the event log and
  * drain it on their next run. Returns the notices for the caller.
+ *
+ * Also records where every candidate claim died (TF-0149) as one
+ * `premise_pass` event — see `premise-counts.ts` for the accounting rules.
  */
 export async function reconcilePremises(
 	bb: Blackboard,
@@ -308,6 +312,7 @@ export async function reconcilePremises(
 	const activeWindowMs = options.activeWindowMs ?? 30 * 60_000;
 	const cutoff = Date.now() - activeWindowMs;
 	const notices: StalePremiseNotice[] = [];
+	const counts = emptyPassCounts();
 	// Snapshot once per pass instead of rereading the whole event log for every
 	// candidate claim. A concurrent pass may still win the race; the next pass
 	// converges and the durable key prevents ordinary repeat delivery.
@@ -321,6 +326,7 @@ export async function reconcilePremises(
 		if (Number.isFinite(lastActive) && lastActive < cutoff) {
 			continue; // the writer itself went quiet: nothing live to notify
 		}
+		counts.writers += 1;
 		const { reads, writes } = await bb.sessions.readSetView(writer.id);
 		// Layer 3's dependency/subject split, derived rather than declared: a
 		// writer that also edits a file is working on it (subject-matter, so
@@ -334,23 +340,30 @@ export async function reconcilePremises(
 		> = [];
 		for (const claim of reads.values()) {
 			if (claim.durability === "durable") {
+				counts.suppressedL1 += 1;
 				continue; // predicate layer 1: durable reads never invalidate
 			}
 			const current = await hashPathClaim(bb.projectRoot, claim.path);
 			if (current.version === claim.version) {
 				continue; // content unchanged — premise still holds
 			}
+			// The read-set/write overlap the layers get to argue about. Counted
+			// here, before any suppression, so `notified / overlaps` is a ratio
+			// of decisions rather than of surviving decisions.
+			counts.overlaps += 1;
 			// predicate layer 2: the file moved, but did the part the writer
 			// actually read move? Span claims need the diff to answer that.
 			let diff: string | undefined;
 			if (claim.span) {
 				diff = await diffFor(bb, writer.id, claim);
 				if (!(await spanInvalidated(bb, claim, claim.span, diff))) {
+					counts.suppressedL2 += 1;
 					continue; // the edit landed outside the read range
 				}
 			} else if (!touched.has(claim.path)) {
 				// dependency read: only the export surface has to hold
 				if (await surfaceUnchanged(bb, writer.id, claim)) {
+					counts.suppressedL3 += 1;
 					continue;
 				}
 			}
@@ -360,10 +373,12 @@ export async function reconcilePremises(
 				currentVersion: current.version ?? null,
 			};
 			if (reported.has(staleKey(writer.id, candidate))) {
+				counts.suppressedDedup += 1;
 				continue;
 			}
 			stale.push({ ...candidate, claim, diff });
 		}
+		counts.notified += stale.length;
 		if (stale.length === 0) {
 			continue;
 		}
@@ -412,6 +427,16 @@ export async function reconcilePremises(
 			},
 		});
 		notices.push(notice);
+	}
+	// A pass with no overlaps carries nothing the ratio can use, and the
+	// watcher runs a pass on every file change — so silence stays silent.
+	if (counts.overlaps > 0) {
+		await bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "runtime",
+			type: PREMISE_PASS_EVENT,
+			payload: { ...counts },
+		});
 	}
 	return notices;
 }

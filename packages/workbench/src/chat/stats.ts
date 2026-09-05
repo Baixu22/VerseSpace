@@ -1,4 +1,13 @@
 import type { Blackboard } from "../blackboard";
+import {
+	foldNoticeOutcomes,
+	type NoticeOutcomeTotals,
+} from "../runtime/notice-outcome";
+import {
+	foldPremisePasses,
+	type PremisePassTotals,
+} from "../runtime/premise-counts";
+import { foldSealDecisions, type SealTotals } from "../runtime/seal-counts";
 import type { WorkbenchEvent } from "../types/event";
 import { ChatThreads, type StoredMessage, type ThreadMeta } from "./threads";
 
@@ -55,6 +64,15 @@ export interface ChatStats {
 		transitions: number;
 		windowMinutes: number;
 	};
+	/** R2 predicate accounting (TF-0149): where candidate claims died. */
+	premises: PremisePassTotals;
+	/** Seal decisions (TF-0134): hits, blocks, and what was let through. */
+	seal: SealTotals;
+	/**
+	 * The calibration table (TF-0148): agent-side notice outcomes beside the
+	 * human-side resume-card actions. Both columns come from the same log.
+	 */
+	noticeOutcomes: NoticeOutcomeTotals;
 	dataQuality: {
 		insufficientHistory: boolean;
 		reasons: string[];
@@ -420,6 +438,9 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 			restoreFirstAction: firstActions,
 		},
 		siblingAlternation: alternation,
+		premises: foldPremisePasses(events),
+		seal: foldSealDecisions(events),
+		noticeOutcomes: foldNoticeOutcomes(events),
 		dataQuality: {
 			insufficientHistory:
 				threads.length === 0 ||

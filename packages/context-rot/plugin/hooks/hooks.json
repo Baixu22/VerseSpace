@@ -1,5 +1,5 @@
 {
-	"description": "采集 Read/Write/Edit/Grep/Glob 的确定性读写足迹到 .context-rot/footprints.jsonl",
+	"description": "采集 Read/Write/Edit/Grep/Glob 的确定性读写足迹到 .context-rot/footprints.jsonl，并在写入落到已失效前提上时按 seal.mode 封印（TF-0134）",
 	"hooks": {
 		"PostToolUse": [
 			{
@@ -8,6 +8,18 @@
 					{
 						"type": "command",
 						"command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/footprint.mjs\"",
+						"timeout": 10
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Write|Edit|MultiEdit|NotebookEdit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "workbench premises seal",
 						"timeout": 10
 					}
 				]

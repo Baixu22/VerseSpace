@@ -1,5 +1,13 @@
 import { isAbsolute, relative } from "node:path";
+import type { Blackboard } from "../blackboard";
 import type { StalePremiseClaim } from "./premises";
+import {
+	consecutiveHitStreak,
+	SEAL_EVENT,
+	type SealDecision,
+	type SealDecisionRecord,
+	type SealMode,
+} from "./seal-counts";
 
 /**
  * The seal point (R2, TF-0078): the ONE place where the runtime is allowed to
@@ -10,9 +18,14 @@ import type { StalePremiseClaim } from "./premises";
  * not an interruption, it is a seal: the write would be built on a premise
  * that is already false, and undoing it later costs more than being stopped.
  *
- * So this is a pure predicate plus a message. It blocks with exit code 2 and
- * puts the evidence on stderr, which Claude Code feeds back to the model —
+ * So `judgeSeal` is a pure predicate plus a message. It blocks with exit code 2
+ * and puts the evidence on stderr, which Claude Code feeds back to the model —
  * the writer gets something it can actually patch against, not a bare refusal.
+ *
+ * `decideSeal` wraps that predicate in the parts that need the world (TF-0134):
+ * the configured mode, the consecutive-block downgrade, and the record of what
+ * was decided. Keeping the predicate pure is deliberate — the decision policy
+ * changes far more often than the question "did this write land on a claim".
  */
 
 export type SealVerdict =
@@ -82,5 +95,89 @@ export function judgeSeal(
 			"请先重新读取这些文件确认现状，再决定这次写入是否仍然成立；" +
 			"如果前提只是部分失效，只修补依赖失效值的那几步。",
 		evidence: hit,
+	};
+}
+
+export interface SealOutcome extends SealDecisionRecord {
+	/** The evidence text. Present whenever the predicate matched, in EVERY
+	 * mode — `warn` and `off` change what happens to the write, never whether
+	 * the writer is told why. */
+	reason?: string;
+	evidence: StalePremiseClaim[];
+	/** Consecutive unresolved hits by this writer, counted before this one. */
+	priorBlockStreak: number;
+}
+
+export interface DecideSealOptions {
+	target: string;
+	/** Writer id when the host knows it; the streak is counted per writer. */
+	writerId?: string;
+	claims: StalePremiseClaim[];
+	/** Override the configured mode (tests and `--mode`); config wins by default. */
+	mode?: SealMode;
+}
+
+/**
+ * Judge one write, apply the configured posture, and record the decision.
+ *
+ * The record is written for passes too. A log that only holds refusals cannot
+ * answer "was that seal correct?", and that question is the whole reason the
+ * seal is allowed to exist at all.
+ */
+export async function decideSeal(
+	bb: Blackboard,
+	options: DecideSealOptions,
+): Promise<SealOutcome> {
+	const config = await bb.config.load();
+	const mode = options.mode ?? config.seal.mode;
+	const limit = config.seal.consecutiveBlockLimit;
+	const writer = options.writerId ?? null;
+	const verdict = judgeSeal(bb.projectRoot, options.target, options.claims);
+	const path = normalizeTarget(bb.projectRoot, options.target);
+
+	const priorBlockStreak = verdict.blocked
+		? consecutiveHitStreak(await bb.events.query({ type: SEAL_EVENT }), writer)
+		: 0;
+	// `consecutiveBlockLimit` is how many hits in a row a writer may absorb
+	// before the seal stops interrupting it. The streak counts hits rather than
+	// blocks so the downgrade, once it fires, stays in force.
+	const downgraded =
+		verdict.blocked && mode === "block" && priorBlockStreak >= limit;
+	const effectiveMode: SealMode = downgraded ? "warn" : mode;
+
+	let decision: SealDecision = "pass";
+	if (verdict.blocked) {
+		decision = effectiveMode === "block" ? "block" : "warn";
+		if (effectiveMode === "off") {
+			// `off` stops the interruption, not the observation: the write goes
+			// through as a pass, but `hit` and the reason stay on the record.
+			decision = "pass";
+		}
+	}
+
+	const record: SealDecisionRecord = {
+		writer,
+		path,
+		decision,
+		hit: verdict.blocked,
+		matchedDeclarations: verdict.blocked
+			? verdict.evidence.map((claim) => claim.path)
+			: [],
+		mode,
+		effectiveMode,
+		downgraded,
+	};
+	await bb.events.append({
+		timestamp: new Date().toISOString(),
+		source: "runtime",
+		type: SEAL_EVENT,
+		payload: { ...record },
+	});
+
+	return {
+		...record,
+		reason: verdict.blocked ? verdict.reason : undefined,
+		evidence: verdict.blocked ? verdict.evidence : [],
+		priorBlockStreak,
 	};
 }
