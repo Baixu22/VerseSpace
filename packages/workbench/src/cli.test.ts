@@ -62,6 +62,7 @@ describe("buildProgram", () => {
 		expect(seal?.options.map((option) => option.long)).toEqual([
 			"--writer",
 			"--target",
+			"--mode",
 		]);
 	});
 

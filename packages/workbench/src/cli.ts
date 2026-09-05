@@ -21,7 +21,11 @@ import {
 	premisesSealCommand,
 } from "./commands/premises";
 import { checkpointRestore } from "./commands/restore";
-import { sessionsListCommand, sessionsShowCommand } from "./commands/sessions";
+import {
+	sessionsListCommand,
+	sessionsRecordCommand,
+	sessionsShowCommand,
+} from "./commands/sessions";
 import { statsCommand } from "./commands/stats";
 import {
 	logCommand,
@@ -175,6 +179,45 @@ export function buildProgram(): Command {
 				await sessionsShowCommand({ writer }, command);
 			},
 		);
+	sessions
+		.command("record")
+		.summary("record a non-agent writer's activity (git hooks, editors, CI)")
+		.description(
+			"register a writer and append one footprint round to it. Paths come from " +
+				"--generated / --used, or newline-separated on stdin, which is what the " +
+				"git hooks use: `git diff-tree -r --name-only --no-commit-id A B | " +
+				"workbench sessions record --activity post-merge`. Silently does nothing " +
+				"outside a workbench workspace, so the hooks are safe to ship enabled.",
+		)
+		.option("--writer <id>", "writer id (default: git)")
+		.option("--kind <kind>", "agent|human|git|ci (default: git)")
+		.option("--label <text>", "human-readable label for a new writer")
+		.option("--activity <name>", "activity name for this round")
+		.option(
+			"--generated <path>",
+			"a path this writer wrote (repeatable)",
+			(value: string, previous: string[] = []) => [...previous, value],
+		)
+		.option(
+			"--used <path>",
+			"a path this writer read (repeatable)",
+			(value: string, previous: string[] = []) => [...previous, value],
+		)
+		.action(
+			async (
+				options: {
+					writer?: string;
+					kind?: string;
+					label?: string;
+					activity?: string;
+					generated?: string[];
+					used?: string[];
+				},
+				command: Command,
+			) => {
+				await sessionsRecordCommand(options, command);
+			},
+		);
 
 	const premises = program
 		.command("premises")
@@ -192,14 +235,16 @@ export function buildProgram(): Command {
 		.description(
 			"the one place the runtime interrupts a writer. Reads a PreToolUse hook payload on stdin " +
 				"(or --target); exit 2 blocks the call and feeds the evidence back to the model. " +
-				'Wire it as: {"hooks":{"PreToolUse":[{"matcher":"Write|Edit|MultiEdit|NotebookEdit",' +
-				'"hooks":[{"type":"command","command":"workbench premises seal"}]}]}}',
+				"Every decision — block, warn, and pass alike — is recorded as a seal.decided event. " +
+				"seal.mode in workbench.yaml picks the posture (block|warn|off); no mode is silent. " +
+				"The hook wiring ships with the context-rot hooks installer and plugin bundle.",
 		)
 		.option("--writer <id>", "only consider this writer's stale region")
 		.option("--target <path>", "explicit target instead of reading stdin")
+		.option("--mode <mode>", "override seal.mode for this call: block|warn|off")
 		.action(
 			async (
-				options: { writer?: string; target?: string },
+				options: { writer?: string; target?: string; mode?: string },
 				_command: Command,
 			) => {
 				await premisesSealCommand(options, _command);

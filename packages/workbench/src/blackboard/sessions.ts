@@ -308,15 +308,21 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 		},
 
 		/**
-		 * Paths a writer of `kind` (default: agent) claimed as generated
+		 * Paths a writer of one of `kinds` (default: agent) claimed as generated
 		 * within the window — the watcher's attribution filter: file changes
 		 * matching a fresh agent claim belong to that agent, everything else
 		 * is the human.
+		 *
+		 * Accepts several kinds because git is now a first-class writer
+		 * (TF-0150): a `git pull` lands in the working tree as ordinary file
+		 * changes, and without git in this filter the post-merge hook's claim is
+		 * immediately shadowed by a human claim on the same paths.
 		 */
 		async recentGeneratedPaths(
 			windowMs: number,
-			kind: Writer["kind"] = "agent",
+			kinds: Writer["kind"] | Writer["kind"][] = "agent",
 		): Promise<Set<string>> {
+			const wanted = new Set(Array.isArray(kinds) ? kinds : [kinds]);
 			const cutoff = Date.now() - windowMs;
 			const claimed = new Set<string>();
 			for (const name of await safeReaddir(paths.sessions)) {
@@ -326,7 +332,7 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 				}
 				try {
 					const writer = await readYamlFile(writerFile, writerSchema);
-					if (writer.kind !== kind) {
+					if (!wanted.has(writer.kind)) {
 						continue;
 					}
 					const lines = await readFootprintLines(writer.id);

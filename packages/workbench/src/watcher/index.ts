@@ -83,7 +83,12 @@ export async function startWatcher(
 		const refs = [...gitPending];
 		gitPending.clear();
 		if (human.length > 0) {
-			const claimed = await bb.sessions.recentGeneratedPaths(10_000);
+			// TF-0150: git claims its own writes now, so a `git pull`'s files must
+			// not also be attributed to the person sitting at the editor.
+			const claimed = await bb.sessions.recentGeneratedPaths(10_000, [
+				"agent",
+				"git",
+			]);
 			const generated = [];
 			for (const path of human) {
 				if (claimed.has(path)) {

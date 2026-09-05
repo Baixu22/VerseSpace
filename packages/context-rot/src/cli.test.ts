@@ -163,4 +163,99 @@ describe("install-hooks 子命令", () => {
 	test("--help 透传给安装器并退出 0", async () => {
 		expect(await main(["install-hooks", "--help"])).toBe(0);
 	});
+
+	// TF-0134 验收五：封印点的接线随本安装器分发，装完即生效
+	test("同时装上封印点 PreToolUse hook，不需要手改 JSON", async () => {
+		const root = mkdtempSync(join(tmpdir(), "context-rot-seal-"));
+		tempRoots.push(root);
+		expect(await main(["install-hooks", root])).toBe(0);
+		const settings = JSON.parse(
+			readFileSync(join(root, ".claude", "settings.json"), "utf8"),
+		) as {
+			hooks: Record<
+				string,
+				Array<{ matcher?: string; hooks?: Array<{ command?: string }> }>
+			>;
+		};
+		const pre = settings.hooks.PreToolUse?.[0];
+		expect(pre?.matcher).toBe("Write|Edit|MultiEdit|NotebookEdit");
+		expect(pre?.hooks?.[0]?.command).toBe("workbench premises seal");
+	});
+
+	test("已有的其他 hook 条目在安装与卸载中都保留", async () => {
+		const root = mkdtempSync(join(tmpdir(), "context-rot-merge-"));
+		tempRoots.push(root);
+		mkdirSync(join(root, ".claude"), { recursive: true });
+		writeFileSync(
+			join(root, ".claude", "settings.json"),
+			JSON.stringify({
+				hooks: {
+					PreToolUse: [
+						{
+							matcher: "Bash",
+							hooks: [{ type: "command", command: "echo mine" }],
+						},
+					],
+				},
+			}),
+		);
+		await main(["install-hooks", root]);
+		const read = () =>
+			JSON.parse(
+				readFileSync(join(root, ".claude", "settings.json"), "utf8"),
+			) as { hooks?: Record<string, Array<{ matcher?: string }>> };
+		expect(read().hooks?.PreToolUse?.map((group) => group.matcher)).toEqual([
+			"Bash",
+			"Write|Edit|MultiEdit|NotebookEdit",
+		]);
+
+		await main(["install-hooks", root, "--uninstall"]);
+		// 卸载只摘掉自己那两条，用户自己的 Bash hook 原样留下
+		expect(read().hooks?.PreToolUse?.map((group) => group.matcher)).toEqual([
+			"Bash",
+		]);
+		expect(read().hooks?.PostToolUse).toBeUndefined();
+	});
+	// TF-0150 验收二：三个 git hook 随本安装器分发
+	test("装上 post-merge / post-checkout / post-rewrite 三个 git hook", async () => {
+		const root = mkdtempSync(join(tmpdir(), "context-rot-githook-"));
+		tempRoots.push(root);
+		mkdirSync(join(root, ".git"), { recursive: true });
+		expect(await main(["install-hooks", root])).toBe(0);
+		for (const name of ["post-merge", "post-checkout", "post-rewrite"]) {
+			const body = readFileSync(join(root, ".git", "hooks", name), "utf8");
+			expect(body).toContain("workbench sessions record");
+			// 观测者永不失败：脚本一定以 exit 0 收尾
+			expect(body.trimEnd().endsWith("exit 0")).toBe(true);
+		}
+		await main(["install-hooks", root, "--uninstall"]);
+		expect(existsSync(join(root, ".git", "hooks", "post-merge"))).toBe(false);
+	});
+
+	test("用户自己写的 git hook 不被覆盖，也不被卸载删掉", async () => {
+		const root = mkdtempSync(join(tmpdir(), "context-rot-githook-keep-"));
+		tempRoots.push(root);
+		mkdirSync(join(root, ".git", "hooks"), { recursive: true });
+		writeFileSync(
+			join(root, ".git", "hooks", "post-merge"),
+			["#!/bin/sh", "echo mine", ""].join("\n"),
+		);
+		await main(["install-hooks", root]);
+		expect(
+			readFileSync(join(root, ".git", "hooks", "post-merge"), "utf8"),
+		).toContain("echo mine");
+		// 另外两个仍然装上了
+		expect(existsSync(join(root, ".git", "hooks", "post-checkout"))).toBe(true);
+		await main(["install-hooks", root, "--uninstall"]);
+		expect(
+			readFileSync(join(root, ".git", "hooks", "post-merge"), "utf8"),
+		).toContain("echo mine");
+	});
+
+	test("不是 git 仓库时跳过 git hook，不报错", async () => {
+		const root = mkdtempSync(join(tmpdir(), "context-rot-nogit-"));
+		tempRoots.push(root);
+		expect(await main(["install-hooks", root])).toBe(0);
+		expect(existsSync(join(root, ".git"))).toBe(false);
+	});
 });
