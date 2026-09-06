@@ -48,9 +48,9 @@ describe("注释与字符串处理", () => {
 describe("导出面投影", () => {
 	test("函数体、类体不进投影，只有签名", () => {
 		expect(exportSurface(MODULE)).toEqual([
-			"export function add(a: number, b: number): number",
-			"export const NAME: string",
-			"export interface Writer { id: string; kind: string; }",
+			"export function add ( a : number , b : number ) : number",
+			"export const NAME : string",
+			"export interface Writer { id : string ; kind : string ; }",
 		]);
 	});
 

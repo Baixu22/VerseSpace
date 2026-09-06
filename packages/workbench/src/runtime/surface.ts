@@ -121,7 +121,14 @@ function readDeclaration(text: string, at: number): string | null {
 	let i = at;
 	while (i < text.length) {
 		const ch = text[i]!;
-		if (ch === "(") {
+		if (ch === '"' || ch === "'" || ch === "`") {
+			const quote = ch;
+			i += 1;
+			while (i < text.length && text[i] !== quote) {
+				i += text[i] === "\\" ? 2 : 1;
+			}
+			if (i >= text.length) return null;
+		} else if (ch === "(") {
 			paren += 1;
 		} else if (ch === ")") {
 			paren -= 1;
@@ -155,7 +162,13 @@ function readDeclaration(text: string, at: number): string | null {
 }
 
 function normalize(signature: string): string {
-	return signature.replace(/\s+/g, " ").trim();
+	// Formatting belongs between tokens. Whitespace inside a literal is data:
+	// collapsing it would hide a real change to an exported string-literal type.
+	// Templates remain verbatim; this scanner does not interpret expressions.
+	const tokens = signature.match(
+		/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|[\p{ID_Start}_$][\p{ID_Continue}$]*|\d+(?:\.\d+)?|===|!==|>>>|\*\*|=>|==|!=|<=|>=|\+\+|--|&&|\|\||\?\?|\?\.|\.\.\.|<<|>>|[^\s]/gu,
+	);
+	return (tokens ?? []).join(" ");
 }
 
 /**
