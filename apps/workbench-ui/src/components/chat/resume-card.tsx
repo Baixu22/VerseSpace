@@ -16,6 +16,7 @@ const FACTS_PREVIEW_COUNT = 3;
 function FactRow({ fact }: { fact: ResumeCardFactRow }) {
 	const [open, setOpen] = useState(false);
 	const recordAction = useChatStore((s) => s.recordResumeAction);
+	const switchThread = useChatStore((s) => s.switchThread);
 	return (
 		<li className="rounded border border-border-subtle px-2 py-1.5 text-micro">
 			<div className="flex items-start gap-2">
@@ -25,6 +26,18 @@ function FactRow({ fact }: { fact: ResumeCardFactRow }) {
 				>
 					{fact.path}
 				</span>
+				{fact.branch ? (
+					<button
+						type="button"
+						className="shrink-0 cursor-pointer text-accent-default hover:underline"
+						onClick={() => {
+							void recordAction("resume_branch_opened");
+							void switchThread(fact.branch!.threadId);
+						}}
+					>
+						查看分支
+					</button>
+				) : null}
 				<button
 					type="button"
 					className="shrink-0 text-fg-subtle hover:text-fg-default"
@@ -47,7 +60,13 @@ function FactRow({ fact }: { fact: ResumeCardFactRow }) {
 			) : null}
 			{open ? (
 				<div className="mt-1 space-y-1 text-fg-subtle">
-					{fact.diff ? (
+					{fact.branch ? (
+						<ul className="max-h-40 overflow-auto">
+							{fact.branch.paths.map((path) => (
+								<li key={path}>{path}</li>
+							))}
+						</ul>
+					) : fact.diff ? (
 						<pre className="max-h-40 overflow-auto rounded bg-bg-base p-1.5 font-mono text-micro">
 							{fact.diff}
 						</pre>
@@ -89,7 +108,6 @@ function NarrativeRow({ row }: { row: ResumeCardNarrativeRow }) {
 export function ResumeCard() {
 	const card = useChatStore((s) => s.resumeCard);
 	const note = useChatStore((s) => s.resumeNote);
-	const diff = useChatStore((s) => s.readSetDiff);
 	const delta = useChatStore((s) => s.resumeDelta);
 	const dismissed = useChatStore((s) => s.resumeCardDismissed);
 	const revealed = useChatStore((s) => s.resumeCardRevealed);
@@ -143,6 +161,7 @@ export function ResumeCard() {
 					</button>
 				) : null}
 			</div>
+			<div className="mt-2 text-micro text-fg-subtle">{card.coverage.text}</div>
 			{facts.length > 0 ? (
 				<div className="mt-2">
 					<div className="text-micro text-fg-subtle">
@@ -151,7 +170,7 @@ export function ResumeCard() {
 					<ul className="mt-1.5 space-y-1.5">
 						{visibleFacts.map((fact) => (
 							<FactRow
-								key={`${fact.source}-${fact.path}-${fact.currentVersion ?? "missing"}`}
+								key={`${fact.source}-${fact.branch?.threadId ?? fact.path}-${fact.currentVersion ?? "missing"}`}
 								fact={fact}
 							/>
 						))}
@@ -185,21 +204,6 @@ export function ResumeCard() {
 						<NarrativeRow key={`${row.kind}-${index}`} row={row} />
 					))}
 				</ol>
-			) : null}
-			{diff ? (
-				<div className="mt-2 border-t border-border-subtle pt-2 text-micro text-fg-subtle">
-					{"\u524d\u63d0\u76d1\u6d4b\uff1a\u5df2\u6bd4\u5bf9"} {diff.comparable}
-					/{diff.compared} {"\u4e2a\u53ef\u6bd4\u524d\u63d0"}
-					{diff.unsupported > 0
-						? ` \u00b7 ${diff.unsupported} \u4e2a\u8303\u56f4\u672a\u77e1`
-						: ""}
-					{diff.uncoveredTools.length > 0
-						? ` \u00b7 \u672a\u8986\u76d6\u5de5\u5177\uff1a${diff.uncoveredTools.join("\u3001")}`
-						: ""}
-					{diff.status === "unknown"
-						? " \u00b7 \u79bb\u5f00\u57fa\u51c6\u4e0d\u8db3\uff0c\u5f53\u524d\u65e0\u6cd5\u5224\u65ad\u8bfb\u96c6\u53d8\u5316\u3002"
-						: ""}
-				</div>
 			) : null}
 		</div>
 	);

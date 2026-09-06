@@ -3,14 +3,11 @@ import { existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
-import { collectDecisionPoints } from "../chat/ledger";
-import { buildResumeCard, isResumeCardDismissed } from "../chat/resume-card";
-import { suggestNext } from "../chat/suggest";
+import { collectRestoreView } from "../chat/restore-view";
 import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
 import { drainPremiseQueue } from "../runtime/delivery";
 import { reconcilePremises } from "../runtime/premises";
-import { diffReadSet } from "../runtime/read-set-diff";
 import { workbenchConfigSchema } from "../types/config";
 import { WORKBENCH_VERSION } from "../version";
 
@@ -438,39 +435,7 @@ export async function createUiServer(
 			const threadId = decodeURIComponent(chatMatch[1] ?? "");
 			const sub = chatMatch[3];
 			if (!sub && request.method === "GET") {
-				const [meta, messages] = await Promise.all([
-					chat.get(threadId),
-					chat.messages(threadId),
-				]);
-				const readSetDiff = await diffReadSet(
-					bb,
-					threadId,
-					meta.resumeNote?.leaveSignature,
-				);
-				const threadEvents = await bb.events.query({ source: "threads" });
-				const resumeCardDismissed = isResumeCardDismissed(
-					threadEvents,
-					threadId,
-					meta.resumeNote?.leaveSignature.eventId,
-				);
-				const resumeCard = buildResumeCard({
-					note: meta.resumeNote ?? null,
-					diff: readSetDiff,
-					dismissed: resumeCardDismissed,
-				});
-				// TF-0095：建议与决策账本由同一组纯函数在服务端推导，
-				// UI 是纯渲染层——无分歧时账本为空数组（完全不渲染）
-				// TF-0097：resumeNote 随 meta 持久化，离开时生成、返回时呈现
-				return Response.json({
-					meta,
-					messages,
-					suggestions: suggestNext(messages),
-					decisionPoints: collectDecisionPoints(messages, meta),
-					resumeNote: meta.resumeNote ?? null,
-					readSetDiff,
-					resumeCard,
-					resumeCardDismissed,
-				});
+				return Response.json(await collectRestoreView(bb, chat, threadId));
 			}
 			if (sub === "cancel" && request.method === "POST") {
 				chat.cancel(threadId);

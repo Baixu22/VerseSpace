@@ -1,178 +1,26 @@
-/**
- * Dual-channel restore card (TF-0128).
- *
- * Narrative is a reminder; facts are the disagreement. Conflict never rewrites
- * narrative text -- it only annotates. A card with no note and no stale facts
- * does not render. One dismiss suppresses the next automatic inject.
- */
+/** Dual-channel restore card: narrative reminders and evidence-backed facts. */
+import type { ReadSetDiff, ReadSetFact } from "../../runtime/read-set-diff";
+import type { ResumeBeat, ResumeNote } from "../resume";
+import { coverageOf } from "./coverage";
+import type {
+	ClaimObservation,
+	ConflictAnnotation,
+	ConflictRule,
+	FactRow,
+	NarrativeRow,
+	RepoFact,
+	ResumeCardView,
+} from "./types";
 
-import type { ReadSetDiff, ReadSetFact } from "../runtime/read-set-diff";
-import type { ResumeBeat, ResumeNote } from "./resume";
-
-export const FACTS_PREVIEW_COUNT = 3;
-
-export type ConflictRule =
-	| "R1"
-	| "R2"
-	| "R3"
-	| "R4"
-	| "R5"
-	| "R6"
-	| "R7"
-	| "R8"
-	| "R9";
-
-export interface ClaimObservation {
-	path: string;
-	claimedVersion?: string | null;
-	preWriteVersion?: string | null;
-	movedTo?: string | null;
-}
-
-export interface RepoFact {
-	path: string;
-	currentVersion: string | null;
-	writerId?: string | null;
-	writerLabel?: string | null;
-	refs: string[];
-}
-
-export interface ConflictAnnotation {
-	rule: ConflictRule;
-	label: string;
-}
-
-export interface NarrativeRow {
-	kind: "doing" | "decided" | "next";
-	text: string;
-	refs: string[];
-	annotation?: ConflictAnnotation;
-}
-
-export interface FactRow {
-	path: string;
-	summary: string;
-	refs: string[];
-	observedVersion?: string;
-	currentVersion?: string | null;
-	writerId?: string | null;
-	writerLabel?: string | null;
-	diff?: string;
-	annotation?: ConflictAnnotation;
-	source: "read-set" | "shifted";
-}
-
-export interface ResumeCardView {
-	/**
-	 * The facts section's first line (TF-0129): how much of the read set could
-	 * actually be checked. It is its own field rather than `facts[0]` so no
-	 * preview cut can push it out of view and so it never consumes one of the
-	 * `FACTS_PREVIEW_COUNT` slots.
-	 */
-	coverage: CoverageRow;
-	narrative: NarrativeRow[];
-	facts: FactRow[];
-	dismissed: boolean;
-	/** Auto-inject into the restore surface. False after one dismiss. */
-	inject: boolean;
-}
-
-export interface CoverageRow {
-	/** `unknown` whenever no honest ratio exists — never a reassuring default. */
-	status: "available" | "unknown";
-	compared: number;
-	comparable: number;
-	changed: number;
-	excludedDurable: number;
-	excludedDirectories: number;
-	unsupported: number;
-	uncoveredTools: string[];
-	/** Rendered line. Always non-empty; never claims nothing changed. */
-	text: string;
-}
-
-/**
- * Wordings the card must never produce (TF-0129 验收一、五).
- *
- * A restore card is a fact check over a partial read set. "No changes" and
- * "safe" are conclusions it is not entitled to draw: the read set may have
- * covered nothing at all, and a writer who is told "safe" once and burned once
- * will not read the card again.
- */
-export const FORBIDDEN_CARD_PHRASES = [
-	"无变化",
-	"没有变化",
-	"没有改动",
-	"安全",
-	"一切正常",
-] as const;
-
-function coverageOf(diff: ReadSetDiff | null, changed: number): CoverageRow {
-	const base = {
-		compared: diff?.compared ?? 0,
-		comparable: diff?.comparable ?? 0,
-		changed,
-		excludedDurable: diff?.excludedDurable ?? 0,
-		excludedDirectories: diff?.excludedDirectories ?? 0,
-		unsupported: diff?.unsupported ?? 0,
-		uncoveredTools: diff?.uncoveredTools ?? [],
-	};
-	const tools =
-		base.uncoveredTools.length > 0
-			? `；未覆盖的工具：${base.uncoveredTools.join("、")}`
-			: "";
-	const excluded: string[] = [];
-	if (base.excludedDirectories > 0) {
-		excluded.push(`${base.excludedDirectories} 个目录检索`);
-	}
-	if (base.excludedDurable > 0) {
-		excluded.push(`${base.excludedDurable} 个可复现文件`);
-	}
-	const excludedText =
-		excluded.length > 0 ? `（已剔除 ${excluded.join(" / ")}）` : "";
-
-	if (diff === null || diff.status === "unknown") {
-		return {
-			...base,
-			status: "unknown",
-			text: "覆盖范围未知：没有离开时的读集基线，无法判断这次离开期间哪些前提变过。",
-		};
-	}
-	if (base.comparable === 0) {
-		return {
-			...base,
-			status: "unknown",
-			text:
-				`覆盖范围未知：${base.compared} 个读取里 0 个可比对${excludedText}${tools}。` +
-				"这张卡片没有依据判断你的前提是否还成立。",
-		};
-	}
-	return {
-		...base,
-		status: "available",
-		text: `覆盖率：${base.compared} 个读取里 ${base.comparable} 个可比对，其中 ${base.changed} 个已变${excludedText}${tools}。`,
-	};
-}
-
-export interface LifecycleEventLike {
-	type: string;
-	id?: string;
-	eventSeq?: number;
-	payload: unknown;
-}
+export { FORBIDDEN_CARD_PHRASES } from "./coverage";
+export { isResumeCardDismissed, type LifecycleEventLike } from "./dismissal";
+export * from "./types";
 
 const PATH_RE = /(?:[\w.-]+\/)+[\w.-]+\.\w+/g;
 
 export function extractPaths(text: string): string[] {
 	const found = text.match(PATH_RE) ?? [];
 	return [...new Set(found.map((path) => path.replace(/\\/g, "/")))];
-}
-
-function payloadOf(event: LifecycleEventLike): Record<string, unknown> | null {
-	const payload = event.payload;
-	return payload && typeof payload === "object" && !Array.isArray(payload)
-		? (payload as Record<string, unknown>)
-		: null;
 }
 
 function beatRefs(beat: ResumeBeat): string[] {
@@ -295,70 +143,12 @@ function isStaleConflict(path: string, stale: ReadSetFact[]): boolean {
 	);
 }
 
-/**
- * Dismiss is an append-only observation. A later thread.left opens a new
- * visit, so an older dismiss must not suppress the new card.
- */
-export function isResumeCardDismissed(
-	events: LifecycleEventLike[],
-	threadId: string,
-	leaveEventId?: string | null,
-): boolean {
-	let leaveIndex = -1;
-	let leaveSeq: number | null = null;
-	for (let index = 0; index < events.length; index += 1) {
-		const event = events[index]!;
-		if (event.type !== "thread.left") {
-			continue;
-		}
-		const payload = payloadOf(event);
-		if (payload?.threadId !== threadId) {
-			continue;
-		}
-		if (leaveEventId) {
-			if (event.id === leaveEventId) {
-				leaveIndex = index;
-				leaveSeq = event.eventSeq ?? null;
-			}
-			continue;
-		}
-		leaveIndex = index;
-		leaveSeq = event.eventSeq ?? null;
-	}
-	for (let index = 0; index < events.length; index += 1) {
-		const event = events[index]!;
-		if (event.type !== "thread.resume_action") {
-			continue;
-		}
-		const payload = payloadOf(event);
-		if (
-			payload?.threadId !== threadId ||
-			payload?.action !== "resume_card_dismissed"
-		) {
-			continue;
-		}
-		if (leaveSeq != null && event.eventSeq != null) {
-			if (event.eventSeq > leaveSeq) {
-				return true;
-			}
-			continue;
-		}
-		if (leaveIndex >= 0) {
-			if (index > leaveIndex) {
-				return true;
-			}
-			continue;
-		}
-		return true;
-	}
-	return false;
-}
-
 export function buildResumeCard(input: {
 	note: ResumeNote | null;
 	diff: ReadSetDiff | null;
 	dismissed?: boolean;
 	promotionReverted?: boolean;
+	branchFacts?: FactRow[];
 }): ResumeCardView | null {
 	const dismissed = Boolean(input.dismissed);
 	const stale = input.diff?.stale ?? [];
@@ -461,6 +251,8 @@ export function buildResumeCard(input: {
 			}
 		}
 	}
+
+	facts.push(...(input.branchFacts ?? []).filter((row) => row.refs.length > 0));
 
 	if (narrative.length === 0 && facts.length === 0) {
 		// TF-0128 still holds: no note and no disagreement renders nothing. The
