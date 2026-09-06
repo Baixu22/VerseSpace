@@ -83,9 +83,11 @@
           "判据已代码化：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0；sampleWindow() = restores≥3 ∧ noticeOutcomes≥5 ∧ sealDecisions≥3（SAMPLE_WINDOW_TARGETS，ledger.test.ts 钉规则）",
           "E2E 租户实证：scripts/e2e/run.ts 对持久工作区连续四轮真进程跑（真 CLI + 真 HTTP 服务 + 真 git 写者），样本窗口从 1/3·1/5·1/3 累积到 7/3·5/5·7/3，satisfied=true——窗口机制按设计工作",
           "旧的两周口径废除：stats.dataQuality 的「窗口短于 7/14 天」日历判据已删，代之以「no restore cycle observed」等行为样本判据；observation.minimumDays 字段删除",
-          "本仓库黑板仍零线程：t0 对本仓库而言未开始；E2E 租户黑板（OS 临时目录）是独立样本源，不冒充本仓库日用"
+          "2026-09-06 用户确认：E2E 租户登记为正式样本源。t0 = 2026-09-06T06:35:51.936Z（租户黑板首条 thread.created，eventSeq=1；init 不写事件，无自举噪音，采样边界即 seq 1）",
+          "真 LLM 腿已接入：chat.provider=openai-chat（OpenRouter minimax-m3:free）经 /api/config/chat 切换，真流式回合落库（HTTP provider 无工具通道，足迹 unobservable——诚实标注）；确定性 agent 腿与之并存，回合前后互不影响",
+          "本仓库黑板仍零线程：E2E 租户黑板（OS 临时目录）是登记过的独立样本源，不冒充本仓库日用"
         ],
-        "next_action": "判据与窗口已代码化并实证；等本仓库第一条真实线程与注册写者点亮 t0，或在用户确认下把 E2E 租户登记为正式样本源。",
+        "next_action": "已登记：E2E 租户为正式样本源（t0=2026-09-06T06:35:51.936Z，eventSeq=1，样本窗口 satisfied）；TF-0136 四项判决按样本数据裁决即可，不受日历约束。",
         "status": "blocked"
       },
       "id": "TF-0141"
@@ -128,7 +130,7 @@
     }
   ],
   "created_at": "2026-09-06T04:30:00.000000Z",
-  "rationale": "两部分工作合入一份提案（同一 base hash，避免两份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库（修复 cli.ts 加载缺陷、补 review-seal 测试钉与 seal-review 8 个单测），TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（restores≥3 / noticeOutcomes≥5 / sealDecisions≥3，SAMPLE_WINDOW_TARGETS 代码化并有规则单测），TF-0136 判决一至四的数值门槛不变、只换时间框架。E2E 已抓到并修复一个真实跨写者缺陷（agent 绝对路径与 git 相对路径在账本里是两种身份，hashPathClaim 现统一归一为项目相对）。E2E 租户四轮实证样本窗口可凑齐。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
+  "rationale": "两部分工作合入一份提案（同一 base hash，避免两份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库（修复 cli.ts 加载缺陷、补 review-seal 测试钉与 seal-review 8 个单测），TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（restores≥3 / noticeOutcomes≥5 / sealDecisions≥3，SAMPLE_WINDOW_TARGETS 代码化并有规则单测），TF-0136 判决一至四的数值门槛不变、只换时间框架。E2E 已抓到并修复两个真实缺陷：跨写者路径身份（agent 绝对路径 vs git 相对路径，hashPathClaim 归一）与 UI 面板源码模式永远回退兜底页（dev-dist 相对路径少一级，用户报告的「页面全空」即此）。E2E 租户经用户确认登记为正式样本源：t0=2026-09-06T06:35:51.936Z / eventSeq=1，四轮后样本窗口 satisfied；真 LLM 腿（OpenRouter minimax-m3:free，openai-chat 流式）与确定性 agent 腿并存。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
   "session_id": "zcode-2026-09-06-tf0151-r10",
   "status": "proposed"
 }
