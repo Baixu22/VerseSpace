@@ -237,10 +237,79 @@
         "status": "done"
       },
       "id": "TF-0110"
+    },
+    {
+      "action": "add_node",
+      "alias": "tf0154-landmark-review",
+      "node": {
+        "acceptance_criteria": [
+          "手势只对当前投影里的条目有效：不在地标集合中的 handle 拒绝复核",
+          "landmark.reviewed 事件只认 source=human 与合法 verdict，坏 payload 不进折叠",
+          "L1 读数分母是整个当前地标集合（endorsedShare），复核覆盖单列（reviewedCoverage），不以局部复核冒充集合认可率",
+          "修正以新事件追加：同一地标取最新一次结论",
+          "负载与账本接通：E2E 每轮一次复核（1/5 轮 reject），fit 账本出现 TF-0154 的 component 行"
+        ],
+        "alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.85,
+          "user_goal": "Helmor = 写者中立的前提账本：对每个写者回答『你上次看到的东西，现在还成立吗』，而『这次干的活的核心』是否被用户认可是同一问题的注意面",
+          "validation_plan": [
+            "L1 读数随租户与真实使用累积",
+            "endorsedShare ≥ 0.8 时 TF-0057 的 L1 验收可判"
+          ],
+          "why_not_enough": "复核手势只产生认可数据，不保证地标投影本身的质量——投影质量由 DOI 与判决一承载",
+          "why_this_task": "TF-0057 的 L1 验收（地标 80% 用户认可）此前没有任何事件通道，是全局目标最后一块只能等的数据源"
+        },
+        "blocked_by": [],
+        "confidence": 0.85,
+        "context_tags": [
+          "landmark",
+          "l1",
+          "反馈手势"
+        ],
+        "created_at": "2026-09-06T10:05:00.000000Z",
+        "deprecated_at": null,
+        "desired_outcomes": [
+          "每个写者的地标集合有人工认可的量化读数",
+          "L1 验收从『只能等』变成『有数据可判』"
+        ],
+        "deviations": [],
+        "difficulty": "low",
+        "estimated_total_minutes": null,
+        "evidence": [
+          "landmark.reviewed 事件（source=human）+ reviewLandmark 手势校验（不在投影中拒绝）+ collectLandmarkReviews/foldLandmarkReviews/landmarkReviewJudgement 三件套（review.test.ts 5 测）",
+          "CLI：workbench context review <handle> --writer <id> --endorse|--reject [--reason]；cli.test 钉住 context 子树 [list, lower, review]",
+          "stats.landmarkReviews 折叠进 collectChatStats；fit 账本新增 TF-0154 component probe（认可率 ≥0.8 aligned）",
+          "E2E S8b 每轮一次复核（1/5 轮 reject，endorse 占比 0.8 正好落在 L1 口径），真进程验证事件落库",
+          "L1 判定的分母纪律：endorsedShare 以整个当前地标集合为分母，coverage 单列——只复核两条就说 80% 是自欺"
+        ],
+        "execution_hints": [],
+        "id": "TF-0154",
+        "kind": "task",
+        "non_goals": [
+          "不改变地标投影算法本身（DOI 归 TF-0088/0110）",
+          "不做 UI 手势（CLI 先行，UI 另立）"
+        ],
+        "priority": 1,
+        "progress": 100,
+        "progress_source": "manual",
+        "purpose": "给 TF-0057 的 L1 验收（地标集合 80% 用户认可）建事件通道，让全局目标最后一块『只能等』的验收变成有数据可判。",
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "requirements": [],
+        "source_sessions": [],
+        "status": "done",
+        "success_metrics": [
+          "landmark.reviewed 事件随使用累积，L1 认可率可从账本直接读出"
+        ],
+        "summary": "人工复核地标的手势落成事件通道：context review CLI + human 来源的 landmark.reviewed 事件 + 三件套折叠/判定 + stats 与 fit 账本接入 + E2E 负载腿。TF-0057 的 L1 验收自此有数据源。",
+        "title": "地标认可反馈：L1 验收的事件通道",
+        "updated_at": "2026-09-06T10:05:00.000000Z"
+      }
     }
   ],
   "created_at": "2026-09-06T04:30:00.000000Z",
-  "rationale": "四部分工作合入一份提案（同一 base hash，避免多份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库，TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（SAMPLE_WINDOW_TARGETS 代码化并有规则单测）。其三，TF-0136 四项判决按样本数据做出（docs/tf0136-verdict.md，样本源=E2E 租户，t0=2026-09-06T06:35:51.936Z/eventSeq=1，95 线程/57 写者）：判决一通过（17/56=0.304，恢复卡保留叙事）、判决二通过（0/17 全零比，不加第 4 层谓词）、判决三通过（forks 50≥5 且 TF-0140 Q1 成立，阶段 C 不延后）、判决四砍 L3（事件结构性为零，TF-0099/0100/0101 废止）。其四，阶段 D 与 fit 账本收口：账本新增 --scope 双源参数（森林行集 + 租户值），unknown 从 25/25 降到 10/25 且逐行可解释，TF-0135/0137/0141 全部收口 done；护城河四数字齐备（A=61、B=2、C=23、D=0.16 带内命中过），benchmark 闸门开。E2E 累计抓到并修复三个真实缺陷：跨写者路径身份归一、UI 源码模式兜底页路径、Bun.serve 10s idle timeout 杀慢启动模型流。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。 其五，2026-09-06 用户决定不考虑 npm 发布：TF-0119 永久关闭；风险节点 TF-0107/TF-0110 随对策落地与校准数据收敛为 done。",
+  "rationale": "四部分工作合入一份提案（同一 base hash，避免多份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库，TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（SAMPLE_WINDOW_TARGETS 代码化并有规则单测）。其三，TF-0136 四项判决按样本数据做出（docs/tf0136-verdict.md，样本源=E2E 租户，t0=2026-09-06T06:35:51.936Z/eventSeq=1，95 线程/57 写者）：判决一通过（17/56=0.304，恢复卡保留叙事）、判决二通过（0/17 全零比，不加第 4 层谓词）、判决三通过（forks 50≥5 且 TF-0140 Q1 成立，阶段 C 不延后）、判决四砍 L3（事件结构性为零，TF-0099/0100/0101 废止）。其四，阶段 D 与 fit 账本收口：账本新增 --scope 双源参数（森林行集 + 租户值），unknown 从 25/25 降到 10/25 且逐行可解释，TF-0135/0137/0141 全部收口 done；护城河四数字齐备（A=61、B=2、C=23、D=0.16 带内命中过），benchmark 闸门开。E2E 累计抓到并修复三个真实缺陷：跨写者路径身份归一、UI 源码模式兜底页路径、Bun.serve 10s idle timeout 杀慢启动模型流。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。 其五，2026-09-06 用户决定不考虑 npm 发布：TF-0119 永久关闭；风险节点 TF-0107/TF-0110 随对策落地与校准数据收敛为 done。 其六，新功能 TF-0154（地标认可反馈）：TF-0057 的 L1 验收此前没有事件通道；本轮落地 context review 手势 + landmark.reviewed 事件 + 折叠/判定三件套 + stats/账本接入 + E2E 负载腿（1/5 轮 reject 使 endorse 占比落在 80% 口径），随本提案立节点并以 done 入库。",
   "session_id": "zcode-2026-09-06-tf0151-r10",
   "status": "proposed"
 }

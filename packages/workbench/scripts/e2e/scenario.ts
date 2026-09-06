@@ -795,8 +795,40 @@ export async function runE2E(
 			return { before: before.visible, after: after.visible };
 		});
 
+		// L1 认可手势（TF-0154）：对当前投影的地标做人工复核。五分之一轮次
+		// reject—— endorse 占比 4/5 = 0.8，正好落在 L1 验收的 80% 口径上；
+		// 全 endorse 又是退化负载，发不出真实信号。
 		const roundIndex = Number(process.env.E2E_ROUND_INDEX ?? "1");
-		if (roundIndex % 3 === 0) {
+		await step("S8b 地标认可手势（TF-0057 L1 数据源）", async () => {
+			const list = await cliJson<{ landmarks: Array<{ handle: string }> }>(ws, [
+				"context",
+				"list",
+				"--writer",
+				threadId,
+			]);
+			const top = list.landmarks[0]?.handle;
+			if (!top) throw new Error("地标投影为空");
+			const rejectRound = roundIndex % 5 === 0;
+			const review = await cli(ws, [
+				"--json",
+				"context",
+				"review",
+				top,
+				"--writer",
+				threadId,
+				rejectRound ? "--reject" : "--endorse",
+				...(rejectRound ? ["--reason", "这条不是核心"] : []),
+			]);
+			if (review.code !== 0) {
+				throw new Error(`review 失败：${review.stderr || review.stdout}`);
+			}
+			const reviewed = await lastEventFor(ws, "landmark.reviewed", threadId);
+			if (!reviewed) throw new Error("landmark.reviewed 事件未落库");
+			return { handle: top, verdict: rejectRound ? "reject" : "endorse" };
+		});
+
+		const roundIndexDismiss = Number(process.env.E2E_ROUND_INDEX ?? "1");
+		if (roundIndexDismiss % 3 === 0) {
 			// 判决二（TF-0136）：dismissed/notified ≤ 0.5 才算通过——每轮都
 			// dismiss 会把比值顶到 1.0，退化负载发不出真实信号。三分之一轮次
 			// dismiss 是「有时觉得打扰」的真实形状。

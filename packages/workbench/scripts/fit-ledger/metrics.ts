@@ -249,4 +249,20 @@ export const PROBES: Record<string, Probe> = {
 		trace:
 			"docs/tf0136-verdict.md；fit 账本租户直方图（unknown 25/25 → 10/25）",
 	},
+	"TF-0154": {
+		kind: "component",
+		metric:
+			"L1 认可率：endorsed /（endorsed + rejected），≥0.8 为 aligned（TF-0057 L1 的 80% 口径；对集合的 coverage 单列）",
+		source: "events[landmark.reviewed]（source=human）",
+		read: (ctx) => {
+			const { endorsed, rejected } = ctx.stats.landmarkReviews;
+			const samples = endorsed + rejected;
+			return {
+				value: samples > 0 ? endorsed / samples : null,
+				samples,
+			};
+		},
+		judge: (value) =>
+			value >= 0.8 ? "aligned" : value >= 0.5 ? "partial" : "weak",
+	},
 };

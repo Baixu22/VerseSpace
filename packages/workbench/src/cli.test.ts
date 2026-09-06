@@ -68,6 +68,20 @@ describe("buildProgram", () => {
 		]);
 	});
 
+	test("context subtree exposes inspection, lowering and landmark review", () => {
+		const context = buildProgram().commands.find(
+			(command) => command.name() === "context",
+		);
+		if (!context) {
+			throw new Error("context command is missing");
+		}
+		expect(context.commands.map((command) => command.name())).toEqual([
+			"list",
+			"lower",
+			"review",
+		]);
+	});
+
 	test("tribunal subtree exposes the queue's four verbs and its numbers", () => {
 		const tribunal = buildProgram().commands.find(
 			(command) => command.name() === "tribunal",

@@ -1,4 +1,5 @@
 import type { Blackboard } from "../blackboard";
+import { foldLandmarkReviews } from "../interactions/review";
 import {
 	foldNoticeOutcomes,
 	type NoticeOutcomeTotals,
@@ -71,6 +72,12 @@ export interface ChatStats {
 	 * human-side resume-card actions. Both columns come from the same log.
 	 */
 	noticeOutcomes: NoticeOutcomeTotals;
+	/** 人工地标复核计数（TF-0154）：L1 验收「80% 用户认可」的数据源。 */
+	landmarkReviews: {
+		endorsed: number;
+		rejected: number;
+		lastAt: string | null;
+	};
 	dataQuality: {
 		insufficientHistory: boolean;
 		reasons: string[];
@@ -431,6 +438,7 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		premises: foldPremisePasses(events),
 		seal: foldSealDecisions(events),
 		noticeOutcomes: foldNoticeOutcomes(events),
+		landmarkReviews: foldLandmarkReviews(events),
 		dataQuality: {
 			insufficientHistory:
 				threads.length === 0 || withFootprints === 0 || restores === 0,

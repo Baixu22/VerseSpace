@@ -57,6 +57,7 @@ function stats(over: Record<string, unknown> = {}): ChatStats {
 		premises: { passes: 0, notifiedRatio: null },
 		seal: { decisions: 0, blocked: 0 },
 		noticeOutcomes: { rows: 0, agent: { unknownBy: { unobservable: 0 } } },
+		landmarkReviews: { endorsed: 0, rejected: 0, lastAt: null },
 		dataQuality: { insufficientHistory: true, reasons: [] },
 	};
 	return { ...base, ...over } as unknown as ChatStats;
