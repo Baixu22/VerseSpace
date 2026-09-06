@@ -29,9 +29,9 @@ describe("buildProgram", () => {
 			"doctor",
 			"ui",
 			"config",
+			"context",
 		]);
 	});
-
 	test("goal subtree exposes its subcommands", () => {
 		const goal = buildProgram().commands.find(
 			(command) => command.name() === "goal",
@@ -46,7 +46,6 @@ describe("buildProgram", () => {
 			"cancel",
 		]);
 	});
-
 	test("premises subtree exposes inspection and the seal hook", () => {
 		const premises = buildProgram().commands.find(
 			(command) => command.name() === "premises",
@@ -65,7 +64,6 @@ describe("buildProgram", () => {
 			"--mode",
 		]);
 	});
-
 	test("tribunal subtree exposes the queue's four verbs and its numbers", () => {
 		const tribunal = buildProgram().commands.find(
 			(command) => command.name() === "tribunal",
@@ -81,14 +79,12 @@ describe("buildProgram", () => {
 			"stats",
 		]);
 	});
-
 	test("dispatch exposes the CONWIP override as an explicit flag", () => {
 		const dispatch = buildProgram().commands.find(
 			(command) => command.name() === "dispatch",
 		);
 		expect(dispatch?.options.map((option) => option.long)).toContain("--force");
 	});
-
 	test("global flags include --json and --quiet", () => {
 		const longFlags = buildProgram().options.map((option) => option.long);
 		expect(longFlags).toContain("--json");

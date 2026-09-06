@@ -18,7 +18,12 @@
  * handle 的 DOI 分类。上下文年龄 = 事件流首条时间到当前时间的跨度。
  */
 
-import type { ContentType, InteractionEvent, InteractionKind } from "./types";
+import {
+	type ContentType,
+	INTERACTION_WEIGHT,
+	type InteractionEvent,
+	type InteractionKind,
+} from "./types";
 
 export interface DoiConfig {
 	/** 每种交互的权重：selection=1, edit=2, command=0（出厂常数）。 */
@@ -44,7 +49,7 @@ export interface DoiConfig {
 }
 
 export const DEFAULT_DOI_CONFIG: DoiConfig = {
-	weight: { selection: 1, edit: 2, command: 0 },
+	weight: { ...INTERACTION_WEIGHT },
 	decayPerHour: 0.1,
 	visibleFloor: 0,
 	landmarkFloor: 10,
@@ -190,6 +195,21 @@ export function computeDoi(
 	for (const ev of events) {
 		const at = Date.parse(ev.time);
 		if (!Number.isFinite(at)) {
+			continue;
+		}
+		if (ev.kind === "interest-reduced") {
+			const state = states.get(ev.handle);
+			if (state) {
+				// A deliberate reduction is not a touch and never boosts parents.
+				// The next real selection/edit uses the usual reset rule.
+				decayTo(
+					state,
+					at,
+					lifecycleAt(Math.max(0, at - contextStart), config).scale,
+				);
+				state.score = Math.min(state.score, config.visibleFloor);
+				state.lastTouch = at;
+			}
 			continue;
 		}
 		touch(ev.handle, ev.contentType, config.weight[ev.kind] ?? 0, at);

@@ -66,6 +66,7 @@ workbench watch
 | `stats` | 分叉、恢复、通知结局与样本不足情况 |
 | `sessions list/record` | 写者记录；登记 git 或人的文件改动 |
 | `premises` | 查看前提失效与通知；显式封印点 |
+| `context list/lower --writer <id>` | 查看隐式上下文及降低兴趣次数；降低过时条目的兴趣，再次读取后自动恢复 |
 
 所有命令支持 `--json`（机器可读）与 `--quiet`。
 

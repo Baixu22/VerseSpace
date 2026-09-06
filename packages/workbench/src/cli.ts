@@ -11,6 +11,7 @@ import { dispatchCommand } from "./commands/dispatch";
 import { doctorCommand } from "./commands/doctor";
 import { goalAdd, goalCancel, goalList, goalShow } from "./commands/goal";
 import { initCommand } from "./commands/init";
+import { registerInterestCommands } from "./commands/interest";
 import {
 	interfaceCheck,
 	interfaceList,
@@ -496,5 +497,6 @@ export function buildProgram(): Command {
 			configSet(key, value, command),
 		);
 
+	registerInterestCommands(program);
 	return program;
 }

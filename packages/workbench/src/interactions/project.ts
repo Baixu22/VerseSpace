@@ -46,6 +46,7 @@ interface EventStats {
 function collectStats(events: InteractionEvent[]): Map<string, EventStats> {
 	const stats = new Map<string, EventStats>();
 	for (const ev of events) {
+		if (ev.kind === "interest-reduced") continue;
 		let s = stats.get(ev.handle);
 		if (!s) {
 			s = {

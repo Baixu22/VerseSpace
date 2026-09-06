@@ -11,13 +11,18 @@
  */
 
 /** 交互种类：selection=触碰未改，edit=改动（权重更高），command=无文件交互。 */
-export type InteractionKind = "selection" | "edit" | "command";
+export type InteractionKind =
+	| "selection"
+	| "edit"
+	| "command"
+	| "interest-reduced";
 
 /** DOI 出厂权重（TF-0088 消费）：selection=1，edit≈2，command=0。 */
 export const INTERACTION_WEIGHT: Record<InteractionKind, number> = {
 	selection: 1,
 	edit: 2,
 	command: 0,
+	"interest-reduced": 0,
 };
 
 /** contentType 取值：决定 DOI 向父级传播的层级（文件 → 目录 → 项目）。 */
