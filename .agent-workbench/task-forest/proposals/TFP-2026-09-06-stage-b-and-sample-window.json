@@ -104,13 +104,78 @@
           "四条判决结论写回 Task Forest，所有指标都有事件来源"
         ],
         "evidence": [
-          "2026-09-06 重设计：裁决的输入从「t0+14d 日历窗口」改为「样本窗口」（TF-0141），判决一至四的数值门槛不变，只换时间框架",
-          "样本来源可以是本仓库真实日用或经用户确认的 E2E 租户集成跑；两者都在账本里带 writer kind 与来源标注"
+          "2026-09-06 四项判决已按样本数据做出，判决书全文见 docs/tf0136-verdict.md（样本源=E2E 租户，t0=2026-09-06T06:35:51.936Z/eventSeq=1，95 线程/57 写者）",
+          "判决一 通过：resume_note_consumed/thread.restored = 17/56 = 0.304 ≥ 0.3，resume_action = 27 > 0 —— 恢复卡保留叙事段，继续投入",
+          "判决二 通过：dismissed/notified = 0/17 = 0 ≤ 0.5，ignored = 0 ≤ 0.1，repaired 16/17 = 94% —— 不加第 4 层谓词",
+          "判决三 通过：forks = 50 ≥ 5 且 TF-0140 Q1 成立（--resume --fork-session 实测接上）—— 阶段 C 不整体延后；附带读数 notifiedRatio 当前 0.087（too-quiet，dedup 重查漂移），TF-0133 开工门（>0.3）确认不满足",
+          "判决四 砍：variant.promoted / promotion_reverted 无事件生产者（types/event.ts 无此类型，样本窗口内零出现）—— 事件结构性为零，TF-0099 废止，TF-0100/0101 随之废止",
+          "判决书动作：TF-0099/0100/0101 → deprecated；TF-0130 维持 in_progress（只剩 TF-0133 的门控等待）；TF-0133 维持 blocked（0.087 < 0.3 证据入栏）"
         ],
-        "next_action": "t0 成立且样本窗口凑齐后，按既定四项门槛裁决。",
-        "status": "blocked"
+        "next_action": "已判决（2026-09-06，docs/tf0136-verdict.md）；四条结论随本提案写回森林，后续按判决执行。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done"
       },
       "id": "TF-0136"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 判决四（docs/tf0136-verdict.md）：L3 的事件类型无生产者（variant.promoted / promotion_reverted 不存在于事件系统），样本窗口凑齐后依然为零——按「无判据可满足（事件结构性为零）则砍」的既定门槛废止本节点",
+          "佐证沿用节点既有证据：ALLOY 正确性 9/12 vs 10/12、规格挖掘误报 90-99%、LLM 解冲突一致率 55-59%"
+        ],
+        "next_action": "已废止（判决四）；若未来出现真实衍生产物需求，须新立节点并重走证据门。",
+        "progress": 0,
+        "status": "deprecated"
+      },
+      "id": "TF-0099"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 判决四：依赖的 TF-0099 已废止（L3 事件结构性为零），本节点随之废止。"
+        ],
+        "next_action": "已废止（随判决四）。",
+        "status": "deprecated"
+      },
+      "id": "TF-0100"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 判决四：依赖的 TF-0099 已废止（L3 事件结构性为零），本节点随之废止。"
+        ],
+        "next_action": "已废止（随判决四）。",
+        "status": "deprecated"
+      },
+      "id": "TF-0101"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 判决三通过（forks 50 ≥ 5 且 TF-0140 Q1 成立）：阶段 C 不整体延后。子节点终态盘点：TF-0131/TF-0134 done，TF-0132/TF-0146 deprecated，TF-0133 blocked（自身开工门 notifiedRatio > 0.3 不满足，当前 0.087）",
+          "里程碑维持 in_progress 的原因：单轮通知不超预算一条指标仍由 TF-0133 的门控持有；其余成功指标（inherited 事件、空分支零痕迹、封印可查询可降级）均已有 E2E 事件证据"
+        ],
+        "next_action": "维持 in_progress，等 TF-0133 的开工门数据（notifiedRatio 是否升破 0.3）；其余无本地可开工项。",
+        "status": "in_progress"
+      },
+      "id": "TF-0130"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 判决二/三附带数据（docs/tf0136-verdict.md）：notifiedRatio 当前 0.087（too-quiet；批次 #2 时曾为 0.16 带内，漂移来自空闲 ticker 的 dedup 重查 999/1094）——开工门 ratio > 0.3 不满足，家族折叠继续不开工；这一不满足本身是谓词健康（通知不过量）的证据"
+        ],
+        "next_action": "维持 blocked；门据 stats.premises.notifiedRatio 自动可判，升破 0.3 再开工。",
+        "status": "blocked"
+      },
+      "id": "TF-0133"
     },
     {
       "action": "update_node",
@@ -121,16 +186,17 @@
           "fit unknown 数量下降且可解释"
         ],
         "evidence": [
-          "2026-09-06 对齐 TF-0141 重设计：范围仲裁的采样条件从「14 天样本」改为「样本窗口凑齐」；stats --json 已能导出窗口三判据（restores/noticeOutcomes/sealDecisions）"
+          "2026-09-06 对齐 TF-0141 重设计：范围仲裁的采样条件从「14 天样本」改为「样本窗口凑齐」；stats --json 已能导出窗口三判据（restores/noticeOutcomes/sealDecisions）",
+          "2026-09-06 判决已做出（docs/tf0136-verdict.md）：L3 判决为砍（TF-0099/0100/0101 废止）；样本窗口 satisfied（56/61/25），三支柱砍留的输入数据齐备"
         ],
-        "next_action": "等 TF-0141 登记 t0 与 eventSeq 采样边界，样本窗口凑齐后按四项门槛裁决三支柱砍留。",
+        "next_action": "判决四已出：L3 砍；本节点按窗口数据对其余支柱做砍留收口，结论写回森林。",
         "status": "proposed"
       },
       "id": "TF-0135"
     }
   ],
   "created_at": "2026-09-06T04:30:00.000000Z",
-  "rationale": "两部分工作合入一份提案（同一 base hash，避免两份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库（修复 cli.ts 加载缺陷、补 review-seal 测试钉与 seal-review 8 个单测），TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（restores≥3 / noticeOutcomes≥5 / sealDecisions≥3，SAMPLE_WINDOW_TARGETS 代码化并有规则单测），TF-0136 判决一至四的数值门槛不变、只换时间框架。E2E 已抓到并修复两个真实缺陷：跨写者路径身份（agent 绝对路径 vs git 相对路径，hashPathClaim 归一）与 UI 面板源码模式永远回退兜底页（dev-dist 相对路径少一级，用户报告的「页面全空」即此）。E2E 租户经用户确认登记为正式样本源：t0=2026-09-06T06:35:51.936Z / eventSeq=1，四轮后样本窗口 satisfied；真 LLM 腿（OpenRouter minimax-m3:free，openai-chat 流式）与确定性 agent 腿并存。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
+  "rationale": "三部分工作合入一份提案（同一 base hash，避免多份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库，TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（SAMPLE_WINDOW_TARGETS 代码化并有规则单测）。其三，TF-0136 四项判决按样本数据做出（docs/tf0136-verdict.md，样本源=E2E 租户，t0=2026-09-06T06:35:51.936Z/eventSeq=1，95 线程/57 写者）：判决一通过（17/56=0.304，恢复卡保留叙事）、判决二通过（0/17 全零比，不加第 4 层谓词）、判决三通过（forks 50≥5 且 TF-0140 Q1 成立，阶段 C 不延后）、判决四砍 L3（事件结构性为零，TF-0099/0100/0101 废止）。E2E 累计抓到并修复三个真实缺陷：跨写者路径身份归一、UI 源码模式兜底页路径、Bun.serve 10s idle timeout 杀慢启动模型流。护城河四数字齐备（A=61、B=2、C=23、D=0.16 带内命中过），benchmark 闸门开。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
   "session_id": "zcode-2026-09-06-tf0151-r10",
   "status": "proposed"
 }
