@@ -679,6 +679,24 @@ export async function runE2E(
 			},
 		);
 
+		await step("S6a 查看分支手势（TF-0151 的记账探针）", async () => {
+			// UI 的「查看分支」按钮：先在源线程记 resume_branch_opened，再切换
+			// 过去。stats 的 lifecycle.resumeActions 计数与 restoreFirstAction
+			// 归因都吃这条事件——没有这条腿，分支消费在租户样本里永远缺席。
+			await api(server, `/api/chat/threads/${threadId}/resume-action`, {
+				method: "POST",
+				body: JSON.stringify({ action: "resume_branch_opened" }),
+			});
+			const event = await lastEventFor(ws, "thread.resume_action");
+			if (event?.payload.action !== "resume_branch_opened") {
+				throw new Error("resume_branch_opened 未落事件账");
+			}
+			if (event.payload.threadId !== threadId) {
+				throw new Error("resume_branch_opened 记在了错误的线程");
+			}
+			return { action: event.payload.action };
+		});
+
 		await step("S6b 空分支零痕迹", async () => {
 			const messages = (await (
 				await api(server, `/api/chat/threads/${threadId}`)
@@ -858,7 +876,11 @@ export async function runE2E(
 			const stats = await cliJson<{
 				threads?: { total?: number };
 				lifecycle?: { restores?: number };
-				seal?: { decisions?: number; blocked?: number };
+				seal?: {
+					decisions?: number;
+					blocked?: number;
+					reviews?: { correct?: number };
+				};
 				noticeOutcomes?: { rows?: number };
 				premises?: { overlaps?: number; notified?: number };
 			}>(ws, ["stats"]);
@@ -867,6 +889,9 @@ export async function runE2E(
 				restores: stats.lifecycle?.restores,
 				sealDecisions: stats.seal?.decisions,
 				sealBlocked: stats.seal?.blocked,
+				// 护城河 C 的「正确」腿：S7 每轮都 review-seal --correct，
+				// 这里断言校准闭环在租户样本里持续在场。
+				sealReviewsCorrect: stats.seal?.reviews?.correct,
 				noticeOutcomeRows: stats.noticeOutcomes?.rows,
 				overlaps: stats.premises?.overlaps,
 				notified: stats.premises?.notified,
