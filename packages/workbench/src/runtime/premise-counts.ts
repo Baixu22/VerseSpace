@@ -188,3 +188,41 @@ export function foldPremisePasses(events: WorkbenchEvent[]): PremisePassTotals {
 		l3EverSuppressed: totals.suppressedL3 > 0,
 	};
 }
+
+/**
+ * 近窗读数（2026-09-06 发现的防衰减伴随量）：聚合 notified/overlaps 随空闲
+ * 重查的 dedup 累积自然衰减——租户实测 0.16（批次末）→ 0.058（空闲数小时），
+ * 纯负载形状而非谓词失灵，任何长活部署都会如此。近 7 天窗口（与账本每周
+ * 重跑的节奏一致）给「当前谓词健康度」一个不被历史稀释的伴随读数；聚合
+ * 口径、band 判定与 TF-0133 的门保持权威不变。
+ */
+export const PREMISE_RECENT_WINDOW_MS = 7 * 86_400_000;
+
+export function foldRecentPremisePasses(
+	events: WorkbenchEvent[],
+	options: { now?: number; windowMs?: number } = {},
+): {
+	windowDays: number;
+	passes: number;
+	overlaps: number;
+	notified: number;
+	ratio: number | null;
+} {
+	const now = options.now ?? Date.now();
+	const windowMs = options.windowMs ?? PREMISE_RECENT_WINDOW_MS;
+	const cutoff = now - windowMs;
+	const recent = events.filter(
+		(event) =>
+			event.type === PREMISE_PASS_EVENT &&
+			Number.isFinite(Date.parse(event.timestamp)) &&
+			Date.parse(event.timestamp) >= cutoff,
+	);
+	const totals = foldPremisePasses(recent);
+	return {
+		windowDays: Number((windowMs / 86_400_000).toFixed(1)),
+		passes: totals.passes,
+		overlaps: totals.overlaps,
+		notified: totals.notified,
+		ratio: totals.notifiedRatio,
+	};
+}

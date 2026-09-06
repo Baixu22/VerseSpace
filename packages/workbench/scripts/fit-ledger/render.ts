@@ -17,6 +17,14 @@ export interface Report {
 	t0: { started: boolean; threads: number; writers: number };
 	/** TF-0141 样本窗口（2026-09-06 重设计）：裁决看样本量，不看日历。 */
 	sampleWindow: SampleWindow;
+	/** TF-0149 近窗伴随读数：聚合比值随空闲 dedup 自然衰减，窗口读数防衰减。 */
+	premisesRecent: {
+		windowDays: number;
+		passes: number;
+		overlaps: number;
+		notified: number;
+		ratio: number | null;
+	};
 	histogram: Record<Fit, number>;
 	moat: MoatNumber[];
 	gate: { open: boolean; missing: string[] };
@@ -115,6 +123,15 @@ export function renderMarkdown(report: Report): string {
 			: `**闸门关：** 缺 ${gate.missing.join("、")}。缺任何一个先补它，不扩树。`,
 		"",
 	);
+	if (report.premisesRecent.passes > 0) {
+		const recent = report.premisesRecent;
+		const pct =
+			recent.ratio === null ? "无样本" : `${(recent.ratio * 100).toFixed(1)}%`;
+		lines.push(
+			`> 近 ${recent.windowDays} 天窗口读数：notified/overlaps = ${pct}（${recent.overlaps} 次重叠 / ${recent.passes} 轮）。聚合比值随空闲重查的 dedup 累积自然衰减，窗口读数反映当前谓词健康度；聚合口径与 band 判定不变。`,
+			"",
+		);
+	}
 
 	lines.push(
 		"## fit 分布",

@@ -6,6 +6,7 @@ import {
 } from "../runtime/notice-outcome";
 import {
 	foldPremisePasses,
+	foldRecentPremisePasses,
 	type PremisePassTotals,
 } from "../runtime/premise-counts";
 import { foldSealDecisions, type SealTotals } from "../runtime/seal-counts";
@@ -72,6 +73,17 @@ export interface ChatStats {
 	 * human-side resume-card actions. Both columns come from the same log.
 	 */
 	noticeOutcomes: NoticeOutcomeTotals;
+	/**
+	 * 近 7 天窗口的伴随读数（TF-0149）：聚合 notifiedRatio 随空闲重查的
+	 * dedup 累积自然衰减，窗口读数反映当前谓词健康度；聚合口径不变。
+	 */
+	premisesRecent: {
+		windowDays: number;
+		passes: number;
+		overlaps: number;
+		notified: number;
+		ratio: number | null;
+	};
 	/** 人工地标复核计数（TF-0154）：L1 验收「80% 用户认可」的数据源。 */
 	landmarkReviews: {
 		endorsed: number;
@@ -436,6 +448,7 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		},
 		siblingAlternation: alternation,
 		premises: foldPremisePasses(events),
+		premisesRecent: foldRecentPremisePasses(events),
 		seal: foldSealDecisions(events),
 		noticeOutcomes: foldNoticeOutcomes(events),
 		landmarkReviews: foldLandmarkReviews(events),

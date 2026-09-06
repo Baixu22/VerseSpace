@@ -6,6 +6,7 @@ import { collectChatStats } from "../chat/stats";
 import { makeTempWorkbench } from "../test/fixtures";
 import {
 	foldPremisePasses,
+	foldRecentPremisePasses,
 	judgeNotifyRatio,
 	PREMISE_PASS_EVENT,
 	type PremisePassCounts,
@@ -326,5 +327,50 @@ describe("stats 暴露比值（TF-0149 → TF-0136）", () => {
 		} finally {
 			await ws.cleanup();
 		}
+	});
+});
+
+describe("近窗读数（2026-09-06 防衰减伴随量）", () => {
+	const now = Date.parse("2026-09-06T10:00:00Z");
+	const pass = (at: string, overlaps: number, notified: number) => ({
+		timestamp: at,
+		source: "runtime",
+		type: "premise_pass",
+		payload: {
+			overlaps,
+			suppressedL1: 0,
+			suppressedL2: 0,
+			suppressedL3: 0,
+			suppressedDedup: overlaps - notified,
+			notified,
+			writers: 1,
+		},
+	});
+
+	test("窗口外的空闲衰减 pass 不进近窗读数，聚合口径不受影响", () => {
+		const events = [
+			pass("2026-08-25T00:00:00Z", 100, 1), // 12 天前：衰减源
+			pass("2026-09-05T00:00:00Z", 4, 2), // 1 天前
+			pass("2026-09-06T09:00:00Z", 6, 1), // 1 小时前
+		] as never[];
+		const recent = foldRecentPremisePasses(events, {
+			now,
+			windowMs: 7 * 86_400_000,
+		});
+		expect(recent.passes).toBe(2);
+		expect(recent.overlaps).toBe(10);
+		expect(recent.notified).toBe(3);
+		expect(recent.ratio).toBe(0.3);
+		// 聚合口径不变：全部历史照常进 foldPremisePasses
+		const all = foldPremisePasses(events);
+		expect(all.passes).toBe(3);
+		expect(all.overlaps).toBe(110);
+	});
+
+	test("窗口内没有 pass 时 ratio 为 null，不冒充健康", () => {
+		const events = [pass("2026-08-25T00:00:00Z", 100, 1)] as never[];
+		const recent = foldRecentPremisePasses(events, { now });
+		expect(recent.passes).toBe(0);
+		expect(recent.ratio).toBeNull();
 	});
 });

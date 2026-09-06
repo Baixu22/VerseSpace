@@ -55,6 +55,13 @@ function stats(over: Record<string, unknown> = {}): ChatStats {
 			windowMinutes: 30,
 		},
 		premises: { passes: 0, notifiedRatio: null },
+		premisesRecent: {
+			windowDays: 7,
+			passes: 0,
+			overlaps: 0,
+			notified: 0,
+			ratio: null,
+		},
 		seal: { decisions: 0, blocked: 0 },
 		noticeOutcomes: { rows: 0, agent: { unknownBy: { unobservable: 0 } } },
 		landmarkReviews: { endorsed: 0, rejected: 0, lastAt: null },
