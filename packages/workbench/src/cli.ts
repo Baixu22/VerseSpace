@@ -22,6 +22,7 @@ import {
 	premisesSealCommand,
 } from "./commands/premises";
 import { checkpointRestore } from "./commands/restore";
+import { registerSealReviewCommand } from "./commands/seal-review";
 import {
 	sessionsListCommand,
 	sessionsRecordCommand,
@@ -251,6 +252,8 @@ export function buildProgram(): Command {
 				await premisesSealCommand(options, _command);
 			},
 		);
+
+	registerSealReviewCommand(premises);
 
 	const tribunal = program
 		.command("tribunal")
