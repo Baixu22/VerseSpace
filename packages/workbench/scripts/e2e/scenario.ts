@@ -424,6 +424,61 @@ export async function runE2E(
 			return note;
 		});
 
+		// 真 LLM 腿（可选）：提供 E2E_LLM_* 环境变量时，通过 /api/config/chat
+		// 把 provider 切到 openai-chat 跑一轮真实的流式模型回合，然后切回来——
+		// HTTP provider 没有工具通道（足迹 unobservable），这一腿验证的是
+		// 消息管线、SSE 消费与 provider 事实记账，不是足迹。
+		if (process.env.E2E_LLM_KEY && process.env.E2E_LLM_MODEL) {
+			await step("S1b 真 LLM 回合（openai-chat 流式）", async () => {
+				const patch = (body: Record<string, unknown>) =>
+					api(server, "/api/config/chat", {
+						method: "PATCH",
+						body: JSON.stringify(body),
+					});
+				await patch({
+					provider: "openai-chat",
+					baseUrl:
+						process.env.E2E_LLM_BASE_URL ?? "https://openrouter.ai/api/v1",
+					apiKey: process.env.E2E_LLM_KEY,
+					model: process.env.E2E_LLM_MODEL,
+				});
+				try {
+					const llmThread = (await (
+						await api(server, "/api/chat/threads", {
+							method: "POST",
+							body: JSON.stringify({ title: "E2E 真 LLM 线程" }),
+						})
+					).json()) as { id: string };
+					const events = await sendTurn(
+						server,
+						llmThread.id,
+						"只回复一句不超过二十个字的中文：收到，集成测试连通。",
+					);
+					const types = events.map((e) => e.type);
+					if (types.includes("error")) {
+						const err = events.find((e) => e.type === "error");
+						throw new Error(
+							`LLM 回合报错：${JSON.stringify(err).slice(0, 300)}`,
+						);
+					}
+					if (!types.includes("delta")) {
+						throw new Error(`LLM 流式无 delta：${types.join(",")}`);
+					}
+					const view = (await (
+						await api(server, `/api/chat/threads/${llmThread.id}`)
+					).json()) as { messages: Array<{ role: string; text: string }> };
+					const reply = view.messages.find((m) => m.role === "assistant");
+					if (!reply || reply.text.trim().length === 0) {
+						throw new Error("LLM 回复未落库");
+					}
+					return { reply: reply.text.slice(0, 80), events: types.length };
+				} finally {
+					// 恢复 claude provider，后续 fake-agent 腿不受影响
+					await patch({ provider: "claude", apiKey: "" });
+				}
+			});
+		}
+
 		await step("S3 git 写者并发：真 git 改 alpha、删 beta 并记录", async () => {
 			await writeFile(
 				join(ws.projectDir, "src", "alpha.ts"),
