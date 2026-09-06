@@ -10,6 +10,10 @@ import {
 	type PremisePassTotals,
 } from "../runtime/premise-counts";
 import { foldSealDecisions, type SealTotals } from "../runtime/seal-counts";
+import {
+	type SealReviewTotals,
+	sealReviewTotals,
+} from "../runtime/seal-review";
 import type { WorkbenchEvent } from "../types/event";
 import { ChatThreads, type StoredMessage, type ThreadMeta } from "./threads";
 
@@ -66,8 +70,13 @@ export interface ChatStats {
 	};
 	/** R2 predicate accounting (TF-0149): where candidate claims died. */
 	premises: PremisePassTotals;
-	/** Seal decisions (TF-0134): hits, blocks, and what was let through. */
-	seal: SealTotals;
+	/**
+	 * Seal decisions (TF-0134): hits, blocks, and what was let through —
+	 * plus the human review totals that close the calibration loop. A block
+	 * proves a refusal happened; only `reviews.correct` makes it "且事后判定
+	 * 为正确封印" (moat C's full threshold).
+	 */
+	seal: SealTotals & { reviews: SealReviewTotals };
 	/**
 	 * The calibration table (TF-0148): agent-side notice outcomes beside the
 	 * human-side resume-card actions. Both columns come from the same log.
@@ -449,7 +458,10 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		siblingAlternation: alternation,
 		premises: foldPremisePasses(events),
 		premisesRecent: foldRecentPremisePasses(events),
-		seal: foldSealDecisions(events),
+		seal: {
+			...foldSealDecisions(events),
+			reviews: sealReviewTotals(events),
+		},
 		noticeOutcomes: foldNoticeOutcomes(events),
 		landmarkReviews: foldLandmarkReviews(events),
 		dataQuality: {

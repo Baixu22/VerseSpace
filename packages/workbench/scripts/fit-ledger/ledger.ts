@@ -245,9 +245,12 @@ export function moatNumbers(ctx: Ctx): MoatNumber[] {
 			key: "C",
 			name: "来自真实会话的 seal.decided: block",
 			threshold: "≥ 1 次（且事后判定为正确封印）",
-			source: "stats.seal.blocked",
+			// present 终于对齐自己的阈值文本：block（真实）+ seal.reviews.correct
+			// （正确），后者由人工复核 seal.reviewed 折出。校准闭环接入前的
+			// 实现只数了前半句。
+			source: "stats.seal.blocked + stats.seal.reviews.correct",
 			value: stats.seal.blocked,
-			present: stats.seal.blocked >= 1,
+			present: stats.seal.blocked >= 1 && stats.seal.reviews.correct >= 1,
 		},
 		{
 			key: "D",

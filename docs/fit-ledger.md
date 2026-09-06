@@ -3,7 +3,7 @@
 > 本文件由 `bun run scripts/fit-ledger.ts --out ../../docs/fit-ledger.md` 生成，
 > 每周重跑覆盖一次。不要手工编辑：手写的结论没有来源，也就不能用于砍留决策。
 
-- 生成时间：2026-09-06T10:14:21.478Z
+- 生成时间：2026-09-06T10:46:09.840Z
 - 数据源黑板：`D:\helmor-main\.workbench`
 - 事件跨度：0.0 天（2026-08-30T08:28:54.895Z → 2026-08-30T08:31:38.740Z）。跨度只是信息项，不做门槛。
 
@@ -47,7 +47,7 @@
 | --- | --- | --- | --- | --- | --- |
 | A | 校准表行数 | ≥ 50 | 0 | **否** | `stats.noticeOutcomes.rows` |
 | B | 推定写者是 git 或人的失效通知 | ≥ 1 条 | 0 | **否** | `events[premise_stale] ⋈ sessions/<writer>.kind` |
-| C | 来自真实会话的 seal.decided: block | ≥ 1 次（且事后判定为正确封印） | 0 | **否** | `stats.seal.blocked` |
+| C | 来自真实会话的 seal.decided: block | ≥ 1 次（且事后判定为正确封印） | 0 | **否** | `stats.seal.blocked + stats.seal.reviews.correct` |
 | D | notified / overlaps | 有真实值且落在 10-30% | 无样本 | **否** | `stats.premises.notifiedRatio` |
 
 **闸门关：** 缺 A 校准表行数、B 推定写者是 git 或人的失效通知、C 来自真实会话的 seal.decided: block、D notified / overlaps。缺任何一个先补它，不扩树。

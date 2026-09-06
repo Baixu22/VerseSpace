@@ -61,3 +61,19 @@ export async function reviewSeal(
 		payload: { sealEventId, correct, reason: reason.trim() },
 	});
 }
+
+/** `stats.seal.reviews` 的聚合形状：护城河 C「且事后判定为正确」的那条腿。 */
+export interface SealReviewTotals {
+	total: number;
+	correct: number;
+	incorrect: number;
+}
+
+export function sealReviewTotals(events: WorkbenchEvent[]): SealReviewTotals {
+	const rows = foldSealReviews(events);
+	return {
+		total: rows.length,
+		correct: rows.filter((row) => row.correct).length,
+		incorrect: rows.filter((row) => !row.correct).length,
+	};
+}

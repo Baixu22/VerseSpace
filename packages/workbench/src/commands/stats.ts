@@ -50,6 +50,15 @@ export async function statsCommand(command: Command): Promise<void> {
 			`  其中 ${seal.downgraded} 次在连续阻断后自动降级为 warn（seal.consecutiveBlockLimit）。`,
 		);
 	}
+	// 校准闭环（护城河 C 的「正确」腿）：block 只证明拒绝发生过，人工复核
+	// 才能说它对不对——未复核的 block 必须以数字露出来，不能沉默。
+	if (seal.blocked > 0) {
+		const unreviewed = seal.blocked - seal.reviews.total;
+		console.log(
+			`  封印复核：正确 ${seal.reviews.correct} / 错误 ${seal.reviews.incorrect}` +
+				(unreviewed > 0 ? `（未复核 ${unreviewed}）` : ""),
+		);
+	}
 	printCalibrationTable(stats.noticeOutcomes);
 	if (!stats.siblingAlternation.available) {
 		console.log(`兄弟交替：暂不可测（${stats.siblingAlternation.reason}）`);

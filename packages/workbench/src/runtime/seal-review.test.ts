@@ -7,7 +7,7 @@ import type { StalePremiseClaim } from "./premises";
 import { reconcilePremises } from "./premises";
 import { decideSeal } from "./seal";
 import { SEAL_EVENT } from "./seal-counts";
-import { foldSealReviews, reviewSeal } from "./seal-review";
+import { foldSealReviews, reviewSeal, sealReviewTotals } from "./seal-review";
 
 /**
  * 封印复核（TF-0134 的延伸）。block 只证明「拒绝发生过」，不证明「拒绝
@@ -248,6 +248,36 @@ describe("复核投影 foldSealReviews", () => {
 			reviewEventId: "rv-2",
 			correct: false,
 			reason: "当时文件并未过时",
+		});
+	});
+});
+
+describe("复核计数 sealReviewTotals", () => {
+	test("正确与错误分开计数，agent 复核与未复核 block 不计入", () => {
+		const totals = sealReviewTotals([
+			sealEvent("se-1", "block"),
+			sealEvent("se-2", "block"),
+			sealEvent("se-3", "block"),
+			reviewEvent("rv-1"),
+			reviewEvent("rv-2", {
+				sealEventId: "se-2",
+				correct: false,
+				reason: "误伤",
+			}),
+			// agent 写的复核不算数；第三个 block 保持未复核
+			{
+				...reviewEvent("rv-3", { sealEventId: "se-3", reason: "无效来源" }),
+				source: "agent",
+			},
+		]);
+		expect(totals).toEqual({ total: 2, correct: 1, incorrect: 1 });
+	});
+
+	test("空事件流得全零", () => {
+		expect(sealReviewTotals([])).toEqual({
+			total: 0,
+			correct: 0,
+			incorrect: 0,
 		});
 	});
 });

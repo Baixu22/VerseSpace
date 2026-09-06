@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { appendFile, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { SEAL_EVENT } from "../runtime/seal-counts";
 import { makeTempWorkbench } from "../test/fixtures";
 import { collectChatStats } from "./stats";
 import { ChatThreads, type StoredMessage } from "./threads";
@@ -164,6 +165,66 @@ describe("collectChatStats", () => {
 			expect(stats.siblingAlternation.available).toBe(true);
 			expect(stats.siblingAlternation.alternatingFamilies).toBe(1);
 			expect(stats.siblingAlternation.transitions).toBe(2);
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("folds human seal reviews into stats.seal.reviews (moat C's correct leg)", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			// 两个 block：一个被判正确，一个被判误伤——block 本身不等于正确。
+			const base = Date.parse("2026-09-06T00:00:00Z");
+			const sealBlock = {
+				source: "runtime",
+				type: SEAL_EVENT,
+				payload: {
+					writer: "w",
+					path: "src/a.ts",
+					decision: "block",
+					hit: true,
+					matchedDeclarations: ["src/a.ts"],
+					mode: "block",
+					effectiveMode: "block",
+					downgraded: false,
+				},
+			};
+			const first = await bb.events.append({
+				...sealBlock,
+				timestamp: new Date(base).toISOString(),
+			});
+			const second = await bb.events.append({
+				...sealBlock,
+				timestamp: new Date(base + 1_000).toISOString(),
+			});
+			await bb.events.append({
+				timestamp: new Date(base + 2_000).toISOString(),
+				source: "human",
+				type: "seal.reviewed",
+				payload: {
+					sealEventId: first.id,
+					correct: true,
+					reason: "文件确实已被并行写者改写",
+				},
+			});
+			await bb.events.append({
+				timestamp: new Date(base + 3_000).toISOString(),
+				source: "human",
+				type: "seal.reviewed",
+				payload: {
+					sealEventId: second.id,
+					correct: false,
+					reason: "当时文件并未过时",
+				},
+			});
+
+			const stats = await collectChatStats(bb);
+			expect(stats.seal.blocked).toBe(2);
+			expect(stats.seal.reviews).toEqual({
+				total: 2,
+				correct: 1,
+				incorrect: 1,
+			});
 		} finally {
 			await cleanup();
 		}

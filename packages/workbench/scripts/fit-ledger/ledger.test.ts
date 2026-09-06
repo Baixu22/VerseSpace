@@ -62,7 +62,11 @@ function stats(over: Record<string, unknown> = {}): ChatStats {
 			notified: 0,
 			ratio: null,
 		},
-		seal: { decisions: 0, blocked: 0 },
+		seal: {
+			decisions: 0,
+			blocked: 0,
+			reviews: { total: 0, correct: 0, incorrect: 0 },
+		},
 		noticeOutcomes: { rows: 0, agent: { unknownBy: { unobservable: 0 } } },
 		landmarkReviews: { endorsed: 0, rejected: 0, lastAt: null },
 		dataQuality: { insufficientHistory: true, reasons: [] },
@@ -185,7 +189,11 @@ describe("fit 账本推导规则（TF-0137）", () => {
 			ctx({
 				stats: stats({
 					noticeOutcomes: { rows: 50 },
-					seal: { decisions: 4, blocked: 1 },
+					seal: {
+						decisions: 4,
+						blocked: 1,
+						reviews: { total: 1, correct: 1, incorrect: 0 },
+					},
 					premises: { passes: 10, notifiedRatio: 0.2 },
 				}),
 				events: [
@@ -201,6 +209,34 @@ describe("fit 账本推导规则（TF-0137）", () => {
 		);
 		expect(full.map((m) => m.present)).toEqual([true, true, true, true]);
 		expect(benchmarkGate(full).open).toBe(true);
+	});
+
+	test("护城河 C 的「正确」腿：block 未复核或复核为误伤都不开闸", () => {
+		const blockedOnly = moatNumbers(
+			ctx({
+				stats: stats({
+					seal: {
+						decisions: 4,
+						blocked: 1,
+						reviews: { total: 0, correct: 0, incorrect: 0 },
+					},
+				}),
+			}),
+		);
+		expect(blockedOnly.find((m) => m.key === "C")!.present).toBe(false);
+
+		const wrongReview = moatNumbers(
+			ctx({
+				stats: stats({
+					seal: {
+						decisions: 4,
+						blocked: 1,
+						reviews: { total: 1, correct: 0, incorrect: 1 },
+					},
+				}),
+			}),
+		);
+		expect(wrongReview.find((m) => m.key === "C")!.present).toBe(false);
 	});
 
 	test("护城河 B 只认 git 或人：agent 自己的失效通知不算样本", () => {
@@ -255,7 +291,11 @@ describe("fit 账本推导规则（TF-0137）", () => {
 						rows: 5,
 						agent: { unknownBy: { unobservable: 0 } },
 					},
-					seal: { decisions: 1, blocked: 0 },
+					seal: {
+						decisions: 1,
+						blocked: 0,
+						reviews: { total: 0, correct: 0, incorrect: 0 },
+					},
 				}),
 			}),
 		);
@@ -282,7 +322,11 @@ describe("fit 账本推导规则（TF-0137）", () => {
 						rows: 7,
 						agent: { unknownBy: { unobservable: 0 } },
 					},
-					seal: { decisions: 3, blocked: 1 },
+					seal: {
+						decisions: 3,
+						blocked: 1,
+						reviews: { total: 1, correct: 1, incorrect: 0 },
+					},
 				}),
 			}),
 		);
