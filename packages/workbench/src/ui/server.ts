@@ -192,7 +192,14 @@ export async function resolveUiAssets(
 	if (Object.keys(embeddedFiles).length > 0) {
 		return { kind: "embedded", embeddedFiles };
 	}
-	const devDist = resolve(import.meta.dir, "../../../apps/workbench-ui/dist");
+	// import.meta.dir is packages/workbench/src/ui — four levels up to the repo
+	// root. Three resolved to packages/apps/… which never exists, so source-mode
+	// `workbench ui` always served the fallback page (the empty dashboard
+	// reported on 2026-09-06).
+	const devDist = resolve(
+		import.meta.dir,
+		"../../../../apps/workbench-ui/dist",
+	);
 	if (existsSync(join(devDist, "index.html"))) {
 		return { kind: "disk", diskDir: devDist };
 	}
