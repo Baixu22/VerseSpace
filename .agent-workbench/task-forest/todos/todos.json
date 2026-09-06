@@ -9,125 +9,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0100",
-    "kind": "task",
-    "next_action": "同一形状的工作第二次发生时才出现提议，且提议内容由两次轨迹的差集生成",
-    "priority": 5,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "N=2 推导：两条相似轨迹之差即泛化"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0101",
-    "kind": "task",
-    "next_action": "用户可以只拒绝一个占位符而保留产物其余部分",
-    "priority": 5,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "重放验证 + 逐字面量占位符"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "workbench",
-      "follow-up",
-      "retirement"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0055",
-    "kind": "follow_up",
-    "next_action": "新增 ADR 明确存量去留",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "r4",
-      "发行"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0119",
-    "kind": "follow_up",
-    "next_action": "npx context-rot 在任意机器上可用",
-    "priority": 3,
-    "progress": 0.7,
-    "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "后续：npm 发布 context-rot（当前按用户决定跳过）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.85,
     "context_tags": [
       "风险"
@@ -302,37 +183,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "工程",
-      "Windows",
-      "发行"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0114",
-    "kind": "risk",
-    "next_action": "已落地的两道保险：package.json 的 `bun test --timeout 60000`（覆盖全部文件）+ bunfig.toml 的 [test] preload（覆盖直接执行 bun test 的第一个文件）",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "把这台机器的 IO 现实登记在案：既避免反复误判成 Workbench 的代码缺陷，也避免按正常机器的速度做估时。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "风险：本机文件删除慢一个数量级，bun 默认超时恰好卡在边界上"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.8,
     "context_tags": [
       "恢复卡",
@@ -349,161 +199,9 @@
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
     "title": "恢复卡规则 R10：兄弟分支在你离开后改了什么"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [
-      "task-forest",
-      "工具",
-      "载荷纪律"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0152",
-    "kind": "task",
-    "next_action": "record_event 单行体量降到 KB 级，历史可回放（引用可解析到 snapshots/）",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "森林自己违反了它给 Workbench 定的两条纪律（载荷上限、诚实的进度），修在工具侧一次，比每次 apply 付一次税便宜。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "task-forest 引擎侧修正：历史载荷与派生分母"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "risk"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0018",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：把 Helmor GUI 全量重写纳入 MVP 导致范围失控"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "risk"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0019",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：误引入 Agent SDK / 数据库 / 服务器等重依赖破坏零依赖定位"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "risk"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0023",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：git 仓库缺失阻塞 worktree 与发行全链路"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "workbench",
-      "risk",
-      "windows"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0030",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：Windows 原子 rename 覆盖语义差异"
   },
   {
     "alignment": {
@@ -536,7 +234,7 @@
     "kind": "global_task",
     "next_action": "阶段 A 三件并行：TF-0122/0123/0125",
     "priority": 1,
-    "progress": 56.7,
+    "progress": 62.2,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -605,7 +303,7 @@
     "kind": "milestone",
     "next_action": "波次 1（1320min）：TF-0143 写路径预算 → 同时 TF-0142 通道语义、TF-0146 adopt 裁决，并收口 TF-0122/0123/0125",
     "priority": 1,
-    "progress": 46.7,
+    "progress": 68.3,
     "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
     "ready": true,
     "remaining_minutes_max": 5640,
@@ -626,39 +324,39 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "阶段 A 收口前跑 validate 与全量 workbench 测试",
-        "抽查新旧混合格式的 events.jsonl 可读",
-        "确认 stats 在空数据仓库输出 insufficient-history"
+        "隔天返回线程能列出已变前提",
+        "无分歧时整卡不渲染的单测",
+        "恢复到首条消息的中位间隔不上升超过 20%"
       ],
-      "why_not_enough": "地基只保证事实可溯源，不保证恢复处境对用户有用",
-      "why_this_task": "因果钟、继承事实、观测埋点三件不落定，后面所有事实都建立在名义继承与墙钟之上"
+      "why_not_enough": "卡片能渲染不代表有人读；事实消费率要等两周窗口",
+      "why_this_task": "恢复处境是三支柱里唯一每天都会触发的场景，也是前提守护最直接的用户价值"
     },
     "blocked_by": [],
     "confidence": 0.85,
     "context_tags": [
-      "phase-a",
-      "foundation",
-      "instrumentation"
+      "restore",
+      "r2-prime",
+      "premise-custody"
     ],
     "desired_outcomes": [],
     "difficulty": "high",
-    "id": "TF-0121",
+    "id": "TF-0126",
     "kind": "milestone",
-    "next_action": "先 TF-0143（写侧预算）→ TF-0144（提交闸门），再谈其它",
+    "next_action": "先做 TF-0127，再做 TF-0128，最后 TF-0129",
     "priority": 1,
-    "progress": 86.7,
-    "purpose": "先补齐因果时钟、事件身份、真实使用统计和 fork 继承事实，避免后续设计建立在名义继承上。",
+    "progress": 75.0,
+    "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
     "ready": true,
-    "remaining_minutes_max": 2880,
-    "remaining_minutes_min": 1440,
+    "remaining_minutes_max": 900,
+    "remaining_minutes_min": 450,
     "status": "in_progress",
     "success_metrics": [
-      "只读 stats 能输出基线或 insufficient-history",
-      "事件身份在并发追加下无重复且旧日志可读",
-      "fork 的三种继承事实与实际运行语义一致",
-      "生命周期事件不进入世界投影"
+      "隔天恢复能列出已变前提",
+      "恢复卡事实段每条可溯源",
+      "无分歧时整卡不渲染",
+      "恢复到首条消息的中位间隔不因卡片上升超过 20%"
     ],
-    "title": "阶段 A：证据与架构地基"
+    "title": "阶段 B：恢复处境（R2′ + 恢复卡）"
   },
   {
     "alignment": {
@@ -666,146 +364,39 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "一轮多条失效合并为一条 notice 的单测",
-        "超预算折叠仍保留总数",
-        "通知不含未截断的 diff"
+        "两周窗口有明确 start_date 与 end_date",
+        "每条 fit 结论引用 stats 输出或事件 ID",
+        "L3 有明确继续或延后结论"
       ],
-      "why_not_enough": "预算只防淹没，不解决通知是否被 agent 真正采纳",
-      "why_this_task": "共享工作树是唯一形态，三路分叉时逐文件通知会直接淹没注意力并挤掉用户轮"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "delivery",
-      "budget",
-      "flooding"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0133",
-    "kind": "task",
-    "next_action": "修改 runtime/delivery.ts",
-    "priority": 1,
-    "progress": 25.0,
-    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
-    "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
-    "status": "proposed",
-    "success_metrics": [
-      "单轮注入不超过配置 token 上限"
-    ],
-    "title": "通知预算：每轮一束 + 家族折叠"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "账本每行引用 stats 输出或事件 ID",
-        "本批 TF-0120..TF-0146 全部入账",
-        "fit 词表与 alignment.fit 一致"
-      ],
-      "why_not_enough": "账本记录事实，不替代裁决",
-      "why_this_task": "没有账本，unknown 会永远是 unknown，砍留决策只能靠印象"
+      "why_not_enough": "两周样本来自单一用户，只能否决 L3，不能证明普适价值",
+      "why_this_task": "全图 140/142 节点 fit 未知，再往下建只会扩大『能建但没人用』的面积"
     },
     "blocked_by": [],
     "confidence": 0.85,
     "context_tags": [
       "fit",
-      "ledger",
-      "decision"
+      "gate",
+      "roadmap"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0137",
-    "kind": "task",
-    "next_action": "新建 scripts/fit-ledger.ts 或 docs/fit-ledger.md",
+    "id": "TF-0135",
+    "kind": "milestone",
+    "next_action": "先让 stats 持续产出",
     "priority": 1,
-    "progress": 0.0,
-    "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
+    "progress": 23.3,
+    "purpose": "用真实使用数据决定三支柱继续、收缩还是砍掉，结束 117/119 fit unknown 的结构性风险。",
     "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
+    "remaining_minutes_max": 600,
+    "remaining_minutes_min": 300,
     "status": "proposed",
     "success_metrics": [
-      "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
+      "有明确日用起点和 14 天样本",
+      "每个 fit 结论可追溯到事件或 stats 输出",
+      "L3 有继续/延后结论",
+      "fit unknown 占比下降"
     ],
-    "title": "fit 账本与砍留决策"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "一次真实运行记录子线程对锚点前内容的知情程度",
-        "记录 --fork-session 与锚点前缀的偏差范围",
-        "结论写入 ADR 或节点证据"
-      ],
-      "why_not_enough": "实验只回答 Claude 当前版本的行为，CLI 升级后需重做",
-      "why_this_task": "footprint.inherited 目前没有合法写入点；不裁决继承语义，TF-0131 就只能造假继承"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "claude",
-      "inheritance",
-      "experiment"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0140",
-    "kind": "task",
-    "next_action": "先做 10 分钟上下文知情实验",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "解决 fresh fork 与真实上下文继承之间的语义落差，避免把 UI 前缀伪装成 agent 前提。",
-    "ready": true,
-    "remaining_minutes_max": 420,
-    "remaining_minutes_min": 180,
-    "status": "ready",
-    "success_metrics": [
-      "能给出可复现实验结果，而非仅静态推断"
-    ],
-    "title": "Claude 上下文继承三问实验（10 分钟，成败皆 done）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "fit 账本里有 start_date 与 end_date",
-        "窗口内每周至少一次 stats 导出",
-        "样本不足时输出 insufficient-history"
-      ],
-      "why_not_enough": "起点只保证样本开始积累，不保证样本量足够",
-      "why_this_task": "两周门此前没有 t0，等于永远不会到期；起点必须是一个显式登记的日期"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "fit",
-      "dogfooding"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0141",
-    "kind": "task",
-    "next_action": "把 start_date 写入 fit ledger",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
-    "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 60,
-    "status": "in_progress",
-    "success_metrics": [
-      "两周窗口结束时能输出可判定的 fit 数据"
-    ],
-    "title": "日用起点 t0 登记与两周观察窗口"
+    "title": "阶段 D：fit 门与范围仲裁"
   },
   {
     "alignment": {
@@ -836,7 +427,7 @@
     "ready": false,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [],
     "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）"
   },
@@ -844,82 +435,93 @@
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "ADR 每条边界都能指到代码或实验证据",
-        "后续节点能引用 ADR 编号",
-        "README/positioning 口径一致"
-      ],
-      "why_not_enough": "ADR 只固化决策，不产生用户可感知的行为",
-      "why_this_task": "边界不写下来，后续评审会反复重开内容级合并与树导航"
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0140"
+      "TF-0136"
     ],
-    "confidence": 0.85,
+    "confidence": 0.6,
     "context_tags": [
-      "adr",
-      "architecture",
-      "boundary"
+      "前端"
     ],
     "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0138",
+    "difficulty": "high",
+    "id": "TF-0100",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0140",
-    "priority": 2,
+    "next_action": "先完成依赖：TF-0136",
+    "priority": 5,
     "progress": 0.0,
-    "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
+    "purpose": "",
     "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "ready",
-    "success_metrics": [
-      "后续设计评审能引用同一 ADR 裁决边界问题"
-    ],
-    "title": "ADR：前提守护架构与产品边界"
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "blocked",
+    "success_metrics": [],
+    "title": "N=2 推导：两条相似轨迹之差即泛化"
   },
   {
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "隔天返回线程能列出已变前提",
-        "无分歧时整卡不渲染的单测",
-        "恢复到首条消息的中位间隔不上升超过 20%"
-      ],
-      "why_not_enough": "卡片能渲染不代表有人读；事实消费率要等两周窗口",
-      "why_this_task": "恢复处境是三支柱里唯一每天都会触发的场景，也是前提守护最直接的用户价值"
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0121"
+      "TF-0136"
     ],
-    "confidence": 0.85,
+    "confidence": 0.6,
     "context_tags": [
-      "restore",
-      "r2-prime",
-      "premise-custody"
+      "前端"
     ],
     "desired_outcomes": [],
     "difficulty": "high",
-    "id": "TF-0126",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0121",
-    "priority": 1,
-    "progress": 75.0,
-    "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
+    "id": "TF-0101",
+    "kind": "task",
+    "next_action": "先完成依赖：TF-0136",
+    "priority": 5,
+    "progress": 0.0,
+    "purpose": "",
     "ready": false,
-    "remaining_minutes_max": 900,
-    "remaining_minutes_min": 450,
-    "status": "in_progress",
-    "success_metrics": [
-      "隔天恢复能列出已变前提",
-      "恢复卡事实段每条可溯源",
-      "无分歧时整卡不渲染",
-      "恢复到首条消息的中位间隔不因卡片上升超过 20%"
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "blocked",
+    "success_metrics": [],
+    "title": "重放验证 + 逐字面量占位符"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "r4",
+      "发行"
     ],
-    "title": "阶段 B：恢复处境（R2′ + 恢复卡）"
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0119",
+    "kind": "follow_up",
+    "next_action": "澄清阻塞原因并决定解除或废止",
+    "priority": 3,
+    "progress": 0.7,
+    "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "blocked",
+    "success_metrics": [],
+    "title": "后续：npm 发布 context-rot（当前按用户决定跳过）"
   },
   {
     "alignment": {
@@ -935,7 +537,6 @@
       "why_this_task": "线程共享同一工作树，分支与并发是唯一形态而非退化情形，必须显式收敛"
     },
     "blocked_by": [
-      "TF-0121",
       "TF-0126"
     ],
     "confidence": 0.83,
@@ -948,9 +549,9 @@
     "difficulty": "high",
     "id": "TF-0130",
     "kind": "milestone",
-    "next_action": "先完成依赖：TF-0121, TF-0126",
+    "next_action": "先完成依赖：TF-0126",
     "priority": 1,
-    "progress": 25.0,
+    "progress": 75.0,
     "purpose": "在真实继承语义之上，让分支成为并发事实的一部分，而不是一棵只会长熵的叙事树。",
     "ready": false,
     "remaining_minutes_max": 1260,
@@ -970,80 +571,36 @@
       "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
-        "Claude fresh fork 后 footprint.inherited 为空",
-        "agentContextInherited=true 时每路径只取最新观测",
-        "旧分叉不回填 inherited 事件"
+        "一轮多条失效合并为一条 notice 的单测",
+        "超预算折叠仍保留总数",
+        "通知不含未截断的 diff"
       ],
-      "why_not_enough": "开关诚实不等于继承有用；HTTP 路径无工具调用，足迹恒为空集",
-      "why_this_task": "当前代码里 footprint.inherited 没有任何合法写入点，先建开关只会制造假继承"
+      "why_not_enough": "预算只防淹没，不解决通知是否被 agent 真正采纳",
+      "why_this_task": "共享工作树是唯一形态，三路分叉时逐文件通知会直接淹没注意力并挤掉用户轮"
     },
-    "blocked_by": [
-      "TF-0140"
-    ],
+    "blocked_by": [],
     "confidence": 0.85,
     "context_tags": [
-      "branch",
-      "read-set",
-      "honest-inheritance"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0131",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0140",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
-    "ready": false,
-    "remaining_minutes_max": 300,
-    "remaining_minutes_min": 120,
-    "status": "proposed",
-    "success_metrics": [
-      "没有合法继承路径时，inherited 事件数量为 0"
-    ],
-    "title": "分支读集继承与诚实开关"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "两周窗口有明确 start_date 与 end_date",
-        "每条 fit 结论引用 stats 输出或事件 ID",
-        "L3 有明确继续或延后结论"
-      ],
-      "why_not_enough": "两周样本来自单一用户，只能否决 L3，不能证明普适价值",
-      "why_this_task": "全图 140/142 节点 fit 未知，再往下建只会扩大『能建但没人用』的面积"
-    },
-    "blocked_by": [
-      "TF-0121"
-    ],
-    "confidence": 0.85,
-    "context_tags": [
-      "fit",
-      "gate",
-      "roadmap"
+      "delivery",
+      "budget",
+      "flooding"
     ],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0135",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0121",
+    "id": "TF-0133",
+    "kind": "task",
+    "next_action": "澄清阻塞原因并决定解除或废止",
     "priority": 1,
-    "progress": 0.0,
-    "purpose": "用真实使用数据决定三支柱继续、收缩还是砍掉，结束 117/119 fit unknown 的结构性风险。",
+    "progress": 25.0,
+    "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
     "ready": false,
-    "remaining_minutes_max": 600,
-    "remaining_minutes_min": 300,
-    "status": "proposed",
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 120,
+    "status": "blocked",
     "success_metrics": [
-      "有明确日用起点和 14 天样本",
-      "每个 fit 结论可追溯到事件或 stats 输出",
-      "L3 有继续/延后结论",
-      "fit unknown 占比下降"
+      "单轮注入不超过配置 token 上限"
     ],
-    "title": "阶段 D：fit 门与范围仲裁"
+    "title": "通知预算：每轮一束 + 家族折叠"
   },
   {
     "alignment": {
@@ -1078,10 +635,83 @@
     "ready": false,
     "remaining_minutes_max": 240,
     "remaining_minutes_min": 120,
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [
       "L3 的继续/延后决策可追溯到 stats 输出"
     ],
     "title": "两周真实使用门与 L3 证据门"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
+      "validation_plan": [
+        "账本每行引用 stats 输出或事件 ID",
+        "本批 TF-0120..TF-0146 全部入账",
+        "fit 词表与 alignment.fit 一致"
+      ],
+      "why_not_enough": "账本记录事实，不替代裁决",
+      "why_this_task": "没有账本，unknown 会永远是 unknown，砍留决策只能靠印象"
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "fit",
+      "ledger",
+      "decision"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0137",
+    "kind": "task",
+    "next_action": "澄清阻塞原因并决定解除或废止",
+    "priority": 1,
+    "progress": 70.0,
+    "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
+    "ready": false,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 90,
+    "status": "blocked",
+    "success_metrics": [
+      "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
+    ],
+    "title": "fit 账本与砍留决策"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
+      "validation_plan": [
+        "fit 账本里有 start_date 与 end_date",
+        "窗口内每周至少一次 stats 导出",
+        "样本不足时输出 insufficient-history"
+      ],
+      "why_not_enough": "起点只保证样本开始积累，不保证样本量足够",
+      "why_this_task": "两周门此前没有 t0，等于永远不会到期；起点必须是一个显式登记的日期"
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "fit",
+      "dogfooding"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0141",
+    "kind": "task",
+    "next_action": "澄清阻塞原因并决定解除或废止",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
+    "ready": false,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 60,
+    "status": "blocked",
+    "success_metrics": [
+      "两周窗口结束时能输出可判定的 fit 数据"
+    ],
+    "title": "日用起点 t0 登记与两周观察窗口"
   }
 ]

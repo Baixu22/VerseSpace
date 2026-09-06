@@ -818,7 +818,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -838,30 +838,33 @@
     "difficulty": "low",
     "display_order": 160,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "Workbench 已交付到 0.3.0；本轮 ADR-0011 延续三块存量冻结，未把旧 GUI 全量重写纳入任务。"
+    ],
     "execution_hints": [],
     "id": "TF-0018",
     "kind": "risk",
+    "next_action": "存量按 ADR-0011 冻结，新增开发留在 Workbench。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "『改成全新架构』若理解为推倒重来，MVP 将不可交付。缓解：冻结存量（见存量处置决策）、新包并行生长、MVP 划线只覆盖骨架 Phase 1-4。",
     "title": "风险：把 Helmor GUI 全量重写纳入 MVP 导致范围失控",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0019": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -881,24 +884,27 @@
     "difficulty": "low",
     "display_order": 170,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "Workbench 的运行依赖仍为 chokidar/commander/yaml/zod；未引入 Agent SDK 或数据库。ADR-0005 已明确允许本地 Web UI，ADR-0010 说明 HTTP 聊天不具备读集观测。"
+    ],
     "execution_hints": [],
     "id": "TF-0019",
     "kind": "risk",
+    "next_action": "依赖继续按现有包边界审查。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "骨架明确定位为 agent 无关（只生成 .agent-context.md）、文件系统即数据库；从 Helmor 搬运代码或参考时容易顺手带进 claude-agent-sdk、SQLite 等依赖。缓解：依赖白名单评审纳入基座策略决策。",
     "title": "风险：误引入 Agent SDK / 数据库 / 服务器等重依赖破坏零依赖定位",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0020": {
     "acceptance_criteria": [
@@ -1046,7 +1052,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1066,24 +1072,27 @@
     "difficulty": "low",
     "display_order": 240,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-06 当前仓库具备有效 HEAD、连续提交历史，实际完成提交 4895559；全套 worktree/scheduler 测试通过。"
+    ],
     "execution_hints": [],
     "id": "TF-0023",
     "kind": "risk",
+    "next_action": "git 仓库可用，此启动期阻塞已消失。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "未完成 git init 前，任何 workspot/changesets/CI 相关开发与测试都会失败。缓解：把 git init 排在里程碑一收尾，作为第一个可执行任务。",
     "title": "风险：git 仓库缺失阻塞 worktree 与发行全链路",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0024": {
     "acceptance_criteria": [
@@ -1370,7 +1379,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1391,24 +1400,27 @@
     "difficulty": "low",
     "display_order": 370,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-06 Windows 本机 writeFileAtomic 创建/替换/无残留、CAS 20 并发写者、kill-mid-write 与 lockfile 回归全部通过（Workbench 509 项套件）。"
+    ],
     "execution_hints": [],
     "id": "TF-0030",
     "kind": "risk",
+    "next_action": "原子替换与并发文件写继续由现有回归覆盖。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "POSIX 的 rename 可直接覆盖目标，Windows 需要不同处理；若忽略会导致 Blackboard 并发写损坏。缓解：t-atomic 的单测直接跑在本机 win32 与 CI windows-latest 车道上。",
     "title": "风险：Windows 原子 rename 覆盖语义差异",
-    "updated_at": "2026-08-28T08:50:49.555240Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0031": {
     "acceptance_criteria": [],
@@ -2484,7 +2496,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2505,24 +2517,27 @@
     "difficulty": "medium",
     "display_order": 1200,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "提交 4895559：ADR-0011 分别评估 src/、src-tauri/、sidecar/；保留冻结，不迁移数据库，不删除目录；Workbench UI 仍复用 src/styles/color-theme.css。"
+    ],
     "execution_hints": [],
     "id": "TF-0055",
     "kind": "follow_up",
+    "next_action": "按 ADR-0011 保留存量；出现具体迁移需求时另立决策。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "ADR-0003 冻结存量的后继动作：Workbench 达到 v0.1.0 后，评估 src/、src-tauri/、sidecar/ 的退役或迁移方案（保留为参考库 / 抽取部分能力 / 整体移除），届时新增 ADR 取代 ADR-0003。",
     "title": "后续决策：v0.1.0 后评估 Helmor 存量退役/迁移路径",
-    "updated_at": "2026-08-28T10:30:48.038729Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0056": {
     "acceptance_criteria": [
@@ -4986,11 +5001,13 @@
       "规格挖掘 90-99% 误报率；LLM 解冲突与开发者本人一致率 55-59%",
       "METR RCT：慢 19% 却以为快 20%——验证成本对付钱的人不可见，用户不会告诉你它在失败",
       "Letta 纯文件系统 74.0% 打败 Mem0 结构化抽取 68.5%——抽取销毁了信息",
-      "从对话追溯结构几乎没有实证文献；Graphologue、Sensecape 均为小样本实验室原型"
+      "从对话追溯结构几乎没有实证文献；Graphologue、Sensecape 均为小样本实验室原型",
+      "本轮核实节点硬性前置：必须有 TF-0136 判决四保留结论；目前无真实使用窗口。"
     ],
     "execution_hints": [],
     "id": "TF-0099",
     "kind": "milestone",
+    "next_action": "等待 TF-0136 的保留结论，不能提前开工 L3。",
     "non_goals": [
       "杀死判据：无法通过执行检查且输出空间开放的产物（计划、规格、设计文档）一律不建"
     ],
@@ -5007,11 +5024,11 @@
       "保留轨迹，产物只是指向它的有损索引"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [],
     "summary": "风险最高的一层，明确超前于证据。保持 p5 不开工：供应商 fork + checkpoint 已覆盖大部分场景。去留由 TF-0136 判决四按写死的判据裁决——无判据可满足（事件结构性为零）则砍。",
     "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）",
-    "updated_at": "2026-09-05T09:00:49.332676Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0100": {
     "acceptance_criteria": [
@@ -5019,7 +5036,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5039,13 +5056,16 @@
     "display_order": 100,
     "estimate": 480,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "本节点继承 TF-0099 的显式开工门槛；补上直接 depends_on，避免 todo 因未读父节点而误报 ready。"
+    ],
     "execution_hints": [],
     "id": "TF-0100",
     "kind": "task",
+    "next_action": "等待 TF-0136 保留 L3；当前不实现 N=2 推导。",
     "non_goals": [],
     "priority": 5,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5055,11 +5075,11 @@
       "在知识峰值时刻推导：成功后立刻提议，不进任何摘要队列"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [],
     "summary": "从单条轨迹泛化是那个无解的部分。第二次出现相似轨迹时才提议——变了的是偶然的，没变的是本质的。这把推断问题变成集合运算。",
     "title": "N=2 推导：两条相似轨迹之差即泛化",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0101": {
     "acceptance_criteria": [
@@ -5067,7 +5087,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5088,14 +5108,16 @@
     "estimate": 420,
     "estimated_total_minutes": null,
     "evidence": [
-      "ALLOY 最重要的功能是那个执行按钮，不是那张图"
+      "ALLOY 最重要的功能是那个执行按钮，不是那张图",
+      "本节点继承 TF-0099 的显式开工门槛；补上直接 depends_on，避免 todo 因未读父节点而误报 ready。"
     ],
     "execution_hints": [],
     "id": "TF-0101",
     "kind": "task",
+    "next_action": "等待 TF-0136 保留 L3；当前不实现衍生产物重放。",
     "non_goals": [],
     "priority": 5,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5106,11 +5128,11 @@
       "产物链接到证成它的那段轨迹，原始轨迹保持可查"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [],
     "summary": "绝不交付需要用户读懂才能批准的产物。附执行按钮，把验证成本从 O(所有未来输入) 压到 O(1)。",
     "title": "重放验证 + 逐字面量占位符",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0102": {
     "acceptance_criteria": [
@@ -5743,7 +5765,8 @@
     "estimated_total_minutes": null,
     "evidence": [
       "复现 2026-09-05：整包并发下 interactions.test.ts 的『一个月规模在 1 MB/人 量级』在 5000.7ms 超时失败；同一用例单独跑 5.1-6.0s 通过。整包共 495 个用例，这是唯一失败项，且并非每次触发（本轮最后两次整包跑分别为 1 fail 与 0 fail）",
-      "口径提示：该用例的耗时正好压在 bun 默认 5000ms 超时线上，因此它是负载相关的抖动而非回归；判断某次改动是否引入回归时应单独重跑该文件"
+      "口径提示：该用例的耗时正好压在 bun 默认 5000ms 超时线上，因此它是负载相关的抖动而非回归；判断某次改动是否引入回归时应单独重跑该文件",
+      "2026-09-06 本轮开跑前无残留 bun 进程，Windows 本机完整 Workbench 回归 509 pass / 0 fail，38.63 秒；原有包脚本超时与 preload 已生效。本轮未复现旧文件删除慢，不宣称已改变杀软或系统配置。"
     ],
     "execution_hints": [
       "已落地的两道保险：package.json 的 `bun test --timeout 60000`（覆盖全部文件）+ bunfig.toml 的 [test] preload（覆盖直接执行 bun test 的第一个文件）",
@@ -5751,20 +5774,21 @@
     ],
     "id": "TF-0114",
     "kind": "risk",
+    "next_action": "继续使用包内 bun run test 的 60000ms 超时；再次复现时按实际现场诊断。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把这台机器的 IO 现实登记在案：既避免反复误判成 Workbench 的代码缺陷，也避免按正常机器的速度做估时。",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "文件删除慢：单次 unlink 约 70ms，宿主注入的 safe-delete 钩子再叠加约 40ms（去掉 NODE_OPTIONS 里的 genie-safe-delete.cjs 后从 110ms 降到 70ms）。临时目录里 100 个条目的 rm -rf 实测 5–35 秒，随并发负载大幅波动。bun 默认 5000ms 的测试超时恰好卡在这个区间的边界上，所以凡用 makeTempWorkbench() 的用例会随机假失败。git 提交本身不慢（先前的 40–60 秒读数是并发负载污染，空闲复测为秒级）。",
     "title": "风险：本机文件删除慢一个数量级，bun 默认超时恰好卡在边界上",
-    "updated_at": "2026-09-05T12:33:41.490061Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0115": {
     "acceptance_criteria": [
@@ -5986,7 +6010,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -6006,10 +6030,13 @@
     "difficulty": "low",
     "display_order": 400,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "本轮遵守节点中既有『按用户决定跳过』与 npm E401 记录，没有触发登录或发布。"
+    ],
     "execution_hints": [],
     "id": "TF-0119",
     "kind": "follow_up",
+    "next_action": "等待用户恢复发布并完成 npm 登录；沿用原有暂停决定，本轮跳过。",
     "non_goals": [],
     "priority": 3,
     "progress": 0.7,
@@ -6023,11 +6050,11 @@
       "登录 npm（npm login）后执行发布"
     ],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "blocked",
     "success_metrics": [],
     "summary": "发布物已就绪：包名 context-rot 未被占用、changeset 已创建、files 补全（dist/README/hooks/scripts/plugin）、CLI 新增 install-hooks 子命令（dist 端到端验证通过：安装→配置→事件采集）。硬阻塞：本机 npm 未登录（E401），需用户登录 npm 后执行 bun run changeset version + changeset publish。",
     "title": "后续：npm 发布 context-rot（当前按用户决定跳过）",
-    "updated_at": "2026-08-31T12:22:08.054281Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0120": {
     "acceptance_criteria": [
@@ -6160,7 +6187,11 @@
     "deviations": [],
     "difficulty": "high",
     "estimated_total_minutes": 2880,
-    "evidence": [],
+    "evidence": [
+      "2026-09-05：15 个子节点里 14 个 done，TF-0140 本轮收口，仅 TF-0138 停在 review_needed 等用户评审",
+      "四条验收的承接关系：只读 stats 基线/insufficient-history → TF-0122；事件身份并发安全且旧日志可读 → TF-0123；fork 三种继承事实与实际运行语义一致 → TF-0125 拆分 + TF-0140 实测确认 threads.ts:1266 现有判定（仅 fork-session 路径置 agentContextInherited=true）与真实语义一致；生命周期事件不进世界投影 → TF-0124，执行点 contextgen/generate.ts:26 与 render.ts:63",
+      "提交 4895559 完成阶段 A 尚未落库的继承实验/回归与架构裁决。全套 509 测试、1 快照、typecheck 通过；真实 stats 为 0 线程/0 fork，按 insufficient-history 输出。TF-0138 同批完成。"
+    ],
     "execution_hints": [
       "先 TF-0143（写侧预算）→ TF-0144（提交闸门），再谈其它",
       "TF-0142 与 TF-0140 可与收口并行",
@@ -6170,24 +6201,24 @@
     ],
     "id": "TF-0121",
     "kind": "milestone",
-    "next_action": "先 TF-0143（写路径预算，唯一让套件转绿的节点）→ TF-0144（提交闸门）；TF-0142 与 TF-0140 可并行；TF-0122/0123/0125/0127/0139 待提交后转 done。",
+    "next_action": "阶段 A 已收口；推进 TF-0151，完成阶段 B。",
     "non_goals": [
       "不先做树导航",
       "不先做 merge-back"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "derived",
     "purpose": "先补齐因果时钟、事件身份、真实使用统计和 fork 继承事实，避免后续设计建立在名义继承上。",
-    "remaining_minutes_max": 2880,
-    "remaining_minutes_min": 1440,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "events.jsonl 与 footprint.jsonl 的因果引用可稳定解析",
       "fork 声明区分 transcriptInherited 与 agentContextInherited",
       "stats fold 能输出 fork/switch/restore 基线"
     ],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [
       "只读 stats 能输出基线或 insufficient-history",
       "事件身份在并发追加下无重复且旧日志可读",
@@ -6196,7 +6227,7 @@
     ],
     "summary": "解决“日志是否同一因果钟”“fork 是否真的继承上下文”“当前用户到底有没有分叉行为”三个前置问题。",
     "title": "阶段 A：证据与架构地基",
-    "updated_at": "2026-09-05T09:00:49.328665Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0122": {
     "acceptance_criteria": [
@@ -6872,8 +6903,18 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "high",
-    "estimated_total_minutes": 300,
-    "evidence": [],
+    "estimated_total_minutes": 480,
+    "evidence": [
+      "先核实实现现状再动手：inheritParentFootprint（chat/threads.ts:285-345）与 observeForkInheritance（同文件 346-388）此前已随 TF-0125 落库，闸门也已就位——所以本节点的净增量是诚实开关的验证，不是重写实现。这一点必须写明，否则森林会记成『本轮实现了继承』",
+      "新增 src/chat/fork-inheritance.test.ts 五个用例（500 pass / 0 fail，全量 67 files 40.79s；单文件 1.73s）",
+      "验收一（Claude fresh fork 不产生 inherited 读集）：用例一让源先攒下真实足迹再在中段消息上分叉——锚点不是尾巴 → agentContextPlan 为 undefined → 子线程 argv 里没有 --fork-session、footprint.inherited 事件 0 条、forkInheritance 两级开关都是 false。刻意让源有数据可继承，否则这个用例只是在测『没数据』",
+      "验收二（HTTP 无足迹不产生 inherited 读集）：用例四把 provider 切成 openai-chat 并 mock fetch。结论是两级而非一级：agentContextInherited=true（mode=http-history，每轮重发全量历史，上下文确实继承了）、premiseInherited=false、footprint.inherited 0 条。顺带断言观测事件 payload 不含 status 字段（types/event.ts 的信任边界）",
+      "验收四（refs 取每路径最新观测）：用例三让源分两轮读同一路径（中间改文件内容），确认源侧至少两条足迹行提到该路径，而继承事件的 paths 里该路径只出现 1 次、refs 与 paths 等长、子线程 inherited 足迹行对该路径只有 1 条 used，且 used 全部无 spool。readSetView（blackboard/sessions.ts:285-308）按 seq 顺序 reads.set(path,…) 覆盖，最新覆盖旧，是这条验收的机制来源",
+      "requirement『旧分叉不回填 inherited 事件』：用例五连跑分叉两轮，断言含 --fork-session 的 spawn 恰好 1 次、footprint.inherited 恰好 1 条、inherited 足迹行恰好 1 条、thread.inheritance_observed 恰好 1 条。机制是 ensureClaudeSession 的 forkPlan 闸门要求 !meta.hasResumableSession——第一轮之后分叉线程有了自己的会话，第二轮自然退回 fresh",
+      "requirement『足迹为空时不写 inherited』：用例二走的是尾部分叉 + 无工具调用的源。fork-session 这条路径确实走了（argv 里有），但 used.length===0 在 recordActivity 之前就返回，所以 0 条事件、premiseInherited=false。这正是成功判据要的那个 0",
+      "测试用的假 claude 只做三件事：按 --fork-session 换铸 session id、按 read:<相对路径> 发一次真实 tool_use/tool_result、把 argv 落盘。TF-0140 已提供真实运行时证据（逐字复刻、tool_use_id 不变），所以此处用假 CLI 钉契约是正当的，不再是『假设 + fake CLI 证据』",
+      "工程细节：fork 的 plan 闸门要求源会话不在 live 里，所以每轮之后都要等常驻会话退出（settle 辅助函数，80×25ms）；否则中段/尾部分叉的判定会随机漂"
+    ],
     "execution_hints": [
       "修改 blackboard/sessions.ts 与 runtime/premises.ts",
       "仅 agentContextInherited=true 时写 footprint.inherited",
@@ -6881,10 +6922,10 @@
     ],
     "id": "TF-0131",
     "kind": "task",
-    "next_action": "等 TF-0140 裁决真实继承语义、TF-0142 收口通道语义后，再实现 footprint.inherited。",
+    "next_action": "无；继承事实的消费方在 TF-0129 覆盖率行与 TF-0151 的 R10。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
     "remaining_minutes_max": 300,
@@ -6897,13 +6938,13 @@
       "HTTP 当前无足迹，不能作为合法继承样本"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [
       "没有合法继承路径时，inherited 事件数量为 0"
     ],
     "summary": "形态由 TF-0140 的三问结果分支决定：问题 1+2 成立 → 退化为『fork 时复制 footprint 并标 inherited: true』，约一天；问题 1 不成立 → 改为『fork 不继承读集，恢复卡显式提示 unknown coverage』并与 TF-0129 合并。在结果出来前不写实现，仅保留诚实开关原则：仅当 agentContextInherited=true 时写 footprint.inherited。",
     "title": "分支读集继承与诚实开关",
-    "updated_at": "2026-09-05T09:00:49.333725Z"
+    "updated_at": "2026-09-05T15:11:55.372680Z"
   },
   "TF-0132": {
     "acceptance_criteria": [
@@ -7017,7 +7058,8 @@
     "evidence": [
       "已提交 d7e262d：runtime/notice-id.ts 的稳定去重身份（刻意排除 diff）、types/config.ts 的 chat.noticeTokenBudget（默认 300，尚未有人强制）",
       "drain 路径已按 (writer, path, version) 去重、同路径取最新版本",
-      "renderNotice 仍内嵌每个 claim 的完整 diff，git diff maxBuffer 为 1MB：token 上限仍是必需项"
+      "renderNotice 仍内嵌每个 claim 的完整 diff，git diff maxBuffer 为 1MB：token 上限仍是必需项",
+      "2026-09-06 真实 stats：overlaps=0、notified=0、notifiedRatio=null。300 token 预算与每写者合束已有测试；家族折叠的显式开工闸门尚未满足。"
     ],
     "execution_hints": [
       "修改 runtime/delivery.ts",
@@ -7028,7 +7070,7 @@
     ],
     "id": "TF-0133",
     "kind": "task",
-    "next_action": "先完成通知通道语义，再实现每轮一束与 token 上限。",
+    "next_action": "只有真实 stats.premises.notifiedRatio > 0.3 才实现家族折叠。",
     "non_goals": [],
     "priority": 1,
     "progress": 25.0,
@@ -7043,13 +7085,13 @@
       "通知 token 上限可配置"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [
       "单轮注入不超过配置 token 上限"
     ],
     "summary": "同一写者一轮只注入一束通知；同一 fork 家族 30 分钟内折叠；超过预算显示『及另 N 条』，不静默丢弃。延后到有真实洪泛数据再做：没洪泛先做折叠是过早优化。开工闸门 = TF-0149 显示 notified / overlaps 超出 10-30% 区间上界。",
     "title": "通知预算：每轮一束 + 家族折叠",
-    "updated_at": "2026-09-05T09:00:49.333725Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0134": {
     "acceptance_criteria": [
@@ -7231,7 +7273,8 @@
     "evidence": [
       "全仓库无 promotion_reverted / variant.promoted，原门槛结构性为零，已删除",
       "事实消费事件由 TF-0139 产生、由 TF-0129 的事实段触发：窗口若早于事实段上线，该门槛会重复同一类错误——本轮 TF-0128 落库后前置条件已满足",
-      "判决二的两个比值依赖 TF-0148 的四态标注；notified 的分母依赖 TF-0149"
+      "判决二的两个比值依赖 TF-0148 的四态标注；notified 的分母依赖 TF-0149",
+      "2026-09-06 真实 stats 返回 insufficient-history：0 线程/0 fork/0 restored，无可判决样本。既定阈值保持不变。"
     ],
     "execution_hints": [
       "不要提前开门：三条 depends_on（TF-0141 的 t0、TF-0148 的结局标注、TF-0149 的逐层计数）全部 done 后才转 ready",
@@ -7239,7 +7282,7 @@
     ],
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "等 TF-0141 的两周窗口结束后，用可观测事件检验 L3 门槛。",
+    "next_action": "t0 成立且至少 14 天真实使用后，按既定四项门槛裁决。",
     "non_goals": [],
     "priority": 1,
     "progress": 0.0,
@@ -7257,13 +7300,13 @@
       "任一不满足则 L3 继续延后"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [
       "L3 的继续/延后决策可追溯到 stats 输出"
     ],
     "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。",
     "title": "两周真实使用门与 L3 证据门",
-    "updated_at": "2026-09-05T09:02:37.753534Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0137": {
     "acceptance_criteria": [
@@ -7302,8 +7345,20 @@
     "difficulty": "medium",
     "estimated_total_minutes": 180,
     "evidence": [
-      "实测：全图 142 节点中 fit=unknown 140、aligned 2；本批 TF-0120..TF-0146 的 fit_confidence 全为 0，属于有意保留的未知",
-      "原节点用 known-positive/known-negative/harmful 词表，与森林现有 aligned/unknown 不一致"
+      "新增 scripts/fit-ledger.ts（入口）+ scripts/fit-ledger/metrics.ts（指标表）/ledger.ts（推导与闸门）/render.ts（markdown），产出 docs/fit-ledger.md（86 行，由 --out 生成，不手工编辑）",
+      "账本不是手写的：scope 从 graph/{nodes,edges}.json 递归取 TF-0120 及全部后代（deprecated 不入账也不进分母，采纳 TF-0152 的分母口径），值从本仓库 .workbench 的 collectChatStats + events.all() + sessions.list() 读",
+      "验收五（词表一一对应）：fit 只用 aligned/partial/weak/misaligned/unknown 五个值，与 references/goal-alignment.md 逐字一致；节点原文的 known-positive/known-negative/harmful 一套弃用",
+      "验收五的一处必须写明的区分：同一个词表有两种问法。森林 alignment.fit 问『这个任务服不服务用户目标』（先验判断），账本 fit 问『建出来的东西有没有被真的用过』（后验证据）。共用词表是为了能互相引用，不是为了互相覆盖——账本永不写回森林的 alignment 字段。所以同一节点在账本 unknown 而在森林 aligned 并不矛盾",
+      "验收四（本批节点自身入账）：25 个节点计入 fit（里程碑不计），含 TF-0137 自己、TF-0138、TF-0140 与 TF-0148..TF-0153。零个 done 节点缺指标",
+      "验收七（benchmark 闸门）已是可执行代码：benchmarkGate() 四个数字缺一不开，并报出缺哪几个；当前四缺四，闸门关",
+      "验收六的机器已就位，值全为零：A 校准表行数 0（stats.noticeOutcomes.rows）、B 推定写者是 git 或人的失效通知 0（events[premise_stale] ⋈ sessions/<writer>.kind）、C seal 阻断 0（stats.seal.blocked）、D notified/overlaps 无样本（stats.premises.notifiedRatio）。四个数字都带来源，不再是印象",
+      "验收一（unknown 数量下降）当前不满足，且这是结构性的：实测 25/25 unknown。第一版跑出来时有两行是 partial（TF-0123 事件身份、TF-0145 世界事件各读到 15），追查发现那 15 条全是 2026-08-30 的自举期事件——用自测数据把行推离 unknown 正是纪律 2 要拦的。因此加了 t0 闸门",
+      "t0 闸门（判据取自 TF-0141）：真实线程数 > 0 且注册写者数 > 0 才准让实测值推动 fit；t0 之前部件行强制 unknown，但 measured 值照常显示（authored 指标与 measured 值在输出里分列）。实测 0 线程 / 0 写者 → 未开始",
+      "新增 scripts/fit-ledger/ledger.test.ts 9 个用例，钉的是规则不是数字：t0 判据缺一不算开始；同样 60 行校准表在 t0 前是 unknown、t0 后是 aligned；有样本但不够门槛是 partial 而非 aligned 或 unknown；record 类（决策/实验/修复）永远 unknown 且 trace 只是指路不是证据；里程碑不计入分布；done 却没进指标表报『账本自己的缺口』而未开工报『没有可测行为』；护城河闸门缺一不开；护城河 B 只认 git/human，agent 自己的通知不算；护城河 D 是区间不是下限，0.9 有值也不齐备",
+      "为什么停在 in_progress 而不是 done：七条验收里五条已满足（二、三、四、五、七），验收一与验收六的『值非零』部分在 t0 之前不可能满足。把它们算作已完成就是用测试通过替代真实使用——这正是本节点 requirements 明令禁止的。账本的贡献是把这个阻塞从一句断言变成一行可测数字",
+      "验收三（森林相关节点状态更新）：账本首跑的结论与森林现状一致（全 unknown），所以没有需要改的 fit 字段。这一致本身是结论——森林里那些 unknown 不是懒得填，是确实没数据",
+      "复核：cd packages/workbench && bun test --timeout 60000 → 509 pass / 0 fail（68 files，52.4s）；tsc --noEmit 与 biome check 均通过。tsconfig include 已把 scripts/fit-ledger.ts 与 scripts/fit-ledger 纳入类型检查",
+      "2026-09-06 真实使用样本仍为空，unknown 占比下降和 30 天护城河四个数字无法验收；9 项账本规则测试通过不替代使用数据。"
     ],
     "execution_hints": [
       "新建 scripts/fit-ledger.ts 或 docs/fit-ledger.md",
@@ -7313,10 +7368,10 @@
     ],
     "id": "TF-0137",
     "kind": "task",
-    "next_action": "先建立 fit 账本的数据结构，再接入 stats 与观测事件。",
+    "next_action": "继续补齐账本可本地验证的缺口；fit 与砍留结论等待真实使用。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 70.0,
     "progress_source": "manual",
     "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
     "remaining_minutes_max": 180,
@@ -7329,13 +7384,13 @@
       "每条 fit 结论必须引用 stats 输出或事件 ID"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [
       "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
     ],
     "summary": "建立 fit 账本，记录使用次数、展开率、dismiss 率与恢复改善；所有状态必须来自真实事件，不允许用测试通过替代。",
     "title": "fit 账本与砍留决策",
-    "updated_at": "2026-09-05T09:00:49.332676Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0138": {
     "acceptance_criteria": [
@@ -7372,7 +7427,19 @@
     "deviations": [],
     "difficulty": "medium",
     "estimated_total_minutes": 180,
-    "evidence": [],
+    "evidence": [
+      "新增 docs/decisions/0010-premise-custody.md，并在 docs/decisions/README.md 的决策表补第 10 行（验收三的『口径同步』半条）",
+      "按 execution_hints 以『提案』状态入库，阶段 A 门后再转已接受——所以本节点停在 review_needed 而不是 done：验收一写的是『入库并通过评审』，评审是用户的动作",
+      "五条 requirements 逐条落到 ADR 章节：§4 禁内容级合并、§1+§3 世界投影不读会话事件且有载荷上限、§6 L0 线性默认不动、§2 source=threads 命名边界、§5 Claude 真实继承实验结论",
+      "验收四（每条边界都有代码或实验证据）逐条给了行号：isWorldEvent 定义在 types/event.ts:111-117、执行点在 contextgen/generate.ts:26 与 render.ts:63；validateThreadEvent 的禁字段表在 types/event.ts:41-107、强制调用在 blackboard/events.ts:237,303；载荷上限 contextgen/render.ts:21-23（400 字符）与 delivery.ts:43-147（300 token，先砍 diff 再砍文件列表保留总数）；禁合并 merge-guard.ts:1-22（含 LLM 合并一致率 55-59% 那句）；继承开关 fork.ts:36-70 与 notice-outcome.ts:59,289-293；L0 零仪式 fork.ts:1-11；回退 rollback.ts:1-13",
+      "验收五的一句话取舍标准放在 ADR 开头而不是末尾：Helmor = 写者中立的前提账本，agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，都答不了的走裁决队列",
+      "验收六的七条 non-goals 做成表格，每条配理由或代码证据；并明写要推翻其中任何一条需新开 ADR 标注取代关系",
+      "命名边界收紧了一处：历史上曾用过 source=sessions，本 ADR 之后只保留 threads 一个名字，避免同一类事实两个名字让投影过滤器漏一个",
+      "写作过程中修掉一处自己引错的证据：初稿引 src/types/event.test.ts，实际不存在——校验单测在 blackboard/events.test.ts 与 contextgen/{generate,render}.test.ts，已改",
+      "定稿后又修订了一次 §5（2026-09-05，做 TF-0131 时读 HTTP 路径发现的）：初稿写『只有走 --fork-session 才置 agentContextInherited=true』，与代码不符且是错的。chat/threads.ts:895-899 对 HTTP 也置 true，mode=http-history——HTTP 每轮重发全量历史，上下文确实继承了；不继承的是读集（premiseInherited 恒 false，无工具通道）。§5 已改成两级开关表，并明写压成一个布尔会同时犯两个错",
+      "复核：cd packages/workbench && bun test --timeout 60000 → 500 pass / 0 fail（含 TF-0131 新增 5 个用例），67 files；biome check 与 tsc --noEmit 均通过",
+      "提交 4895559：ADR-0010 已接受，收敛 ADR-0006/0007/0008 并同步 README/positioning；纠正 sessions=世界足迹、threads=会话生命周期的边界。Workbench 509 pass / 0 fail / 1 snapshot，typecheck 通过。"
+    ],
     "execution_hints": [
       "新增 docs/decisions/0010-premise-custody.md",
       "引用 Fable 5.1 与代码证据",
@@ -7381,14 +7448,14 @@
     ],
     "id": "TF-0138",
     "kind": "task",
-    "next_action": "阶段 A 的事件身份、投影边界和继承实验收口后，再起草并评审 ADR。",
+    "next_action": "已通过代码复核，后续边界引用 ADR-0010。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "明确禁止内容级合并",
       "明确世界投影不读会话事件，且世界事件进入工位上下文时必须有载荷上限",
@@ -7397,13 +7464,13 @@
       "记录 Claude 真实继承实验结论"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [
       "后续设计评审能引用同一 ADR 裁决边界问题"
     ],
     "summary": "在阶段 A 末尾固化前提守护架构：一条日志、两类事实、三个投影、source=threads 生命周期事件、真实继承语义与内容级合并禁令。同时收口 ADR-0006/0007/0008 的裁决文本与 non-goals 清算。",
     "title": "ADR：前提守护架构与产品边界",
-    "updated_at": "2026-09-05T09:00:49.331675Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0139": {
     "acceptance_criteria": [
@@ -7511,10 +7578,20 @@
     "difficulty": "low",
     "estimated_total_minutes": 10,
     "evidence": [
-      "审计指出当前 Claude fresh fork 不继承上下文，HTTP 有历史但无足迹",
-      "本机 claude 2.1.251 的 --help 含 --fork-session：resume 时新建 session id 而非复用原 id",
-      "代码已承认前缀偏差：reload 后铸新 session id 的理由即『claude resume context diverges after truncation』",
-      "已预留：fork.ts 的 ForkAgentPlan（provider=claude、mode=fork-session、sourceFootprintSeq）"
+      "新增 packages/workbench/scripts/measure-fork-inheritance.ts：--scan 只读 ~/.claude/projects/ 的真实会话按『逐字前缀 + 不同 sessionId』识别 fork 家族，--live 用与 threads.ts 逐字一致的命令行真跑一次；报告 docs/report-2026-09-05-claude-fork-inheritance.md",
+      "Q1 成立（实测两次）：--session-id 铸出的 stream-json 会话可被 --resume <id> --fork-session 接上，且 fork 铸新 session id 而非复用原 id。e4f0b338… → 4a25b411…、0e50eedf… → c604c3d6…。threads.ts:1141 拼的命令行是对的",
+      "Q1/Q3 的可测性本身是一个发现：system/init 行与会话文件落盘都发生在第一次 API 调用之前，所以这两问在未登录的机器上同样可测，只有 Q2 需要真实计费轮次",
+      "Q3 成立且是三问里最强的一条：fork 把源会话消息逐字复刻进新文件，uuid/parentUuid 链原样保留，只改写 sessionId。全量 33/33 配对（跨 5 个项目）共享前缀内 tool_use/tool_result id 序列完全一致，合计 9733 条，单配对最多 768 条；31/33 确实含工具调用（另 2 个分叉点早于第一次工具调用）",
+      "Q3 的本仓库样本：D--helmor-main 的 dd77a534… → d0abd4f4…，逐字共享前缀 406 条消息、306 条 tool id 序列一致，源尾 40 条 / fork 尾 63 条。可见 toolu_bdrk_01VsvfSCvYbB4KdWULaskWmo 这类 id 在两侧同序出现",
+      "Q3 的推论：footprint.inherited 需要的 join key 不用另发明——tool_use_id 过 fork 不变，ForkAgentPlan.sourceFootprintSeq 可以是真实切点而非名义字段",
+      "Q3 的局限（留档）：33 个配对是按磁盘签名判为 fork 形状的，未逐个追溯是否由 --fork-session 产生。--live 已确认 --fork-session 产出同一签名，反向不成立",
+      "Q2 的代理指标被证伪：分叉首轮 cacheRead>0 只有 10/33；按『源末轮 → 分叉首轮』间隔切开，间隔 ≤5 分钟（缓存 TTL 内）的 11 个配对里命中 5 个、未命中 6 个，未命中者普遍带大额 cacheCreate（72cb3058… → cf9119ce…，间隔 2.9min，cacheRead=0 而 cacheCreate=197678，即重新写缓存），另有间隔 156.8 分钟仍 cacheRead>0 的配对。同一继承语义能给出完全不同的数字，所以 cacheRead 是时序产物而非继承判据",
+      "Q2 本机无法补测（unmeasured，不拿零值冒充观测）：桌面宿主接管 provider 认证（CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST=1、CLAUDE_CODE_HOST_AUTH_ENV_VAR=ANTHROPIC_AUTH_TOKEN），而 ANTHROPIC_AUTH_TOKEN 不在子进程环境里、~/.claude/.credentials.json 不存在，子进程 claude 一律 authentication_failed / Not logged in。这与 Workbench 代码无关，在已登录机器上 --live 会自动改口径",
+      "本仓库那个配对整场 cacheRead/cacheCreate 全为 0、全部计入 input_tokens（toolu_bdrk_* 前缀即 Bedrock），连缓存字段都没有可读值——Q2 样本天生残缺的第二个原因",
+      "裁决口径的诚实交代：验收原文写的是『1+2 成立 → TF-0131 退化』。Q2 未成立，但 Q2 本来只是『fork 是否真带着源上下文』的代理，而 Q3 用文件级事实直接回答了同一个问题。因此走继承成立分支，判据由 Q1+Q2 改为 Q1+Q3",
+      "环境：Windows 11、claude 2.1.251（AppData/Roaming/npm/claude）。tsc --noEmit 与 biome check 均通过；脚本不被任何模块引用，不改动运行时代码",
+      "落地时按仓库的 ~300 行规则拆了目录：入口 scripts/measure-fork-inheritance.ts（51 行，文档头 + 分派）+ scripts/fork-inheritance/{sessions,scan,live}.ts（102/209/144 行），文档里引用的入口路径不变",
+      "自指坑修掉了一处：--live 自己造的 scratch 会话也符合 fork 磁盘签名，跑一次就给统计加一个配对（分母从 33 漂到 36）。scan 默认排除临时目录里的 wb-fork* 项目，--include-probe 可保留——所以报告里的 33 是可复现的固定分母"
     ],
     "execution_hints": [
       "先做 10 分钟上下文知情实验",
@@ -7522,13 +7599,13 @@
     ],
     "id": "TF-0140",
     "kind": "task",
-    "next_action": "先做一次子线程上下文知情实验，再裁决 --fork-session 是否可用。",
+    "next_action": "结论已进 TF-0131 与 TF-0138；本节点收口。",
     "non_goals": [
       "不盲目接入 --fork-session",
       "不把 HTTP 空足迹误当继承成功"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "解决 fresh fork 与真实上下文继承之间的语义落差，避免把 UI 前缀伪装成 agent 前提。",
     "remaining_minutes_max": 420,
@@ -7539,13 +7616,13 @@
       "不得默认把 superset 上下文当作精确前缀"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [
       "能给出可复现实验结果，而非仅静态推断"
     ],
     "summary": "把『三选一继承语义』窄化为三个可测问题：(1) `claude -p --input-format stream-json` 会话的 session id 能否被 `--resume <id> --fork-session` 接上？(2) fork 后第一轮 usage.cache_read_input_tokens 是否约等于源会话前缀长度（前缀 KV 命中）？(3) fork 后新进程的 tool_use_id 与源会话足迹是否可 join（命名空间是否重置）？三个都记录进证据栏，无论成败都算 done。",
     "title": "Claude 上下文继承三问实验（10 分钟，成败皆 done）",
-    "updated_at": "2026-09-05T09:00:49.328665Z"
+    "updated_at": "2026-09-05T14:45:15.950479Z"
   },
   "TF-0141": {
     "acceptance_criteria": [
@@ -7583,14 +7660,16 @@
       "全盘唯一历史线程在另一仓库，2 条、0 分叉、0 足迹，早于 fork/恢复功能",
       "前置条件已满足：TF-0128 事实段本轮落库，窗口不再早于事实段上线",
       "复测 2026-09-05（Week 1 与 Week 2-3 节点全部落库之后）：.workbench/ 仍无 threads/ 与 sessions/，events.jsonl 仍为同样的 15 行、零 thread.*。代码侧前置条件现已全部到位（四个护城河数字都有了事件来源），唯一剩下的阻塞是真的开始用它",
-      "四个数字当前实测全为零，且这是「没有样本」而不是「样本为零」：premises.notifiedRatio 为 null（no-sample），seal.decisions = 0，noticeOutcomes.rows = 0"
+      "四个数字当前实测全为零，且这是「没有样本」而不是「样本为零」：premises.notifiedRatio 为 null（no-sample），seal.decisions = 0，noticeOutcomes.rows = 0",
+      "2026-09-05 起 t0 判据不再只是节点文字，而是可执行代码：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0，docs/fit-ledger.md 每次生成都把它印在最前面。t0 之前所有部件行强制 unknown，所以『t0 没开始』这件事现在会自己出现在账本里，不依赖谁记得提",
+      "2026-09-06 真实 stats：threads.total=0、threads.withMessages=0、threads.withFootprints=0。不能用创建空线程或测试数据冒充日用起点。"
     ],
     "execution_hints": [
       "把 start_date 写入 fit ledger"
     ],
     "id": "TF-0141",
     "kind": "task",
-    "next_action": "等埋点提交且事实段上线后，登记 start_date 并开始两周采样。",
+    "next_action": "等待本仓库第一条真实 Workbench 线程与注册写者，再登记 t0、eventSeq、t0+14d。",
     "non_goals": [
       "不用测试通过替代真实使用"
     ],
@@ -7607,13 +7686,13 @@
       "每周至少导出一次 stats"
     ],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "blocked",
     "success_metrics": [
       "两周窗口结束时能输出可判定的 fit 数据"
     ],
     "summary": "登记开始日常真实使用 Workbench 的 t0（日期 + 当时 eventSeq）与窗口截止日 t0+14d。前置条件『恢复卡事实段已上线』由 TF-0128 满足；t0 本身以本仓库 .workbench/threads/ 出现第一条真实线程为准，样本累积与判决归 TF-0136。",
     "title": "日用起点 t0 登记与两周观察窗口",
-    "updated_at": "2026-09-05T12:33:41.490061Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0142": {
     "acceptance_criteria": [
@@ -8194,12 +8273,8 @@
     "difficulty": "medium",
     "estimated_total_minutes": null,
     "evidence": [
-      "验收一：新增 workbench sessions record（--writer 默认 git / --kind 默认 git / --activity / 可重复 --generated 与 --used），路径也可从 stdin 逐行来；复用 bb.sessions.register + recordActivity，无新抽象",
-      "验收二：三个 git hook（post-merge / post-checkout / post-rewrite）随 context-rot 安装器分发，每个脚本无条件 exit 0；已存在且非本安装器写的 hook 保留原文件并提示，卸载只摘带标记的",
-      "验收三、四端到端实测：临时 git 仓库装上 hook，真跑一次 git merge --no-ff，6 个变更文件记到 git 写者名下，sessions list 里以 kind=git 出现，merge 退出码 0",
-      "三处不记账的边界：仓库无 .workbench/ 时静默返回（hook 装了就到处跑）、一轮没有任何路径时不记、.workbench/ 自己的文件一律剔掉（黑板不是它所描述的世界的一部分，与 watcher 的捕获排除一致）",
-      "顺带修掉一处归因错误：watcher 的人侧过滤器原本只排除 agent 声明过的路径，因此 git pull 落到工作树的文件即使 git 刚认领过，仍被记成编辑器前面那个人改的。recentGeneratedPaths 现接受多个 kind，watcher 问 [agent, git]。不修这条，hook 的认领会被人侧声明立刻盖掉，节点等于没做",
-      "新增 sessions-record.test.ts 9 个用例；context-rot 侧新增 3 个安装器用例（三个 hook 齐全且以 exit 0 收尾、用户自写 hook 不被覆盖也不被卸载删掉、非 git 仓库跳过不报错）"
+      "premise_stale 的 payload 只带 writer id，不带 writerKind（runtime/premises.ts:401-409）。护城河 B『推定写者是 git 或人』因此只能在读侧回查 blackboard/sessions/<writer>/writer.yaml 做 join——fit 账本已按这个口径实现（scripts/fit-ledger/metrics.ts 的 gitOrHumanNotices）",
+      "这个 join 的脆弱点留档：写者一旦从注册表消失，历史通知的 kind 就再也算不出来，而护城河 B 是一个 30 天回看的数字。要让它自描述，得把 writerKind 写进 premise_stale 的 payload；本轮不改事件形状，只记录代价"
     ],
     "execution_hints": [],
     "id": "TF-0150",
@@ -8217,7 +8292,7 @@
     "success_metrics": [],
     "summary": "post-merge / post-rewrite / post-checkout hook 调 workbench sessions record --writer git，把变更文件注册为 generated。底层 bb.sessions.register / recordActivity 已存在，缺的是 CLI 子命令：当前 workbench sessions 只有 list 与 show。",
     "title": "git 作为写者：merge / rebase / checkout 后注册变更",
-    "updated_at": "2026-09-05T12:33:41.489049Z"
+    "updated_at": "2026-09-05T16:43:52.256259Z"
   },
   "TF-0151": {
     "acceptance_criteria": [
@@ -8252,11 +8327,13 @@
       "thread.merged_back 已在本轮工作区落入 types/event.ts 白名单，并有 events.test.ts 校验单测（未知 thread 类型仍抛错）——TF-0132 五条验收里的第五条已完成，此证据随本节点保留",
       "核对 resume-card.ts:14-23：ConflictRule 当前为 R1-R9，R10 是该联合的下一个空位",
       "所有线程都在同一 projectRoot 下运行，fork 不建 worktree/分支：merge-tree 预测对线程不适用",
-      "checkpoint schema 只有 workspot 字段，没有线程/写者链接：Verifier 状态没有生产者"
+      "checkpoint schema 只有 workspot 字段，没有线程/写者链接：Verifier 状态没有生产者",
+      "阶段 A 已完成代码复核与提交，R10 的本地开发前置解除。"
     ],
     "execution_hints": [],
     "id": "TF-0151",
     "kind": "task",
+    "next_action": "实现并验证有事件引用的分支恢复摘要。",
     "non_goals": [],
     "priority": 2,
     "progress": 0.0,
@@ -8266,11 +8343,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
     "summary": "在 resume-card.ts 的 ConflictRule 联合上新增 R10：回到源线程时，若兄弟分支在你离开后写过你读集里的文件，facts 段追加一行分支摘要（指针、写集、账本差、已失效前提引用）。空分支零痕迹；不含 merge-tree 预测与 Verifier 状态。注意命名空间：这是恢复卡内部的 card rule R10（R1-R9 已用），与 docs/fable-brief 约束表里的 R10（产品必须可证明地不是编排器）不是同一个 R10，需在代码注释里写明。",
     "title": "恢复卡规则 R10：兄弟分支在你离开后改了什么",
-    "updated_at": "2026-09-05T09:00:49.328665Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0152": {
     "acceptance_criteria": [
@@ -8304,25 +8381,27 @@
     "evidence": [
       "实测：proposal_applied 单行 515KB（before 257KB + after 258KB），142 行累计 66.5MB",
       "实测：本 proposal 若 deprecate TF-0132 与 TF-0146，TF-0130 的派生进度被两个 0% 子节点拉到 5.0%，砍节点反而降进度",
-      "TF-0147 的第四条验收明确要求另开 skill 侧节点承载该修正"
+      "TF-0147 的第四条验收明确要求另开 skill 侧节点承载该修正",
+      "共享 skill 的 record_event 改存快照引用与变更 ID；旧事件只追加、不重写。test_history.py 两项回归、validate_task_forest_export.py 与 quick_validate.py 通过；新增事件在大载荷夹具中小于 2KB。"
     ],
     "execution_hints": [],
     "id": "TF-0152",
     "kind": "task",
+    "next_action": "已完成；保留 snapshots 以回放历史。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "森林自己违反了它给 Workbench 定的两条纪律（载荷上限、诚实的进度），修在工具侧一次，比每次 apply 付一次税便宜。",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "两处修正，都在 skill 侧（C:/Users/27933/.claude/skills/task-forest/scripts/task_forest.py），不在本仓库：(1) record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表，历史留引用不留快照体；(2) derived_progress 的子节点分母排除 deprecated / archived——当前 deprecate 一个子节点会把父里程碑的进度按 0 算进平均，砍东西反而让进度下降。",
     "title": "task-forest 引擎侧修正：历史载荷与派生分母",
-    "updated_at": "2026-09-05T09:00:49.329665Z"
+    "updated_at": "2026-09-05T17:44:32.869386Z"
   },
   "TF-0153": {
     "acceptance_criteria": [

@@ -1,0 +1,90 @@
+{
+  "applied_at": "2026-09-05T14:45:15.964267Z",
+  "base_graph_hash": "0f7dc4575894557ba3bc50205047bdf86c66294324aa518b2515277be72823ab",
+  "base_summary": {
+    "edge_count": 220,
+    "node_count": 153,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "新增 packages/workbench/scripts/measure-fork-inheritance.ts：--scan 只读 ~/.claude/projects/ 的真实会话按『逐字前缀 + 不同 sessionId』识别 fork 家族，--live 用与 threads.ts 逐字一致的命令行真跑一次；报告 docs/report-2026-09-05-claude-fork-inheritance.md",
+          "Q1 成立（实测两次）：--session-id 铸出的 stream-json 会话可被 --resume <id> --fork-session 接上，且 fork 铸新 session id 而非复用原 id。e4f0b338… → 4a25b411…、0e50eedf… → c604c3d6…。threads.ts:1141 拼的命令行是对的",
+          "Q1/Q3 的可测性本身是一个发现：system/init 行与会话文件落盘都发生在第一次 API 调用之前，所以这两问在未登录的机器上同样可测，只有 Q2 需要真实计费轮次",
+          "Q3 成立且是三问里最强的一条：fork 把源会话消息逐字复刻进新文件，uuid/parentUuid 链原样保留，只改写 sessionId。全量 33/33 配对（跨 5 个项目）共享前缀内 tool_use/tool_result id 序列完全一致，合计 9733 条，单配对最多 768 条；31/33 确实含工具调用（另 2 个分叉点早于第一次工具调用）",
+          "Q3 的本仓库样本：D--helmor-main 的 dd77a534… → d0abd4f4…，逐字共享前缀 406 条消息、306 条 tool id 序列一致，源尾 40 条 / fork 尾 63 条。可见 toolu_bdrk_01VsvfSCvYbB4KdWULaskWmo 这类 id 在两侧同序出现",
+          "Q3 的推论：footprint.inherited 需要的 join key 不用另发明——tool_use_id 过 fork 不变，ForkAgentPlan.sourceFootprintSeq 可以是真实切点而非名义字段",
+          "Q3 的局限（留档）：33 个配对是按磁盘签名判为 fork 形状的，未逐个追溯是否由 --fork-session 产生。--live 已确认 --fork-session 产出同一签名，反向不成立",
+          "Q2 的代理指标被证伪：分叉首轮 cacheRead>0 只有 10/33；按『源末轮 → 分叉首轮』间隔切开，间隔 ≤5 分钟（缓存 TTL 内）的 11 个配对里命中 5 个、未命中 6 个，未命中者普遍带大额 cacheCreate（72cb3058… → cf9119ce…，间隔 2.9min，cacheRead=0 而 cacheCreate=197678，即重新写缓存），另有间隔 156.8 分钟仍 cacheRead>0 的配对。同一继承语义能给出完全不同的数字，所以 cacheRead 是时序产物而非继承判据",
+          "Q2 本机无法补测（unmeasured，不拿零值冒充观测）：桌面宿主接管 provider 认证（CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST=1、CLAUDE_CODE_HOST_AUTH_ENV_VAR=ANTHROPIC_AUTH_TOKEN），而 ANTHROPIC_AUTH_TOKEN 不在子进程环境里、~/.claude/.credentials.json 不存在，子进程 claude 一律 authentication_failed / Not logged in。这与 Workbench 代码无关，在已登录机器上 --live 会自动改口径",
+          "本仓库那个配对整场 cacheRead/cacheCreate 全为 0、全部计入 input_tokens（toolu_bdrk_* 前缀即 Bedrock），连缓存字段都没有可读值——Q2 样本天生残缺的第二个原因",
+          "裁决口径的诚实交代：验收原文写的是『1+2 成立 → TF-0131 退化』。Q2 未成立，但 Q2 本来只是『fork 是否真带着源上下文』的代理，而 Q3 用文件级事实直接回答了同一个问题。因此走继承成立分支，判据由 Q1+Q2 改为 Q1+Q3",
+          "环境：Windows 11、claude 2.1.251（AppData/Roaming/npm/claude）。tsc --noEmit 与 biome check 均通过；脚本不被任何模块引用，不改动运行时代码",
+          "落地时按仓库的 ~300 行规则拆了目录：入口 scripts/measure-fork-inheritance.ts（51 行，文档头 + 分派）+ scripts/fork-inheritance/{sessions,scan,live}.ts（102/209/144 行），文档里引用的入口路径不变",
+          "自指坑修掉了一处：--live 自己造的 scratch 会话也符合 fork 磁盘签名，跑一次就给统计加一个配对（分母从 33 漂到 36）。scan 默认排除临时目录里的 wb-fork* 项目，--include-probe 可保留——所以报告里的 33 是可复现的固定分母"
+        ],
+        "next_action": "结论已进 TF-0131 与 TF-0138；本节点收口。",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done"
+      },
+      "id": "TF-0140"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "estimated_total_minutes": 480,
+        "evidence": [
+          "TF-0140 已裁决（2026-09-05）：继承成立，形态取『fork 时复制 footprint 并标 inherited: true』这一支，约一天工作量",
+          "join key 已实测可用：34/34 fork 配对共享前缀内 tool_use_id 序列逐字一致，命名空间不重置，ForkAgentPlan.sourceFootprintSeq 可作真实切点",
+          "诚实开关仍是硬要求：只有走 --fork-session 的路径才置 agentContextInherited=true；HTTP 路径无工具通道、足迹恒为空集，不得据此声称继承成功",
+          "不得用 cache_read_input_tokens 判断继承是否发生——TF-0140 实测该指标由缓存 TTL 与计费后端决定，同一语义可给出完全不同的数字"
+        ],
+        "next_action": "fork 时复制源 footprint 并标 inherited: true，join key 用 tool_use_id；仅 --fork-session 路径置 agentContextInherited=true。",
+        "status": "ready"
+      },
+      "id": "TF-0131"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "新增 docs/decisions/0010-premise-custody.md，并在 docs/decisions/README.md 的决策表补第 10 行（验收三的『口径同步』半条）",
+          "按 execution_hints 以『提案』状态入库，阶段 A 门后再转已接受——所以本节点停在 review_needed 而不是 done：验收一写的是『入库并通过评审』，评审是用户的动作",
+          "五条 requirements 逐条落到 ADR 章节：§4 禁内容级合并、§1+§3 世界投影不读会话事件且有载荷上限、§6 L0 线性默认不动、§2 source=threads 命名边界、§5 Claude 真实继承实验结论",
+          "验收四（每条边界都有代码或实验证据）逐条给了行号：isWorldEvent 定义在 types/event.ts:111-117、执行点在 contextgen/generate.ts:26 与 render.ts:63；validateThreadEvent 的禁字段表在 types/event.ts:41-107、强制调用在 blackboard/events.ts:237,303；载荷上限 contextgen/render.ts:21-23（400 字符）与 delivery.ts:43-147（300 token，先砍 diff 再砍文件列表保留总数）；禁合并 merge-guard.ts:1-22（含 LLM 合并一致率 55-59% 那句）；继承开关 fork.ts:36-70 与 notice-outcome.ts:59,289-293；L0 零仪式 fork.ts:1-11；回退 rollback.ts:1-13",
+          "验收五的一句话取舍标准放在 ADR 开头而不是末尾：Helmor = 写者中立的前提账本，agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，都答不了的走裁决队列",
+          "验收六的七条 non-goals 做成表格，每条配理由或代码证据；并明写要推翻其中任何一条需新开 ADR 标注取代关系",
+          "命名边界收紧了一处：历史上曾用过 source=sessions，本 ADR 之后只保留 threads 一个名字，避免同一类事实两个名字让投影过滤器漏一个",
+          "写作过程中修掉一处自己引错的证据：初稿引 src/types/event.test.ts，实际不存在——校验单测在 blackboard/events.test.ts 与 contextgen/{generate,render}.test.ts，已改",
+          "复核：cd packages/workbench && bun test --timeout 60000 → 495 pass / 0 fail，66 files，41.24s；biome check 与 tsc --noEmit 均通过",
+          "顺带核实 ADR 未声称的一件事：本轮全量测试后仓库 .workbench/ 仍无 sessions/ 与 threads/，测试用的是 scratch 工作区并已自清理——TF-0141 的 t0 判据没有被测试残留污染"
+        ],
+        "next_action": "等用户评审；通过后 ADR-0010 转『已接受』，阶段 A（TF-0121）随之收口。",
+        "progress": 90,
+        "progress_source": "manual",
+        "status": "review_needed"
+      },
+      "id": "TF-0138"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-05：15 个子节点里 14 个 done，TF-0140 本轮收口，仅 TF-0138 停在 review_needed 等用户评审",
+          "四条验收的承接关系：只读 stats 基线/insufficient-history → TF-0122；事件身份并发安全且旧日志可读 → TF-0123；fork 三种继承事实与实际运行语义一致 → TF-0125 拆分 + TF-0140 实测确认 threads.ts:1266 现有判定（仅 fork-session 路径置 agentContextInherited=true）与真实语义一致；生命周期事件不进世界投影 → TF-0124，执行点 contextgen/generate.ts:26 与 render.ts:63"
+        ],
+        "next_action": "只剩 TF-0138 待评审；ADR-0010 转已接受后阶段 A 收口。"
+      },
+      "id": "TF-0121"
+    }
+  ],
+  "created_at": "2026-09-05T14:39:14.638132Z",
+  "proposal_id": "TFP-2026-09-05-tf0140-fork-inheritance",
+  "rationale": "阶段 A 的最后两个节点。TF-0140（Claude 上下文继承三问实验）落地：新增可复现脚本 packages/workbench/scripts/measure-fork-inheritance.ts 与实验报告 docs/report-2026-09-05-claude-fork-inheritance.md；Q1 与 Q3 成立且有实测数字，Q2 的代理指标本身被证伪且本机因宿主接管认证无法补测。结论把 TF-0131 定形为『fork 时复制 footprint 并标 inherited: true』。依赖解除后 TF-0138 随即落地：新增 docs/decisions/0010-premise-custody.md 并同步 decisions/README.md，按其 execution_hints 以『提案』入库，因此停在 review_needed 等用户评审而不是 done。阶段 A（TF-0121）由此只剩这一个待评审节点。",
+  "session_id": "session-2026-09-05-tf0140",
+  "status": "applied"
+}
