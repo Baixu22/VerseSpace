@@ -8,6 +8,9 @@
  * carry directives, one per line:
  *
  *   READ <path>                  -> emits a Read tool_use (footprint `used`)
+ *   READSPAN <path> <off> <lim>  -> Read with offset/limit: the claim carries
+ *                                   a line span, so edits outside it are the
+ *                                   L2 suppression path, not invalidations
  *   WRITE <path>                 -> writes the file for real, emits a Write
  *     <content lines ...>           tool_use (footprint `generated`)
  *   __END_WRITE__
@@ -43,9 +46,11 @@ write({
 });
 
 interface Directive {
-	kind: "read" | "write";
+	kind: "read" | "span" | "write";
 	path: string;
 	content?: string[];
+	offset?: number;
+	limit?: number;
 }
 
 function parseDirectives(text: string): {
@@ -59,6 +64,16 @@ function parseDirectives(text: string): {
 		const readMatch = lines[i]!.match(/^READ\s+(.+)$/);
 		if (readMatch) {
 			directives.push({ kind: "read", path: readMatch[1]!.trim() });
+			continue;
+		}
+		const spanMatch = lines[i]!.match(/^READSPAN\s+(.+?)\s+(\d+)\s+(\d+)$/);
+		if (spanMatch) {
+			directives.push({
+				kind: "span",
+				path: spanMatch[1]!.trim(),
+				offset: Number(spanMatch[2]),
+				limit: Number(spanMatch[3]),
+			});
 			continue;
 		}
 		const writeMatch = lines[i]!.match(/^WRITE\s+(.+)$/);
@@ -88,12 +103,17 @@ async function runTurn(prompt: string): Promise<void> {
 		toolIndex += 1;
 		const toolCallId = `toolu_e2e_${toolIndex}`;
 		const abs = resolve(projectRoot, directive.path);
-		if (directive.kind === "read") {
+		if (directive.kind === "read" || directive.kind === "span") {
 			let content = "";
 			try {
 				content = await readFile(abs, "utf8");
 			} catch {
 				content = "";
+			}
+			const input: Record<string, unknown> = { file_path: abs };
+			if (directive.kind === "span") {
+				input.offset = directive.offset;
+				input.limit = directive.limit;
 			}
 			write({
 				type: "assistant",
@@ -103,7 +123,7 @@ async function runTurn(prompt: string): Promise<void> {
 							type: "tool_use",
 							id: toolCallId,
 							name: "Read",
-							input: { file_path: abs },
+							input,
 						},
 					],
 				},

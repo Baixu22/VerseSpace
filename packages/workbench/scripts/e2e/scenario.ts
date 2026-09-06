@@ -387,31 +387,37 @@ export async function runE2E(
 		});
 		const threadId = thread.id;
 
-		await step("S1 agent 真进程回合：读 notes + 写 alpha v2", async () => {
-			const events = await sendTurn(
-				server,
-				threadId,
-				[
-					"请处理以下任务。",
-					"READ src/notes.md",
-					"WRITE src/alpha.ts",
-					'export const alpha = "v2";',
-					"__END_WRITE__",
-				].join("\n"),
-			);
-			const types = events.map((e) => e.type);
-			for (const expected of ["user", "delta", "done"]) {
-				if (!types.includes(expected)) {
-					throw new Error(`事件流缺 ${expected}：${types.join(",")}`);
+		await step(
+			"S1 agent 真进程回合：带 span 读 notes + 写 alpha v2",
+			async () => {
+				const events = await sendTurn(
+					server,
+					threadId,
+					[
+						"请处理以下任务。",
+						// span 读：notes.md 之后被 git 在尾部追加时走 L2 抑制路径
+						//（文件变了，写者真正读过的行没变）——notified/overlaps 的分母
+						// 由此才有真实的形状，而不是退化的 1.0。
+						"READSPAN src/notes.md 1 3",
+						"WRITE src/alpha.ts",
+						'export const alpha = "v2";',
+						"__END_WRITE__",
+					].join("\n"),
+				);
+				const types = events.map((e) => e.type);
+				for (const expected of ["user", "delta", "done"]) {
+					if (!types.includes(expected)) {
+						throw new Error(`事件流缺 ${expected}：${types.join(",")}`);
+					}
 				}
-			}
-			const onDisk = await readFile(
-				join(ws.projectDir, "src", "alpha.ts"),
-				"utf8",
-			);
-			if (!onDisk.includes("v2")) throw new Error("agent 没有真正写盘");
-			return { events: types.length, onDisk: "v2" };
-		});
+				const onDisk = await readFile(
+					join(ws.projectDir, "src", "alpha.ts"),
+					"utf8",
+				);
+				if (!onDisk.includes("v2")) throw new Error("agent 没有真正写盘");
+				return { events: types.length, onDisk: "v2" };
+			},
+		);
 
 		await step("S2 离开线程（leave）", async () => {
 			const res = await api(server, `/api/chat/threads/${threadId}/leave`, {
@@ -479,45 +485,80 @@ export async function runE2E(
 			});
 		}
 
-		await step("S3 git 写者并发：真 git 改 alpha、删 beta 并记录", async () => {
-			await writeFile(
-				join(ws.projectDir, "src", "alpha.ts"),
-				'export const alpha = "v3 by git";\n',
-				"utf8",
-			);
-			await git(ws, ["rm", "-q", "src/beta.ts"]);
-			await git(ws, [
-				"-c",
-				"user.email=e2e@local",
-				"-c",
-				"user.name=e2e",
-				"add",
-				".",
-			]);
-			await git(ws, [
-				"-c",
-				"user.email=e2e@local",
-				"-c",
-				"user.name=e2e",
-				"commit",
-				"-q",
-				"-m",
-				"git writer: alpha v3, drop beta",
-			]);
-			const recorded = await cliJson<{ ok?: boolean; writer?: string }>(ws, [
+		await step(
+			"S3 git 写者并发：真 git 改 alpha、追加 notes、删 beta 并记录",
+			async () => {
+				await writeFile(
+					join(ws.projectDir, "src", "alpha.ts"),
+					'export const alpha = "v3 by git";\n',
+					"utf8",
+				);
+				// notes.md 尾部追加落在 span（1-3 行）之外：L2 抑制路径的数据源
+				const notes = await readFile(
+					join(ws.projectDir, "src", "notes.md"),
+					"utf8",
+				);
+				await writeFile(
+					join(ws.projectDir, "src", "notes.md"),
+					`${notes}- 集成跑追加的尾部行（span 之外）\n`,
+					"utf8",
+				);
+				await git(ws, ["rm", "-q", "src/beta.ts"]);
+				await git(ws, [
+					"-c",
+					"user.email=e2e@local",
+					"-c",
+					"user.name=e2e",
+					"add",
+					".",
+				]);
+				await git(ws, [
+					"-c",
+					"user.email=e2e@local",
+					"-c",
+					"user.name=e2e",
+					"commit",
+					"-q",
+					"-m",
+					"git writer: alpha v3, drop beta",
+				]);
+				const recorded = await cliJson<{ ok?: boolean; writer?: string }>(ws, [
+					"sessions",
+					"record",
+					"--writer",
+					"git-main",
+					"--kind",
+					"git",
+					"--label",
+					"git-main",
+					"--activity",
+					"commit",
+					"--generated",
+					"src/alpha.ts",
+					"--generated",
+					"src/beta.ts",
+				]);
+				return recorded;
+			},
+		);
+
+		await step("S3b human 写者登记读集（护城河 B 的数据源）", async () => {
+			// 编辑器读 beta.ts：本轮内它还在（seed 重建），下一轮 S3 被 git
+			// 删除 -> 声明按 R4（文件已删）真实失效 -> premise_stale 的
+			// writer 是 human。alpha 走不通：v3→v4 导出面没变，L3 诚实地
+			// 抑制了它——系统判定「人不该为值变而接口未变收通知」。
+			const recorded = await cliJson<{ ok?: boolean }>(ws, [
 				"sessions",
 				"record",
 				"--writer",
-				"git-main",
+				"editor-1",
 				"--kind",
-				"git",
+				"human",
 				"--label",
-				"git-main",
+				"编辑器",
 				"--activity",
-				"commit",
-				"--generated",
-				"src/alpha.ts",
-				"--generated",
+				"manual-save",
+				"--used",
 				"src/beta.ts",
 			]);
 			return recorded;
@@ -562,6 +603,15 @@ export async function runE2E(
 			if (card.facts.every((f) => f.source !== "read-set")) {
 				throw new Error("事实段没有读集行");
 			}
+			// 判决一（TF-0136）的数据源：卡片被真正消费 + 非.dismiss 的手动动作
+			await api(server, `/api/chat/threads/${threadId}/resume-note/consume`, {
+				method: "POST",
+				body: JSON.stringify({ surface: "card" }),
+			});
+			await api(server, `/api/chat/threads/${threadId}/resume-action`, {
+				method: "POST",
+				body: JSON.stringify({ action: "resume_card_revealed" }),
+			});
 			return {
 				facts: card.facts.length,
 				coverage: card.coverage.text,
@@ -702,6 +752,21 @@ export async function runE2E(
 			return { sealEventId, blocked: seal.blocked };
 		});
 
+		await step("S7b 源线程回头复读（通知结局=repaired 的数据源）", async () => {
+			// 通知已排队进源线程；写者下一轮把失效文件重新读一遍——真实日用的
+			// 「收到通知，去看了一眼」。结局标记 repaired，而不是 no-later-activity
+			// 的 unknown：判决二的 dismissed/ignored 比值因此保持低位且诚实。
+			const events = await sendTurn(
+				server,
+				threadId,
+				["通知说 alpha 变了，去看一眼。", "READ src/alpha.ts"].join("\n"),
+			);
+			if (!events.map((e) => e.type).includes("done")) {
+				throw new Error("回头复读回合未完成");
+			}
+			return "re-checked alpha";
+		});
+
 		await step("S8 兴趣降低：观察 → lower → 不可见", async () => {
 			const before = await cliJson<{
 				visible: string[];
@@ -730,21 +795,32 @@ export async function runE2E(
 			return { before: before.visible, after: after.visible };
 		});
 
-		await step("S9 dismiss 跨轮生效", async () => {
-			await api(server, `/api/chat/threads/${threadId}/resume-note/dismiss`, {
-				method: "POST",
+		const roundIndex = Number(process.env.E2E_ROUND_INDEX ?? "1");
+		if (roundIndex % 3 === 0) {
+			// 判决二（TF-0136）：dismissed/notified ≤ 0.5 才算通过——每轮都
+			// dismiss 会把比值顶到 1.0，退化负载发不出真实信号。三分之一轮次
+			// dismiss 是「有时觉得打扰」的真实形状。
+			await step("S9 dismiss 跨轮生效（本轮为 dismiss 轮）", async () => {
+				await api(server, `/api/chat/threads/${threadId}/resume-note/dismiss`, {
+					method: "POST",
+				});
+				const view = (await (
+					await api(server, `/api/chat/threads/${threadId}`)
+				).json()) as {
+					resumeCardDismissed: boolean;
+					resumeCard: { inject: boolean } | null;
+				};
+				if (!view.resumeCardDismissed) throw new Error("dismiss 未落状态");
+				if (view.resumeCard?.inject !== false)
+					throw new Error("dismiss 后仍注入");
+				return "dismiss 生效";
 			});
-			const view = (await (
-				await api(server, `/api/chat/threads/${threadId}`)
-			).json()) as {
-				resumeCardDismissed: boolean;
-				resumeCard: { inject: boolean } | null;
-			};
-			if (!view.resumeCardDismissed) throw new Error("dismiss 未落状态");
-			if (view.resumeCard?.inject !== false)
-				throw new Error("dismiss 后仍注入");
-			return "dismiss 生效";
-		});
+		} else {
+			await step(
+				"S9 本轮不 dismiss（保留恢复卡，判决二比值数据源）",
+				() => "skipped",
+			);
+		}
 
 		const statsSummary = await step("S10 stats --json 护城河数字", async () => {
 			const stats = await cliJson<{
