@@ -623,6 +623,11 @@ export async function createUiServer(
 		port,
 		hostname: "127.0.0.1",
 		fetch: handle,
+		// Bun's default 10s idle timeout kills slow-starting LLM streams: a
+		// free-tier model can think for well over 10s before the first SSE
+		// byte, and the NDJSON chat route dies mid-turn (E2E round 6, found
+		// 2026-09-06). Streaming responses reset the timer on every chunk.
+		idleTimeout: 120,
 	});
 
 	// R2: detect and deliver are two different jobs, and only the second one
