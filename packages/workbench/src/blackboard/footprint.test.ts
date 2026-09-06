@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { extractFootprint } from "./footprint";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { extractFootprint, hashPathClaim } from "./footprint";
 
 describe("extractFootprint (stream-json → footprint)", () => {
 	test("Read tool_use yields a used claim", () => {
@@ -109,5 +112,35 @@ describe("extractFootprint (stream-json → footprint)", () => {
 		expect(
 			extractFootprint({ type: "system", subtype: "init" }, "t"),
 		).toBeNull();
+	});
+});
+
+describe("hashPathClaim 路径身份归一（2026-09-06 真进程 E2E 抓到的跨写者缺陷）", () => {
+	test("projectRoot 内的绝对路径落账为项目相对，与 git 钩子的相对路径同身份", async () => {
+		const root = await mkdtemp(join(tmpdir(), "fp-"));
+		try {
+			const abs = join(root, "src", "a.ts");
+			await mkdir(dirname(abs), { recursive: true });
+			await writeFile(abs, "export const a = 1;\n", "utf8");
+			const fromAbsolute = await hashPathClaim(root, abs);
+			const fromRelative = await hashPathClaim(root, "src/a.ts");
+			expect(fromAbsolute.path).toBe("src/a.ts");
+			expect(fromRelative.path).toBe("src/a.ts");
+			expect(fromAbsolute.version).toBe(fromRelative.version);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
+	});
+
+	test("projectRoot 之外的绝对路径保持原样，不捏造相对身份", async () => {
+		const root = await mkdtemp(join(tmpdir(), "fp-"));
+		const outside = await mkdtemp(join(tmpdir(), "fp-out-"));
+		try {
+			const claim = await hashPathClaim(root, outside);
+			expect(claim.path).toBe(outside.replace(/\\/g, "/"));
+		} finally {
+			await rm(root, { recursive: true, force: true });
+			await rm(outside, { recursive: true, force: true });
+		}
 	});
 });

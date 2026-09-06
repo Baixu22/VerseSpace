@@ -6,7 +6,7 @@ import {
 	stat,
 	writeFile,
 } from "node:fs/promises";
-import { isAbsolute, join } from "node:path";
+import { isAbsolute, join, relative } from "node:path";
 import { hashFile, hashText } from "../hash";
 import { tierOf } from "../runtime/durability";
 import type { FootprintUsed, ReadSpan } from "./sessions";
@@ -21,8 +21,11 @@ const SPOOL_KEEP = 20;
 /**
  * Version a file claim: content hash for files within the cap, plain size
  * above it (the hash budget keeps footprint lines small and capture cheap).
- * Paths are normalized to forward slashes so agent claims (backslash paths
- * from the CLI) and watcher captures (forward slashes) match for attribution.
+ * Paths are normalized to forward slashes AND made project-relative when the
+ * absolute form points inside the project: agent claims (absolute file_path
+ * from the CLI) and git-hook claims (project-relative) must share one identity
+ * in the ledger, or every path join (premises, R10, coverage) breaks across
+ * writers. Found by the real-process E2E on 2026-09-06.
  * Every claim is tagged with its durability tier (R2 layer 1, O(1)).
  */
 export async function hashPathClaim(
@@ -31,7 +34,14 @@ export async function hashPathClaim(
 	spoolDir?: string,
 	span?: ReadSpan,
 ): Promise<FootprintUsed> {
-	const normalized = path.replace(/\\/g, "/");
+	const unified = path.replace(/\\/g, "/");
+	let normalized = unified;
+	if (isAbsolute(unified)) {
+		const rel = relative(projectRoot, unified).replace(/\\/g, "/");
+		if (rel.length > 0 && !rel.startsWith("..") && !isAbsolute(rel)) {
+			normalized = rel;
+		}
+	}
 	const durability = tierOf(normalized);
 	try {
 		const abs = isAbsolute(normalized)

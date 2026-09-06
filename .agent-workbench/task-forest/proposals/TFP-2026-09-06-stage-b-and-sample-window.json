@@ -1,0 +1,134 @@
+{
+  "proposal_id": "TFP-2026-09-06-stage-b-and-sample-window",
+  "base_graph_hash": "860763ce36f2991ca3dbe69476999bc3f08119debac19d256d702fc5dc007ee1",
+  "base_summary": {
+    "edge_count": 222,
+    "node_count": 153,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "R10 落在拆分后的 resume-card 模块目录：src/chat/resume-card/{types,branches,index,coverage,dismissal}.ts；ConflictRule 联合新增 R10，types.ts 与 branches.ts 的注释均写明这是恢复卡内部的 card rule R10（R1-R9 已用），与 docs/fable-brief 约束表里的 R10（产品不是编排器）不是同一个 R10（验收五）",
+          "branchResumeFacts 是只读 join：thread.forked 血缘事件引用 + 离开边界之后的 footprint.generated ∩ 当前 stale 读集 + 面向本线程的 premise_stale 佐证；离开边界用 diff.baseline 的 eventId/eventSeq 双路径判定，不推断任何 Verifier 结论（验收四）",
+          "验收一（空分支零痕迹）：无 lineage 引用、paths 为空、stale 为空、baseline 缺失四种情形都返回 []，restore-view.test.ts 钉住；真进程 E2E 的 S6b 对同一现场再验一次（空分支 fork 后分支行仍只有写过的一个）",
+          "验收二（每行可溯源）：buildResumeCard 对 branchFacts 过滤 refs.length > 0；真进程 E2E 断言 R10 行带 thread.forked + footprint + premise_stale 三类事件引用",
+          "验收三（dismiss 跨轮生效）：isResumeCardDismissed 以离开 baseline eventId 为界，restore-view.test.ts 与 E2E S9 双重覆盖",
+          "UI 侧：apps/workbench-ui resume-card.tsx 渲染分支行 + 查看分支按钮（先记 resume_branch_opened 再 switchThread）；配套把恢复视图聚合抽为 chat/restore-view.ts，ui/server.ts 的 GET 路由改为薄委托",
+          "review 修复三处：cli.ts 移除编辑残留（const tribunal = program 重复声明，曾让 CLI 模块整体加载失败）；cli.test.ts premises 子树补钉 review-seal；runtime/seal-review.ts 补 8 个单测（此前完全无测试）",
+          "复核：cd packages/workbench && bun run test → 527 pass / 0 fail（73 files，含真进程 E2E）；五处 tsc 与 biome check . 全绿"
+        ],
+        "next_action": "已完成；R10 证据随本节点保留，消费与裁决等待真实使用样本。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done"
+      },
+      "id": "TF-0151"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 复核：四个子节点验收逐条对照代码与测试，全部钉住——TF-0127 四条（隔天 baseline 比对与写者归因、spool 缺失降级为 unknown 且不借新 leave）、TF-0128 四条（refs 非空、R1-R9 可单测、无分歧整卡不渲染、dismiss 跨轮）、TF-0129 六条（文案黑名单、指标经 lifecycle.restoreFirstAction 随 stats --json 导出、无覆盖说 unknown、目录 claim 剔除、覆盖率行独立字段）、TF-0151 五条见该节点",
+          "真进程 E2E（scripts/e2e，真 CLI 子进程 + 真 HTTP 服务 + 真 git 写者 + stream-json 确定性 agent 进程）对同一场景走通：恢复卡事实段带 refs、覆盖率 available、R10 分支行、dismiss 生效",
+          "里程碑停在 in_progress 的原因不变：隔天恢复能列出变化与恢复间隔不升 20% 是使用数据，只能由样本窗口回答"
+        ],
+        "next_action": "四个子节点全部完成且逐条复核通过；两条使用指标由 stats 供数，样本窗口凑齐后随 TF-0135 的裁决决定关闭。",
+        "status": "in_progress"
+      },
+      "id": "TF-0126"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 复核：六条验收中四条已由代码与测试承载——事件身份与因果时钟（TF-0123）、恢复卡叙事+事实且事实可溯源（TF-0128/0129）、fork 的 transcript 继承与 agent 上下文继承分开声明（TF-0125/0131/0140）、merge-back 只作为恢复卡一拍（TF-0151 的 R10）；通知预算与 L3 砍留分别由 TF-0133 与 TF-0136 的门控持有",
+          "五条成功指标里三条已满足；两条（单轮通知不超预算的实现、L3 砍留数据）是 TF-0133/TF-0136 的门控余量",
+          "真进程 E2E 把「交互/会话树/并发」三支柱在同一真实现场走了一遍：agent 回合足迹、fork 继承、git 并发失效、R10 汇流全部工作"
+        ],
+        "next_action": "代码面已收口到阶段 B；余量全部是使用数据裁决：TF-0133 通知预算门、TF-0136 L3 门、TF-0135 砍留，无新的本地可开工项。",
+        "status": "in_progress"
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 复核：R1 验收（会话结束后能回答读了哪些文件的哪个版本、写了哪些）已由足迹账本、readSetView 与恢复卡事实段承载；证伪实验有脚本与部分记账（measure-ask-costs / measure-bc / measure-fork-inheritance，TF-0091 的 bc 样本留档，TF-0140 的 fork 继承实测）；L1 验收的 80% 认可率只能来自真实使用样本",
+          "真进程 E2E 租户（agent 驱动的持续集成现场）已把恢复/通知/封印三通道跑出真实样本（见 TF-0141 的样本窗口实证）"
+        ],
+        "next_action": "等待 t0 与真实使用样本；随后补齐证伪实验记账并回答 L1 的 80% 认可率验收。",
+        "status": "in_progress"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "title": "日用起点 t0 登记与样本观察窗口",
+        "acceptance_criteria": [
+          "证据栏写入 t0 时间戳与当时 eventSeq，作为采样边界",
+          "t0 的成立以 .workbench/threads/ 非空且 sessions/ 至少一个注册写者为准，不以『打算开始使用』为准",
+          "样本窗口（restores≥3 / noticeOutcomes≥5 / sealDecisions≥3）凑齐后输出可判定的 fit 数据；凑不齐明确 insufficient-history，不伪造结论（判定归 TF-0136）"
+        ],
+        "success_metrics": [
+          "样本窗口凑齐时能输出可判定的 fit 数据"
+        ],
+        "evidence": [
+          "2026-09-06 用户决策：用户无法亲自日用，授权以 agent 驱动的真实进程集成跑作为工程探索的样本源；同时判定「14 天日历硬堵」不合适——工程探索用样本量说话，不用日历",
+          "判据已代码化：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0；sampleWindow() = restores≥3 ∧ noticeOutcomes≥5 ∧ sealDecisions≥3（SAMPLE_WINDOW_TARGETS，ledger.test.ts 钉规则）",
+          "E2E 租户实证：scripts/e2e/run.ts 对持久工作区连续四轮真进程跑（真 CLI + 真 HTTP 服务 + 真 git 写者），样本窗口从 1/3·1/5·1/3 累积到 7/3·5/5·7/3，satisfied=true——窗口机制按设计工作",
+          "旧的两周口径废除：stats.dataQuality 的「窗口短于 7/14 天」日历判据已删，代之以「no restore cycle observed」等行为样本判据；observation.minimumDays 字段删除",
+          "本仓库黑板仍零线程：t0 对本仓库而言未开始；E2E 租户黑板（OS 临时目录）是独立样本源，不冒充本仓库日用"
+        ],
+        "next_action": "判据与窗口已代码化并实证；等本仓库第一条真实线程与注册写者点亮 t0，或在用户确认下把 E2E 租户登记为正式样本源。",
+        "status": "blocked"
+      },
+      "id": "TF-0141"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "title": "真实使用样本门与 L3 证据门",
+        "acceptance_criteria": [
+          "判决一 恢复卡值得继续投入：resume_note_consumed / thread.restored ≥ 0.3 且 resume_action > 0；否则恢复卡降为纯 facts 行，砍叙事段",
+          "判决二 前提检测精度可用：agent 侧 dismissed / notified ≤ 0.5 且 ignored ≤ 0.1；否则加第 4 层谓词（import 可达性）再评",
+          "判决三 阶段 C 是否开工：样本窗口内真实 fork ≥ 5 次且 TF-0140 问题 1 成立；否则阶段 C 整体延后，只保留 TF-0134",
+          "判决四 L3 去留：无判据可满足（事件结构性为零）则砍 TF-0099",
+          "四条判决结论写回 Task Forest，所有指标都有事件来源"
+        ],
+        "evidence": [
+          "2026-09-06 重设计：裁决的输入从「t0+14d 日历窗口」改为「样本窗口」（TF-0141），判决一至四的数值门槛不变，只换时间框架",
+          "样本来源可以是本仓库真实日用或经用户确认的 E2E 租户集成跑；两者都在账本里带 writer kind 与来源标注"
+        ],
+        "next_action": "t0 成立且样本窗口凑齐后，按既定四项门槛裁决。",
+        "status": "blocked"
+      },
+      "id": "TF-0136"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "fork/week、兄弟交替、恢复首动作有基线与样本窗口数据",
+          "L3 明确继续或延后",
+          "fit unknown 数量下降且可解释"
+        ],
+        "evidence": [
+          "2026-09-06 对齐 TF-0141 重设计：范围仲裁的采样条件从「14 天样本」改为「样本窗口凑齐」；stats --json 已能导出窗口三判据（restores/noticeOutcomes/sealDecisions）"
+        ],
+        "next_action": "等 TF-0141 登记 t0 与 eventSeq 采样边界，样本窗口凑齐后按四项门槛裁决三支柱砍留。",
+        "status": "proposed"
+      },
+      "id": "TF-0135"
+    }
+  ],
+  "created_at": "2026-09-06T04:30:00.000000Z",
+  "rationale": "两部分工作合入一份提案（同一 base hash，避免两份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库（修复 cli.ts 加载缺陷、补 review-seal 测试钉与 seal-review 8 个单测），TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（restores≥3 / noticeOutcomes≥5 / sealDecisions≥3，SAMPLE_WINDOW_TARGETS 代码化并有规则单测），TF-0136 判决一至四的数值门槛不变、只换时间框架。E2E 已抓到并修复一个真实跨写者缺陷（agent 绝对路径与 git 相对路径在账本里是两种身份，hashPathClaim 现统一归一为项目相对）。E2E 租户四轮实证样本窗口可凑齐。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
+  "session_id": "zcode-2026-09-06-tf0151-r10",
+  "status": "proposed"
+}
