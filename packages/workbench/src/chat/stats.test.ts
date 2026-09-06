@@ -72,8 +72,10 @@ describe("collectChatStats", () => {
 			expect(stats.forks.families.count).toBe(1);
 			expect(stats.forks.families.largestSize).toBe(2);
 			expect(stats.siblingAlternation.available).toBe(false);
+			// 2026-09-06 重设计：数据质量看样本不看日历——有足迹但没有恢复周期
 			expect(stats.dataQuality.insufficientHistory).toBe(true);
-			expect(stats.dataQuality.reasons).toContain(
+			expect(stats.dataQuality.reasons).toContain("no restore cycle observed");
+			expect(stats.dataQuality.reasons).not.toContain(
 				"observation window is shorter than 7 days",
 			);
 		} finally {

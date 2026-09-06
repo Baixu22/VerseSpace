@@ -14,6 +14,7 @@ import {
 	buildRows,
 	fitHistogram,
 	moatNumbers,
+	sampleWindow,
 	t0Started,
 } from "./ledger";
 import type { Ctx } from "./metrics";
@@ -36,7 +37,7 @@ function stats(over: Record<string, unknown> = {}): ChatStats {
 			depth: { min: 0, max: 0, average: 0 },
 			families: { count: 0, largestSize: 0 },
 		},
-		observation: { startedAt: null, endedAt: null, days: 0, minimumDays: 14 },
+		observation: { startedAt: null, endedAt: null, days: 0 },
 		lifecycle: {
 			switches: 0,
 			restores: 0,
@@ -218,5 +219,66 @@ describe("fit 账本推导规则（TF-0137）", () => {
 		);
 		expect(tooHigh.find((m) => m.key === "D")!.value).toBe(0.9);
 		expect(tooHigh.find((m) => m.key === "D")!.present).toBe(false);
+	});
+
+	test("样本窗口（TF-0141 重设计）：三类样本齐了才算窗口凑齐，缺的报名字", () => {
+		// 空黑板：三类全缺
+		const empty = sampleWindow(ctx());
+		expect(empty.satisfied).toBe(false);
+		expect(empty.missing).toHaveLength(3);
+
+		// 只补两类：仍差一个，且缺的名字可读
+		const partial = sampleWindow(
+			ctx({
+				stats: stats({
+					lifecycle: {
+						switches: 0,
+						restores: 3,
+						resumeNotesConsumed: 0,
+						resumeActions: 0,
+						restoreFirstAction: {
+							observed: 0,
+							known: 0,
+							unknown: 0,
+							byKind: {},
+						},
+					},
+					noticeOutcomes: {
+						rows: 5,
+						agent: { unknownBy: { unobservable: 0 } },
+					},
+					seal: { decisions: 1, blocked: 0 },
+				}),
+			}),
+		);
+		expect(partial.satisfied).toBe(false);
+		expect(partial.missing).toEqual(["sealDecisions 1/3"]);
+
+		// 三类全达标：窗口凑齐——不管事件跨度是三天还是三十天
+		const full = sampleWindow(
+			ctx({
+				stats: stats({
+					lifecycle: {
+						switches: 2,
+						restores: 4,
+						resumeNotesConsumed: 1,
+						resumeActions: 1,
+						restoreFirstAction: {
+							observed: 2,
+							known: 2,
+							unknown: 0,
+							byKind: {},
+						},
+					},
+					noticeOutcomes: {
+						rows: 7,
+						agent: { unknownBy: { unobservable: 0 } },
+					},
+					seal: { decisions: 3, blocked: 1 },
+				}),
+			}),
+		);
+		expect(full.satisfied).toBe(true);
+		expect(full.missing).toEqual([]);
 	});
 });

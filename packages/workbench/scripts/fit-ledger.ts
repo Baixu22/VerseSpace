@@ -24,6 +24,7 @@ import {
 	fitHistogram,
 	loadScope,
 	moatNumbers,
+	sampleWindow,
 	t0Started,
 } from "./fit-ledger/ledger";
 import type { Ctx } from "./fit-ledger/metrics";
@@ -52,6 +53,7 @@ async function main(): Promise<void> {
 		threads: stats.threads.total,
 		writers: ctx.writerKind.size,
 	};
+	const window = sampleWindow(ctx);
 
 	if (argv.includes("--json")) {
 		console.log(
@@ -62,6 +64,7 @@ async function main(): Promise<void> {
 					observation: stats.observation,
 					dataQuality: stats.dataQuality,
 					t0,
+					sampleWindow: window,
 					histogram,
 					moat,
 					gate,
@@ -79,6 +82,7 @@ async function main(): Promise<void> {
 		observation: stats.observation,
 		dataQuality: stats.dataQuality,
 		t0,
+		sampleWindow: window,
 		histogram,
 		moat,
 		gate,

@@ -38,13 +38,22 @@ export async function loadScope(
 	root = "TF-0120",
 ): Promise<Array<{ id: string } & ForestNode>> {
 	const dir = join(workspace, ".agent-workbench", "task-forest", "graph");
-	const nodes = JSON.parse(
-		await readFile(join(dir, "nodes.json"), "utf8"),
-	) as Record<string, ForestNode>;
-	const edges = JSON.parse(await readFile(join(dir, "edges.json"), "utf8")) as
-		| Array<{ from: string; to: string; type: string }>
-		| Record<string, { from: string; to: string; type: string }>;
-	const list = Array.isArray(edges) ? edges : Object.values(edges);
+	let nodes: Record<string, ForestNode>;
+	let edges: Array<{ from: string; to: string; type: string }>;
+	try {
+		nodes = JSON.parse(
+			await readFile(join(dir, "nodes.json"), "utf8"),
+		) as Record<string, ForestNode>;
+		const raw = JSON.parse(await readFile(join(dir, "edges.json"), "utf8")) as
+			| Array<{ from: string; to: string; type: string }>
+			| Record<string, { from: string; to: string; type: string }>;
+		edges = Array.isArray(raw) ? raw : Object.values(raw);
+	} catch {
+		// 黑板不一定长在森林仓库里（如 E2E 租户）：没有森林就以黑板本身为
+		// scope，行数为零但 t0 / 样本窗口 / 护城河照常推导。
+		return [];
+	}
+	const list = edges;
 	const children = new Map<string, string[]>();
 	for (const edge of list) {
 		if (edge.type !== "child_of") continue;
@@ -72,6 +81,60 @@ export async function loadScope(
  */
 export function t0Started(ctx: Ctx): boolean {
 	return ctx.stats.threads.total > 0 && ctx.writerKind.size > 0;
+}
+
+/**
+ * 样本窗口（TF-0141，2026-09-06 重设计）：裁决要不要继续看，看的是样本量，
+ * 不是日历。旧的「t0+14d」日历门在工程探索阶段两头都失败——三天高强度使用
+ * 可以攒齐两周才有的事件，两周挂机也可能一个恢复周期都没有。窗口凑齐 =
+ * 三类核心行为样本各到既定数量；凑不齐，结论一律 insufficient-history。
+ *
+ * 目标值是工程探索的默认档，不是产品承诺：
+ *   - restores ≥ 3：「离开→回来」循环至少三次，恢复卡的重复出现率才有意义；
+ *   - noticeOutcomes ≥ 5：校准表不能靠单例下结论；
+ *   - sealDecisions ≥ 3：block/warn/pass 都该出现过，降级路径也被踩过。
+ */
+export const SAMPLE_WINDOW_TARGETS = {
+	restores: 3,
+	noticeOutcomes: 5,
+	sealDecisions: 3,
+} as const;
+
+export interface SampleWindow {
+	restores: number;
+	noticeOutcomes: number;
+	sealDecisions: number;
+	targets: typeof SAMPLE_WINDOW_TARGETS;
+	satisfied: boolean;
+	missing: string[];
+}
+
+export function sampleWindow(ctx: Ctx): SampleWindow {
+	const restores = ctx.stats.lifecycle.restores;
+	const noticeOutcomes = ctx.stats.noticeOutcomes.rows;
+	const sealDecisions = ctx.stats.seal.decisions;
+	const missing: string[] = [];
+	if (restores < SAMPLE_WINDOW_TARGETS.restores) {
+		missing.push(`restores ${restores}/${SAMPLE_WINDOW_TARGETS.restores}`);
+	}
+	if (noticeOutcomes < SAMPLE_WINDOW_TARGETS.noticeOutcomes) {
+		missing.push(
+			`noticeOutcomes ${noticeOutcomes}/${SAMPLE_WINDOW_TARGETS.noticeOutcomes}`,
+		);
+	}
+	if (sealDecisions < SAMPLE_WINDOW_TARGETS.sealDecisions) {
+		missing.push(
+			`sealDecisions ${sealDecisions}/${SAMPLE_WINDOW_TARGETS.sealDecisions}`,
+		);
+	}
+	return {
+		restores,
+		noticeOutcomes,
+		sealDecisions,
+		targets: SAMPLE_WINDOW_TARGETS,
+		satisfied: missing.length === 0,
+		missing,
+	};
 }
 
 export function buildRows(

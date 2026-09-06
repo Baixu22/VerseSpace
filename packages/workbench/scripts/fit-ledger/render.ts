@@ -6,7 +6,7 @@
  */
 
 import type { ChatStats } from "../../src/chat/stats";
-import type { MoatNumber, Row } from "./ledger";
+import type { MoatNumber, Row, SampleWindow } from "./ledger";
 import type { Fit } from "./metrics";
 
 export interface Report {
@@ -15,6 +15,8 @@ export interface Report {
 	dataQuality: ChatStats["dataQuality"];
 	/** TF-0141 的 t0 判据实测：有真实线程，且注册过写者。 */
 	t0: { started: boolean; threads: number; writers: number };
+	/** TF-0141 样本窗口（2026-09-06 重设计）：裁决看样本量，不看日历。 */
+	sampleWindow: SampleWindow;
 	histogram: Record<Fit, number>;
 	moat: MoatNumber[];
 	gate: { open: boolean; missing: string[] };
@@ -42,11 +44,9 @@ export function renderMarkdown(report: Report): string {
 		"",
 		`- 生成时间：${new Date().toISOString()}`,
 		`- 数据源黑板：\`${report.blackboard}\``,
-		`- 观察窗口：${report.observation.days.toFixed(1)} 天（${
+		`- 事件跨度：${report.observation.days.toFixed(1)} 天（${
 			report.observation.startedAt ?? "无"
-		} → ${report.observation.endedAt ?? "无"}），门槛 ${
-			report.observation.minimumDays
-		} 天`,
+		} → ${report.observation.endedAt ?? "无"}）。跨度只是信息项，不做门槛。`,
 		"",
 		"两条纪律（词表与证据）：",
 		"",
@@ -71,6 +71,22 @@ export function renderMarkdown(report: Report): string {
 		"",
 	];
 
+	const window = report.sampleWindow;
+	lines.push(
+		"## 样本窗口（TF-0141）",
+		"",
+		"| 样本类别 | 实测 | 目标 | 齐 |",
+		"| --- | --- | --- | --- |",
+		`| 恢复周期 lifecycle.restores | ${window.restores} | ${window.targets.restores} | ${window.restores >= window.targets.restores ? "是" : "**否**"} |`,
+		`| 通知结局 noticeOutcomes.rows | ${window.noticeOutcomes} | ${window.targets.noticeOutcomes} | ${window.noticeOutcomes >= window.targets.noticeOutcomes ? "是" : "**否**"} |`,
+		`| 封印判决 seal.decisions | ${window.sealDecisions} | ${window.targets.sealDecisions} | ${window.sealDecisions >= window.targets.sealDecisions ? "是" : "**否**"} |`,
+		"",
+		window.satisfied
+			? "**窗口已凑齐**：TF-0136 / TF-0135 可以按既定门槛裁决——看样本，不看日历。"
+			: `**窗口未凑齐**：还差 ${window.missing.join("、")}。凑齐之前结论一律 \`unknown\`，不以测试或日历替代。`,
+		"",
+	);
+
 	if (report.dataQuality.insufficientHistory) {
 		lines.push("## 数据质量：insufficient-history", "");
 		for (const reason of report.dataQuality.reasons) {
@@ -80,7 +96,7 @@ export function renderMarkdown(report: Report): string {
 	}
 
 	lines.push(
-		"## 护城河四个数字（第 30 天回看）",
+		"## 护城河四个数字（样本齐备后回看）",
 		"",
 		"| | 数字 | 门槛 | 当前 | 齐备 | 来源 |",
 		"| --- | --- | --- | --- | --- | --- |",

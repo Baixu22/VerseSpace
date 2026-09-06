@@ -11,7 +11,6 @@ import { foldSealDecisions, type SealTotals } from "../runtime/seal-counts";
 import type { WorkbenchEvent } from "../types/event";
 import { ChatThreads, type StoredMessage, type ThreadMeta } from "./threads";
 
-const MINIMUM_HISTORY_DAYS = 14;
 const SIBLING_WINDOW_MS = 30 * 60_000;
 
 export interface ChatStats {
@@ -41,7 +40,6 @@ export interface ChatStats {
 		startedAt: string | null;
 		endedAt: string | null;
 		days: number;
-		minimumDays: number;
 	};
 	lifecycle: {
 		switches: number;
@@ -124,7 +122,6 @@ function observationWindow(
 	startedAt: string | null;
 	endedAt: string | null;
 	days: number;
-	minimumDays: number;
 } {
 	const timestamps = [
 		...threads.map((thread) => thread.createdAt),
@@ -137,12 +134,7 @@ function observationWindow(
 		.filter(({ time }) => Number.isFinite(time))
 		.sort((a, b) => a.time - b.time);
 	if (timestamps.length === 0) {
-		return {
-			startedAt: null,
-			endedAt: null,
-			days: 0,
-			minimumDays: MINIMUM_HISTORY_DAYS,
-		};
+		return { startedAt: null, endedAt: null, days: 0 };
 	}
 	const first = timestamps[0]!;
 	const last = timestamps.at(-1)!;
@@ -150,7 +142,6 @@ function observationWindow(
 		startedAt: first.value,
 		endedAt: last.value,
 		days: Math.max(0, (last.time - first.time) / 86_400_000),
-		minimumDays: MINIMUM_HISTORY_DAYS,
 	};
 }
 
@@ -383,14 +374,13 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 	if (threads.length === 0) {
 		reasons.push("no threads");
 	}
-	if (observation.days < 7) {
-		reasons.push("observation window is shorter than 7 days");
-	}
-	if (observation.days < MINIMUM_HISTORY_DAYS) {
-		reasons.push("observation window is shorter than 14 days");
-	}
+	// 2026-09-06 重设计（用户决策）：工程探索阶段不用日历硬堵——样本量说了算。
+	// 旧的「窗口短于 7/14 天」两条日历判据删除，代之以恢复周期这类行为样本。
 	if (withFootprints === 0) {
 		reasons.push("no thread footprints");
+	}
+	if (restores === 0) {
+		reasons.push("no restore cycle observed");
 	}
 	if (switches === 0) {
 		reasons.push("no thread.switch observations");
@@ -443,9 +433,7 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		noticeOutcomes: foldNoticeOutcomes(events),
 		dataQuality: {
 			insufficientHistory:
-				threads.length === 0 ||
-				observation.days < MINIMUM_HISTORY_DAYS ||
-				withFootprints === 0,
+				threads.length === 0 || withFootprints === 0 || restores === 0,
 			reasons,
 		},
 	};
