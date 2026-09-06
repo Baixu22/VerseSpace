@@ -43,7 +43,13 @@ async function main(): Promise<void> {
 		events,
 		writerKind: new Map<string, WriterKind>(writers.map((w) => [w.id, w.kind])),
 	};
-	const scope = await loadScope(bb.projectRoot);
+	const scopeRoot = (() => {
+		const at = argv.indexOf("--scope");
+		return at >= 0 ? (argv[at + 1] as string) : bb.projectRoot;
+	})();
+	// --scope 让行集（森林，权威 scope）与值（黑板）可以来自两处：租户黑板
+	// 有样本但没森林，本仓库有森林但 t0 未开始——账本此前只能在一边全 unknown。
+	const scope = await loadScope(scopeRoot);
 	const rows = buildRows(scope, ctx);
 	const moat = moatNumbers(ctx);
 	const gate = benchmarkGate(moat);

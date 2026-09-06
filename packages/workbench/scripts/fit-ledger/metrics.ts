@@ -228,4 +228,25 @@ export const PROBES: Record<string, Probe> = {
 		source: "无运行时来源",
 		trace: "提交 b292dc4",
 	},
+	"TF-0151": {
+		kind: "record",
+		metric: "R10 分支行是否被恢复卡消费（查看分支手势）",
+		source: "无独立事件类型：分支行的行为证据走恢复卡投影与 resume_action",
+		trace:
+			"scripts/e2e/scenario.ts S6（R10 渲染断言）；docs/tf0136-verdict.md 判决一",
+	},
+	"TF-0136": {
+		kind: "record",
+		metric: "四项判决是否改变了下游决策",
+		source: "无运行时来源",
+		trace:
+			"docs/tf0136-verdict.md（L3 砍、恢复卡保留、阶段 C 不延后、折叠不开工）",
+	},
+	"TF-0135": {
+		kind: "record",
+		metric: "范围仲裁结论是否写回并被执行",
+		source: "无运行时来源",
+		trace:
+			"docs/tf0136-verdict.md；fit 账本租户直方图（unknown 25/25 → 10/25）",
+	},
 };

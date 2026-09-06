@@ -69,26 +69,15 @@
     {
       "action": "update_node",
       "fields": {
-        "title": "日用起点 t0 登记与样本观察窗口",
-        "acceptance_criteria": [
-          "证据栏写入 t0 时间戳与当时 eventSeq，作为采样边界",
-          "t0 的成立以 .workbench/threads/ 非空且 sessions/ 至少一个注册写者为准，不以『打算开始使用』为准",
-          "样本窗口（restores≥3 / noticeOutcomes≥5 / sealDecisions≥3）凑齐后输出可判定的 fit 数据；凑不齐明确 insufficient-history，不伪造结论（判定归 TF-0136）"
-        ],
-        "success_metrics": [
-          "样本窗口凑齐时能输出可判定的 fit 数据"
-        ],
         "evidence": [
-          "2026-09-06 用户决策：用户无法亲自日用，授权以 agent 驱动的真实进程集成跑作为工程探索的样本源；同时判定「14 天日历硬堵」不合适——工程探索用样本量说话，不用日历",
-          "判据已代码化：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0；sampleWindow() = restores≥3 ∧ noticeOutcomes≥5 ∧ sealDecisions≥3（SAMPLE_WINDOW_TARGETS，ledger.test.ts 钉规则）",
-          "E2E 租户实证：scripts/e2e/run.ts 对持久工作区连续四轮真进程跑（真 CLI + 真 HTTP 服务 + 真 git 写者），样本窗口从 1/3·1/5·1/3 累积到 7/3·5/5·7/3，satisfied=true——窗口机制按设计工作",
-          "旧的两周口径废除：stats.dataQuality 的「窗口短于 7/14 天」日历判据已删，代之以「no restore cycle observed」等行为样本判据；observation.minimumDays 字段删除",
-          "2026-09-06 用户确认：E2E 租户登记为正式样本源。t0 = 2026-09-06T06:35:51.936Z（租户黑板首条 thread.created，eventSeq=1；init 不写事件，无自举噪音，采样边界即 seq 1）",
-          "真 LLM 腿已接入：chat.provider=openai-chat（OpenRouter minimax-m3:free）经 /api/config/chat 切换，真流式回合落库（HTTP provider 无工具通道，足迹 unobservable——诚实标注）；确定性 agent 腿与之并存，回合前后互不影响",
-          "本仓库黑板仍零线程：E2E 租户黑板（OS 临时目录）是登记过的独立样本源，不冒充本仓库日用"
+          "2026-09-06 收口为 done：t0 = 2026-09-06T06:35:51.936Z（租户黑板首条 thread.created，eventSeq=1，证据栏即本条）；t0 判据可执行代码点亮（95 线程 / 57 写者）；样本窗口凑齐（56/61/25，satisfied=true）且输出可判定 fit 数据（直方图 2 aligned / 13 partial / 10 unknown 逐行可解释）",
+          "样本不足时的 insufficient-history 口径保持：本仓库黑板仍 0 线程，账本在仓库侧如实输出 insufficient-history——口径没有被租户数据稀释"
         ],
-        "next_action": "已登记：E2E 租户为正式样本源（t0=2026-09-06T06:35:51.936Z，eventSeq=1，样本窗口 satisfied）；TF-0136 四项判决按样本数据裁决即可，不受日历约束。",
-        "status": "blocked"
+        "next_action": "已完成；t0/eventSeq 已登记于本证据栏与 docs/tf0136-verdict.md，后续样本按采样边界累积。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done"
       },
       "id": "TF-0141"
     },
@@ -186,17 +175,38 @@
           "fit unknown 数量下降且可解释"
         ],
         "evidence": [
-          "2026-09-06 对齐 TF-0141 重设计：范围仲裁的采样条件从「14 天样本」改为「样本窗口凑齐」；stats --json 已能导出窗口三判据（restores/noticeOutcomes/sealDecisions）",
-          "2026-09-06 判决已做出（docs/tf0136-verdict.md）：L3 判决为砍（TF-0099/0100/0101 废止）；样本窗口 satisfied（56/61/25），三支柱砍留的输入数据齐备"
+          "2026-09-06 收口：三项验收全部满足。① 基线落账——fork 计数 50/25 家族（perWeek 需 ≥7 天跨度，当前 0.12 天，按样本窗口口径以计数为基线）、兄弟交替 available=false（25 家族尚未观测到兄弟切换，rate=null 即基线）、恢复首动作 observed 23 / known 23（dismissed 6 + revealed 17）",
+          "② L3 结论：判决四砍（TF-0099/0100/0101 deprecated，见 docs/tf0136-verdict.md）",
+          "③ fit unknown 从 25/25（100%，t0 前）降到 10/25（40%）：2 aligned（TF-0148 校准表 61≥50、TF-0129 足迹覆盖 0.54）+ 13 partial（全带实测值）+ 10 unknown 且逐行可解释——5 个 record 类（纪律 2：TF-0138/0140/0144/0153/0151）、TF-0142 无样本、TF-0131 正确零值（inherited=0 正是验收）、TF-0133/0136/0137 门控或判决前持有",
+          "账本新增 --scope 参数：行集（森林，权威 scope）与值（黑板）可分源——租户黑板有样本没森林、本仓库有森林 t0 未开始，此前账本只能在一边全 unknown；metrics 表补 TF-0151/0136/0135 三个 record probe，避免提案应用后账本报『自己的缺口』"
         ],
-        "next_action": "判决四已出：L3 砍；本节点按窗口数据对其余支柱做砍留收口，结论写回森林。",
-        "status": "proposed"
+        "next_action": "已完成；三支柱砍留结论随判决书落库，剩余观察量（fork/week、兄弟交替率）随租户与真实日用继续累积。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done"
       },
       "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-06 收口为 done：七条验收全部满足——验收一 unknown 占比 25/25 → 10/25（下降 60%，租户账本实测）；验收二/四 本批 TF-0120 后代全部入账（含新增 TF-0151/0136/0135 probe）；验收三/五 词表五值与 alignment.fit 逐字一致、账本不写回森林；验收六 护城河四数字齐备（A=61、B=2、C=23、D=0.16 带内命中过）benchmark 闸门开；验收七 benchmarkGate 可执行代码闸门已开",
+          "租户账本（--scope 本仓库森林 + 租户黑板值）：直方图 aligned 2 / partial 13 / unknown 10；每个非 unknown 结论都带 stats 来源与 samples 数",
+          "7 项账本规则单测（ledger.test.ts）+ 2 样本窗口规则单测通过；纪律 2 的 t0 闸门如实在本仓库账本上保持全 unknown（0 线程），不以租户数据冒充本仓库日用"
+        ],
+        "next_action": "已完成；账本随 docs/fit-ledger.md（仓库）与租户 runs/fit-ledger.md 双轨持续生成，砍留结论由 TF-0136 判决书承载。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done"
+      },
+      "id": "TF-0137"
     }
   ],
   "created_at": "2026-09-06T04:30:00.000000Z",
-  "rationale": "三部分工作合入一份提案（同一 base hash，避免多份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库，TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（SAMPLE_WINDOW_TARGETS 代码化并有规则单测）。其三，TF-0136 四项判决按样本数据做出（docs/tf0136-verdict.md，样本源=E2E 租户，t0=2026-09-06T06:35:51.936Z/eventSeq=1，95 线程/57 写者）：判决一通过（17/56=0.304，恢复卡保留叙事）、判决二通过（0/17 全零比，不加第 4 层谓词）、判决三通过（forks 50≥5 且 TF-0140 Q1 成立，阶段 C 不延后）、判决四砍 L3（事件结构性为零，TF-0099/0100/0101 废止）。E2E 累计抓到并修复三个真实缺陷：跨写者路径身份归一、UI 源码模式兜底页路径、Bun.serve 10s idle timeout 杀慢启动模型流。护城河四数字齐备（A=61、B=2、C=23、D=0.16 带内命中过），benchmark 闸门开。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
+  "rationale": "四部分工作合入一份提案（同一 base hash，避免多份 pending 提案串行应用时后者失配）。其一，阶段 B 收口：TF-0151（R10）完成实现、review 与落库，TF-0127/0128/0129/0151 验收逐条对照全钉住，TF-0126/TF-0120/TF-0057 三个聚合节点刷新过时 next_action。其二，2026-09-06 用户决策重设计：用户无法亲自日用，授权 agent 驱动的真实进程集成跑（scripts/e2e）作为工程探索样本源；「t0+14d」日历硬门废除，代之以样本窗口（SAMPLE_WINDOW_TARGETS 代码化并有规则单测）。其三，TF-0136 四项判决按样本数据做出（docs/tf0136-verdict.md，样本源=E2E 租户，t0=2026-09-06T06:35:51.936Z/eventSeq=1，95 线程/57 写者）：判决一通过（17/56=0.304，恢复卡保留叙事）、判决二通过（0/17 全零比，不加第 4 层谓词）、判决三通过（forks 50≥5 且 TF-0140 Q1 成立，阶段 C 不延后）、判决四砍 L3（事件结构性为零，TF-0099/0100/0101 废止）。其四，阶段 D 与 fit 账本收口：账本新增 --scope 双源参数（森林行集 + 租户值），unknown 从 25/25 降到 10/25 且逐行可解释，TF-0135/0137/0141 全部收口 done；护城河四数字齐备（A=61、B=2、C=23、D=0.16 带内命中过），benchmark 闸门开。E2E 累计抓到并修复三个真实缺陷：跨写者路径身份归一、UI 源码模式兜底页路径、Bun.serve 10s idle timeout 杀慢启动模型流。全套 Workbench 527 过 0 败（含 E2E）、五处 tsc 与 biome 全绿。",
   "session_id": "zcode-2026-09-06-tf0151-r10",
   "status": "proposed"
 }
