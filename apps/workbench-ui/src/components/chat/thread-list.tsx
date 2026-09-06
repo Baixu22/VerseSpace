@@ -2,6 +2,7 @@ import {
 	ThreadListItemPrimitive,
 	ThreadListPrimitive,
 } from "@assistant-ui/react";
+import { useMemo } from "react";
 import { useChatStore } from "../../chat/store";
 
 /**
@@ -12,12 +13,18 @@ import { useChatStore } from "../../chat/store";
  * 且明确声明它继承了什么（悬停查看）。
  */
 export function ThreadListSidebar() {
-	const forkOfById = useChatStore((s) =>
-		Object.fromEntries(
-			s.threads
-				.filter((t) => t.forkOf)
-				.map((t) => [t.id, t.forkOf as NonNullable<typeof t.forkOf>]),
-		),
+	// Selector must return a stored reference — deriving a fresh object here
+	// makes the zustand snapshot uncached and loops React into error #185
+	// (Maximum update depth) on first mount.
+	const threads = useChatStore((s) => s.threads);
+	const forkOfById = useMemo(
+		() =>
+			Object.fromEntries(
+				threads
+					.filter((t) => t.forkOf)
+					.map((t) => [t.id, t.forkOf as NonNullable<typeof t.forkOf>]),
+			),
+		[threads],
 	);
 	return (
 		<ThreadListPrimitive.Root className="flex-1 overflow-y-auto px-2 pb-3">
