@@ -4999,7 +4999,7 @@
       "高风险"
     ],
     "created_at": "2026-08-30T06:33:45.396027Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-09T02:30:00.000000Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "high",
@@ -5011,12 +5011,13 @@
       "METR RCT：慢 19% 却以为快 20%——验证成本对付钱的人不可见，用户不会告诉你它在失败",
       "Letta 纯文件系统 74.0% 打败 Mem0 结构化抽取 68.5%——抽取销毁了信息",
       "从对话追溯结构几乎没有实证文献；Graphologue、Sensecape 均为小样本实验室原型",
-      "本轮核实节点硬性前置：必须有 TF-0136 判决四保留结论；目前无真实使用窗口。"
+      "本轮核实节点硬性前置：必须有 TF-0136 判决四保留结论；目前无真实使用窗口。",
+      "2026-09-09：grep 全代码库 packages/workbench/**，variant.promoted / promotion_reverted 无任何生产者定义；租户事件原 4981 条 0 命中；L1 恢复卡+前提检测+阶段C 三项工程判决已 supported，L3 的建议能力被覆盖。判决书 docs/tf0136-l3-cut-verdict.md。"
     ],
     "execution_hints": [],
     "id": "TF-0099",
     "kind": "milestone",
-    "next_action": "先完成依赖：TF-0136（L3 仍 insufficient-evidence，live-model 不能开门）",
+    "next_action": "已被 2026-09-09 TF-0099 判决书废止：variant.promoted/promotion_reverted 在全代码库 0 生产者，判决见 docs/tf0136-l3-cut-verdict.md。",
     "non_goals": [
       "杀死判据：无法通过执行检查且输出空间开放的产物（计划、规格、设计文档）一律不建"
     ],
@@ -5033,14 +5034,13 @@
       "保留轨迹，产物只是指向它的有损索引"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "deprecated",
     "success_metrics": [],
     "summary": "风险最高的一层，明确超前于证据。保持 p5 不开工：供应商 fork + checkpoint 已覆盖大部分场景。去留由 TF-0136 判决四按写死的判据裁决——无判据可满足（事件结构性为零）则砍。",
     "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）",
-    "updated_at": "2026-09-08T16:55:00.000000Z",
-    "blocked_by": [
-      "TF-0136"
-    ]
+    "updated_at": "2026-09-09T02:30:00.000000Z",
+    "blocked_by": [],
+    "ready": false
   },
   "TF-0100": {
     "acceptance_criteria": [
@@ -5061,7 +5061,7 @@
       "前端"
     ],
     "created_at": "2026-08-30T06:33:45.396027Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-09T02:30:00.000000Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "high",
@@ -5074,7 +5074,7 @@
     "execution_hints": [],
     "id": "TF-0100",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0136（L3 仍 insufficient-evidence，live-model 不能开门）",
+    "next_action": "随 TF-0099 废止：N=2 推导依赖 promo 事件比对，事件原 0 命中，无人生产。判决书 docs/tf0136-l3-cut-verdict.md 事实 D。",
     "non_goals": [],
     "priority": 5,
     "progress": 0.0,
@@ -5087,14 +5087,13 @@
       "在知识峰值时刻推导：成功后立刻提议，不进任何摘要队列"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "deprecated",
     "success_metrics": [],
     "summary": "从单条轨迹泛化是那个无解的部分。第二次出现相似轨迹时才提议——变了的是偶然的，没变的是本质的。这把推断问题变成集合运算。",
     "title": "N=2 推导：两条相似轨迹之差即泛化",
-    "updated_at": "2026-09-08T16:55:00.000000Z",
-    "blocked_by": [
-      "TF-0136"
-    ]
+    "updated_at": "2026-09-09T02:30:00.000000Z",
+    "blocked_by": [],
+    "ready": false
   },
   "TF-0101": {
     "acceptance_criteria": [
@@ -5115,7 +5114,7 @@
       "前端"
     ],
     "created_at": "2026-08-30T06:33:45.396027Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-09T02:30:00.000000Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "high",
@@ -5124,12 +5123,13 @@
     "estimated_total_minutes": null,
     "evidence": [
       "ALLOY 最重要的功能是那个执行按钮，不是那张图",
-      "本节点继承 TF-0099 的显式开工门槛；补上直接 depends_on，避免 todo 因未读父节点而误报 ready。"
+      "本节点继承 TF-0099 的显式开工门槛；补上直接 depends_on，避免 todo 因未读父节点而误报 ready。",
+      "2026-09-09：promotion_reverted 0 生产者。判决书 docs/tf0136-l3-cut-verdict.md 事实 A+D。"
     ],
     "execution_hints": [],
     "id": "TF-0101",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0136（L3 仍 insufficient-evidence，live-model 不能开门）",
+    "next_action": "随 TF-0099 废止：重放验证 + 逐字面量占位符需要 promo/revert 参数；promo 事件原 0 命中。",
     "non_goals": [],
     "priority": 5,
     "progress": 0.0,
@@ -5143,14 +5143,13 @@
       "产物链接到证成它的那段轨迹，原始轨迹保持可查"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "deprecated",
     "success_metrics": [],
     "summary": "绝不交付需要用户读懂才能批准的产物。附执行按钮，把验证成本从 O(所有未来输入) 压到 O(1)。",
     "title": "重放验证 + 逐字面量占位符",
-    "updated_at": "2026-09-08T16:55:00.000000Z",
-    "blocked_by": [
-      "TF-0136"
-    ]
+    "updated_at": "2026-09-09T02:30:00.000000Z",
+    "blocked_by": [],
+    "ready": false
   },
   "TF-0102": {
     "acceptance_criteria": [
@@ -5466,21 +5465,22 @@
       "风险"
     ],
     "created_at": "2026-08-30T06:33:45.398071Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-09T02:30:00.000000Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "unknown",
     "display_order": 1500,
     "estimated_total_minutes": null,
     "evidence": [
-      "Graphologue、Sensecape 均无纵向或信任度数据"
+      "Graphologue、Sensecape 均无纵向或信任度数据",
+      "2026-09-09：风险已规避——L3 已被判决废止，不存在超前于证据的实现。"
     ],
     "execution_hints": [],
     "id": "TF-0108",
     "kind": "risk",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5491,11 +5491,14 @@
       "严守杀死判据"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "deprecated",
     "success_metrics": [],
     "summary": "从对话追溯出显式产物几乎没有实证文献，现有的都是小样本实验室原型，无纵向与信任度数据。",
     "title": "风险：L3 明确超前于证据",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-09T02:30:00.000000Z",
+    "ready": false,
+    "blocked_by": [],
+    "next_action": "L3 已随 TF-0099 废止被砍，超前证据风险不再适用。判决书 docs/tf0136-l3-cut-verdict.md。"
   },
   "TF-0109": {
     "acceptance_criteria": [],
@@ -6049,15 +6052,16 @@
     "display_order": 400,
     "estimated_total_minutes": null,
     "evidence": [
-      "本轮遵守节点中既有『按用户决定跳过』与 npm E401 记录，没有触发登录或发布。"
+      "本轮遵守节点中既有『按用户决定跳过』与 npm E401 记录，没有触发登录或发布。",
+      "2026-09-09：用户决策「跳过发布」长期决策；commit 25682da 把该选择入账，接受成年。"
     ],
     "execution_hints": [],
     "id": "TF-0119",
     "kind": "follow_up",
-    "next_action": "等待用户恢复发布并完成 npm 登录；沿用原有暂停决定，本轮跳过。",
+    "next_action": "已按 commit 25682da 的用户决定跳过 npm 发布关闭。无剩余动作。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.7,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
     "remaining_minutes_max": null,
@@ -6068,11 +6072,13 @@
       "登录 npm（npm login）后执行发布"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "done",
     "success_metrics": [],
     "summary": "发布物已就绪：包名 context-rot 未被占用、changeset 已创建、files 补全（dist/README/hooks/scripts/plugin）、CLI 新增 install-hooks 子命令（dist 端到端验证通过：安装→配置→事件采集）。硬阻塞：本机 npm 未登录（E401），需用户登录 npm 后执行 bun run changeset version + changeset publish。",
     "title": "后续：npm 发布 context-rot（当前按用户决定跳过）",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-09T02:30:00.000000Z",
+    "ready": true,
+    "blocked_by": []
   },
   "TF-0120": {
     "acceptance_criteria": [
@@ -7222,7 +7228,8 @@
       "2026-09-08：OrxNjQ（step-3.7-flash pre-patch）S6c 第一次 sendTurn 主线程第 3 回合即返回 finish=stop 空 content，证明上轮 KQKW9b 通过是运气好。修复为 live-provider 空 stop 重试分支（attempt<2 注入 executor 反馈信息后 continue）。QHLCDW（post-patch）22/22 集成 + development 12/12 独立验收 + 模型复核 pass + fork 三路分支 branch-1/2/3.review.json verdict 全 pass；在分支 1 的 revisit（继承会话历史 18 条）时撞 finish_reason=length 撞 max_tokens=2048。复核：bun x tsc --noEmit 通过；bun test --timeout 60000 → 612 pass / 0 fail（98 文件，2336 断言，92.75s）。SHA256：live-report 912328f7、live-integration 2e5d756d、live-development 8da9cefb、live-validation 819da872。",
       "2026-09-08：cSJhox（senseaudio-s2-flash）首轮全链路 43 响应全成功。首轮 S6c 撞 senseaudio 特有 bug（tool_calls 回合省略 content 字段，zod invalid_type 报 undefined），补 live-provider.ts schema 让 content 可缺省 transform 为 null，+1 回归测试。tsc --noEmit 通过；bun test --timeout 60000 → 613 pass / 0 fail（98 文件，2336 断言，91.44s）。branch-1/2/3.review.json verdict 全 pass、development.independentChecks 首轮 11/12 次轮 12/12（真自纠）、modelReview.verdict=pass。SHA256：live-report e6de6c00、live-integration 6e83a9b8、live-development 23d0cd02、live-validation f6b4759a。",
       "2026-09-08：live-tenant（senseaudio-s2-flash）持久黑板累积 12 轮（8 成功）。run.ts 增加 --live；授权标记白名单含 tenant-live-model-accumulation；READSPAN 由 live-agent 强制写入 Read offset/limit；HTTP 500 纳入有界重试。development+fork 之后 t0=49/51，样本窗 restores 28/notice 64/seal 15 satisfied；护城河 A=64 B=1 C=13 D=0.123 闸门开。判决一/二/三 supported，L3 仍 insufficient-evidence。tsc 通过；bun test 617 pass / 0 fail。账本 docs/fit-ledger-2026-09-08-live-tenant.md。",
-      "2026-09-08：negative-scenarios 探测揭 5 个真问题：(1) E2E_ROUND_INDEX % 5 从未发火（8 endorse / 0 reject），run.ts 加 --start-round 传递轮次暴露；(2) seal.reviewed 只有 --correct 无 --incorrect，negative 脚本主动去未复核 block 发 wrong，增加 3 incorrect；(3) restoreToMessage.medianChangeRatio=372 超速 20% 线；(4) fit-ledger 的 --scope 与 cwd 容易脱手，--scope D:/helmor-main 才能见到森林行；(5) moat D 从 0.304 降到 0.123 是 notified/overlaps 分母扩大后自调整。入账 4 reject + 3 incorrect 且移到 live-tenant。tsc 通过；bun test 617 pass/0 fail。"
+      "2026-09-08：negative-scenarios 探测揭 5 个真问题：(1) E2E_ROUND_INDEX % 5 从未发火（8 endorse / 0 reject），run.ts 加 --start-round 传递轮次暴露；(2) seal.reviewed 只有 --correct 无 --incorrect，negative 脚本主动去未复核 block 发 wrong，增加 3 incorrect；(3) restoreToMessage.medianChangeRatio=372 超速 20% 线；(4) fit-ledger 的 --scope 与 cwd 容易脱手，--scope D:/helmor-main 才能见到森林行；(5) moat D 从 0.304 降到 0.123 是 notified/overlaps 分母扩大后自调整。入账 4 reject + 3 incorrect 且移到 live-tenant。tsc 通过；bun test 617 pass/0 fail。",
+      "2026-09-09：TF-0099 判决后 TF-0107..TF-0112 仍是 unresolved proposed 的风险点；不再由 L3 的 blocked 关系带，需打开拆哪个给条。"
     ],
     "execution_hints": [
       "空 finish=stop 应视为瞬态输出契约破坏而重试（同 requireTools 无 tool_calls 的 retry pattern）；改 S6c CONTRACT_SUFFIX 提示词不可控（偶发违约），重试才是稳定屏障。QHLCDW 走完 22/22 + development 12/12 + fork 三路模型复核全 pass 证明了这一点。",
@@ -7236,7 +7243,7 @@
     ],
     "id": "TF-0135",
     "kind": "milestone",
-    "next_action": "negative-probe 揭 2 行为缺口和 3 个代码缺口已修：run.ts --start-round 传递轮次（E2E_ROUND_INDEX 能跨批）、negative-scenarios 探测可选未复核 seal。后续探测方向：(a) 复核 CC around hollow log 未被 affectsby；(b) idle dedup 窗额外加一个 100 名镇梞还到 D 用。(c) ratio=372 需要打开 fit-ledger 的 lifecycle.restoreToMessage 落账。",
+    "next_action": "L3 已砍；L3 milestone chain (TF-0107..TF-0112) 在 proposed 未接；建议下一个打开拆 TF-0107 投影 bug → 找出 /+1000× overnotified/ 是否复现。跑 live-tenant 的 negative-probe 可照行当下流程。",
     "non_goals": [
       "不用主观好评替代行为数据"
     ],
@@ -7261,7 +7268,7 @@
     ],
     "summary": "建立两周真实使用门、L3 证据门与 fit 账本，把“能建”换成“有人用”。",
     "title": "阶段 D：fit 门与范围仲裁",
-    "updated_at": "2026-09-08T17:50:00.000000Z"
+    "updated_at": "2026-09-09T02:30:00.000000Z"
   },
   "TF-0136": {
     "acceptance_criteria": [
@@ -7304,7 +7311,8 @@
       "2026-09-06 真实 stats 返回 insufficient-history：0 线程/0 fork/0 restored，无可判决样本。既定阈值保持不变。",
       "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
       "2026-09-08：cSJhox live-model 来源第一次实现判决二 premise-detection supported（noticeOutcomes.agent.delivered=4 达>0 阈值）与判决三 stage-c supported（forks.total=5/5、真实继承观测 ≥1）双 supported；判决四 L3 仍 insufficient-evidence；判决一 resume-card not-supported 保留现状。护城河 B=1 git premise_stale 传递已读人、C=4 seal.Completed；A=8/50、D=30.4% 未齐。",
-      "2026-09-08：同一 live-tenant 黑板，--evidence-kind live-model。判决一 resume-card supported（consumed/restores=0.429，resumeActions=23）；判决二 premise-detection supported（delivered=29，dismissed=ignored=unknown=0）；判决三 stage-c supported（forks=24，context∧premise 继承=3）；判决四 L3 insufficient-evidence（kind≠natural 且 days≈0.009）。TF-0099/0100/0101 继续 blocked，不用 live-model 冒充 natural。"
+      "2026-09-08：同一 live-tenant 黑板，--evidence-kind live-model。判决一 resume-card supported（consumed/restores=0.429，resumeActions=23）；判决二 premise-detection supported（delivered=29，dismissed=ignored=unknown=0）；判决三 stage-c supported（forks=24，context∧premise 继承=3）；判决四 L3 insufficient-evidence（kind≠natural 且 days≈0.009）。TF-0099/0100/0101 继续 blocked，不用 live-model 冒充 natural。",
+      "2026-09-09：判决四 L3 已定（TF-0099/0100/0101 deprecated；理由：variant.promoted/promotion_reverted 在代码库 0 生产者，租户事件原 0 命中；工程判决 1-3 已 supported；L1 恢复卡已替代 L3 建议能力）。docs/tf0136-l3-cut-verdict.md。"
     ],
     "execution_hints": [
       "工程采样使用 scripts/fit-ledger/ledger.ts 的三类样本量门，日期跨度仅展示。",
@@ -7315,7 +7323,7 @@
     ],
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "三项工程判决 supported；L3 保持 insufficient-evidence。TF-0099/0100/0101 继续 blocked。复评条件：--evidence-kind natural 且 observation.days≥14。",
+    "next_action": "判决四已定：L3 砍 TF-0099/0100/0101（判决书 docs/tf0136-l3-cut-verdict.md）。判决 1/2/3 已在 live-tenant supported；natural 14d 从 forever open 变成已关闭——因为判决书事实 A 证明自然使用改变不了事件 0 生产，自然 14d 是一个明示的不多余用语。下一步：L1 一致率弱（0.091），TF-0154 自然使用多轮 endorse 或 L1 公式按手写走。",
     "non_goals": [],
     "priority": 1,
     "progress": 50.0,
@@ -7339,7 +7347,8 @@
     ],
     "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。",
     "title": "两周真实使用门与 L3 证据门",
-    "updated_at": "2026-09-08T16:55:00.000000Z"
+    "updated_at": "2026-09-09T02:30:00.000000Z",
+    "next_action_from": "tf0136-l3-cut-verdict"
   },
   "TF-0137": {
     "acceptance_criteria": [
