@@ -1,0 +1,318 @@
+{
+  "generatedAt": "2026-09-08T16:25:16.610Z",
+  "blackboard": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-cSJhox\\.workbench",
+  "evidenceKind": "live-model",
+  "observation": {
+    "startedAt": "2026-09-08T15:14:26.078Z",
+    "endedAt": "2026-09-08T15:16:58.755Z",
+    "days": 0.0017670949074074073
+  },
+  "dataQuality": {
+    "insufficientHistory": false,
+    "reasons": []
+  },
+  "t0": {
+    "started": true,
+    "threads": 9,
+    "writers": 11
+  },
+  "sampleWindow": {
+    "restores": 7,
+    "noticeOutcomes": 8,
+    "sealDecisions": 6,
+    "targets": {
+      "restores": 3,
+      "noticeOutcomes": 5,
+      "sealDecisions": 3
+    },
+    "satisfied": true,
+    "missing": []
+  },
+  "premisesRecent": {
+    "windowDays": 7,
+    "passes": 6,
+    "overlaps": 23,
+    "notified": 7,
+    "ratio": 0.304
+  },
+  "restoreToMessage": {
+    "windowDays": 7,
+    "withCard": {
+      "samples": 2,
+      "medianMs": 1286
+    },
+    "withoutCard": {
+      "samples": 5,
+      "medianMs": 5
+    },
+    "unknownCard": {
+      "samples": 0,
+      "medianMs": null
+    },
+    "incomplete": 0,
+    "medianChangeRatio": 256.2,
+    "exceeds20Percent": true
+  },
+  "landmarkAcceptance": {
+    "total": 40,
+    "reviewed": 1,
+    "endorsed": 1,
+    "rejected": 0,
+    "endorsedShare": 0.025,
+    "reviewedCoverage": 0.025,
+    "byWriter": [
+      {
+        "writer": "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "27655dc7-9bc8-4231-880e-3840670cad25",
+        "total": 0,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": null,
+        "reviewedCoverage": null
+      },
+      {
+        "writer": "3b414e6e-b688-42c4-9425-e5dd9f96a5fa",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "6945c81c-f6f7-499e-a294-28bbff0f6e57",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "editor-1",
+        "total": 3,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "ee2de42c-7e2c-4355-aa3a-d1dde3b85e26",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "f59cceb8-5dc5-4092-a871-0f190c0f6c18",
+        "total": 5,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+        "total": 4,
+        "reviewed": 1,
+        "endorsed": 1,
+        "rejected": 0,
+        "endorsedShare": 0.25,
+        "reviewedCoverage": 0.25
+      },
+      {
+        "writer": "ffb58e02-a714-4b0c-8978-d6c6538c6f39",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      },
+      {
+        "writer": "git-main",
+        "total": 4,
+        "reviewed": 0,
+        "endorsed": 0,
+        "rejected": 0,
+        "endorsedShare": 0,
+        "reviewedCoverage": 0
+      }
+    ]
+  },
+  "histogram": {
+    "aligned": 0,
+    "partial": 0,
+    "weak": 0,
+    "misaligned": 0,
+    "unknown": 0
+  },
+  "moat": [
+    {
+      "key": "A",
+      "name": "校准表行数",
+      "threshold": "≥ 50",
+      "source": "stats.noticeOutcomes.rows",
+      "value": 8,
+      "present": false
+    },
+    {
+      "key": "B",
+      "name": "推定写者是 git 或人的失效通知",
+      "threshold": "≥ 1 条",
+      "source": "events[premise_stale] ⋈ sessions/<writer>.kind",
+      "value": 1,
+      "present": true
+    },
+    {
+      "key": "C",
+      "name": "来自真实会话的 seal.decided: block",
+      "threshold": "≥ 1 次（且事后判定为正确封印）",
+      "source": "stats.seal.blocked + stats.seal.reviews.correct",
+      "value": 4,
+      "present": true
+    },
+    {
+      "key": "D",
+      "name": "notified / overlaps",
+      "threshold": "有真实值且落在 10-30%",
+      "source": "stats.premises.notifiedRatio",
+      "value": 0.304,
+      "present": false
+    }
+  ],
+  "gate": {
+    "open": false,
+    "missing": [
+      "A 校准表行数",
+      "D notified / overlaps"
+    ]
+  },
+  "verdicts": [
+    {
+      "id": "resume-card",
+      "title": "判决一：恢复卡",
+      "status": "not-supported",
+      "action": "保留现状，复核恢复与消费记录；达到使用证据要求后再判断是否缩为纯事实行。",
+      "readings": [
+        {
+          "source": "stats.lifecycle.resumeNotesConsumed / stats.lifecycle.restores",
+          "value": 0.2857142857142857,
+          "threshold": "≥ 0.3"
+        },
+        {
+          "source": "stats.lifecycle.resumeActions",
+          "value": 2,
+          "threshold": "> 0"
+        }
+      ]
+    },
+    {
+      "id": "premise-detection",
+      "title": "判决二：前提检测",
+      "status": "supported",
+      "action": "现有检测满足本现场阈值，继续采样。",
+      "readings": [
+        {
+          "source": "stats.noticeOutcomes.agent.delivered",
+          "value": 4,
+          "threshold": "> 0"
+        },
+        {
+          "source": "stats.noticeOutcomes.agent.dismissed / .delivered",
+          "value": 0,
+          "threshold": "≤ 0.5"
+        },
+        {
+          "source": "stats.noticeOutcomes.agent.ignored / .delivered",
+          "value": 0,
+          "threshold": "≤ 0.1"
+        },
+        {
+          "source": "stats.noticeOutcomes.agent.unknown",
+          "value": 0,
+          "threshold": "保留为未知"
+        },
+        {
+          "source": "(stats.noticeOutcomes.agent.dismissed + .unknown) / .delivered",
+          "value": 0,
+          "threshold": "≤ 0.5 才足以支持判据"
+        },
+        {
+          "source": "(stats.noticeOutcomes.agent.ignored + .unknown) / .delivered",
+          "value": 0,
+          "threshold": "≤ 0.1 才足以支持判据"
+        }
+      ]
+    },
+    {
+      "id": "stage-c",
+      "title": "判决三：阶段 C",
+      "status": "supported",
+      "action": "保留已完成的阶段 C；继续回归分叉继承、通知与封印。",
+      "readings": [
+        {
+          "source": "stats.forks.total",
+          "value": 5,
+          "threshold": "≥ 5"
+        },
+        {
+          "source": "events[thread.inheritance_observed]：agentContextInherited && premiseInherited，按 threadId 去重（TF-0125/0131）",
+          "value": 3,
+          "threshold": "≥ 1"
+        }
+      ]
+    },
+    {
+      "id": "l3",
+      "title": "判决四：L3",
+      "status": "insufficient-evidence",
+      "action": "继续延后 L3，保留 TF-0099 / TF-0100 / TF-0101 的阻塞状态；工程开发照常推进。",
+      "readings": [
+        {
+          "source": "stats.observation.days（仅时间跨度，来源须另行核对）",
+          "value": 0.0017670949074074073,
+          "threshold": "自然使用且 ≥ 14 天"
+        },
+        {
+          "source": "stats.forks.total / (stats.observation.days / 7)",
+          "value": null,
+          "threshold": "≥ 1"
+        },
+        {
+          "source": "stats.siblingAlternation.alternatingFamilies / .families（全部根家族为分母，TF-0122）",
+          "value": 0.5,
+          "threshold": "≥ 0.3"
+        },
+        {
+          "source": "events[thread.resume_action]：resume_fact_opened / resume_branch_opened（TF-0129/0151）",
+          "value": null,
+          "threshold": "≥ 1 / 周；dismiss 与叙事展开不计事实消费"
+        }
+      ]
+    }
+  ],
+  "rows": []
+}

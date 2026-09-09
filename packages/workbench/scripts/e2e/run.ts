@@ -8,7 +8,9 @@
  *   bun scripts/e2e/run.ts --rounds 6             # 连续跑 6 轮（样本累积）
  *   bun scripts/e2e/run.ts --fresh                # 清空工作区后重新开始
  *   bun scripts/e2e/run.ts --workspace <dir>
- *   E2E_LLM_KEY=... E2E_LLM_MODEL=... bun run.ts  # 每轮附带真 LLM 回合
+ *   bun scripts/e2e/run.ts --live                 # 用 live-agent 累积（需 E2E_LLM_*）
+ *   bun scripts/e2e/run.ts --live --start-round 9 --rounds 1  # 手动指定轮次（E2E_ROUND_INDEX）
+ *   E2E_LLM_KEY=... E2E_LLM_MODEL=... bun run.ts  # 每轮附带真 LLM 回合（S1b）
  */
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -21,29 +23,47 @@ const at = (flag: string): string | undefined => {
 	return index >= 0 ? (argv[index + 1] as string | undefined) : undefined;
 };
 const fresh = argv.includes("--fresh");
+const live = argv.includes("--live");
 const rounds = Math.max(1, Number(at("--rounds") ?? "1"));
 
+if (live && (!process.env.E2E_LLM_KEY || !process.env.E2E_LLM_MODEL))
+	throw new Error(
+		"--live 需要 E2E_LLM_KEY 和 E2E_LLM_MODEL；密钥只通过环境变量传入",
+	);
+
 const workspaceDir =
-	at("--workspace") ?? join(tmpdir(), "workbench-e2e-tenant");
+	at("--workspace") ??
+	join(tmpdir(), live ? "workbench-e2e-live-tenant" : "workbench-e2e-tenant");
 const entry = resolve(import.meta.dir, "..", "..", "src", "index.ts");
-const fakeAgent = resolve(import.meta.dir, "fake-agent.ts");
+const agentScript = resolve(
+	import.meta.dir,
+	live ? "live-agent.ts" : "fake-agent.ts",
+);
 
 if (fresh) {
 	await rm(workspaceDir, { recursive: true, force: true });
 }
 await mkdir(join(workspaceDir, ".workbench"), { recursive: true });
 
-const ws: E2EWorkspace = { projectDir: workspaceDir, entry, fakeAgent };
+const ws: E2EWorkspace = { projectDir: workspaceDir, entry, agentScript };
+if (live) {
+	await writeFile(
+		join(workspaceDir, ".live-e2e-authorized"),
+		"tenant-live-model-accumulation\n",
+	);
+}
 console.log(`[e2e-tenant] workspace: ${workspaceDir}`);
 console.log(`[e2e-tenant] rounds: ${rounds}`);
+console.log(`[e2e-tenant] agent: ${live ? "live-agent" : "fake-agent"}`);
 
 const runsDir = join(workspaceDir, "runs");
 await mkdir(runsDir, { recursive: true });
 const historyPath = join(runsDir, "history.jsonl");
 
 let failed = 0;
+let nextRoundIndex = Number(at("--start-round") ?? "1");
 for (let round = 1; round <= rounds; round += 1) {
-	process.env.E2E_ROUND_INDEX = String(round);
+	process.env.E2E_ROUND_INDEX = String(nextRoundIndex);
 	console.log(`\n===== round ${round}/${rounds} =====`);
 	let report: E2EReport;
 	try {
@@ -84,11 +104,19 @@ for (let round = 1; round <= rounds; round += 1) {
 	}
 	console.log(`[round ${round}] report: ${reportPath}`);
 	if (!report.ok) failed += 1;
+	nextRoundIndex += 1;
 }
 
 // 批次结束：租户黑板的 fit 账本（窗口 + 护城河四数字 + 闸门状态）
+const evidenceKind = live ? "live-model" : "scripted";
 const ledgerProc = Bun.spawnSync(
-	[process.execPath, resolve(import.meta.dir, "..", "fit-ledger.ts"), "--json"],
+	[
+		process.execPath,
+		resolve(import.meta.dir, "..", "fit-ledger.ts"),
+		"--json",
+		"--evidence-kind",
+		evidenceKind,
+	],
 	{ cwd: workspaceDir },
 );
 if (ledgerProc.exitCode === 0) {
@@ -106,8 +134,11 @@ if (ledgerProc.exitCode === 0) {
 		}>;
 		gate?: { open: boolean; missing: string[] };
 		t0?: { started: boolean; threads: number; writers: number };
+		verdicts?: Array<{ id: string; status: string }>;
+		evidenceKind?: string;
 	};
 	console.log("\n===== 租户账本汇总 =====");
+	console.log(`evidenceKind: ${ledger.evidenceKind ?? evidenceKind}`);
 	console.log(`t0: ${JSON.stringify(ledger.t0)}`);
 	console.log(`样本窗口: ${JSON.stringify(ledger.sampleWindow)}`);
 	for (const m of ledger.moat ?? []) {
@@ -115,11 +146,19 @@ if (ledgerProc.exitCode === 0) {
 			`护城河 ${m.key} ${m.name}: ${JSON.stringify(m.value)} ${m.present ? "✓" : "✗"}`,
 		);
 	}
+	for (const v of ledger.verdicts ?? []) {
+		console.log(`判决 ${v.id}: ${v.status}`);
+	}
 	console.log(
 		`benchmark 闸门: ${ledger.gate?.open ? "开" : `关（缺 ${ledger.gate?.missing.join("、")}）`}`,
 	);
 	const md = Bun.spawnSync(
-		[process.execPath, resolve(import.meta.dir, "..", "fit-ledger.ts")],
+		[
+			process.execPath,
+			resolve(import.meta.dir, "..", "fit-ledger.ts"),
+			"--evidence-kind",
+			evidenceKind,
+		],
 		{ cwd: workspaceDir },
 	);
 	if (md.exitCode === 0) {

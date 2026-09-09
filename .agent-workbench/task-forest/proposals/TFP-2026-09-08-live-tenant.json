@@ -1,0 +1,37 @@
+{
+	"proposal_id": "TFP-2026-09-08-live-tenant",
+	"created_at": "2026-09-08T16:55:00.000000Z",
+	"applied_at": "2026-09-08T16:55:00.000000Z",
+	"status": "applied",
+	"base_graph_hash": "9f2f82b3441ead5e1a35a8ae286a2df258f51a5e07ba86cb2f5b7598e58290ca",
+	"base_summary": {
+		"workspace_path": "D:\\helmor-main",
+		"node_count": 155,
+		"edge_count": 225
+	},
+	"session_id": "session-2026-09-08-live-tenant",
+	"rationale": "用 senseaudio-s2-flash 在持久租户黑板上自动累积 live-model 样本，把阶段 D 能被脚本诚实推动的门都推过：恢复卡、前提检测、阶段 C、护城河 A/B/C/D。L3 按代码纪律保持 insufficient-evidence（需要 natural 且 ≥14 天），TF-0099/0100/0101 继续 blocked。不改验收门槛。",
+	"changes": [
+		{
+			"action": "update_node",
+			"id": "TF-0135",
+			"fields": {
+				"next_action": "工程三项判决与护城河四门已在 live-tenant 上齐。日常采样继续 bun scripts/e2e/run.ts --live --rounds N；不要用 live-model 声明 natural。L3 等真实日用满 14 天再复评。"
+			}
+		},
+		{
+			"action": "update_node",
+			"id": "TF-0136",
+			"fields": {
+				"next_action": "三项工程判决 supported；L3 保持 insufficient-evidence。TF-0099/0100/0101 继续 blocked。复评条件：--evidence-kind natural 且 observation.days≥14。"
+			}
+		},
+		{
+			"action": "update_node",
+			"id": "TF-0137",
+			"fields": {
+				"next_action": "live-tenant 闸门已开（A=64 B=1 C=13 D=0.123）。继续同黑板累积即可，不改门槛、不跨现场拼接。"
+			}
+		}
+	]
+}

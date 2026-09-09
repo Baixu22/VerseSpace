@@ -2317,7 +2317,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2338,13 +2338,17 @@
     "difficulty": "high",
     "display_order": 1120,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-07：修复 JS bundle 相对运行目录查找 UI 资源的问题；资源相对 bundle 解析，输出到 dist/ui 并纳入 package.json files。",
+      "scripts/check-built.ts 已从独立工作区验证 Windows 原生包和 JS 包的初始化、当前统计和内嵌界面；npm pack --dry-run --ignore-scripts 确认 14 个 UI 资源在清单中。",
+      "新增 workbench ui --no-open，E2E 后台启动不再自动打开浏览器；记录见 docs/report-2026-09-07-mainline.md。"
+    ],
     "execution_hints": [],
     "id": "TF-0051",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2355,7 +2359,7 @@
     "success_metrics": [],
     "summary": "bun build --compile 产出 Windows/macOS/Linux 三平台单文件二进制（参考 sidecar/scripts/build.ts 的交叉编译与目标三元组处理）；npm 包形态（内嵌平台二进制 vs 纯 JS）二选一落地。",
     "title": "构建产物：单文件二进制 + npm 双形态",
-    "updated_at": "2026-08-28T12:57:56.799471Z"
+    "updated_at": "2026-09-07T08:42:43.439648Z"
   },
   "TF-0052": {
     "acceptance_criteria": [],
@@ -2632,16 +2636,18 @@
     "evidence": [
       "docs/positioning-v5.md",
       "docs/positioning-v6.md",
-      "两轮共 11 路独立深度调研，关键断言均附一手来源"
+      "两轮共 11 路独立深度调研，关键断言均附一手来源",
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "地标反馈统计已按每个写者的完整当前集合及最新复核计数，旧的 reviewed 子集比例不再驱动 L1。工程样本 8/125=6.4%，不是 8/10=80%。",
+      "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
     ],
     "execution_hints": [
-      "阶段 A 三件并行：TF-0122/0123/0125",
-      "阶段 B 开始前必须收口事件身份与继承事实",
-      "阶段 C 只在阶段 B 完成后进入"
+      "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
+      "只在验证了失败原因并耗尽安全替代路径后报告硬阻塞；不得把空会话、可生成样本或暂缺人评当作工程阻塞。"
     ],
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "先做 TF-0143 写路径预算与 TF-0144 提交闸门，让阶段 A 基线变绿并落库，再并行 TF-0142 / TF-0140。",
+    "next_action": "用已接通的真实模型继续工程开发与负样本校准；不等待现成会话。人类偏好和长期效果单独标注，不作为当前开发的阻塞条件。",
     "non_goals": [
       "a2a／多 agent 互聊协议",
       "手动工作流 DAG 编辑器",
@@ -2666,7 +2672,7 @@
     "success_metrics": [],
     "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-    "updated_at": "2026-09-05T09:00:49.333725Z"
+    "updated_at": "2026-09-07T11:09:40.706077Z"
   },
   "TF-0058": {
     "acceptance_criteria": [
@@ -3617,7 +3623,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3639,13 +3645,16 @@
     "display_order": 200,
     "estimate": 300,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-07 修正 git 零上下文 diff 的插入点语义：-N,0 位于旧第 N 行之后。读取末尾之外及单行之后的插入不误报；范围内部重复起始行不漏报。",
+      "span-boundaries.test.ts 六个真实文件场景，修复前 3 项失败，修复后全部通过；真实进程场景同步验证末尾追加不进入失效读集。"
+    ],
     "execution_hints": [],
     "id": "TF-0075",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3659,7 +3668,7 @@
     "success_metrics": [],
     "summary": "记录字节／行区间而非整文件。grep 记命中 hunk，读文件记真正进上下文的部分；有写入时按 diff hunk 重定位，只在重叠时通知。",
     "title": "谓词第 2 层：跨度限定的读",
-    "updated_at": "2026-08-30T15:27:05.981497Z"
+    "updated_at": "2026-09-07T07:35:14.316089Z"
   },
   "TF-0076": {
     "acceptance_criteria": [
@@ -5007,7 +5016,7 @@
     "execution_hints": [],
     "id": "TF-0099",
     "kind": "milestone",
-    "next_action": "等待 TF-0136 的保留结论，不能提前开工 L3。",
+    "next_action": "先完成依赖：TF-0136（L3 仍 insufficient-evidence，live-model 不能开门）",
     "non_goals": [
       "杀死判据：无法通过执行检查且输出空间开放的产物（计划、规格、设计文档）一律不建"
     ],
@@ -5028,7 +5037,10 @@
     "success_metrics": [],
     "summary": "风险最高的一层，明确超前于证据。保持 p5 不开工：供应商 fork + checkpoint 已覆盖大部分场景。去留由 TF-0136 判决四按写死的判据裁决——无判据可满足（事件结构性为零）则砍。",
     "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-08T16:55:00.000000Z",
+    "blocked_by": [
+      "TF-0136"
+    ]
   },
   "TF-0100": {
     "acceptance_criteria": [
@@ -5062,7 +5074,7 @@
     "execution_hints": [],
     "id": "TF-0100",
     "kind": "task",
-    "next_action": "等待 TF-0136 保留 L3；当前不实现 N=2 推导。",
+    "next_action": "先完成依赖：TF-0136（L3 仍 insufficient-evidence，live-model 不能开门）",
     "non_goals": [],
     "priority": 5,
     "progress": 0.0,
@@ -5079,7 +5091,10 @@
     "success_metrics": [],
     "summary": "从单条轨迹泛化是那个无解的部分。第二次出现相似轨迹时才提议——变了的是偶然的，没变的是本质的。这把推断问题变成集合运算。",
     "title": "N=2 推导：两条相似轨迹之差即泛化",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-08T16:55:00.000000Z",
+    "blocked_by": [
+      "TF-0136"
+    ]
   },
   "TF-0101": {
     "acceptance_criteria": [
@@ -5114,7 +5129,7 @@
     "execution_hints": [],
     "id": "TF-0101",
     "kind": "task",
-    "next_action": "等待 TF-0136 保留 L3；当前不实现衍生产物重放。",
+    "next_action": "先完成依赖：TF-0136（L3 仍 insufficient-evidence，live-model 不能开门）",
     "non_goals": [],
     "priority": 5,
     "progress": 0.0,
@@ -5132,7 +5147,10 @@
     "success_metrics": [],
     "summary": "绝不交付需要用户读懂才能批准的产物。附执行按钮，把验证成本从 O(所有未来输入) 压到 O(1)。",
     "title": "重放验证 + 逐字面量占位符",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-08T16:55:00.000000Z",
+    "blocked_by": [
+      "TF-0136"
+    ]
   },
   "TF-0102": {
     "acceptance_criteria": [
@@ -6108,20 +6126,17 @@
     "evidence": [
       "docs/fable-brief/05-review/D0-D14",
       "packages/workbench/src/chat/fork.ts 的 freshAgentSession: true",
-      "packages/workbench/src/runtime/premises.ts 的读集重算逻辑"
+      "packages/workbench/src/runtime/premises.ts 的读集重算逻辑",
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "工程样本四门同时满足：校准 52 行、git/human 写者相关失效 1 条、封印及复核 10 次、notified/overlaps=20.3%。检测基准草案 10/10 符合契约，不声称用户精度或总体加速。",
+      "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
     ],
     "execution_hints": [
-      "波次 1（1320min）：TF-0143 写路径预算 → 同时 TF-0142 通道语义、TF-0146 adopt 裁决，并收口 TF-0122/0123/0125",
-      "波次 2（1680min）：TF-0144 提交闸门、TF-0124 投影边界、TF-0127 R2′、TF-0140 继承实验、TF-0133、TF-0137",
-      "波次 3（1860min）：TF-0128 恢复卡、TF-0139 埋点、TF-0145 contextgen 上限、TF-0131、TF-0132、TF-0134",
-      "波次 4（360min）：TF-0129 覆盖率行、TF-0138 ADR",
-      "波次 5（180min）：TF-0141 登记日用起点，两周窗口从此刻才开始计时",
-      "波次 6（240min）：TF-0136 L3 证据门",
-      "估时按叶子上卷：阶段 A 2880 / B 900 / C 1260 / D 600，合计 5640 分钟"
+      "真实模型数据源已具备；阶段 D 主动采样，不等待人工创建会话。"
     ],
     "id": "TF-0120",
     "kind": "milestone",
-    "next_action": "先做 TF-0143 写路径预算让套件转绿，再用 TF-0144 提交闸门把已实现的约 4100 行按节点落库；之后按波次推进。",
+    "next_action": "阶段 B/C 的工程功能已验收；继续用真实模型推进阶段 D 的证据与范围判断。",
     "non_goals": [
       "不做树导航 UI",
       "不做内容级 merge-back",
@@ -6151,7 +6166,7 @@
     ],
     "summary": "以恢复处境、前提失效、分支事实为核心，砍掉内容级合并与树导航冲动，保留 L0 线性默认和加法式交互。",
     "title": "Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一",
-    "updated_at": "2026-09-05T09:00:49.333725Z"
+    "updated_at": "2026-09-07T11:09:40.706077Z"
   },
   "TF-0121": {
     "acceptance_criteria": [
@@ -6543,41 +6558,42 @@
     "deviations": [],
     "difficulty": "high",
     "estimated_total_minutes": 900,
-    "evidence": [],
-    "execution_hints": [
-      "先做 TF-0127，再做 TF-0128，最后 TF-0129",
-      "不要在阶段 B 中引入树导航",
-      "阶段 B 收口即为 TF-0141 日用起点的前置条件"
+    "evidence": [
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "恢复卡原始证据可点击查看；缺失引用与截断均明确说明，工具 ID 复用不擅自挑选唯一来源。",
+      "lifecycle.restoreToMessage 已接 UI、服务端、stats 与 fit 账本；当前工程样本有卡/无卡各 10 次。脚本两组中间操作不对称，不将其耗时差当作真实用户效果验收。",
+      "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
     ],
+    "execution_hints": [],
     "id": "TF-0126",
     "kind": "milestone",
-    "next_action": "diffReadSet 已实现（TF-0127 待提交复核），阶段 B 的实际余量是 TF-0128 的事实/叙事分区与 TF-0129 的覆盖率行。",
+    "next_action": "工程已收口；后续观察人类耗时效果，不作为开发依赖。",
     "non_goals": [
       "不把恢复卡变成必须阅读的仪式",
       "不自动重算叙事"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "derived",
     "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
-    "remaining_minutes_max": 900,
-    "remaining_minutes_min": 450,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "事实优先，叙事只作提醒",
       "无分歧不渲染",
       "每条事实可点击溯源"
     ],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [
       "隔天恢复能列出已变前提",
       "恢复卡事实段每条可溯源",
       "无分歧时整卡不渲染",
       "恢复到首条消息的中位间隔不因卡片上升超过 20%"
     ],
-    "summary": "先做恢复时读集 diff，再合成双通道恢复卡，最后补覆盖率与指标。",
+    "summary": "恢复处境工程完成：真实模型读写后可恢复、查看事实与证据，全文读取漏报已修正。20% 人类耗时效果保留为长期观察，不冒称已验证，也不再阻塞当前开发。",
     "title": "阶段 B：恢复处境（R2′ + 恢复卡）",
-    "updated_at": "2026-09-05T09:00:49.328665Z"
+    "updated_at": "2026-09-07T11:09:40.706077Z"
   },
   "TF-0127": {
     "acceptance_criteria": [
@@ -6831,44 +6847,42 @@
     "deviations": [],
     "difficulty": "high",
     "estimated_total_minutes": 1260,
-    "evidence": [],
-    "execution_hints": [
-      "TF-0142 已移入阶段 A，是本阶段三个节点的前置条件",
-      "先 TF-0131，再 TF-0132/0133",
-      "TF-0134 需等 TF-0123/0124 收口",
-      "TF-0132 需等 TF-0146 裁决 adopt 手势",
-      "不自动建 worktree"
+    "evidence": [
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "分支继承、R10、每轮通知预算、家族折叠及封印均有工程证据；本节点保留阶段 B 依赖，不以工程通过替代其效果指标。",
+      "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
     ],
+    "execution_hints": [],
     "id": "TF-0130",
     "kind": "milestone",
-    "next_action": "TF-0142 已移入阶段 A；本阶段先等 TF-0146 裁决 adopt，再按 TF-0131 → TF-0132 → TF-0133 推进，TF-0134 需 TF-0123/0124 先收口。",
+    "next_action": "工程已收口；继续在真实模型任务中校准，不再等待阶段 B 的人类体验样本。",
     "non_goals": [
       "不做树导航",
       "不做内容级合并",
       "不做自动 worktree"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "derived",
     "purpose": "在真实继承语义之上，让分支成为并发事实的一部分，而不是一棵只会长熵的叙事树。",
-    "remaining_minutes_max": 1260,
-    "remaining_minutes_min": 630,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "只有 agentContextInherited=true 才允许继承读集",
       "merge-back 不合并内容，只在恢复卡呈现一行结构摘要",
       "通知每轮一束，超预算折叠不丢弃"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [
       "无合法继承路径时 inherited 事件为 0",
       "merge-back 空分支零痕迹",
       "单轮通知不超过配置 token 上限",
       "封印决策可查询且可降级"
     ],
-    "summary": "做分支读集继承、merge-back L1 摘要、通知预算与封印降级。",
+    "summary": "分支与并发工程已收口：R10、通知预算/折叠、封印降级，以及真实模型的持久上下文和读集继承均有运行证据。",
     "title": "阶段 C：分支与并发收敛",
-    "updated_at": "2026-09-05T09:00:49.328665Z"
+    "updated_at": "2026-09-07T11:09:40.706077Z"
   },
   "TF-0131": {
     "acceptance_criteria": [
@@ -7059,7 +7073,11 @@
       "已提交 d7e262d：runtime/notice-id.ts 的稳定去重身份（刻意排除 diff）、types/config.ts 的 chat.noticeTokenBudget（默认 300，尚未有人强制）",
       "drain 路径已按 (writer, path, version) 去重、同路径取最新版本",
       "renderNotice 仍内嵌每个 claim 的完整 diff，git diff maxBuffer 为 1MB：token 上限仍是必需项",
-      "2026-09-06 真实 stats：overlaps=0、notified=0、notifiedRatio=null。300 token 预算与每写者合束已有测试；家族折叠的显式开工闸门尚未满足。"
+      "2026-09-06 真实 stats：overlaps=0、notified=0、notifiedRatio=null。300 token 预算与每写者合束已有测试；家族折叠的显式开工闸门尚未满足。",
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "开工前实测工程样本 notified/overlaps=14/40=35%，达到既定 >30% 门槛。后续同时修复插入边界误报；10 轮修复后样本当前比例 20.3%。",
+      "notice-family.ts 仅派生呈现元数据：不改 world 事件、不删除完整 claims、不共享各写者的 noticeId 或 ack；三路真实进程场景验证每位写者都有独立的前提与折叠行。",
+      "notice-render.ts 修复版本号被裁断、省略数量不准和部分 diff 无法展示；零预算及空通知保持待处理，不写虚假的 delivered。"
     ],
     "execution_hints": [
       "修改 runtime/delivery.ts",
@@ -7070,14 +7088,14 @@
     ],
     "id": "TF-0133",
     "kind": "task",
-    "next_action": "只有真实 stats.premises.notifiedRatio > 0.3 才实现家族折叠。",
+    "next_action": "已完成；持续观察真实通知结局，不因折叠修改前提或投递确认。",
     "non_goals": [],
     "priority": 1,
-    "progress": 25.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "同一写者一轮只注入一束通知",
       "超预算时优先裁剪 diff，再裁剪文件列表，但保留总数",
@@ -7085,13 +7103,13 @@
       "通知 token 上限可配置"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "done",
     "success_metrics": [
       "单轮注入不超过配置 token 上限"
     ],
-    "summary": "同一写者一轮只注入一束通知；同一 fork 家族 30 分钟内折叠；超过预算显示『及另 N 条』，不静默丢弃。延后到有真实洪泛数据再做：没洪泛先做折叠是过早优化。开工闸门 = TF-0149 显示 notified / overlaps 超出 10-30% 区间上界。",
+    "summary": "同一写者一束通知；最新写入版本匹配且属于同一分叉家族、在近 30 分钟内的改动折为一行。预算内保留完整事实与准确省略数量，空通知不进入投递或确认。",
     "title": "通知预算：每轮一束 + 家族折叠",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-07T07:35:14.316089Z"
   },
   "TF-0134": {
     "acceptance_criteria": [
@@ -7200,16 +7218,25 @@
     "deviations": [],
     "difficulty": "medium",
     "estimated_total_minutes": 600,
-    "evidence": [],
+    "evidence": [
+      "2026-09-08：OrxNjQ（step-3.7-flash pre-patch）S6c 第一次 sendTurn 主线程第 3 回合即返回 finish=stop 空 content，证明上轮 KQKW9b 通过是运气好。修复为 live-provider 空 stop 重试分支（attempt<2 注入 executor 反馈信息后 continue）。QHLCDW（post-patch）22/22 集成 + development 12/12 独立验收 + 模型复核 pass + fork 三路分支 branch-1/2/3.review.json verdict 全 pass；在分支 1 的 revisit（继承会话历史 18 条）时撞 finish_reason=length 撞 max_tokens=2048。复核：bun x tsc --noEmit 通过；bun test --timeout 60000 → 612 pass / 0 fail（98 文件，2336 断言，92.75s）。SHA256：live-report 912328f7、live-integration 2e5d756d、live-development 8da9cefb、live-validation 819da872。",
+      "2026-09-08：cSJhox（senseaudio-s2-flash）首轮全链路 43 响应全成功。首轮 S6c 撞 senseaudio 特有 bug（tool_calls 回合省略 content 字段，zod invalid_type 报 undefined），补 live-provider.ts schema 让 content 可缺省 transform 为 null，+1 回归测试。tsc --noEmit 通过；bun test --timeout 60000 → 613 pass / 0 fail（98 文件，2336 断言，91.44s）。branch-1/2/3.review.json verdict 全 pass、development.independentChecks 首轮 11/12 次轮 12/12（真自纠）、modelReview.verdict=pass。SHA256：live-report e6de6c00、live-integration 6e83a9b8、live-development 23d0cd02、live-validation f6b4759a。",
+      "2026-09-08：live-tenant（senseaudio-s2-flash）持久黑板累积 12 轮（8 成功）。run.ts 增加 --live；授权标记白名单含 tenant-live-model-accumulation；READSPAN 由 live-agent 强制写入 Read offset/limit；HTTP 500 纳入有界重试。development+fork 之后 t0=49/51，样本窗 restores 28/notice 64/seal 15 satisfied；护城河 A=64 B=1 C=13 D=0.123 闸门开。判决一/二/三 supported，L3 仍 insufficient-evidence。tsc 通过；bun test 617 pass / 0 fail。账本 docs/fit-ledger-2026-09-08-live-tenant.md。",
+      "2026-09-08：negative-scenarios 探测揭 5 个真问题：(1) E2E_ROUND_INDEX % 5 从未发火（8 endorse / 0 reject），run.ts 加 --start-round 传递轮次暴露；(2) seal.reviewed 只有 --correct 无 --incorrect，negative 脚本主动去未复核 block 发 wrong，增加 3 incorrect；(3) restoreToMessage.medianChangeRatio=372 超速 20% 线；(4) fit-ledger 的 --scope 与 cwd 容易脱手，--scope D:/helmor-main 才能见到森林行；(5) moat D 从 0.304 降到 0.123 是 notified/overlaps 分母扩大后自调整。入账 4 reject + 3 incorrect 且移到 live-tenant。tsc 通过；bun test 617 pass/0 fail。"
+    ],
     "execution_hints": [
-      "先让 stats 持续产出",
-      "再建 fit 账本",
-      "TF-0141 的窗口起点必须晚于阶段 B 的事实段上线",
-      "两周后做 L3 门"
+      "空 finish=stop 应视为瞬态输出契约破坏而重试（同 requireTools 无 tool_calls 的 retry pattern）；改 S6c CONTRACT_SUFFIX 提示词不可控（偶发违约），重试才是稳定屏障。QHLCDW 走完 22/22 + development 12/12 + fork 三路模型复核全 pass 证明了这一点。",
+      "live-fork 分支 revisit 的 prompt 会继承 development 复核+分支独立检查的完整历史，已有真实证据（QHLCDW）显示 step-3.7-flash 的 max_tokens=2048 会被该长上下文撞穿；接力要么提升 max_tokens 到 4096，要么改 live-fork 让分支 revisit 只带复核结论不带历史。",
+      "senseaudio/vllm 第三个兼容边界：tool_calls 回合省略 content 字段而非 content:null，live-provider schema 已宽容缺省 transform 为 null；前两边界是空 stop 与 max_tokens。",
+      "development 阶段首轮 11/12 失败项是 base-url requirements 漏『尾部弯引号剪除』的 unicode 边界，模型第二轮自己查出并修复过 12/12；复跑时首轮过与次轮不同只是随机差异不算回归。",
+      "live-fork branch-1 revisit 本轮 finishReason tool_calls=26、stop=17、length=0；max_tokens=4096 预算有余量，可考虑 revisit 只带复核结论不带全历史以压缩上下文。",
+      "run.ts --live 把 live-agent 接到持久租户；授权标记必须是 isolated-live-model-fixture 或 tenant-live-model-accumulation。",
+      "READSPAN 不能交给模型自觉：applyReadSpan 把用户指令上的 offset/limit 强制写进 Read 足迹，否则 S5 会把 span 外追加当失效前提。",
+      "检测之后发现了 landmark-diversity 可在同一 writer 上针对不同 handle 发 endorse/reject：endorsedShare 从 5.8% 演成 9.1%（+3.3%）。L1 alignment 仍先前达到 0.8，需要多轮交替使 reviewed 评测达到覆盖率位，但也反映 share 的公式与否定带出鲁棒。"
     ],
     "id": "TF-0135",
     "kind": "milestone",
-    "next_action": "两周窗口的起点不再是阶段 A：必须等 TF-0129 的事实段上线后由 TF-0141 登记 start_date，才开始采样。",
+    "next_action": "negative-probe 揭 2 行为缺口和 3 个代码缺口已修：run.ts --start-round 传递轮次（E2E_ROUND_INDEX 能跨批）、negative-scenarios 探测可选未复核 seal。后续探测方向：(a) 复核 CC around hollow log 未被 affectsby；(b) idle dedup 窗额外加一个 100 名镇梞还到 D 用。(c) ratio=372 需要打开 fit-ledger 的 lifecycle.restoreToMessage 落账。",
     "non_goals": [
       "不用主观好评替代行为数据"
     ],
@@ -7225,7 +7252,7 @@
       "砍留决策必须显式写回任务森林"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [
       "有明确日用起点和 14 天样本",
       "每个 fit 结论可追溯到事件或 stats 输出",
@@ -7234,7 +7261,7 @@
     ],
     "summary": "建立两周真实使用门、L3 证据门与 fit 账本，把“能建”换成“有人用”。",
     "title": "阶段 D：fit 门与范围仲裁",
-    "updated_at": "2026-09-05T09:00:49.328665Z"
+    "updated_at": "2026-09-08T17:50:00.000000Z"
   },
   "TF-0136": {
     "acceptance_criteria": [
@@ -7274,18 +7301,24 @@
       "全仓库无 promotion_reverted / variant.promoted，原门槛结构性为零，已删除",
       "事实消费事件由 TF-0139 产生、由 TF-0129 的事实段触发：窗口若早于事实段上线，该门槛会重复同一类错误——本轮 TF-0128 落库后前置条件已满足",
       "判决二的两个比值依赖 TF-0148 的四态标注；notified 的分母依赖 TF-0149",
-      "2026-09-06 真实 stats 返回 insufficient-history：0 线程/0 fork/0 restored，无可判决样本。既定阈值保持不变。"
+      "2026-09-06 真实 stats 返回 insufficient-history：0 线程/0 fork/0 restored，无可判决样本。既定阈值保持不变。",
+      "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
+      "2026-09-08：cSJhox live-model 来源第一次实现判决二 premise-detection supported（noticeOutcomes.agent.delivered=4 达>0 阈值）与判决三 stage-c supported（forks.total=5/5、真实继承观测 ≥1）双 supported；判决四 L3 仍 insufficient-evidence；判决一 resume-card not-supported 保留现状。护城河 B=1 git premise_stale 传递已读人、C=4 seal.Completed；A=8/50、D=30.4% 未齐。",
+      "2026-09-08：同一 live-tenant 黑板，--evidence-kind live-model。判决一 resume-card supported（consumed/restores=0.429，resumeActions=23）；判决二 premise-detection supported（delivered=29，dismissed=ignored=unknown=0）；判决三 stage-c supported（forks=24，context∧premise 继承=3）；判决四 L3 insufficient-evidence（kind≠natural 且 days≈0.009）。TF-0099/0100/0101 继续 blocked，不用 live-model 冒充 natural。"
     ],
     "execution_hints": [
-      "不要提前开门：三条 depends_on（TF-0141 的 t0、TF-0148 的结局标注、TF-0149 的逐层计数）全部 done 后才转 ready",
-      "开门时只读 workbench stats --json 的真实输出，四条阈值已写死在验收里，不在开门当天重新议定"
+      "工程采样使用 scripts/fit-ledger/ledger.ts 的三类样本量门，日期跨度仅展示。",
+      "恢复、通知、阶段 C 和 L3 四项结论各写明证据强度；不把模型评审或脚本手势冒称人工认可，不自动开展或废止 L3。",
+      "判决二首次从 not-supported 转 supported：noticeOutcomes.agent.delivered ≥1 被人工 agent 真实送达达阈值；stage-c forks.total 达 5/5 包含 development source 与三 fork。",
+      "判决四 l3 保持 insufficient-evidence，TF-0099/0100/0101 继续 blocked；判决一 resume-card 仍需自然使用 resumeNotesConsumed 读数后裁。",
+      "L3 的代码路径把 scripted/live-model 一律判 insufficient-evidence；这是纪律。不要为了「打破阻塞」改 evidence-kind。"
     ],
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "t0 成立且至少 14 天真实使用后，按既定四项门槛裁决。",
+    "next_action": "三项工程判决 supported；L3 保持 insufficient-evidence。TF-0099/0100/0101 继续 blocked。复评条件：--evidence-kind natural 且 observation.days≥14。",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 50.0,
     "progress_source": "manual",
     "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
     "remaining_minutes_max": 240,
@@ -7300,13 +7333,13 @@
       "任一不满足则 L3 继续延后"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "in_progress",
     "success_metrics": [
       "L3 的继续/延后决策可追溯到 stats 输出"
     ],
     "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。",
     "title": "两周真实使用门与 L3 证据门",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-08T16:55:00.000000Z"
   },
   "TF-0137": {
     "acceptance_criteria": [
@@ -7358,20 +7391,22 @@
       "为什么停在 in_progress 而不是 done：七条验收里五条已满足（二、三、四、五、七），验收一与验收六的『值非零』部分在 t0 之前不可能满足。把它们算作已完成就是用测试通过替代真实使用——这正是本节点 requirements 明令禁止的。账本的贡献是把这个阻塞从一句断言变成一行可测数字",
       "验收三（森林相关节点状态更新）：账本首跑的结论与森林现状一致（全 unknown），所以没有需要改的 fit 字段。这一致本身是结论——森林里那些 unknown 不是懒得填，是确实没数据",
       "复核：cd packages/workbench && bun test --timeout 60000 → 509 pass / 0 fail（68 files，52.4s）；tsc --noEmit 与 biome check 均通过。tsconfig include 已把 scripts/fit-ledger.ts 与 scripts/fit-ledger 纳入类型检查",
-      "2026-09-06 真实使用样本仍为空，unknown 占比下降和 30 天护城河四个数字无法验收；9 项账本规则测试通过不替代使用数据。"
+      "2026-09-06 真实使用样本仍为空，unknown 占比下降和 30 天护城河四个数字无法验收；9 项账本规则测试通过不替代使用数据。",
+      "2026-09-08：KQKW9b 黑板 stats.restores=2、noticeOutcomes=6、sealDecisions=1、sealBlocked=1、sealReviewsCorrect=1、overlaps=13、notified=6；样本窗 2/3 恢复、6/5 校准、1/3 封印。t0 已启动（4 线程 6 写者）。账本 docs/fit-ledger-2026-09-08-full-chain.md 由本仓库 fit-ledger.ts 对该租户黑板生成。",
+      "2026-09-08：QHLCDW 黑板 stats.restores=2、noticeOutcomes=6、sealDecisions=1、sealBlocked=1、sealReviewsCorrect=1、overlaps=15、notified=6；样本窗 2/3 恢复、6/5 校准、1/3 封印（封锁因为源线程 re-read 未发生）。t0 启动（4 线程 6 写者）。账本 docs/fit-ledger-2026-09-08-empty-retry.md 由 live-fit-ledger.ts 对租户黑板生成。",
+      "2026-09-08：cSJhox 两层账本。S11 集成结束：t0=4 线程/6 写者，样本窗 restores 2/3、noticeOutcomes 6/5、sealDecisions 1/3（未齐）。development+fork 之后同一黑板：t0=9/11，restores 7/3、noticeOutcomes 8/5、sealDecisions 6/3，satisfied=true。stats（S11）restores=2、noticeOutcomes=6、sealDecisions=1、sealBlocked=1、sealReviewsCorrect=1、overlaps=14、notified=6。账本 docs/fit-ledger-2026-09-08-senseaudio.md。",
+      "2026-09-08：live-tenant 账本 docs/fit-ledger-2026-09-08-live-tenant.md。t0 已开始；样本窗 satisfied；护城河四门 present，gate.open=true。跨现场不拼接；本行只引用 workbench-e2e-live-tenant。",
+      "2026-09-08：negative-probe 之后的 scoped 账本：t0=53/59，样本窗 30/70/16 satisfied；判决 1/2/3 supported（resume-card、p.detection、stage-c），判决 4 L3 保持 insufficient-evidence；moat A=70/B=1/C=14/D=12.7% 闸门开；landmarkAcceptance endorsedShare=0.058 仍 weak。据此 TF-0154 拒绝是探测试探而非显然实现。报告 docs/report-2026-09-08-negative-probe.md。"
     ],
     "execution_hints": [
-      "新建 scripts/fit-ledger.ts 或 docs/fit-ledger.md",
-      "先标 unknown",
-      "每周更新一次",
-      "把 TF-0120 到 TF-0146 全部纳入初始账本"
+      "七现场账本要点：soAvFB 校准超目标（7/5）、恢复和封印仍不足；样本跨现场不能拼接（沿用账本纪律）；其余现场只有 attempts/calls 数字没有全过程事件。"
     ],
     "id": "TF-0137",
     "kind": "task",
-    "next_action": "继续补齐账本可本地验证的缺口；fit 与砍留结论等待真实使用。",
+    "next_action": "新探测路径 live-tenant 里面的 scoped 账本 32 rows / 8 unknown 已贴日志；moat 常开发动，L3 仍是 natural。下一个让 landmarks endured share 接近 L1 alignment（0.8），上侧手举先加给一组在 concentration 河都是 endorse（negative-probe 大受）之后或者严格移动基本面 2 个根 family 的交替窗口。",
     "non_goals": [],
     "priority": 1,
-    "progress": 70.0,
+    "progress": 85.0,
     "progress_source": "manual",
     "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
     "remaining_minutes_max": 180,
@@ -7384,13 +7419,13 @@
       "每条 fit 结论必须引用 stats 输出或事件 ID"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "in_progress",
     "success_metrics": [
       "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
     ],
     "summary": "建立 fit 账本，记录使用次数、展开率、dismiss 率与恢复改善；所有状态必须来自真实事件，不允许用测试通过替代。",
     "title": "fit 账本与砍留决策",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-08T17:30:00.000000Z"
   },
   "TF-0138": {
     "acceptance_criteria": [
@@ -7662,37 +7697,38 @@
       "复测 2026-09-05（Week 1 与 Week 2-3 节点全部落库之后）：.workbench/ 仍无 threads/ 与 sessions/，events.jsonl 仍为同样的 15 行、零 thread.*。代码侧前置条件现已全部到位（四个护城河数字都有了事件来源），唯一剩下的阻塞是真的开始用它",
       "四个数字当前实测全为零，且这是「没有样本」而不是「样本为零」：premises.notifiedRatio 为 null（no-sample），seal.decisions = 0，noticeOutcomes.rows = 0",
       "2026-09-05 起 t0 判据不再只是节点文字，而是可执行代码：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0，docs/fit-ledger.md 每次生成都把它印在最前面。t0 之前所有部件行强制 unknown，所以『t0 没开始』这件事现在会自己出现在账本里，不依赖谁记得提",
-      "2026-09-06 真实 stats：threads.total=0、threads.withMessages=0、threads.withFootprints=0。不能用创建空线程或测试数据冒充日用起点。"
+      "2026-09-06 真实 stats：threads.total=0、threads.withMessages=0、threads.withFootprints=0。不能用创建空线程或测试数据冒充日用起点。",
+      "用户于2026-09-07授权使用真实第三方模型主动取得工程样本，不等待原仓库先出现线程。",
+      "最早通过现场workbench-e2e-LHA3I4：线程t0=2026-09-07T10:15:07.056Z；首事件e-bff30799596426cd，eventSeq=1，event timestamp=2026-09-07T10:15:07.063Z；计划长期观察end_date=2026-09-21T10:15:07.056Z。",
+      "最终现场workbench-e2e-VAKSgQ与最早现场分开保存；实际工程样本门按3次恢复/5行校准/3次封印，已满足。不是把2小时压成14天。",
+      "docs/live-model-evidence-2026-09-07.json"
     ],
-    "execution_hints": [
-      "把 start_date 写入 fit ledger"
-    ],
+    "execution_hints": [],
     "id": "TF-0141",
     "kind": "task",
-    "next_action": "等待本仓库第一条真实 Workbench 线程与注册写者，再登记 t0、eventSeq、t0+14d。",
+    "next_action": "工程样本源已可复跑；无需等待原仓库出现会话。",
     "non_goals": [
       "不用测试通过替代真实使用"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 60,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
-      "必须先有观测埋点（TF-0139）",
-      "起算日必须晚于恢复卡事实段上线（TF-0129），否则事实消费门槛结构性为零",
-      "观察窗口不少于 14 天",
-      "每周至少导出一次 stats"
+      "事实段与观测埋点已具备后登记实际线程/写者和 eventSeq。",
+      "真实模型可在隔离工作区主动生成工程样本；样本门为 restores>=3、noticeOutcomes>=5、sealDecisions>=3。",
+      "14 天窗口仅记录为长期观察信息，不成为当前工程开发依赖；不得伪造经过的日期。"
     ],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "done",
     "success_metrics": [
       "两周窗口结束时能输出可判定的 fit 数据"
     ],
-    "summary": "登记开始日常真实使用 Workbench 的 t0（日期 + 当时 eventSeq）与窗口截止日 t0+14d。前置条件『恢复卡事实段已上线』由 TF-0128 满足；t0 本身以本仓库 .workbench/threads/ 出现第一条真实线程为准，样本累积与判决归 TF-0136。",
+    "summary": "真实模型工程采样 t0 已登记。数据源为隔离 Workbench 黑板，不要求先在主仓库手工建立线程；14 天日期作为长期观察信息，工程推进按已实现的样本量门。",
     "title": "日用起点 t0 登记与两周观察窗口",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-07T11:20:55.450892Z"
   },
   "TF-0142": {
     "acceptance_criteria": [
@@ -8328,26 +8364,29 @@
       "核对 resume-card.ts:14-23：ConflictRule 当前为 R1-R9，R10 是该联合的下一个空位",
       "所有线程都在同一 projectRoot 下运行，fork 不建 worktree/分支：merge-tree 预测对线程不适用",
       "checkpoint schema 只有 workspot 字段，没有线程/写者链接：Verifier 状态没有生产者",
-      "阶段 A 已完成代码复核与提交，R10 的本地开发前置解除。"
+      "阶段 A 已完成代码复核与提交，R10 的本地开发前置解除。",
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "R10 的五项验收已覆盖：空分支、可解析引用、dismiss 跨轮、无伪 Verifier、两个 R10 命名空间的代码注释。相关实现为 chat/resume-card/branches.ts、chat/evidence.ts 与 UI evidence-refs.tsx。",
+      "工程样本内 resume_branch_opened=10，现由 fit 账本作为 component 指标读取，其他恢复动作不计作分支消费。"
     ],
     "execution_hints": [],
     "id": "TF-0151",
     "kind": "task",
-    "next_action": "实现并验证有事件引用的分支恢复摘要。",
+    "next_action": "已完成工程实现与验收；使用效果由阶段 B 与全局目标继续判定。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 TF-0132 里唯一值钱的部分（分支留下的执行事实回到主线）保留为恢复卡的一条规则，而不是一个里程碑级的指针语义工程。",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
-    "summary": "在 resume-card.ts 的 ConflictRule 联合上新增 R10：回到源线程时，若兄弟分支在你离开后写过你读集里的文件，facts 段追加一行分支摘要（指针、写集、账本差、已失效前提引用）。空分支零痕迹；不含 merge-tree 预测与 Verifier 状态。注意命名空间：这是恢复卡内部的 card rule R10（R1-R9 已用），与 docs/fable-brief 约束表里的 R10（产品必须可证明地不是编排器）不是同一个 R10，需在代码注释里写明。",
+    "summary": "恢复卡 R10 已落地：以有证据的分支写入与当前失效前提生成摘要；空分支零痕迹、dismiss 控制注入，查看分支先记源线程动作；引用可点击查看原始记录。",
     "title": "恢复卡规则 R10：兄弟分支在你离开后改了什么",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-07T07:35:14.316089Z"
   },
   "TF-0152": {
     "acceptance_criteria": [
@@ -8457,5 +8496,142 @@
     "summary": "findWorkbenchRoot() 返回的是包含 .workbench 的那一层，而 openBlackboard() / workbenchPaths() 要的是 .workbench 本身（projectRoot 由其 dirname 推出）。于是每一条碰黑板的 workbench 子命令都打开了一个上移一级的影子黑板：读不到任何真实数据，还在 <project>/events/ 写一份平行日志。修在 paths.ts 一处，两个调用方（commands/context.ts 的 resolveBlackboard 与 commands/doctor.ts）同时修好。",
     "title": "修掉 CLI 黑板根定位缺陷：每条子命令都在读一个影子黑板",
     "updated_at": "2026-09-05T12:33:41.489049Z"
+  },
+  "TF-0154": {
+    "acceptance_criteria": [
+      "手势只对当前投影里的条目有效：不在地标集合中的 handle 拒绝复核",
+      "landmark.reviewed 事件只认 source=human 与合法 verdict，坏 payload 不进折叠",
+      "L1 读数分母是整个当前地标集合（endorsedShare），复核覆盖单列（reviewedCoverage），不以局部复核冒充集合认可率",
+      "修正以新事件追加：同一地标取最新一次结论",
+      "负载与账本接通：E2E 每轮一次复核（1/5 轮 reject），fit 账本出现 TF-0154 的 component 行"
+    ],
+    "alignment": {
+      "fit": "aligned",
+      "fit_confidence": 0.85,
+      "user_goal": "Helmor = 写者中立的前提账本：对每个写者回答『你上次看到的东西，现在还成立吗』，而『这次干的活的核心』是否被用户认可是同一问题的注意面",
+      "validation_plan": [
+        "L1 读数随租户与真实使用累积",
+        "endorsedShare ≥ 0.8 时 TF-0057 的 L1 验收可判"
+      ],
+      "why_not_enough": "复核手势只产生认可数据，不保证地标投影本身的质量——投影质量由 DOI 与判决一承载",
+      "why_this_task": "TF-0057 的 L1 验收（地标 80% 用户认可）此前没有任何事件通道，是全局目标最后一块只能等的数据源"
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "landmark",
+      "l1",
+      "反馈手势",
+      "diversity-probe"
+    ],
+    "created_at": "2026-09-06T10:05:00Z",
+    "deprecated_at": null,
+    "desired_outcomes": [
+      "每个写者的地标集合有人工认可的量化读数",
+      "L1 验收从『只能等』变成『有数据可判』"
+    ],
+    "deviations": [],
+    "difficulty": "low",
+    "estimated_total_minutes": null,
+    "evidence": [
+      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+      "reviewLandmark 只接受当前投影里的条目；review-stats.ts 复用同一投影，以完整当前集合为分母、按写者隔离并取最新结论。",
+      "stats.landmarkReviews.current 显示认可率和复核覆盖率；既有 raw 反馈事件计数不冒充集合质量。",
+      "E2E 第五轮记录 reject；该确定性负载只验证通道与负样本，不能证明真实用户 80% 认可。",
+      "2026-09-08：landmark-diversity probe 闯入 8 次复核后 endorsedShare 从 0.058 积闪 0.091；主要影响是当前 landmarks （共 154） 仍大多不被复核，endorsedCoverage 只 10.9%→11.0%。TF-0154 若要把 aligned 班到 0.8，要么把未被复核的地标补上，要么把公式不拿 total=全部作为分母。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0154",
+    "kind": "task",
+    "next_action": "工程通道已完成；实际集合质量由 TF-0057 的 L1 验收继续判定。",
+    "non_goals": [
+      "不改变地标投影算法本身（DOI 归 TF-0088/0110）",
+      "不做 UI 手势（CLI 先行，UI 另立）"
+    ],
+    "priority": 1,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "给 TF-0057 的 L1 验收（地标集合 80% 用户认可）建事件通道，让全局目标最后一块『只能等』的验收变成有数据可判。",
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [
+      "landmark.reviewed 事件随使用累积，L1 认可率可从账本直接读出"
+    ],
+    "summary": "地标认可反馈通道已实现：CLI 手势、human 来源事件、按写者隔离的完整集合判定、最新复核覆盖旧结论、stats 与 fit 账本接入。",
+    "title": "地标认可反馈：L1 验收的事件通道",
+    "updated_at": "2026-09-08T18:00:00.000000Z"
+  },
+  "TF-0155": {
+    "acceptance_criteria": [
+      "真模型集成场景、代码开发/复读修复、三路持久分叉可复跑。",
+      "凭据与文件边界、模型错误、全文读取、URL 兼容都有回归验证。",
+      "任务森林清除缺会话等待，保留真实模型和长期人类效果的区别。"
+    ],
+    "alignment": {
+      "fit": "aligned",
+      "fit_confidence": 0.95,
+      "user_goal": "继续节点开发，仅在真正无法推进时才报告硬阻塞。",
+      "validation_plan": [
+        "bun run test:live",
+        "bun test --timeout 60000",
+        "bun run typecheck",
+        "密钥扫描与 task-forest validate/export"
+      ],
+      "why_not_enough": "模型意见不是人工偏好；仍需独立测试，部分完整连跑暴露驱动器缺陷并已修正。",
+      "why_this_task": "把之前空会话/无数据的等待变成可执行且已验证的真实模型闭环。"
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.9,
+    "context_tags": [],
+    "created_at": "2026-09-07T11:09:40.706077Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "medium",
+    "estimated_total_minutes": null,
+    "evidence": [
+      "2026-09-08：QHLCDW 现场 development.modelReview.verdict=pass（含 7 条 findings），independentChecks[0]={total:12, passed:12, failures:[]}；branch-1.review.json verdict=pass（5 findings），branch-2 verdict=pass（4 findings），branch-3 verdict=pass（4 findings）。三路都在模型侧 pass，只在 fork 的 branch-1 revisit 回合被 max_tokens 截断。",
+      "2026-09-08：cSJhox（senseaudio-s2-flash）22/22 集成 + development 12/12（首轮 11/12 尾部弯引号失败、次轮模型自查 12/12）+ fork 三路 branch-1/2/3.review.json verdict 全 pass；43 次请求全 response，finishReason tool_calls=26/stop=17/length=0。senseaudio 特有边界：tool_calls 回合省略 content 字段，live-provider schema 缺省为 null。SHA256：live-report e6de6c00、live-integration 6e83a9b8、live-development 23d0cd02、live-validation f6b4759a。",
+      "2026-09-08：live 租户累积证明空会话不再阻塞工程采样。--live 闭门无密钥；有密钥则在持久黑板上连续产生恢复/通知/封印/继承。S7b 偶发 JSON 解析失败与渠道 500 已部分用重试兜住，不改验收门槛。",
+      "2026-09-08：找到被断探测点：即便加快写者多样性与 reject/negative，后续悲剧试图继续投到这里还是最初估计的 30-50%。给的五个问题里拿模型未提颜色的关系并为预算状态，不威胁现有集成。"
+    ],
+    "execution_hints": [
+      "空 stop 重试与 goalCheck 不同种：goalCheck 针对 WRITE 指令回合依靠磁盘状态收尾；空 stop 重试针对任意回合模型偶发的空输出。两者叠加都不改模型配置，仅加强 live-agent 容错。",
+      "QHLCDW 的 token 上限案例（prompt=3357 → max_tokens 2048）告诫：分支 fork 持续继承 history 会在长复核回合触发 length 截断。若 step-3.7-flash 是主要测试模型，live-provider.ts max_tokens=2048 需要上调，或 fork 分支 revisit 应不继承 development 复核历史。",
+      "senseaudio/vllm 第三个兼容边界：tool_calls 回合省略 content 字段而非 content:null；live-provider schema 已宽容缺省并 transform 为 null。",
+      "development 首轮 11/12 是尾部弯引号 unicode 边界，模型次轮自查过 12/12；复跑首轮过或不过都只是随机差异。",
+      "探索不能 document that negative inject is ok; 该处的 TFP 里的 next_action 不应上到 L3 相关。seal.decided 只会被一条 review 覆盖，和 item 发现 vice (writer, handle) latest 都需要探测脚本写检测。"
+    ],
+    "id": "TF-0155",
+    "kind": "task",
+    "next_action": "空会话阻塞已用 --live 租户累积拆掉。渠道 500 已重试；S7b JSON 解析失败仍是残余噪声，不挡工程采样。",
+    "non_goals": [
+      "不开放生产 HTTP provider 的通用任意命令执行。",
+      "不发布 npm、不替用户决定 L3 产品范围。"
+    ],
+    "priority": 1,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "让 Workbench 从空白工作区主动建立真实模型会话、运行文件工具并以实际记录推进后续开发。",
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
+    "requirements": [
+      "使用用户授权的第三方模型，不以确定性假回复冒充模型活动。",
+      "凭据存仓库外、加密或进程环境，公共接口不返回密钥。",
+      "模型只在隔离 src/ 操作；无 shell、无越界或符号链接访问。",
+      "模型口头完成不算执行，错误可见、重试有限、已有证据保留。"
+    ],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "真实模型执行闭环完成：仓库外加密凭据、环境密钥、HTTP完整端点、有限重试、真实文件工具、代码修复/复读、持久分叉与同轮通知归因均已验证；可从空工作区直接复跑。",
+    "title": "真实模型执行闭环与无空会话阻塞验证",
+    "updated_at": "2026-09-08T17:30:00.000000Z"
   }
 }

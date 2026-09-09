@@ -1,0 +1,362 @@
+{
+  "source": "live-model-tenant-accumulation",
+  "workspace": "workbench-e2e-live-tenant",
+  "model": "senseaudio-s2-flash",
+  "baseUrl": "https://api.senseaudio.cn/v1",
+  "rounds": {
+    "history": 12,
+    "successful": 8
+  },
+  "t0": {
+    "started": true,
+    "threads": 49,
+    "writers": 51
+  },
+  "sampleWindow": {
+    "restores": 28,
+    "noticeOutcomes": 64,
+    "sealDecisions": 15,
+    "targets": {
+      "restores": 3,
+      "noticeOutcomes": 5,
+      "sealDecisions": 3
+    },
+    "satisfied": true,
+    "missing": []
+  },
+  "gate": {
+    "open": true,
+    "missing": []
+  },
+  "verdicts": [
+    {
+      "id": "resume-card",
+      "status": "supported"
+    },
+    {
+      "id": "premise-detection",
+      "status": "supported"
+    },
+    {
+      "id": "stage-c",
+      "status": "supported"
+    },
+    {
+      "id": "l3",
+      "status": "insufficient-evidence"
+    }
+  ],
+  "moat": [
+    {
+      "key": "A",
+      "name": "校准表行数",
+      "threshold": "≥ 50",
+      "source": "stats.noticeOutcomes.rows",
+      "value": 64,
+      "present": true
+    },
+    {
+      "key": "B",
+      "name": "推定写者是 git 或人的失效通知",
+      "threshold": "≥ 1 条",
+      "source": "events[premise_stale] ⋈ sessions/<writer>.kind",
+      "value": 1,
+      "present": true
+    },
+    {
+      "key": "C",
+      "name": "来自真实会话的 seal.decided: block",
+      "threshold": "≥ 1 次（且事后判定为正确封印）",
+      "source": "stats.seal.blocked + stats.seal.reviews.correct",
+      "value": 13,
+      "present": true
+    },
+    {
+      "key": "D",
+      "name": "notified / overlaps",
+      "threshold": "有真实值且落在 10-30%",
+      "source": "stats.premises.notifiedRatio",
+      "value": 0.123,
+      "present": true
+    }
+  ],
+  "observationDays": 0.008599409722222222,
+  "reports": [
+    {
+      "file": "report-2026-09-08T16-41-51-025Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 4,
+        "restores": 2,
+        "sealDecisions": 1,
+        "sealBlocked": 1,
+        "sealReviewsCorrect": 1,
+        "noticeOutcomeRows": 6,
+        "overlaps": 12,
+        "notified": 6,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 1,
+            "medianMs": 2211
+          },
+          "withoutCard": {
+            "samples": 1,
+            "medianMs": 7
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 0,
+          "medianChangeRatio": 314.85714285714283,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-42-07-928Z.json",
+      "ok": false,
+      "stats": null
+    },
+    {
+      "file": "report-2026-09-08T16-42-08-904Z.json",
+      "ok": false,
+      "stats": null
+    },
+    {
+      "file": "report-2026-09-08T16-42-58-399Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 12,
+        "restores": 7,
+        "sealDecisions": 2,
+        "sealBlocked": 2,
+        "sealReviewsCorrect": 2,
+        "noticeOutcomeRows": 14,
+        "overlaps": 50,
+        "notified": 16,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 2,
+            "medianMs": 2069.5
+          },
+          "withoutCard": {
+            "samples": 4,
+            "medianMs": 5.5
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 375.27272727272725,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-43-47-903Z.json",
+      "ok": false,
+      "stats": null
+    },
+    {
+      "file": "report-2026-09-08T16-44-56-328Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 20,
+        "restores": 11,
+        "sealDecisions": 4,
+        "sealBlocked": 4,
+        "sealReviewsCorrect": 4,
+        "noticeOutcomeRows": 26,
+        "overlaps": 160,
+        "notified": 42,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 4,
+            "medianMs": 2209.5
+          },
+          "withoutCard": {
+            "samples": 6,
+            "medianMs": 5
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 440.9,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-45-46-578Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 24,
+        "restores": 13,
+        "sealDecisions": 5,
+        "sealBlocked": 5,
+        "sealReviewsCorrect": 5,
+        "noticeOutcomeRows": 32,
+        "overlaps": 222,
+        "notified": 50,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 5,
+            "medianMs": 2211
+          },
+          "withoutCard": {
+            "samples": 7,
+            "medianMs": 5
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 441.2,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-46-37-574Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 28,
+        "restores": 15,
+        "sealDecisions": 6,
+        "sealBlocked": 6,
+        "sealReviewsCorrect": 6,
+        "noticeOutcomeRows": 38,
+        "overlaps": 295,
+        "notified": 58,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 6,
+            "medianMs": 2240.5
+          },
+          "withoutCard": {
+            "samples": 8,
+            "medianMs": 5.5
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 406.3636363636364,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-48-20-112Z.json",
+      "ok": false,
+      "stats": null
+    },
+    {
+      "file": "report-2026-09-08T16-49-25-257Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 36,
+        "restores": 19,
+        "sealDecisions": 8,
+        "sealBlocked": 8,
+        "sealReviewsCorrect": 8,
+        "noticeOutcomeRows": 49,
+        "overlaps": 547,
+        "notified": 86,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 8,
+            "medianMs": 2240.5
+          },
+          "withoutCard": {
+            "samples": 10,
+            "medianMs": 6
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 372.4166666666667,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-50-15-062Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 40,
+        "restores": 21,
+        "sealDecisions": 9,
+        "sealBlocked": 9,
+        "sealReviewsCorrect": 9,
+        "noticeOutcomeRows": 56,
+        "overlaps": 653,
+        "notified": 94,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 9,
+            "medianMs": 2211
+          },
+          "withoutCard": {
+            "samples": 11,
+            "medianMs": 6
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 367.5,
+          "exceeds20Percent": true
+        }
+      }
+    },
+    {
+      "file": "report-2026-09-08T16-51-05-801Z.json",
+      "ok": true,
+      "stats": {
+        "threads": 44,
+        "restores": 23,
+        "sealDecisions": 10,
+        "sealBlocked": 10,
+        "sealReviewsCorrect": 10,
+        "noticeOutcomeRows": 62,
+        "overlaps": 770,
+        "notified": 102,
+        "restoreToMessage": {
+          "windowDays": 7,
+          "withCard": {
+            "samples": 10,
+            "medianMs": 2209.5
+          },
+          "withoutCard": {
+            "samples": 12,
+            "medianMs": 6
+          },
+          "unknownCard": {
+            "samples": 0,
+            "medianMs": null
+          },
+          "incomplete": 1,
+          "medianChangeRatio": 367.25,
+          "exceeds20Percent": true
+        }
+      }
+    }
+  ]
+}

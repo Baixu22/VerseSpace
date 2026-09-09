@@ -1,0 +1,848 @@
+{
+  "projectDir": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-cSJhox",
+  "steps": [
+    {
+      "step": "seed: git 仓库 + workbench init",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "step": "server: 真进程 ui 服务启动",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "port": 51809,
+          "token": "d62f222b-502f-4e62-8082-55063fa21db6",
+          "proc": {
+            "_events": {
+              "exit": [
+                null
+              ]
+            },
+            "_eventsCount": 1,
+            "signalCode": "SIGTERM",
+            "exitCode": null,
+            "spawnfile": "C:\\Users\\27933\\AppData\\Roaming\\npm\\node_modules\\bun\\bin\\bun.exe",
+            "spawnargs": [
+              "C:\\Users\\27933\\AppData\\Roaming\\npm\\node_modules\\bun\\bin\\bun.exe",
+              "D:\\helmor-main\\packages\\workbench\\src\\index.ts",
+              "ui",
+              "--port",
+              "51809",
+              "--no-open"
+            ],
+            "pid": 12036,
+            "killed": true,
+            "stdin": {
+              "fd": null,
+              "flags": "w",
+              "mode": 438,
+              "flush": false,
+              "bytesWritten": 0,
+              "_events": {},
+              "_writableState": {
+                "highWaterMark": 16384,
+                "length": 0,
+                "corked": 0,
+                "writelen": 0,
+                "bufferedIndex": 0,
+                "pendingcb": 0
+              },
+              "_eventsCount": null,
+              "readable": false
+            },
+            "stdout": {
+              "_events": {},
+              "_readableState": {
+                "highWaterMark": 16384,
+                "buffer": [],
+                "bufferIndex": 0,
+                "length": 0,
+                "pipes": [],
+                "awaitDrainWriters": null
+              },
+              "_eventsCount": null
+            },
+            "stderr": {
+              "_events": {
+                "data": [
+                  null
+                ]
+              },
+              "_readableState": {
+                "highWaterMark": 16384,
+                "buffer": [],
+                "bufferIndex": 0,
+                "length": 0,
+                "pipes": [],
+                "awaitDrainWriters": null
+              },
+              "_eventsCount": null
+            },
+            "stdio": [
+              {
+                "fd": null,
+                "flags": "w",
+                "mode": 438,
+                "flush": false,
+                "bytesWritten": 0,
+                "_events": {},
+                "_writableState": {
+                  "highWaterMark": 16384,
+                  "length": 0,
+                  "corked": 0,
+                  "writelen": 0,
+                  "bufferedIndex": 0,
+                  "pendingcb": 0
+                },
+                "_eventsCount": null,
+                "readable": false
+              },
+              {
+                "_events": {},
+                "_readableState": {
+                  "highWaterMark": 16384,
+                  "buffer": [],
+                  "bufferIndex": 0,
+                  "length": 0,
+                  "pipes": [],
+                  "awaitDrainWriters": null
+                },
+                "_eventsCount": null
+              },
+              {
+                "_events": {
+                  "data": [
+                    null
+                  ]
+                },
+                "_readableState": {
+                  "highWaterMark": 16384,
+                  "buffer": [],
+                  "bufferIndex": 0,
+                  "length": 0,
+                  "pipes": [],
+                  "awaitDrainWriters": null
+                },
+                "_eventsCount": null
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "step": "S0 建线程",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "id": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+          "title": "E2E 集成线程",
+          "createdAt": "2026-09-08T15:14:26.078Z",
+          "claudeSessionId": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+          "status": "idle",
+          "permissionMode": "default"
+        }
+      }
+    },
+    {
+      "step": "S0b 无卡恢复：记录首条消息之前的观测",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "resumeCardVisible": false
+        }
+      }
+    },
+    {
+      "step": "S1 agent 真进程回合：带 span 读 notes + 写 alpha v2",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "events": 7,
+          "onDisk": "v2"
+        }
+      }
+    },
+    {
+      "step": "S2 离开线程（leave）",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "beats": [
+            {
+              "kind": "doing",
+              "text": "请处理以下任务。 READSPAN src/notes.md 1 3 WRITE src/alpha.ts export const alpha = \"v2\"…",
+              "refs": [
+                "message:m-1788880466113-v6qroa"
+              ]
+            },
+            {
+              "kind": "shifted",
+              "text": "动了 2 处：Read(C:\\Users\\27933\\AppData\\Local\\Temp\\workb…)、Write(C:\\Users\\27933\\AppData\\Local\\Temp\\workb…)",
+              "refs": [
+                "message:m-1788880515057-09fxua",
+                "tool:chatcmpl-tool-b335737692fe8697",
+                "path:C:/Users/27933/AppData/Local/Temp/workbench-e2e-cSJhox/src/notes.md",
+                "tool:chatcmpl-tool-b83a533d91256aad",
+                "path:C:/Users/27933/AppData/Local/Temp/workbench-e2e-cSJhox/src/alpha.ts"
+              ]
+            },
+            {
+              "kind": "next",
+              "text": "下一步可以：换一个角度重新回答这个问题",
+              "refs": [
+                "message:m-1788880515057-09fxua"
+              ]
+            }
+          ],
+          "draftedAt": "2026-09-08T15:15:15.059Z",
+          "leaveSignature": {
+            "lastMessageAt": "2026-09-08T15:15:15.057Z",
+            "messageCount": 2,
+            "footprintSeq": 2,
+            "eventSeq": 8,
+            "eventId": "e-f6822d79c84fcb33"
+          }
+        }
+      }
+    },
+    {
+      "step": "S1b 真 LLM 回合（openai-chat 流式）",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "reply": "收到，集成测试连通。",
+          "events": 8
+        }
+      }
+    },
+    {
+      "step": "S3a human 先读文件，再由 git 删除（护城河 B）",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "writer": "editor-1",
+          "kind": "human",
+          "activity": "manual-save",
+          "generated": [],
+          "used": [
+            "src/beta.ts"
+          ],
+          "recorded": 1
+        }
+      }
+    },
+    {
+      "step": "S3 git 写者并发：真 git 改 alpha、追加 notes、删 beta 并记录",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "writer": "git-main",
+          "kind": "git",
+          "activity": "commit",
+          "generated": [
+            "src/alpha.ts",
+            "src/beta.ts"
+          ],
+          "used": [],
+          "recorded": 2
+        }
+      }
+    },
+    {
+      "step": "S4 等服务周期任务产出 premise_stale 与通知",
+      "ok": true,
+      "detail": {
+        "detail": "premise_stale 已产出"
+      }
+    },
+    {
+      "step": "S5 恢复线程：恢复卡事实/覆盖率/注记",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "facts": 2,
+          "coverage": "覆盖率：2 个读取里 2 个可比对，其中 1 个已变。"
+        }
+      }
+    },
+    {
+      "step": "S6 分叉 + 子分支写 stale 文件（R10）",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "childId": "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb",
+          "paths": [
+            "src/alpha.ts"
+          ],
+          "refs": 4
+        }
+      }
+    },
+    {
+      "step": "S6a 查看分支手势（TF-0151 的记账探针）",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "action": "resume_branch_opened"
+        }
+      }
+    },
+    {
+      "step": "S6b 空分支零痕迹",
+      "ok": true,
+      "detail": {
+        "detail": "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d"
+      }
+    },
+    {
+      "step": "S6c 三路分叉：家族折叠且保留各写者的前提",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "writers": 3,
+          "folded": 3,
+          "observations": [
+            {
+              "noticeId": "notice-0a52a37bc4b56e9773aa663f",
+              "writer": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+              "familyFold": {
+                "familyId": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+                "windowMinutes": 30,
+                "writerIds": [
+                  "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb"
+                ],
+                "paths": [
+                  "src/alpha.ts"
+                ]
+              },
+              "stale": [
+                {
+                  "path": "src/alpha.ts",
+                  "observedVersion": "9d53614b6ba762447ddc21d475794623baf7f2fb15fc7683b5ef75b82350ecc9",
+                  "currentVersion": "3bddb69f5c0108be4426bfc3642ce8df1d8657cdebd8aac955ad4de3eb50fcfb",
+                  "hasDiff": true
+                }
+              ]
+            },
+            {
+              "noticeId": "notice-d1799ea6f8fd144452fa570c",
+              "writer": "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d",
+              "familyFold": {
+                "familyId": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+                "windowMinutes": 30,
+                "writerIds": [
+                  "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb"
+                ],
+                "paths": [
+                  "src/alpha.ts"
+                ]
+              },
+              "stale": [
+                {
+                  "path": "src/alpha.ts",
+                  "observedVersion": "9d53614b6ba762447ddc21d475794623baf7f2fb15fc7683b5ef75b82350ecc9",
+                  "currentVersion": "3bddb69f5c0108be4426bfc3642ce8df1d8657cdebd8aac955ad4de3eb50fcfb",
+                  "hasDiff": true
+                }
+              ]
+            },
+            {
+              "noticeId": "notice-3a0880d3b9c99a2e254f6ba1",
+              "writer": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+              "familyFold": {
+                "familyId": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+                "windowMinutes": 30,
+                "writerIds": [
+                  "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb",
+                  "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d"
+                ],
+                "paths": [
+                  "src/alpha.ts",
+                  "src/family.ts"
+                ]
+              },
+              "stale": [
+                {
+                  "path": "src/alpha.ts",
+                  "observedVersion": "9d53614b6ba762447ddc21d475794623baf7f2fb15fc7683b5ef75b82350ecc9",
+                  "currentVersion": "3bddb69f5c0108be4426bfc3642ce8df1d8657cdebd8aac955ad4de3eb50fcfb",
+                  "hasDiff": true
+                },
+                {
+                  "path": "src/family.ts",
+                  "observedVersion": "6899105f41e46d3c74d052a8bc1ce82307fdb448cc3e964ea470c0bf7ce20d02",
+                  "currentVersion": "7c89211d177def65c5cab0534dc47cff55ad70943e19cb36ef2eb645429bc342",
+                  "hasDiff": true
+                }
+              ]
+            },
+            {
+              "noticeId": "notice-7f17d008e546483069ae020b",
+              "writer": "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb",
+              "familyFold": {
+                "familyId": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+                "windowMinutes": 30,
+                "writerIds": [
+                  "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d"
+                ],
+                "paths": [
+                  "src/family.ts"
+                ]
+              },
+              "stale": [
+                {
+                  "path": "src/family.ts",
+                  "observedVersion": "6899105f41e46d3c74d052a8bc1ce82307fdb448cc3e964ea470c0bf7ce20d02",
+                  "currentVersion": "7c89211d177def65c5cab0534dc47cff55ad70943e19cb36ef2eb645429bc342",
+                  "hasDiff": true
+                }
+              ]
+            }
+          ],
+          "transitions": [
+            {
+              "writer": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+              "noticeId": "notice-0a52a37bc4b56e9773aa663f",
+              "delivery": "pending",
+              "deliveryEventId": null,
+              "premise": "not-proven-repaired",
+              "repairedPaths": []
+            },
+            {
+              "writer": "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d",
+              "noticeId": "notice-d1799ea6f8fd144452fa570c",
+              "delivery": "delivered",
+              "deliveryEventId": "e-c4f1593e34dc5c24",
+              "premise": "repaired",
+              "repairedPaths": [
+                "src/alpha.ts"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "step": "S7 封印：hook 路径 block + 人工复核",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "sealEventId": "e-23698126d1babd65",
+          "blocked": true
+        }
+      }
+    },
+    {
+      "step": "S7b 源线程回头复读（通知结局=repaired 的数据源）",
+      "ok": true,
+      "detail": {
+        "detail": "re-checked alpha"
+      }
+    },
+    {
+      "step": "S8 兴趣降低：观察 → lower → 不可见",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "before": [
+            "src",
+            "src/alpha.ts",
+            ".",
+            "src/family.ts",
+            "src/notes.md"
+          ],
+          "after": [
+            "src",
+            "src/alpha.ts",
+            ".",
+            "src/family.ts"
+          ]
+        }
+      }
+    },
+    {
+      "step": "S8b 地标认可手势（TF-0057 L1 数据源）",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "handle": "src",
+          "verdict": "endorse"
+        }
+      }
+    },
+    {
+      "step": "S9 本轮不 dismiss（保留恢复卡，判决二比值数据源）",
+      "ok": true,
+      "detail": {
+        "detail": "skipped"
+      }
+    },
+    {
+      "step": "S10 stats --json 护城河数字",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "threads": 4,
+          "restores": 2,
+          "sealDecisions": 1,
+          "sealBlocked": 1,
+          "sealReviewsCorrect": 1,
+          "noticeOutcomeRows": 6,
+          "overlaps": 14,
+          "notified": 6,
+          "restoreToMessage": {
+            "windowDays": 7,
+            "withCard": {
+              "samples": 1,
+              "medianMs": 1848
+            },
+            "withoutCard": {
+              "samples": 1,
+              "medianMs": 10
+            },
+            "unknownCard": {
+              "samples": 0,
+              "medianMs": null
+            },
+            "incomplete": 0,
+            "medianChangeRatio": 183.8,
+            "exceeds20Percent": true
+          }
+        }
+      }
+    },
+    {
+      "step": "S11 fit 账本对租户黑板输出 t0 与样本窗口",
+      "ok": true,
+      "detail": {
+        "detail": {
+          "generatedAt": "2026-09-08T15:16:15.234Z",
+          "blackboard": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-cSJhox\\.workbench",
+          "evidenceKind": "live-model",
+          "observation": {
+            "startedAt": "2026-09-08T15:14:26.078Z",
+            "endedAt": "2026-09-08T15:16:14.915Z",
+            "days": 0.0012596875
+          },
+          "dataQuality": {
+            "insufficientHistory": false,
+            "reasons": []
+          },
+          "t0": {
+            "started": true,
+            "threads": 4,
+            "writers": 6
+          },
+          "sampleWindow": {
+            "restores": 2,
+            "noticeOutcomes": 6,
+            "sealDecisions": 1,
+            "targets": {
+              "restores": 3,
+              "noticeOutcomes": 5,
+              "sealDecisions": 3
+            },
+            "satisfied": false,
+            "missing": [
+              "restores 2/3",
+              "sealDecisions 1/3"
+            ]
+          },
+          "premisesRecent": {
+            "windowDays": 7,
+            "passes": 4,
+            "overlaps": 14,
+            "notified": 6,
+            "ratio": 0.429
+          },
+          "restoreToMessage": {
+            "windowDays": 7,
+            "withCard": {
+              "samples": 1,
+              "medianMs": 1848
+            },
+            "withoutCard": {
+              "samples": 1,
+              "medianMs": 10
+            },
+            "unknownCard": {
+              "samples": 0,
+              "medianMs": null
+            },
+            "incomplete": 0,
+            "medianChangeRatio": 183.8,
+            "exceeds20Percent": true
+          },
+          "landmarkAcceptance": {
+            "total": 19,
+            "reviewed": 1,
+            "endorsed": 1,
+            "rejected": 0,
+            "endorsedShare": 0.05263157894736842,
+            "reviewedCoverage": 0.05263157894736842,
+            "byWriter": [
+              {
+                "writer": "16327b92-5dba-49a4-9b3d-8f8f99cf9ceb",
+                "total": 4,
+                "reviewed": 0,
+                "endorsed": 0,
+                "rejected": 0,
+                "endorsedShare": 0,
+                "reviewedCoverage": 0
+              },
+              {
+                "writer": "27655dc7-9bc8-4231-880e-3840670cad25",
+                "total": 0,
+                "reviewed": 0,
+                "endorsed": 0,
+                "rejected": 0,
+                "endorsedShare": null,
+                "reviewedCoverage": null
+              },
+              {
+                "writer": "3bb6e7f3-bcf7-4270-9196-2aa31bb3168d",
+                "total": 4,
+                "reviewed": 0,
+                "endorsed": 0,
+                "rejected": 0,
+                "endorsedShare": 0,
+                "reviewedCoverage": 0
+              },
+              {
+                "writer": "editor-1",
+                "total": 3,
+                "reviewed": 0,
+                "endorsed": 0,
+                "rejected": 0,
+                "endorsedShare": 0,
+                "reviewedCoverage": 0
+              },
+              {
+                "writer": "f7211120-cc3a-4311-81a4-2c92bd14b170",
+                "total": 4,
+                "reviewed": 1,
+                "endorsed": 1,
+                "rejected": 0,
+                "endorsedShare": 0.25,
+                "reviewedCoverage": 0.25
+              },
+              {
+                "writer": "git-main",
+                "total": 4,
+                "reviewed": 0,
+                "endorsed": 0,
+                "rejected": 0,
+                "endorsedShare": 0,
+                "reviewedCoverage": 0
+              }
+            ]
+          },
+          "histogram": {
+            "aligned": 0,
+            "partial": 0,
+            "weak": 0,
+            "misaligned": 0,
+            "unknown": 0
+          },
+          "moat": [
+            {
+              "key": "A",
+              "name": "校准表行数",
+              "threshold": "≥ 50",
+              "source": "stats.noticeOutcomes.rows",
+              "value": 6,
+              "present": false
+            },
+            {
+              "key": "B",
+              "name": "推定写者是 git 或人的失效通知",
+              "threshold": "≥ 1 条",
+              "source": "events[premise_stale] ⋈ sessions/<writer>.kind",
+              "value": 1,
+              "present": true
+            },
+            {
+              "key": "C",
+              "name": "来自真实会话的 seal.decided: block",
+              "threshold": "≥ 1 次（且事后判定为正确封印）",
+              "source": "stats.seal.blocked + stats.seal.reviews.correct",
+              "value": 1,
+              "present": true
+            },
+            {
+              "key": "D",
+              "name": "notified / overlaps",
+              "threshold": "有真实值且落在 10-30%",
+              "source": "stats.premises.notifiedRatio",
+              "value": 0.429,
+              "present": false
+            }
+          ],
+          "gate": {
+            "open": false,
+            "missing": [
+              "A 校准表行数",
+              "D notified / overlaps"
+            ]
+          },
+          "verdicts": [
+            {
+              "id": "resume-card",
+              "title": "判决一：恢复卡",
+              "status": "insufficient-evidence",
+              "action": "保留现状，复核恢复与消费记录；达到使用证据要求后再判断是否缩为纯事实行。",
+              "readings": [
+                {
+                  "source": "stats.lifecycle.resumeNotesConsumed / stats.lifecycle.restores",
+                  "value": 0.5,
+                  "threshold": "≥ 0.3"
+                },
+                {
+                  "source": "stats.lifecycle.resumeActions",
+                  "value": 2,
+                  "threshold": "> 0"
+                }
+              ]
+            },
+            {
+              "id": "premise-detection",
+              "title": "判决二：前提检测",
+              "status": "insufficient-evidence",
+              "action": "补通知后的可观测活动；unknown 不能当作未忽略或未驳回。",
+              "readings": [
+                {
+                  "source": "stats.noticeOutcomes.agent.delivered",
+                  "value": 3,
+                  "threshold": "> 0"
+                },
+                {
+                  "source": "stats.noticeOutcomes.agent.dismissed / .delivered",
+                  "value": 0,
+                  "threshold": "≤ 0.5"
+                },
+                {
+                  "source": "stats.noticeOutcomes.agent.ignored / .delivered",
+                  "value": 0,
+                  "threshold": "≤ 0.1"
+                },
+                {
+                  "source": "stats.noticeOutcomes.agent.unknown",
+                  "value": 0,
+                  "threshold": "保留为未知"
+                },
+                {
+                  "source": "(stats.noticeOutcomes.agent.dismissed + .unknown) / .delivered",
+                  "value": 0,
+                  "threshold": "≤ 0.5 才足以支持判据"
+                },
+                {
+                  "source": "(stats.noticeOutcomes.agent.ignored + .unknown) / .delivered",
+                  "value": 0,
+                  "threshold": "≤ 0.1 才足以支持判据"
+                }
+              ]
+            },
+            {
+              "id": "stage-c",
+              "title": "判决三：阶段 C",
+              "status": "insufficient-evidence",
+              "action": "阶段 C 已完成；本现场尚不足以重复支持范围判据，继续补分叉与真实继承观测。",
+              "readings": [
+                {
+                  "source": "stats.forks.total",
+                  "value": 2,
+                  "threshold": "≥ 5"
+                },
+                {
+                  "source": "events[thread.inheritance_observed]：agentContextInherited && premiseInherited，按 threadId 去重（TF-0125/0131）",
+                  "value": 0,
+                  "threshold": "≥ 1"
+                }
+              ]
+            },
+            {
+              "id": "l3",
+              "title": "判决四：L3",
+              "status": "insufficient-evidence",
+              "action": "继续延后 L3，保留 TF-0099 / TF-0100 / TF-0101 的阻塞状态；工程开发照常推进。",
+              "readings": [
+                {
+                  "source": "stats.observation.days（仅时间跨度，来源须另行核对）",
+                  "value": 0.0012596875,
+                  "threshold": "自然使用且 ≥ 14 天"
+                },
+                {
+                  "source": "stats.forks.total / (stats.observation.days / 7)",
+                  "value": null,
+                  "threshold": "≥ 1"
+                },
+                {
+                  "source": "stats.siblingAlternation.alternatingFamilies / .families（全部根家族为分母，TF-0122）",
+                  "value": null,
+                  "threshold": "≥ 0.3"
+                },
+                {
+                  "source": "events[thread.resume_action]：resume_fact_opened / resume_branch_opened（TF-0129/0151）",
+                  "value": null,
+                  "threshold": "≥ 1 / 周；dismiss 与叙事展开不计事实消费"
+                }
+              ]
+            }
+          ],
+          "rows": []
+        }
+      }
+    }
+  ],
+  "stats": {
+    "threads": 4,
+    "restores": 2,
+    "sealDecisions": 1,
+    "sealBlocked": 1,
+    "sealReviewsCorrect": 1,
+    "noticeOutcomeRows": 6,
+    "overlaps": 14,
+    "notified": 6,
+    "restoreToMessage": {
+      "windowDays": 7,
+      "withCard": {
+        "samples": 1,
+        "medianMs": 1848
+      },
+      "withoutCard": {
+        "samples": 1,
+        "medianMs": 10
+      },
+      "unknownCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "incomplete": 0,
+      "medianChangeRatio": 183.8,
+      "exceeds20Percent": true
+    }
+  },
+  "ledgerT0": {
+    "started": true,
+    "threads": 4,
+    "writers": 6
+  },
+  "sampleWindow": {
+    "restores": 2,
+    "noticeOutcomes": 6,
+    "sealDecisions": 1,
+    "targets": {
+      "restores": 3,
+      "noticeOutcomes": 5,
+      "sealDecisions": 3
+    },
+    "satisfied": false,
+    "missing": [
+      "restores 2/3",
+      "sealDecisions 1/3"
+    ]
+  },
+  "ok": true
+}

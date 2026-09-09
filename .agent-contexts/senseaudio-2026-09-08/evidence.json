@@ -1,0 +1,207 @@
+{
+  "source": "live-model-scripted-scenario",
+  "workspace": "workbench-e2e-cSJhox",
+  "model": "senseaudio-s2-flash",
+  "baseUrl": "https://api.senseaudio.cn/v1",
+  "ok": true,
+  "attempts": {
+    "total": 43,
+    "outcomes": {
+      "response": 43
+    }
+  },
+  "finishReason": {
+    "tool_calls": 26,
+    "stop": 17
+  },
+  "development": {
+    "modelReview": "pass",
+    "independentChecks": [
+      {
+        "total": 12,
+        "passed": 11,
+        "failures": [
+          {
+            "name": "尾部弯引号",
+            "input": "https://openrouter.ai/api/v1/chat/completions”",
+            "expected": "https://openrouter.ai/api/v1/chat/completions",
+            "actual": "https://openrouter.ai/api/v1/chat/completions%E2%80%9D/chat/completions"
+          }
+        ]
+      },
+      {
+        "total": 12,
+        "passed": 12,
+        "failures": []
+      }
+    ]
+  },
+  "forks": {
+    "sourceTranscriptUnchanged": true,
+    "reviews": {
+      "branch-1": {
+        "verdict": "pass",
+        "findings": 3
+      },
+      "branch-2": {
+        "verdict": "pass",
+        "findings": 3
+      },
+      "branch-3": {
+        "verdict": "pass",
+        "findings": 3
+      }
+    }
+  },
+  "stats": {
+    "threads": 4,
+    "restores": 2,
+    "sealDecisions": 1,
+    "sealBlocked": 1,
+    "sealReviewsCorrect": 1,
+    "noticeOutcomeRows": 6,
+    "overlaps": 14,
+    "notified": 6,
+    "restoreToMessage": {
+      "windowDays": 7,
+      "withCard": {
+        "samples": 1,
+        "medianMs": 1848
+      },
+      "withoutCard": {
+        "samples": 1,
+        "medianMs": 10
+      },
+      "unknownCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "incomplete": 0,
+      "medianChangeRatio": 183.8,
+      "exceeds20Percent": true
+    }
+  },
+  "sampleWindow": {
+    "restores": 2,
+    "noticeOutcomes": 6,
+    "sealDecisions": 1,
+    "targets": {
+      "restores": 3,
+      "noticeOutcomes": 5,
+      "sealDecisions": 3
+    },
+    "satisfied": false,
+    "missing": [
+      "restores 2/3",
+      "sealDecisions 1/3"
+    ]
+  },
+  "ledgerT0": {
+    "started": true,
+    "threads": 4,
+    "writers": 6
+  },
+  "sha256": {
+    "live-report": "e6de6c00d2bb10f4639bbb7625f24b3f88472b92b30c5a6407524ed9e21759fa",
+    "live-integration": "6e83a9b8b655e240b48b238b2697e8a107d2bf71667ebb94f903d14483f87b58",
+    "live-development": "23d0cd023c571e7e4aa875fb82e47cb0c455bf8a070d10c729de6a134e177087",
+    "live-validation": "f6b4759a9f9c95a1a2cda2e62bb8238eee471623c8a9a564693021b2d4689a6a"
+  },
+  "ledgerLayers": {
+    "s11_integration": {
+      "t0": {
+        "started": true,
+        "threads": 4,
+        "writers": 6
+      },
+      "sampleWindow": {
+        "restores": 2,
+        "noticeOutcomes": 6,
+        "sealDecisions": 1,
+        "targets": {
+          "restores": 3,
+          "noticeOutcomes": 5,
+          "sealDecisions": 3
+        },
+        "satisfied": false,
+        "missing": [
+          "restores 2/3",
+          "sealDecisions 1/3"
+        ]
+      },
+      "note": "S11 在 22 步集成结束时对租户黑板的官方快照；development/fork 尚未写入。"
+    },
+    "post_fork": {
+      "t0": {
+        "started": true,
+        "threads": 9,
+        "writers": 11
+      },
+      "sampleWindow": {
+        "restores": 7,
+        "noticeOutcomes": 8,
+        "sealDecisions": 6,
+        "targets": {
+          "restores": 3,
+          "noticeOutcomes": 5,
+          "sealDecisions": 3
+        },
+        "satisfied": true,
+        "missing": []
+      },
+      "verdicts": [
+        {
+          "id": "resume-card",
+          "status": "not-supported"
+        },
+        {
+          "id": "premise-detection",
+          "status": "supported"
+        },
+        {
+          "id": "stage-c",
+          "status": "supported"
+        },
+        {
+          "id": "l3",
+          "status": "insufficient-evidence"
+        }
+      ],
+      "moat": [
+        {
+          "key": "A",
+          "name": "校准表行数",
+          "threshold": "≥ 50",
+          "source": "stats.noticeOutcomes.rows",
+          "value": 8,
+          "present": false
+        },
+        {
+          "key": "B",
+          "name": "推定写者是 git 或人的失效通知",
+          "threshold": "≥ 1 条",
+          "source": "events[premise_stale] ⋈ sessions/<writer>.kind",
+          "value": 1,
+          "present": true
+        },
+        {
+          "key": "C",
+          "name": "来自真实会话的 seal.decided: block",
+          "threshold": "≥ 1 次（且事后判定为正确封印）",
+          "source": "stats.seal.blocked + stats.seal.reviews.correct",
+          "value": 4,
+          "present": true
+        },
+        {
+          "key": "D",
+          "name": "notified / overlaps",
+          "threshold": "有真实值且落在 10-30%",
+          "source": "stats.premises.notifiedRatio",
+          "value": 0.304,
+          "present": false
+        }
+      ],
+      "note": "同一黑板在 development+fork 之后的追加活动；跨现场不可拼接，但同现场可累加。"
+    }
+  }
+}

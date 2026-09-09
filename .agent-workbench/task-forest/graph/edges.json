@@ -2662,5 +2662,41 @@
     "to": "TF-0136",
     "type": "depends_on",
     "updated_at": "2026-09-05T17:44:32.881615Z"
+  },
+  "TFE-0226": {
+    "blocking": true,
+    "confidence": 0.9,
+    "created_at": "2026-09-07T07:35:14.317174Z",
+    "created_from_session": null,
+    "from": "TF-0154",
+    "id": "TFE-0226",
+    "reason": "地标反馈是 fit 与范围验收的数据源，纳入同一账本范围。",
+    "to": "TF-0135",
+    "type": "child_of",
+    "updated_at": "2026-09-07T07:35:14.317174Z"
+  },
+  "TFE-0227": {
+    "blocking": false,
+    "confidence": 0.9,
+    "created_at": "2026-09-07T07:35:14.317174Z",
+    "created_from_session": null,
+    "from": "TF-0154",
+    "id": "TFE-0227",
+    "reason": "为 L1 的地标集合认可验收提供事件和读数。",
+    "to": "TF-0086",
+    "type": "contributes_to",
+    "updated_at": "2026-09-07T07:35:14.317174Z"
+  },
+  "TFE-0228": {
+    "blocking": true,
+    "confidence": 1.0,
+    "created_at": "2026-09-07T11:09:40.706077Z",
+    "created_from_session": null,
+    "from": "TF-0155",
+    "id": "TFE-0228",
+    "reason": "为阶段 D 提供可主动获取的实际模型证据。",
+    "to": "TF-0135",
+    "type": "child_of",
+    "updated_at": "2026-09-07T11:09:40.706077Z"
   }
 }
