@@ -1,0 +1,107 @@
+{
+	"sampleType": "agent-driven-e2e",
+	"generatedAt": "2026-09-07T07:27:23.514Z",
+	"blackboard": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-node-verified-032fd3ea64a74c539a5d9d8cfeb3bf37\\.workbench",
+	"t0": {
+		"started": true,
+		"threads": 30,
+		"writers": 32
+	},
+	"sampleWindow": {
+		"restores": 30,
+		"noticeOutcomes": 52,
+		"sealDecisions": 10,
+		"targets": {
+			"restores": 3,
+			"noticeOutcomes": 5,
+			"sealDecisions": 3
+		},
+		"satisfied": true,
+		"missing": []
+	},
+	"moat": [
+		{
+			"key": "A",
+			"name": "校准表行数",
+			"threshold": "≥ 50",
+			"source": "stats.noticeOutcomes.rows",
+			"value": 52,
+			"present": true
+		},
+		{
+			"key": "B",
+			"name": "推定写者是 git 或人的失效通知",
+			"threshold": "≥ 1 条",
+			"source": "events[premise_stale] ⋈ sessions/<writer>.kind",
+			"value": 1,
+			"present": true
+		},
+		{
+			"key": "C",
+			"name": "来自真实会话的 seal.decided: block",
+			"threshold": "≥ 1 次（且事后判定为正确封印）",
+			"source": "stats.seal.blocked + stats.seal.reviews.correct",
+			"value": 10,
+			"present": true
+		},
+		{
+			"key": "D",
+			"name": "notified / overlaps",
+			"threshold": "有真实值且落在 10-30%",
+			"source": "stats.premises.notifiedRatio",
+			"value": 0.203,
+			"present": true
+		}
+	],
+	"gate": {
+		"open": true,
+		"missing": []
+	},
+	"histogram": {
+		"aligned": 3,
+		"partial": 13,
+		"weak": 0,
+		"misaligned": 0,
+		"unknown": 9
+	},
+	"branchRow": [
+		{
+			"id": "TF-0151",
+			"title": "恢复卡规则 R10：兄弟分支在你离开后改了什么",
+			"status": "in_progress",
+			"value": 10,
+			"samples": 10,
+			"fit": "partial",
+			"kind": "component",
+			"metric": "R10 分支行是否被恢复卡消费（查看分支手势）",
+			"source": "events[thread.resume_action].payload.action = resume_branch_opened",
+			"why": "实测 10，来源 events[thread.resume_action].payload.action = resume_branch_opened"
+		}
+	],
+	"restoreToMessage": {
+		"windowDays": 7,
+		"withCard": {
+			"samples": 10,
+			"medianMs": 269.5
+		},
+		"withoutCard": {
+			"samples": 10,
+			"medianMs": 7
+		},
+		"unknownCard": {
+			"samples": 0,
+			"medianMs": null
+		},
+		"incomplete": 10,
+		"medianChangeRatio": 37.5,
+		"exceeds20Percent": true
+	},
+	"landmarkAcceptance": {
+		"total": 125,
+		"reviewed": 10,
+		"endorsed": 8,
+		"rejected": 2,
+		"endorsedShare": 0.064,
+		"reviewedCoverage": 0.08
+	}
+}

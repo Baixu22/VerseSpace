@@ -94,7 +94,7 @@ const npmBundle = await Bun.build({
 	target: "bun",
 	format: "esm",
 	outdir: DIST,
-	naming: { entry: "workbench.[ext]" },
+	naming: { entry: "workbench.[ext]", asset: "ui/[name]-[hash].[ext]" },
 });
 if (!npmBundle.success) {
 	for (const log of npmBundle.logs) console.error(log);

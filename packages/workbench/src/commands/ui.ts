@@ -28,7 +28,7 @@ function openBrowser(url: string): void {
 }
 
 export async function uiCommand(
-	options: { port?: string; uiDir?: string },
+	options: { port?: string; uiDir?: string; open?: boolean },
 	command: Command,
 ): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
@@ -64,7 +64,7 @@ export async function uiCommand(
 			`API 调试用 token：${server.authToken}（请求头 x-workbench-token；浏览器里的面板自动获取）`,
 		);
 	}
-	openBrowser(url);
+	if (options.open !== false) openBrowser(url);
 
 	const shutdown = (signal: string) => {
 		if (!opts.quiet) {

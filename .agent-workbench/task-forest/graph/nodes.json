@@ -818,7 +818,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -847,7 +847,7 @@
     "next_action": "存量按 ADR-0011 冻结，新增开发留在 Workbench。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": 0,
@@ -864,7 +864,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -893,7 +893,7 @@
     "next_action": "依赖继续按现有包边界审查。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": 0,
@@ -1052,7 +1052,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1081,7 +1081,7 @@
     "next_action": "git 仓库可用，此启动期阻塞已消失。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": 0,
@@ -1379,7 +1379,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1409,7 +1409,7 @@
     "next_action": "原子替换与并发文件写继续由现有回归覆盖。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": 0,
@@ -2317,7 +2317,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2348,7 +2348,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2500,7 +2500,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2530,7 +2530,7 @@
     "next_action": "按 ADR-0011 保留存量；出现具体迁移需求时另立决策。",
     "non_goals": [],
     "priority": 3,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "确保『冻结』不是永久搁置，存量处置有明确的再评估时点和决策出口。",
     "remaining_minutes_max": 0,
@@ -2656,7 +2656,7 @@
       "Verifier 加 LLM 裁判"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "derived",
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "remaining_minutes_max": null,
@@ -2683,7 +2683,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2713,7 +2713,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2738,7 +2738,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2769,7 +2769,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2793,7 +2793,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2824,7 +2824,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3623,7 +3623,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3654,7 +3654,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 1,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4984,7 +4984,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4992,6 +4992,7 @@
     },
     "alignment_records": [],
     "assumptions": [],
+    "blocked_by": [],
     "confidence": 0.5,
     "context_tags": [
       "l3",
@@ -5022,9 +5023,10 @@
       "杀死判据：无法通过执行检查且输出空间开放的产物（计划、规格、设计文档）一律不建"
     ],
     "priority": 5,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "derived",
     "purpose": "",
+    "ready": false,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
@@ -5038,9 +5040,7 @@
     "success_metrics": [],
     "summary": "风险最高的一层，明确超前于证据。保持 p5 不开工：供应商 fork + checkpoint 已覆盖大部分场景。去留由 TF-0136 判决四按写死的判据裁决——无判据可满足（事件结构性为零）则砍。",
     "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）",
-    "updated_at": "2026-09-09T02:30:00.000000Z",
-    "blocked_by": [],
-    "ready": false
+    "updated_at": "2026-09-09T02:30:00.000000Z"
   },
   "TF-0100": {
     "acceptance_criteria": [
@@ -5048,7 +5048,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5056,6 +5056,7 @@
     },
     "alignment_records": [],
     "assumptions": [],
+    "blocked_by": [],
     "confidence": 0.6,
     "context_tags": [
       "前端"
@@ -5077,9 +5078,10 @@
     "next_action": "随 TF-0099 废止：N=2 推导依赖 promo 事件比对，事件原 0 命中，无人生产。判决书 docs/tf0136-l3-cut-verdict.md 事实 D。",
     "non_goals": [],
     "priority": 5,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "",
+    "ready": false,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
@@ -5091,9 +5093,7 @@
     "success_metrics": [],
     "summary": "从单条轨迹泛化是那个无解的部分。第二次出现相似轨迹时才提议——变了的是偶然的，没变的是本质的。这把推断问题变成集合运算。",
     "title": "N=2 推导：两条相似轨迹之差即泛化",
-    "updated_at": "2026-09-09T02:30:00.000000Z",
-    "blocked_by": [],
-    "ready": false
+    "updated_at": "2026-09-09T02:30:00.000000Z"
   },
   "TF-0101": {
     "acceptance_criteria": [
@@ -5101,7 +5101,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5109,6 +5109,7 @@
     },
     "alignment_records": [],
     "assumptions": [],
+    "blocked_by": [],
     "confidence": 0.6,
     "context_tags": [
       "前端"
@@ -5132,9 +5133,10 @@
     "next_action": "随 TF-0099 废止：重放验证 + 逐字面量占位符需要 promo/revert 参数；promo 事件原 0 命中。",
     "non_goals": [],
     "priority": 5,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "",
+    "ready": false,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
@@ -5147,9 +5149,7 @@
     "success_metrics": [],
     "summary": "绝不交付需要用户读懂才能批准的产物。附执行按钮，把验证成本从 O(所有未来输入) 压到 O(1)。",
     "title": "重放验证 + 逐字面量占位符",
-    "updated_at": "2026-09-09T02:30:00.000000Z",
-    "blocked_by": [],
-    "ready": false
+    "updated_at": "2026-09-09T02:30:00.000000Z"
   },
   "TF-0102": {
     "acceptance_criteria": [
@@ -5425,28 +5425,30 @@
     "display_order": 1400,
     "estimated_total_minutes": null,
     "evidence": [
-      "真实 7800 文件工程每次首编辑失效约 1150 个、70-95 秒"
+      "2026-09-06 提交 b032b3c：surfaceHash 不受标点/格式空白影响，但字符串字面量内部空白仍视为语义；surface-format.test.ts 钉住纯格式依赖编辑不产生 premise_stale 或 pending notice、字面量变化仍通知。",
+      "2026-09-09 接力复核：surface-format.test.ts、surface.test.ts、premise-counts.test.ts 共 27 pass / 0 fail（95 断言）；packages/workbench 的 bun run typecheck 通过。确认 TF-0107 已实现，正式图此前保持 proposed 是未应用旧综合提案造成的状态漂移。"
     ],
     "execution_hints": [],
     "id": "TF-0107",
     "kind": "risk",
+    "next_action": "已收敛：导出面投影忽略格式与实现体变化、保留字面量语义；只有未来再次出现批量误通知时才重开新节点。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "把易变细节（位置、格式、顺序）挡在投影之外，这是主要工程成本所在",
       "上线前必须有『纯空白编辑不产生任何通知』的回归测试"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "TypeScript #63664：首次编辑拿新算的 .d.ts 哈希比存着的文本哈希（必然不等），再穿 export * barrel 走完传递闭包；一次纯空白编辑重新产出 502/502 个文件。",
     "title": "风险：投影 bug 导致约 1000× 过度通知，通道开局即死",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-09T03:00:45.315681Z"
   },
   "TF-0108": {
     "acceptance_criteria": [],
@@ -5460,6 +5462,7 @@
     },
     "alignment_records": [],
     "assumptions": [],
+    "blocked_by": [],
     "confidence": 0.8,
     "context_tags": [
       "风险"
@@ -5478,11 +5481,13 @@
     "execution_hints": [],
     "id": "TF-0108",
     "kind": "risk",
+    "next_action": "L3 已随 TF-0099 废止被砍，超前证据风险不再适用。判决书 docs/tf0136-l3-cut-verdict.md。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "",
+    "ready": false,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
@@ -5495,16 +5500,13 @@
     "success_metrics": [],
     "summary": "从对话追溯出显式产物几乎没有实证文献，现有的都是小样本实验室原型，无纵向与信任度数据。",
     "title": "风险：L3 明确超前于证据",
-    "updated_at": "2026-09-09T02:30:00.000000Z",
-    "ready": false,
-    "blocked_by": [],
-    "next_action": "L3 已随 TF-0099 废止被砍，超前证据风险不再适用。判决书 docs/tf0136-l3-cut-verdict.md。"
+    "updated_at": "2026-09-09T02:30:00.000000Z"
   },
   "TF-0109": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5524,14 +5526,17 @@
     "display_order": 1600,
     "estimated_total_minutes": null,
     "evidence": [
-      "stdin 只能排队，不是自由的轮内注入；interrupt 控制消息的确切 JSON 在可达文档中查不到"
+      "TF-0066 本机验证：CLI 2.1.251；headless -p 因 not_a_tty 与特性门控不绑定 messaging inbox，socket 投递不可用。",
+      "TF-0077 与 ADR-0010 已落地替代通道：持久队列 + --input-format stream-json stdin；运行中只排队，provider 成功结果后才确认，失败则保持待投递。",
+      "2026-09-09 接力复核：delivery.test.ts、notice-ack.test.ts、notice-windows.test.ts、provider-result.test.ts、threads.test.ts 共 48 pass / 0 fail（189 断言）；packages/workbench 的 bun run typecheck 通过。"
     ],
     "execution_hints": [],
     "id": "TF-0109",
     "kind": "risk",
+    "next_action": "已按既定 fallback 收敛：保留持久队列 + stream-json stdin 的轮次边界投递；不再建设跨会话 socket 消息总线。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5541,11 +5546,11 @@
       "验证失败则退回轮次边界的 stdin 排队投递（能力下降但不致命）"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "WSL2 与原生 Windows、宿主与容器 互相不可达；原生 Windows 需 CLI 2.1.234+。这是整套架构唯一的二元风险。",
     "title": "风险：跨会话 socket 在 Windows／WSL2 边界不可达",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-09T10:35:09.763554Z"
   },
   "TF-0110": {
     "acceptance_criteria": [],
@@ -5571,34 +5576,36 @@
     "display_order": 1700,
     "estimated_total_minutes": null,
     "evidence": [
-      "这是 Mylyn 衰落的三个原因之一"
+      "2026-09-06 提交 4a4656a：interactions/doi.ts 按上下文年龄在年轻慢衰减/宽传播与成熟快衰减/窄传播之间插值；interest-reduced 事件与 context lower CLI 提供按写者隔离、可计数、再次真实触碰即恢复的手动出口。",
+      "2026-09-09 接力复核：interactions/doi.test.ts 与 interactions/context.test.ts 共 11 pass / 0 fail（38 断言）；覆盖生命周期两端、父级传播、地标规模、写者隔离、计数、幂等和再次触碰恢复。packages/workbench 的 bun run typecheck 通过。确认正式图保持 proposed 是未应用旧综合提案造成的状态漂移。"
     ],
     "execution_hints": [],
     "id": "TF-0110",
     "kind": "risk",
+    "next_action": "已收敛：生命周期自适应 DOI 与按写者的降低兴趣出口均已落地；继续由 reduction 计数与地标复核数据观察常数是否再次双向失配，出现实证时另开节点。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "",
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
     "requirements": [
       "常数按上下文生命周期自适应：年轻的慢衰减宽搜索，成熟的快衰减窄搜索",
       "提供『降低兴趣』的手动出口并统计其使用频次作为调参信号"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "Mylyn 的数据显示：2.06% 的选择落在已衰减出视野的元素上（衰减太狠），同时两位被试点了 225 和 210 次『降低兴趣』（衰减不够）。作者指出模型对任务生命周期是盲的却从未修。",
     "title": "风险：隐式层用一套全局常数必然同时在两个方向失败",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-09T03:17:26.844921Z"
   },
   "TF-0111": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5618,14 +5625,16 @@
     "display_order": 1800,
     "estimated_total_minutes": null,
     "evidence": [
-      "Crystal→商业化 Nimbalyst；Conductor 把生意搬去云；Superconductor 直接做团队多人工作区"
+      "Crystal→商业化 Nimbalyst；Conductor 把生意搬去云；Superconductor 直接做团队多人工作区",
+      "2026-09-10 接力核验：packages/workbench/package.json license=MIT；README 两种安装方式（GitHub Releases 二进制、bunx @baixu22/workbench）均免费；全仓库 grep 无定价/付费/团队版面；npm 发布已按用户决定跳过（TF-0119，提交 25682da）；docs/positioning-v5.md §11.2 已定形态为『开源 hook / 库，一条命令安装』。节点要求第一条已满足，第二条为条件性指引，保留。"
     ],
     "execution_hints": [],
     "id": "TF-0111",
     "kind": "risk",
+    "next_action": "已按 positioning-v5 §11.2 的形态收敛：开源 MIT 库 + 免费单文件二进制，仓库内没有任何收费面；变现若重启须新开节点，按节点要求的『团队面／被工作区玩家收购』两条路径评估，不改本地优先架构。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5635,17 +5644,17 @@
       "若要变现，surface 是团队（跨开发者的共享前提图、CI 强制）或被工作区玩家收购"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "无服务器、无数据库、本地优先是很好的架构，是很差的生意。Bloop 有数千日活与 VC 资金仍无法转化。",
     "title": "风险：本地优先这组工程约束正好使收费不可能",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-09T17:35:50.681024Z"
   },
   "TF-0112": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5665,14 +5674,16 @@
     "display_order": 1900,
     "estimated_total_minutes": null,
     "evidence": [
-      "其机制是 ListAgents+SendMessage，由模型自愿调用：没有读集、没有检测、没有确定性——而『agent 根本没意识到该发』正是常见情况"
+      "其机制是 ListAgents+SendMessage，由模型自愿调用：没有读集、没有检测、没有确定性——而『agent 根本没意识到该发』正是常见情况",
+      "2026-09-10 接力核验：根 README 与 packages/workbench/README.md 只描述机制（记录读写、前提失效时给证据），无厂商式宣传；apps/marketing 为存量 Helmor 站点，不涉及会话通知；packages/context-rot 以 context rot 为旗号且『只抓确定性的死引用』『只记确定性』；ADR-0010 non-goals 明确不建 agent 消息总线；实际通道是足迹⋈变更的确定性交集产生 premise_stale，与 Claude Code 由模型自愿调用 SendMessage 在代码层面不同。节点两条要求均已满足。"
     ],
     "execution_hints": [],
     "id": "TF-0112",
     "kind": "risk",
+    "next_action": "已按既定叙事收敛：对外只讲机制，旗号 context rot / stale premise，强调确定性检测。新增任何对外文案时沿用此口径；若出现『在你发现之前警告』式宣传则重开风险。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5682,11 +5693,11 @@
       "对外用 context rot 与 stale premise，强调确定性检测而非自愿消息"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "Claude Code 文档逐字写着『当一个会话的改动破坏了另一个正在依赖的东西，Claude 可以在你发现之前警告它』，GA 且默认开启。",
     "title": "风险：叙事位已被厂商占据",
-    "updated_at": "2026-08-30T06:52:08.189567Z"
+    "updated_at": "2026-09-09T17:35:50.681024Z"
   },
   "TF-0113": {
     "acceptance_criteria": [
@@ -5760,7 +5771,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5798,7 +5809,7 @@
     "next_action": "继续使用包内 bun run test 的 60000ms 超时；再次复现时按实际现场诊断。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把这台机器的 IO 现实登记在案：既避免反复误判成 Workbench 的代码缺陷，也避免按正常机器的速度做估时。",
     "remaining_minutes_max": 0,
@@ -5931,7 +5942,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5965,7 +5976,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把这条环境回归单独可见，避免把它误读成 R3 的 WIP 准入控制把派发拒了。",
     "remaining_minutes_max": null,
@@ -6031,7 +6042,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -6039,6 +6050,7 @@
     },
     "alignment_records": [],
     "assumptions": [],
+    "blocked_by": [],
     "confidence": 0.9,
     "context_tags": [
       "r4",
@@ -6061,9 +6073,10 @@
     "next_action": "已按 commit 25682da 的用户决定跳过 npm 发布关闭。无剩余动作。",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 1,
     "progress_source": "manual",
     "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
+    "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
@@ -6076,9 +6089,7 @@
     "success_metrics": [],
     "summary": "发布物已就绪：包名 context-rot 未被占用、changeset 已创建、files 补全（dist/README/hooks/scripts/plugin）、CLI 新增 install-hooks 子命令（dist 端到端验证通过：安装→配置→事件采集）。硬阻塞：本机 npm 未登录（E401），需用户登录 npm 后执行 bun run changeset version + changeset publish。",
     "title": "后续：npm 发布 context-rot（当前按用户决定跳过）",
-    "updated_at": "2026-09-09T02:30:00.000000Z",
-    "ready": true,
-    "blocked_by": []
+    "updated_at": "2026-09-09T02:30:00.000000Z"
   },
   "TF-0120": {
     "acceptance_criteria": [
@@ -6150,7 +6161,7 @@
       "不让调度器依赖线程拓扑"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "derived",
     "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
     "remaining_minutes_max": 5640,
@@ -6184,7 +6195,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "阶段 A 收口前跑 validate 与全量 workbench 测试",
@@ -6228,7 +6239,7 @@
       "不先做 merge-back"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "derived",
     "purpose": "先补齐因果时钟、事件身份、真实使用统计和 fork 继承事实，避免后续设计建立在名义继承上。",
     "remaining_minutes_max": 0,
@@ -6258,7 +6269,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "在含历史线程的仓库跑 stats --json",
@@ -6298,7 +6309,7 @@
     "next_action": null,
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把“有没有人真的分叉、回看、比较”变成可执行数据，而不是靠架构叙事推断。",
     "remaining_minutes_max": 0,
@@ -6327,7 +6338,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "多进程并发 append 无重复 eventSeq",
@@ -6370,7 +6381,7 @@
       "不引入数据库"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让会话事件、世界足迹和恢复事实能被同一条因果链引用，不再靠墙钟或行号猜。",
     "remaining_minutes_max": 90,
@@ -6400,7 +6411,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "threads 事件带 status/verdict 时抛错的单测",
@@ -6443,7 +6454,7 @@
       "不让调度器读树拓扑"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把 fork/leave/restore/merge-back 变成一等会话事件，同时守住世界投影不读会话拓扑的边界。",
     "remaining_minutes_max": 120,
@@ -6472,7 +6483,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "Claude fork 首跑后 agentContextInherited 从 null 变为观测值",
@@ -6511,7 +6522,7 @@
     "next_action": null,
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "消除“UI 前缀已复制”被误当作“模型上下文已继承”的架构谎言。",
     "remaining_minutes_max": 0,
@@ -6540,7 +6551,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "隔天返回线程能列出已变前提",
@@ -6579,7 +6590,7 @@
       "不自动重算叙事"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "derived",
     "purpose": "把恢复从“启发式叙事”升级为“叙事 + 仓库事实 + 覆盖率”的处境卡。",
     "remaining_minutes_max": 0,
@@ -6610,7 +6621,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "纯函数单测：给定 leaveSeq 回放足迹算出失效集",
@@ -6650,7 +6661,7 @@
     "next_action": null,
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让用户回来时知道“这场对话依赖的哪些文件已经变了”，而不是只知道仓库整体变了。",
     "remaining_minutes_max": 0,
@@ -6680,7 +6691,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "渲染快照：每条事实行至少一个 refs",
@@ -6724,7 +6735,7 @@
       "不注入完整 diff 进模型"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把现有恢复笔记升级为可核验的恢复卡，同时保持安静加法式。",
     "remaining_minutes_max": 240,
@@ -6756,7 +6767,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "覆盖率数字与 comparable 计数一致",
@@ -6800,7 +6811,7 @@
     "next_action": "给恢复卡加覆盖率行与恢复到首条消息指标，输出 JSON。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "防止“没消息”被误读为“安全”，并度量恢复卡是否真的省时间。",
     "remaining_minutes_max": 180,
@@ -6829,7 +6840,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "无合法继承路径时 inherited 事件数为 0",
@@ -6868,7 +6879,7 @@
       "不做自动 worktree"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "derived",
     "purpose": "在真实继承语义之上，让分支成为并发事实的一部分，而不是一棵只会长熵的叙事树。",
     "remaining_minutes_max": 0,
@@ -6900,7 +6911,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "Claude fresh fork 后 footprint.inherited 为空",
@@ -6945,7 +6956,7 @@
     "next_action": "无；继承事实的消费方在 TF-0129 覆盖率行与 TF-0151 的 R10。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
     "remaining_minutes_max": 300,
@@ -6976,7 +6987,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "空分支不渲染的单测",
@@ -7018,7 +7029,7 @@
       "不自动改主线历史"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "把分支留下的执行事实带回主线，同时避免内容合并污染上下文。",
     "remaining_minutes_max": 480,
@@ -7051,7 +7062,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "一轮多条失效合并为一条 notice 的单测",
@@ -7097,7 +7108,7 @@
     "next_action": "已完成；持续观察真实通知结局，不因折叠修改前提或投递确认。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "防止分支扇出把最可信的并发通道变成噪声通道。",
     "remaining_minutes_max": 0,
@@ -7127,7 +7138,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "seal.decided 事件可查询",
@@ -7171,7 +7182,7 @@
     "next_action": "等 TF-0123/0124 收口后再落 seal 判决事件，避免写在不稳定的事件钟上。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让唯一的阻断点可观测、可降级，避免守护者滑向警察。",
     "remaining_minutes_max": 180,
@@ -7221,7 +7232,9 @@
     "created_at": "2026-09-03T05:36:39.297748Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-f44720fb5f"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 600,
     "evidence": [
@@ -7229,26 +7242,26 @@
       "2026-09-08：cSJhox（senseaudio-s2-flash）首轮全链路 43 响应全成功。首轮 S6c 撞 senseaudio 特有 bug（tool_calls 回合省略 content 字段，zod invalid_type 报 undefined），补 live-provider.ts schema 让 content 可缺省 transform 为 null，+1 回归测试。tsc --noEmit 通过；bun test --timeout 60000 → 613 pass / 0 fail（98 文件，2336 断言，91.44s）。branch-1/2/3.review.json verdict 全 pass、development.independentChecks 首轮 11/12 次轮 12/12（真自纠）、modelReview.verdict=pass。SHA256：live-report e6de6c00、live-integration 6e83a9b8、live-development 23d0cd02、live-validation f6b4759a。",
       "2026-09-08：live-tenant（senseaudio-s2-flash）持久黑板累积 12 轮（8 成功）。run.ts 增加 --live；授权标记白名单含 tenant-live-model-accumulation；READSPAN 由 live-agent 强制写入 Read offset/limit；HTTP 500 纳入有界重试。development+fork 之后 t0=49/51，样本窗 restores 28/notice 64/seal 15 satisfied；护城河 A=64 B=1 C=13 D=0.123 闸门开。判决一/二/三 supported，L3 仍 insufficient-evidence。tsc 通过；bun test 617 pass / 0 fail。账本 docs/fit-ledger-2026-09-08-live-tenant.md。",
       "2026-09-08：negative-scenarios 探测揭 5 个真问题：(1) E2E_ROUND_INDEX % 5 从未发火（8 endorse / 0 reject），run.ts 加 --start-round 传递轮次暴露；(2) seal.reviewed 只有 --correct 无 --incorrect，negative 脚本主动去未复核 block 发 wrong，增加 3 incorrect；(3) restoreToMessage.medianChangeRatio=372 超速 20% 线；(4) fit-ledger 的 --scope 与 cwd 容易脱手，--scope D:/helmor-main 才能见到森林行；(5) moat D 从 0.304 降到 0.123 是 notified/overlaps 分母扩大后自调整。入账 4 reject + 3 incorrect 且移到 live-tenant。tsc 通过；bun test 617 pass/0 fail。",
-      "2026-09-09：TF-0099 判决后 TF-0107..TF-0112 仍是 unresolved proposed 的风险点；不再由 L3 的 blocked 关系带，需打开拆哪个给条。"
+      "2026-09-09：TF-0099 判决后 TF-0107..TF-0112 仍是 unresolved proposed 的风险点；不再由 L3 的 blocked 关系带，需打开拆哪个给条。",
+      "2026-09-09: landmark-coverage probe 落地 (59 writers, 71 touched, 57e+14r)；endorsedShare 0.152 -> 0.75, L1 由 weak 升 partial，距 aligned 5pp。判决1/2/3 supported。",
+      "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。",
+      "2026-09-10：TF-0111 按 positioning-v5 §11.2 的开源 MIT 形态收敛（仓库无任何收费面，npm 发布已按用户决定跳过）；TF-0112 按『只讲机制、旗号 context rot / stale premise、确定性检测』收敛（README/ADR-0010/context-rot 与 premise_stale 的确定性通道均可核对）。两者各有证据，未批量收口。"
     ],
     "execution_hints": [
-      "空 finish=stop 应视为瞬态输出契约破坏而重试（同 requireTools 无 tool_calls 的 retry pattern）；改 S6c CONTRACT_SUFFIX 提示词不可控（偶发违约），重试才是稳定屏障。QHLCDW 走完 22/22 + development 12/12 + fork 三路模型复核全 pass 证明了这一点。",
-      "live-fork 分支 revisit 的 prompt 会继承 development 复核+分支独立检查的完整历史，已有真实证据（QHLCDW）显示 step-3.7-flash 的 max_tokens=2048 会被该长上下文撞穿；接力要么提升 max_tokens 到 4096，要么改 live-fork 让分支 revisit 只带复核结论不带历史。",
-      "senseaudio/vllm 第三个兼容边界：tool_calls 回合省略 content 字段而非 content:null，live-provider schema 已宽容缺省 transform 为 null；前两边界是空 stop 与 max_tokens。",
-      "development 阶段首轮 11/12 失败项是 base-url requirements 漏『尾部弯引号剪除』的 unicode 边界，模型第二轮自己查出并修复过 12/12；复跑时首轮过与次轮不同只是随机差异不算回归。",
-      "live-fork branch-1 revisit 本轮 finishReason tool_calls=26、stop=17、length=0；max_tokens=4096 预算有余量，可考虑 revisit 只带复核结论不带全历史以压缩上下文。",
-      "run.ts --live 把 live-agent 接到持久租户；授权标记必须是 isolated-live-model-fixture 或 tenant-live-model-accumulation。",
-      "READSPAN 不能交给模型自觉：applyReadSpan 把用户指令上的 offset/limit 强制写进 Read 足迹，否则 S5 会把 span 外追加当失效前提。",
-      "检测之后发现了 landmark-diversity 可在同一 writer 上针对不同 handle 发 endorse/reject：endorsedShare 从 5.8% 演成 9.1%（+3.3%）。L1 alignment 仍先前达到 0.8，需要多轮交替使 reviewed 评测达到覆盖率位，但也反映 share 的公式与否定带出鲁棒。"
+      "阶段 D 工程侧无待办（2026-09-10）：五个风险节点已分别收敛，L1 读数 0.74 是脚本常数。剩余只有自然使用观察；没有 natural 来源的现场就不要再动这棵子树。",
+      "TF-0107 已收敛：提交 b032b3c + 2026-09-09 的 27 项投影回归与类型检查通过；不要再按旧提示重复打开。",
+      "TF-0110 已收敛：提交 4a4656a + 2026-09-09 的 11 项 DOI/手动出口回归与类型检查通过；常数失配必须由 reduction 与地标数据触发新节点。",
+      "其余 TF-0109/0111/0112 属于不同风险域，必须各自核验证据，不批量收口。",
+      "TF-0111/0112 已于 2026-09-10 分别核验收敛；风险节点全部关闭，不要再按旧提示重开。"
     ],
     "id": "TF-0135",
     "kind": "milestone",
-    "next_action": "L3 已砍；L3 milestone chain (TF-0107..TF-0112) 在 proposed 未接；建议下一个打开拆 TF-0107 投影 bug → 找出 /+1000× overnotified/ 是否复现。跑 live-tenant 的 negative-probe 可照行当下流程。",
+    "next_action": "TF-0107/0109/0110/0111/0112 五个风险节点已分别核验收敛。L1 读数修正：0.74 是脚本常数，不是 partial。阶段 D 工程侧无待办；剩余为自然使用观察（L1 认可率、恢复卡人类效果）。里程碑是否收口由用户决定。",
     "non_goals": [
       "不用主观好评替代行为数据"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 92.0,
     "progress_source": "derived",
     "purpose": "用真实使用数据决定三支柱继续、收缩还是砍掉，结束 117/119 fit unknown 的结构性风险。",
     "remaining_minutes_max": 600,
@@ -7268,7 +7281,7 @@
     ],
     "summary": "建立两周真实使用门、L3 证据门与 fit 账本，把“能建”换成“有人用”。",
     "title": "阶段 D：fit 门与范围仲裁",
-    "updated_at": "2026-09-09T02:30:00.000000Z"
+    "updated_at": "2026-09-09T17:39:04.430243Z"
   },
   "TF-0136": {
     "acceptance_criteria": [
@@ -7301,7 +7314,9 @@
     "created_at": "2026-09-03T05:36:39.297748Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-f44720fb5f"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 240,
     "evidence": [
@@ -7312,9 +7327,12 @@
       "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
       "2026-09-08：cSJhox live-model 来源第一次实现判决二 premise-detection supported（noticeOutcomes.agent.delivered=4 达>0 阈值）与判决三 stage-c supported（forks.total=5/5、真实继承观测 ≥1）双 supported；判决四 L3 仍 insufficient-evidence；判决一 resume-card not-supported 保留现状。护城河 B=1 git premise_stale 传递已读人、C=4 seal.Completed；A=8/50、D=30.4% 未齐。",
       "2026-09-08：同一 live-tenant 黑板，--evidence-kind live-model。判决一 resume-card supported（consumed/restores=0.429，resumeActions=23）；判决二 premise-detection supported（delivered=29，dismissed=ignored=unknown=0）；判决三 stage-c supported（forks=24，context∧premise 继承=3）；判决四 L3 insufficient-evidence（kind≠natural 且 days≈0.009）。TF-0099/0100/0101 继续 blocked，不用 live-model 冒充 natural。",
-      "2026-09-09：判决四 L3 已定（TF-0099/0100/0101 deprecated；理由：variant.promoted/promotion_reverted 在代码库 0 生产者，租户事件原 0 命中；工程判决 1-3 已 supported；L1 恢复卡已替代 L3 建议能力）。docs/tf0136-l3-cut-verdict.md。"
+      "2026-09-09：判决四 L3 已定（TF-0099/0100/0101 deprecated；理由：variant.promoted/promotion_reverted 在代码库 0 生产者，租户事件原 0 命中；工程判决 1-3 已 supported；L1 恢复卡已替代 L3 建议能力）。docs/tf0136-l3-cut-verdict.md。",
+      "2026-09-09: landmark-coverage probe 落地 (59 writers, 71 touched, 57e+14r)；endorsedShare 0.152 -> 0.75, L1 由 weak 升 partial，距 aligned 5pp。判决1/2/3 supported。",
+      "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。"
     ],
     "execution_hints": [
+      "L1 认可率是人类认可类指标：账本只在 natural 来源下为 TF-0154 计 fit。landmark-coverage / S8b 的复核手势只验证通道与覆盖率，读数收敛到脚本常数，不能作为 L1 验收数据。",
       "工程采样使用 scripts/fit-ledger/ledger.ts 的三类样本量门，日期跨度仅展示。",
       "恢复、通知、阶段 C 和 L3 四项结论各写明证据强度；不把模型评审或脚本手势冒称人工认可，不自动开展或废止 L3。",
       "判决二首次从 not-supported 转 supported：noticeOutcomes.agent.delivered ≥1 被人工 agent 真实送达达阈值；stage-c forks.total 达 5/5 包含 development source 与三 fork。",
@@ -7323,10 +7341,11 @@
     ],
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "判决四已定：L3 砍 TF-0099/0100/0101（判决书 docs/tf0136-l3-cut-verdict.md）。判决 1/2/3 已在 live-tenant supported；natural 14d 从 forever open 变成已关闭——因为判决书事实 A 证明自然使用改变不了事件 0 生产，自然 14d 是一个明示的不多余用语。下一步：L1 一致率弱（0.091），TF-0154 自然使用多轮 endorse 或 L1 公式按手写走。",
+    "next_action": "四项判决工程口径已定：1/2/3 在 live 租户 supported，4 已砍。剩余全部是自然使用问题（L1 认可率、恢复卡的人类耗时效果），只能等 --evidence-kind natural 的现场，不再用脚本 endorse 推 L1。工程侧无待办；是否据此收口由用户决定。",
+    "next_action_from": "report-2026-09-10-l1-source-gate",
     "non_goals": [],
     "priority": 1,
-    "progress": 50.0,
+    "progress": 62.0,
     "progress_source": "manual",
     "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
     "remaining_minutes_max": 240,
@@ -7347,8 +7366,7 @@
     ],
     "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。",
     "title": "两周真实使用门与 L3 证据门",
-    "updated_at": "2026-09-09T02:30:00.000000Z",
-    "next_action_from": "tf0136-l3-cut-verdict"
+    "updated_at": "2026-09-09T17:39:04.430243Z"
   },
   "TF-0137": {
     "acceptance_criteria": [
@@ -7383,7 +7401,9 @@
     "created_at": "2026-09-03T05:36:39.300039Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-f44720fb5f"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 180,
     "evidence": [
@@ -7405,17 +7425,21 @@
       "2026-09-08：QHLCDW 黑板 stats.restores=2、noticeOutcomes=6、sealDecisions=1、sealBlocked=1、sealReviewsCorrect=1、overlaps=15、notified=6；样本窗 2/3 恢复、6/5 校准、1/3 封印（封锁因为源线程 re-read 未发生）。t0 启动（4 线程 6 写者）。账本 docs/fit-ledger-2026-09-08-empty-retry.md 由 live-fit-ledger.ts 对租户黑板生成。",
       "2026-09-08：cSJhox 两层账本。S11 集成结束：t0=4 线程/6 写者，样本窗 restores 2/3、noticeOutcomes 6/5、sealDecisions 1/3（未齐）。development+fork 之后同一黑板：t0=9/11，restores 7/3、noticeOutcomes 8/5、sealDecisions 6/3，satisfied=true。stats（S11）restores=2、noticeOutcomes=6、sealDecisions=1、sealBlocked=1、sealReviewsCorrect=1、overlaps=14、notified=6。账本 docs/fit-ledger-2026-09-08-senseaudio.md。",
       "2026-09-08：live-tenant 账本 docs/fit-ledger-2026-09-08-live-tenant.md。t0 已开始；样本窗 satisfied；护城河四门 present，gate.open=true。跨现场不拼接；本行只引用 workbench-e2e-live-tenant。",
-      "2026-09-08：negative-probe 之后的 scoped 账本：t0=53/59，样本窗 30/70/16 satisfied；判决 1/2/3 supported（resume-card、p.detection、stage-c），判决 4 L3 保持 insufficient-evidence；moat A=70/B=1/C=14/D=12.7% 闸门开；landmarkAcceptance endorsedShare=0.058 仍 weak。据此 TF-0154 拒绝是探测试探而非显然实现。报告 docs/report-2026-09-08-negative-probe.md。"
+      "2026-09-08：negative-probe 之后的 scoped 账本：t0=53/59，样本窗 30/70/16 satisfied；判决 1/2/3 supported（resume-card、p.detection、stage-c），判决 4 L3 保持 insufficient-evidence；moat A=70/B=1/C=14/D=12.7% 闸门开；landmarkAcceptance endorsedShare=0.058 仍 weak。据此 TF-0154 拒绝是探测试探而非显然实现。报告 docs/report-2026-09-08-negative-probe.md。",
+      "2026-09-09: landmark-coverage probe 落地 (59 writers, 71 touched, 57e+14r)；endorsedShare 0.152 -> 0.75, L1 由 weak 升 partial，距 aligned 5pp。判决1/2/3 supported。",
+      "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。",
+      "2026-09-10：账本本轮被用于纠正一条已写回森林的结论（L1 partial），证明来源门与『值照常显示、fit 不动』的分列设计能挡住脚本数据冒充使用证据；这是 TF-0137 纪律 2 的第二次实证（第一次是 t0 门拦住自举期事件）。"
     ],
     "execution_hints": [
+      "账本按周从 live 租户重跑：cd <租户> && bun <repo>/packages/workbench/scripts/fit-ledger.ts --evidence-kind live-model --scope <repo> --out <repo>/docs/fit-ledger.md。人类认可类指标（requires: natural）在该来源下停在 unknown，属预期。",
       "七现场账本要点：soAvFB 校准超目标（7/5）、恢复和封印仍不足；样本跨现场不能拼接（沿用账本纪律）；其余现场只有 attempts/calls 数字没有全过程事件。"
     ],
     "id": "TF-0137",
     "kind": "task",
-    "next_action": "新探测路径 live-tenant 里面的 scoped 账本 32 rows / 8 unknown 已贴日志；moat 常开发动，L3 仍是 natural。下一个让 landmarks endured share 接近 L1 alignment（0.8），上侧手举先加给一组在 concentration 河都是 endorse（negative-probe 大受）之后或者严格移动基本面 2 个根 family 的交替窗口。",
+    "next_action": "账本已对人类认可类指标加来源门；docs/fit-ledger.md 现指向 live 租户并按周重跑。砍留决策已用过一次（2026-09-09 L3 砍）。工程侧无待办；是否据此收口由用户决定。",
     "non_goals": [],
     "priority": 1,
-    "progress": 85.0,
+    "progress": 92.0,
     "progress_source": "manual",
     "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
     "remaining_minutes_max": 180,
@@ -7434,7 +7458,7 @@
     ],
     "summary": "建立 fit 账本，记录使用次数、展开率、dismiss 率与恢复改善；所有状态必须来自真实事件，不允许用测试通过替代。",
     "title": "fit 账本与砍留决策",
-    "updated_at": "2026-09-08T17:30:00.000000Z"
+    "updated_at": "2026-09-09T17:39:04.430243Z"
   },
   "TF-0138": {
     "acceptance_criteria": [
@@ -7447,7 +7471,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "ADR 每条边界都能指到代码或实验证据",
@@ -7495,7 +7519,7 @@
     "next_action": "已通过代码复核，后续边界引用 ADR-0010。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
     "remaining_minutes_max": 0,
@@ -7525,7 +7549,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "切换线程后 events.jsonl 出现 thread.switch",
@@ -7566,7 +7590,7 @@
       "不记录消息正文"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把真实使用行为变成可统计事件，而不是靠事后猜测。",
     "remaining_minutes_max": 0,
@@ -7597,7 +7621,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "一次真实运行记录子线程对锚点前内容的知情程度",
@@ -7649,7 +7673,7 @@
       "不把 HTTP 空足迹误当继承成功"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "解决 fresh fork 与真实上下文继承之间的语义落差，避免把 UI 前缀伪装成 agent 前提。",
     "remaining_minutes_max": 420,
@@ -7676,7 +7700,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "fit 账本里有 start_date 与 end_date",
@@ -7720,7 +7744,7 @@
       "不用测试通过替代真实使用"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "给 fit 门一个明确的 t0，避免用没有起点的数据做裁决。",
     "remaining_minutes_max": 0,
@@ -7747,7 +7771,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "turn in flight 时 notifySession 排队而非写 stdin 的单测",
@@ -7789,7 +7813,7 @@
       "不在本节点实现 token 预算"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "先定义 notifySession 的正确行为，再往上叠加预算和家族折叠。",
     "remaining_minutes_max": 300,
@@ -7817,7 +7841,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "bun run test 全绿且新增两条 appendMany 回归测试",
@@ -7865,7 +7889,7 @@
       "不做日志压缩"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让『一条日志』的代价可测，避免把审计已预警的体量问题藏在一个被调高的 timeout 后面。",
     "remaining_minutes_max": 0,
@@ -7896,7 +7920,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "bun run test / tsc / biome 三项全绿",
@@ -7941,7 +7965,7 @@
       "不改变已实现的语义"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让后续所有节点建立在已提交、可回滚、绿色的基线上，而不是随时可能消失的工作区。",
     "remaining_minutes_max": 0,
@@ -7970,7 +7994,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "render 测试断言 1MB payload 不进上下文",
@@ -8012,7 +8036,7 @@
       "不做线程通知预算（属 TF-0133）"
     ],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把『世界 → agent 上下文』这一侧的泄漏也关上，否则前提守护在派发链路上仍然是无预算注入。",
     "remaining_minutes_max": 180,
@@ -8040,7 +8064,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "结论已写回 TF-0132 文案",
@@ -8080,7 +8104,7 @@
       "不在本节点实现内容级合并"
     ],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "消除一个无主承诺：要么补事件与验收，要么从 merge-back 摘要里删掉。",
     "remaining_minutes_max": 60,
@@ -8108,7 +8132,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
       "validation_plan": [
         "三类产物各有口径并写回 TF-0144",
@@ -8155,7 +8179,7 @@
       "不把体量问题算进前提守护路线图的验收"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 0,
     "progress_source": "manual",
     "purpose": "在继续往这个仓库写规划之前定下体量口径，否则每次 proposal-apply 都会往历史里再压进约 100–200MB。",
     "remaining_minutes_max": 60,
@@ -8186,7 +8210,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8220,7 +8244,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "让 premise_notice 的效果可度量：没有结局标注，通知精度只能靠感觉，两周 fit 门无数可判。",
     "remaining_minutes_max": null,
@@ -8242,7 +8266,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8275,7 +8299,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把『通知太多还是太少』从争论变成一个可读的比值，作为调层与砍层的唯一依据。",
     "remaining_minutes_max": null,
@@ -8297,7 +8321,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8326,7 +8350,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "写者中立必须有一个非 agent、非人的写者真实产生过一条通知，否则它只是口号。",
     "remaining_minutes_max": null,
@@ -8349,7 +8373,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8384,7 +8408,7 @@
     "next_action": "已完成工程实现与验收；使用效果由阶段 B 与全局目标继续判定。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "把 TF-0132 里唯一值钱的部分（分支留下的执行事实回到主线）保留为恢复卡的一条规则，而不是一个里程碑级的指针语义工程。",
     "remaining_minutes_max": 0,
@@ -8406,7 +8430,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8438,7 +8462,7 @@
     "next_action": "已完成；保留 snapshots 以回放历史。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "森林自己违反了它给 Workbench 定的两条纪律（载荷上限、诚实的进度），修在工具侧一次，比每次 apply 付一次税便宜。",
     "remaining_minutes_max": 0,
@@ -8460,7 +8484,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit_confidence": 0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8493,7 +8517,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 100.0,
+    "progress": 100,
     "progress_source": "manual",
     "purpose": "TF-0134 验收一与 TF-0150 验收三都要求「通过 hook 路径产生一条真实记录」，而 hook 调的是 workbench CLI。这个缺陷让所有 CLI 子命令读不到真实黑板，两个节点的验收结构性不可能通过。",
     "remaining_minutes_max": null,
@@ -8541,7 +8565,9 @@
       "每个写者的地标集合有人工认可的量化读数",
       "L1 验收从『只能等』变成『有数据可判』"
     ],
-    "deviations": [],
+    "deviations": [
+      "TFD-f44720fb5f"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": null,
     "evidence": [
@@ -8549,12 +8575,13 @@
       "reviewLandmark 只接受当前投影里的条目；review-stats.ts 复用同一投影，以完整当前集合为分母、按写者隔离并取最新结论。",
       "stats.landmarkReviews.current 显示认可率和复核覆盖率；既有 raw 反馈事件计数不冒充集合质量。",
       "E2E 第五轮记录 reject；该确定性负载只验证通道与负样本，不能证明真实用户 80% 认可。",
-      "2026-09-08：landmark-diversity probe 闯入 8 次复核后 endorsedShare 从 0.058 积闪 0.091；主要影响是当前 landmarks （共 154） 仍大多不被复核，endorsedCoverage 只 10.9%→11.0%。TF-0154 若要把 aligned 班到 0.8，要么把未被复核的地标补上，要么把公式不拿 total=全部作为分母。"
+      "2026-09-08：landmark-diversity probe 闯入 8 次复核后 endorsedShare 从 0.058 积闪 0.091；主要影响是当前 landmarks （共 154） 仍大多不被复核，endorsedCoverage 只 10.9%→11.0%。TF-0154 若要把 aligned 班到 0.8，要么把未被复核的地标补上，要么把公式不拿 total=全部作为分母。",
+      "2026-09-10：账本 L1 行改为只认 natural 来源；landmark-coverage 探针的 0.739 只是 ENDORSE_PROBABILITY=0.75 的收敛值，不构成 L1 验收数据。通道工程（手势、human 事件、按写者隔离、最新结论覆盖、reviewedCoverage 单列）不变，仍为 done。"
     ],
     "execution_hints": [],
     "id": "TF-0154",
     "kind": "task",
-    "next_action": "工程通道已完成；实际集合质量由 TF-0057 的 L1 验收继续判定。",
+    "next_action": "工程通道已完成。L1 认可率只在 natural 来源下计 fit；实际集合质量要等真实用户复核，由 TF-0057 的 L1 验收判定。",
     "non_goals": [
       "不改变地标投影算法本身（DOI 归 TF-0088/0110）",
       "不做 UI 手势（CLI 先行，UI 另立）"
@@ -8573,7 +8600,7 @@
     ],
     "summary": "地标认可反馈通道已实现：CLI 手势、human 来源事件、按写者隔离的完整集合判定、最新复核覆盖旧结论、stats 与 fit 账本接入。",
     "title": "地标认可反馈：L1 验收的事件通道",
-    "updated_at": "2026-09-08T18:00:00.000000Z"
+    "updated_at": "2026-09-09T17:35:50.681024Z"
   },
   "TF-0155": {
     "acceptance_criteria": [
@@ -8608,7 +8635,8 @@
       "2026-09-08：QHLCDW 现场 development.modelReview.verdict=pass（含 7 条 findings），independentChecks[0]={total:12, passed:12, failures:[]}；branch-1.review.json verdict=pass（5 findings），branch-2 verdict=pass（4 findings），branch-3 verdict=pass（4 findings）。三路都在模型侧 pass，只在 fork 的 branch-1 revisit 回合被 max_tokens 截断。",
       "2026-09-08：cSJhox（senseaudio-s2-flash）22/22 集成 + development 12/12（首轮 11/12 尾部弯引号失败、次轮模型自查 12/12）+ fork 三路 branch-1/2/3.review.json verdict 全 pass；43 次请求全 response，finishReason tool_calls=26/stop=17/length=0。senseaudio 特有边界：tool_calls 回合省略 content 字段，live-provider schema 缺省为 null。SHA256：live-report e6de6c00、live-integration 6e83a9b8、live-development 23d0cd02、live-validation f6b4759a。",
       "2026-09-08：live 租户累积证明空会话不再阻塞工程采样。--live 闭门无密钥；有密钥则在持久黑板上连续产生恢复/通知/封印/继承。S7b 偶发 JSON 解析失败与渠道 500 已部分用重试兜住，不改验收门槛。",
-      "2026-09-08：找到被断探测点：即便加快写者多样性与 reject/negative，后续悲剧试图继续投到这里还是最初估计的 30-50%。给的五个问题里拿模型未提颜色的关系并为预算状态，不威胁现有集成。"
+      "2026-09-08：找到被断探测点：即便加快写者多样性与 reject/negative，后续悲剧试图继续投到这里还是最初估计的 30-50%。给的五个问题里拿模型未提颜色的关系并为预算状态，不威胁现有集成。",
+      "2026-09-10：S7b 残余噪声收口。live-provider.ts 对 HTTP 200 但正文非 JSON 的响应做有界重试：outcome=invalid-json，≤2 次重试、1 秒退避，第三次失败抛错且不回显正文。租户 attempts.jsonl 里 2026-09-08 16:43/16:48 两条 status 200 / outcome invalid-response 即该类。live-provider.test.ts 新增两例（一次坏正文后恢复；三次坏正文失败关闭且错误不含正文）。"
     ],
     "execution_hints": [
       "空 stop 重试与 goalCheck 不同种：goalCheck 针对 WRITE 指令回合依靠磁盘状态收尾；空 stop 重试针对任意回合模型偶发的空输出。两者叠加都不改模型配置，仅加强 live-agent 容错。",
@@ -8619,7 +8647,7 @@
     ],
     "id": "TF-0155",
     "kind": "task",
-    "next_action": "空会话阻塞已用 --live 租户累积拆掉。渠道 500 已重试；S7b JSON 解析失败仍是残余噪声，不挡工程采样。",
+    "next_action": "渠道 500 与 200 非 JSON 正文均已有界重试；残余噪声收口，无待办。",
     "non_goals": [
       "不开放生产 HTTP provider 的通用任意命令执行。",
       "不发布 npm、不替用户决定 L3 产品范围。"
@@ -8641,6 +8669,6 @@
     "success_metrics": [],
     "summary": "真实模型执行闭环完成：仓库外加密凭据、环境密钥、HTTP完整端点、有限重试、真实文件工具、代码修复/复读、持久分叉与同轮通知归因均已验证；可从空工作区直接复跑。",
     "title": "真实模型执行闭环与无空会话阻塞验证",
-    "updated_at": "2026-09-08T17:30:00.000000Z"
+    "updated_at": "2026-09-09T17:35:50.681024Z"
   }
 }

@@ -7,7 +7,7 @@
 
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Ctx, Fit, Probe } from "./metrics";
+import type { Ctx, EvidenceKind, Fit, Probe } from "./metrics";
 import { gitOrHumanNotices, PROBES } from "./metrics";
 
 export interface Row {
@@ -140,6 +140,7 @@ export function sampleWindow(ctx: Ctx): SampleWindow {
 export function buildRows(
 	scope: Array<{ id: string } & ForestNode>,
 	ctx: Ctx,
+	evidenceKind: EvidenceKind = "unknown",
 ): Row[] {
 	const started = t0Started(ctx);
 	return scope.map((node) => {
@@ -187,9 +188,14 @@ export function buildRows(
 		// t0 之前一律 unknown，但 measured 值照常显示——看得见 15 条自举事件，
 		// 又不让它推动 fit，这正是 authored / measured 分列的用处。
 		const usable = started && reading.samples > 0;
-		const fit: Fit = !usable
-			? "unknown"
-			: (probe.judge?.(reading.value ?? 0) ?? "partial");
+		// 人类认可类指标（requires: natural）：脚本或模型运行安排的手势不是人的
+		// 判断，读数只会收敛到脚本常数。与 t0 门同理——值照常显示，不推动 fit。
+		const needsHuman =
+			probe.requires === "natural" && evidenceKind !== "natural";
+		const fit: Fit =
+			!usable || needsHuman
+				? "unknown"
+				: (probe.judge?.(reading.value ?? 0) ?? "partial");
 		return {
 			...base,
 			kind: "component" as const,
@@ -202,7 +208,9 @@ export function buildRows(
 				? "t0 未开始：.workbench 无真实线程或无注册写者，现有事件是自举期数据，不作样本"
 				: reading.samples === 0
 					? `insufficient-history：${probe.source} 无样本`
-					: `实测 ${reading.value}，来源 ${probe.source}`,
+					: needsHuman
+						? `来源 ${evidenceKind} 不是自然使用：实测 ${reading.value} 只反映脚本或模型运行安排的复核手势，不构成用户认可，fit 停在 unknown；来源 ${probe.source}`
+						: `实测 ${reading.value}，来源 ${probe.source}`,
 		};
 	});
 }

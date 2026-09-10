@@ -25,8 +25,8 @@ const root = process.cwd();
 const emit = (value: unknown) =>
 	process.stdout.write(`${JSON.stringify(value)}\n`);
 
-	async function main() {
-		await assertLiveAuthorized(root);
+async function main() {
+	await assertLiveAuthorized(root);
 	const provider = {
 		key: process.env.E2E_LLM_KEY ?? process.env.WORKBENCH_CHAT_API_KEY ?? "",
 		model: process.env.E2E_LLM_MODEL ?? "",
@@ -75,9 +75,9 @@ const emit = (value: unknown) =>
 		};
 		if (input.type !== "user" || typeof input.message?.content !== "string")
 			continue;
-			history.push({ role: "user", content: input.message.content });
-			const turnGoal: LiveGoal | null = goalFromUserText(input.message.content);
-			const turnSpans = spansFromUserText(input.message.content);
+		history.push({ role: "user", content: input.message.content });
+		const turnGoal: LiveGoal | null = goalFromUserText(input.message.content);
+		const turnSpans = spansFromUserText(input.message.content);
 		try {
 			const signal = AbortSignal.timeout(50_000);
 			let finished = false;
@@ -115,16 +115,16 @@ const emit = (value: unknown) =>
 					let toolName = call.function.name;
 					let toolInput: unknown;
 					try {
-							const result = await executeLiveTool(
-								root,
+						const result = await executeLiveTool(
+							root,
+							toolName,
+							applyReadSpan(
 								toolName,
-								applyReadSpan(
-									toolName,
-									JSON.parse(call.function.arguments),
-									turnSpans,
-								),
-								arg("--permission-mode") === "plan",
-							);
+								JSON.parse(call.function.arguments),
+								turnSpans,
+							),
+							arg("--permission-mode") === "plan",
+						);
 						content = result.content;
 						toolInput = result.input;
 					} catch {

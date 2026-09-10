@@ -181,8 +181,9 @@ export function parseHunks(diff: string): DiffHunk[] {
 }
 
 function oldEndOf(hunk: DiffHunk): number {
-	// a pure insertion has an empty old range that sits BEFORE oldStart
-	return hunk.oldStart + hunk.oldCount - 1;
+	// In a zero-context diff, -N,0 inserts AFTER old line N. Keep that
+	// boundary for relocation; treating it as N-1 shifts a read too early.
+	return hunk.oldStart + Math.max(1, hunk.oldCount) - 1;
 }
 
 /** Layer 3 only applies where an export surface is a meaningful concept. */
@@ -255,7 +256,11 @@ export async function spanInvalidated(
 		return true; // diff exists but unparseable: don't guess
 	}
 	for (const hunk of hunks) {
-		if (hunk.oldStart <= span.end && span.start <= oldEndOf(hunk)) {
+		const overlaps =
+			hunk.oldCount === 0
+				? span.start <= hunk.oldStart && hunk.oldStart < span.end
+				: hunk.oldStart <= span.end && span.start <= oldEndOf(hunk);
+		if (overlaps) {
 			return true;
 		}
 	}
@@ -330,8 +335,9 @@ export async function reconcilePremises(
 		const { reads, writes } = await bb.sessions.readSetView(writer.id);
 		// Layer 3's dependency/subject split, derived rather than declared: a
 		// writer that also edits a file is working on it (subject-matter, so
-		// body changes matter); a writer that only reads it is consuming its
-		// surface (dependency, so only signature changes matter). Asking the
+		// body changes matter). Explicit content reads already carry a span
+		// (including 1..EOF for whole reads) and must also observe body changes.
+		// Remaining claims use the dependency/surface heuristic. Asking the
 		// agent to declare which one it is would be the same tax the forest
 		// refuses everywhere else.
 		const touched = new Set(writes.map((write) => write.path));

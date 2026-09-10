@@ -1,0 +1,50 @@
+{
+  "applied_at": "2026-09-08T09:44:44.787641Z",
+  "base_graph_hash": "d6d83b88b27862b95ce31e150a9d8cf88bde072a291613121b6a6f71036a91a0",
+  "base_summary": {
+    "edge_count": 225,
+    "node_count": 155,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-08：KQKW9b（step-3.7-flash via hcnsec）首次完成 22/22 集成步骤全过（含 S6c 家族折叠、S7 封印、S7b 复读、S10 stats、S11 fit 账本）。development 进入后完成读取旧实现 ✓、自主修复 ✓、12 项独立验收两轮纠正（10/12 → 9/12，第 2 轮新增『成对引号』回归），最终在第 3 轮纠正回合命中模型 token 上限。stats.threads=4、writers=6、restores=2/3、校准=6/5（已超）、封印=1/3、noticeOutcomes=6、overlaps=13、notified=6。live-integration SHA256 7269f173，live-validation SHA256 d4b24cf3。详 docs/report-2026-09-08-full-chain.md 与 docs/full-chain-evidence-2026-09-08.json。"
+        ],
+        "execution_hints": [
+          "S6c 提示词加『输出契约：每个回合必须返回正文或 tool_calls』一句即可让 step-3.7-flash 走完三路家族折叠；与前轮 live-agent goalCheck（WRITE 磁盘达成即收尾）协同。development 阶段模型 token 上限是当前剩余边界。"
+        ],
+        "next_action": "重跑 step-3.7-flash 看 development 第 3 轮 token 上限是否复现；若复现，考虑：(a) base-url.requirements.txt 把 Unicode 弯引号边界条件单列；(b) 换有更大 token 预算的 paid 模型跑 development；(c) 调整 validateWithCorrections 纠正循环上限。22/22 集成已稳定可复现。"
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-08：KQKW9b 黑板 stats.restores=2、noticeOutcomes=6、sealDecisions=1、sealBlocked=1、sealReviewsCorrect=1、overlaps=13、notified=6；样本窗 2/3 恢复、6/5 校准、1/3 封印。t0 已启动（4 线程 6 写者）。账本 docs/fit-ledger-2026-09-08-full-chain.md 由本仓库 fit-ledger.ts 对该租户黑板生成。"
+        ]
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-08：step-3.7-flash 把 base-url.ts 稳定在能过 10/12 状态，但第 2 轮引入『成对引号』回归（原为 trim+replace 引号在中间文本也去除，导致含引号反代路径被拒）。模型对该 Unicode 边界 case 的有效纠错轮次有限。详 docs/report-2026-09-08-full-chain.md。"
+        ],
+        "execution_hints": [
+          "development 阶段的『独立验收驱动多轮纠正』在真实模型上会暴露两种边界：模型对 Unicode 边界 case 的纠正能力递减（旧 2 项未改 + 新 1 项回归），及 max_tokens=2048 的硬限制。需要把 base-url requirements 的边界条件单列或换更大 token 预算的模型跑 development。"
+        ]
+      },
+      "id": "TF-0155"
+    }
+  ],
+  "created_at": "2026-09-08T09:44:30.997100Z",
+  "proposal_id": "TFP-2026-09-08-full-chain",
+  "rationale": "S6c 提示词加输出契约补丁 + 前轮 live-agent goalCheck 共同让 step-3.7-flash 首次走完 22/22 集成并进入 development 两轮独立验收。仅追加证据与接力提示；不改状态、进度、依赖或验收门槛。",
+  "session_id": "session-2026-09-08-full-chain",
+  "status": "applied"
+}

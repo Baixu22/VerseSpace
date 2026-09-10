@@ -43,13 +43,17 @@ test("spansFromUserText 解析 READSPAN 并强制补到全文 Read 参数上", (
 		),
 	).toEqual({ file_path: "src/alpha.ts" });
 	expect(
-		applyReadSpan("Write", { file_path: "src/notes.md", content: "x" }, spansFromUserText(prompt)),
+		applyReadSpan(
+			"Write",
+			{ file_path: "src/notes.md", content: "x" },
+			spansFromUserText(prompt),
+		),
 	).toEqual({ file_path: "src/notes.md", content: "x" });
 });
 
 test("goalFromUserText 解析 WRITE 指令的目标路径与期望内容", () => {
 	const goal = goalFromUserText(
-		"分支上继续。\nWRITE src/alpha.ts\nexport const alpha = \"v4 on branch\";\n__END_WRITE__",
+		'分支上继续。\nWRITE src/alpha.ts\nexport const alpha = "v4 on branch";\n__END_WRITE__',
 	);
 	expect(goal).not.toBeNull();
 	expect(goal?.path).toBe("src/alpha.ts");
@@ -68,7 +72,7 @@ test("goalMet 对比磁盘实际内容：相等返回 true，缺文件/不等返
 	const root = await mkdtemp(join(tmpdir(), "live-agent-goals-"));
 	cleanup.push(root);
 	const goal = goalFromUserText(
-		"WRITE src/alpha.ts\nexport const alpha = \"v4 on branch\";\n__END_WRITE__",
+		'WRITE src/alpha.ts\nexport const alpha = "v4 on branch";\n__END_WRITE__',
 	);
 	expect(goal).not.toBeNull();
 	// File absent

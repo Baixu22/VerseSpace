@@ -296,7 +296,21 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 					break;
 				}
 				for (const used of line.used) {
-					reads.set(used.path, { ...used, seq: line.seq });
+					// A content-reading tool observed the body, even if it never
+					// edited the file. Replay whole reads as 1..EOF so layer 3 cannot
+					// mistake code review for a signature-only dependency. Deriving
+					// this from existing facets also repairs old logs without a migration;
+					// the ordinary span claim survives real fork inheritance unchanged.
+					const span =
+						used.span ??
+						(["Read", "Bash", "PowerShell"].includes(String(line.facets?.tool))
+							? { start: 1, end: Number.MAX_SAFE_INTEGER }
+							: undefined);
+					reads.set(used.path, {
+						...used,
+						...(span ? { span } : {}),
+						seq: line.seq,
+					});
 				}
 				for (const gen of line.generated) {
 					writes.push({ ...gen, seq: line.seq, ts: line.timestamp });

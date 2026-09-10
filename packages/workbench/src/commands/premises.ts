@@ -21,7 +21,9 @@ export async function premisesPendingCommand(command: Command): Promise<void> {
 	if (opts.json) {
 		emitJson({
 			pending: pending.map((notice) => ({
+				noticeId: notice.noticeId,
 				writer: notice.writerId,
+				familyFold: notice.familyFold,
 				stale: notice.claims.map((claim) => ({
 					path: claim.path,
 					observedVersion: claim.observedVersion,
@@ -41,7 +43,16 @@ export async function premisesPendingCommand(command: Command): Promise<void> {
 	}
 	for (const notice of pending) {
 		console.log(`${notice.writerId}：${notice.claims.length} 个文件待投递`);
+		const foldedPaths = new Set(notice.familyFold?.paths ?? []);
+		if (notice.familyFold) {
+			const shown = notice.familyFold.paths.slice(0, 3);
+			const extra = foldedPaths.size - shown.length;
+			console.log(
+				`  同一分叉家族近 30 分钟改动 ${foldedPaths.size} 个文件（已折叠）：${shown.join("、")}${extra ? `；及另 ${extra} 条` : ""}`,
+			);
+		}
 		for (const claim of notice.claims) {
+			if (foldedPaths.has(claim.path)) continue;
 			const diff = claim.diff ? "（有 diff）" : "（无读时快照，没有 diff）";
 			console.log(
 				`  ~ ${claim.path} ${claim.observedVersion?.slice(0, 12) ?? "未知"} → ${claim.currentVersion?.slice(0, 12) ?? "未知"} ${diff}`,

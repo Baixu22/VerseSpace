@@ -1,180 +1,6 @@
 [
   {
     "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0107",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：投影 bug 导致约 1000× 过度通知，通道开局即死"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0108",
-    "kind": "risk",
-    "next_action": "L3 已随 TF-0099 废止被砍，超前证据风险不再适用。判决书 docs/tf0136-l3-cut-verdict.md。",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "deprecated",
-    "success_metrics": [],
-    "title": "风险：L3 明确超前于证据"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.75,
-    "context_tags": [
-      "风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0109",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：跨会话 socket 在 Windows／WSL2 边界不可达"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0110",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：隐式层用一套全局常数必然同时在两个方向失败"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.75,
-    "context_tags": [
-      "风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0111",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：本地优先这组工程约束正好使收费不可能"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0112",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：叙事位已被厂商占据"
-  },
-  {
-    "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.75,
       "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
@@ -202,9 +28,9 @@
     "difficulty": "very_high",
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "从空隔离工作区或持久 live-tenant 运行 packages/workbench/scripts/e2e/run.ts --live；人类偏好单独标注。",
+    "next_action": "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
     "priority": 1,
-    "progress": 63.5,
+    "progress": 94.9,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -271,9 +97,9 @@
     "difficulty": "very_high",
     "id": "TF-0120",
     "kind": "milestone",
-    "next_action": "真实模型租户累积已把阶段 D 三项工程判决和护城河四门跑齐；L3 仍要自然使用，不在本轮开工。",
+    "next_action": "真实模型数据源已具备；阶段 D 主动采样，不等待人工创建会话。",
     "priority": 1,
-    "progress": 96.8,
+    "progress": 97.7,
     "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
     "ready": true,
     "remaining_minutes_max": 5640,
@@ -312,9 +138,9 @@
     "difficulty": "medium",
     "id": "TF-0135",
     "kind": "milestone",
-    "next_action": "negative-probe 揭 2 行为缺口和 3 个代码缺口已修：run.ts --start-round 传递轮次（E2E_ROUND_INDEX 能跨批）、negative-scenarios 探测可选未复核 seal。后续探测方向：(a) 复核 CC around hollow log 未被 affectsby；(b) idle dedup 窗额外加一个 100 名镇梞还到 D 用。(c) ratio=372 需要打开 fit-ledger 的 lifecycle.restoreToMessage 落账。",
+    "next_action": "阶段 D 工程侧无待办（2026-09-10）：五个风险节点已分别收敛，L1 读数 0.74 是脚本常数。剩余只有自然使用观察；没有 natural 来源的现场就不要再动这棵子树。",
     "priority": 1,
-    "progress": 87.0,
+    "progress": 90.8,
     "purpose": "用真实使用数据决定三支柱继续、收缩还是砍掉，结束 117/119 fit unknown 的结构性风险。",
     "ready": true,
     "remaining_minutes_max": 600,
@@ -352,9 +178,9 @@
     "difficulty": "medium",
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "判决四已定：L3 砍 TF-0099/0100/0101（判决书 docs/tf0136-l3-cut-verdict.md）。判决 1/2/3 已在 live-tenant supported；natural 14d 从 forever open 变成已关闭——因为判决书事实 A 证明自然使用改变不了事件 0 生产，自然 14d 是一个明示的不多余用语。下一步：L1 一致率弱（0.091），TF-0154 自然使用多轮 endorse 或 L1 公式按手写走。",
+    "next_action": "L1 认可率是人类认可类指标：账本只在 natural 来源下为 TF-0154 计 fit。landmark-coverage / S8b 的复核手势只验证通道与覆盖率，读数收敛到脚本常数，不能作为 L1 验收数据。",
     "priority": 1,
-    "progress": 50.0,
+    "progress": 62.0,
     "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
     "ready": true,
     "remaining_minutes_max": 240,
@@ -389,9 +215,9 @@
     "difficulty": "medium",
     "id": "TF-0137",
     "kind": "task",
-    "next_action": "新探测路径 live-tenant 里面的 scoped 账本 32 rows / 8 unknown 已贴日志；moat 常开发动，L3 仍是 natural。下一个让 landmarks endured share 接近 L1 alignment（0.8），上侧手举先加给一组在 concentration 河都是 endorse（negative-probe 大受）之后或者严格移动基本面 2 个根 family 的交替窗口。",
+    "next_action": "账本按周从 live 租户重跑：cd <租户> && bun <repo>/packages/workbench/scripts/fit-ledger.ts --evidence-kind live-model --scope <repo> --out <repo>/docs/fit-ledger.md。人类认可类指标（requires: natural）在该来源下停在 unknown，属预期。",
     "priority": 1,
-    "progress": 85.0,
+    "progress": 92.0,
     "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
     "ready": true,
     "remaining_minutes_max": 180,
@@ -401,124 +227,5 @@
       "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
     ],
     "title": "fit 账本与砍留决策"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.5,
-    "context_tags": [
-      "l3",
-      "前端",
-      "高风险"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0099",
-    "kind": "milestone",
-    "next_action": "已被 2026-09-09 TF-0099 判决书废止：variant.promoted/promotion_reverted 在全代码库 0 生产者，判决见 docs/tf0136-l3-cut-verdict.md。",
-    "priority": 5,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "deprecated",
-    "success_metrics": [],
-    "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0100",
-    "kind": "task",
-    "next_action": "随 TF-0099 废止：N=2 推导依赖 promo 事件比对，事件原 0 命中，无人生产。判决书 docs/tf0136-l3-cut-verdict.md 事实 D。",
-    "priority": 5,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "deprecated",
-    "success_metrics": [],
-    "title": "N=2 推导：两条相似轨迹之差即泛化"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0101",
-    "kind": "task",
-    "next_action": "随 TF-0099 废止：重放验证 + 逐字面量占位符需要 promo/revert 参数；promo 事件原 0 命中。",
-    "priority": 5,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "deprecated",
-    "success_metrics": [],
-    "title": "重放验证 + 逐字面量占位符"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "r4",
-      "发行"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0119",
-    "kind": "follow_up",
-    "next_action": "已按 commit 25682da 的用户决定跳过 npm 发布关闭。无剩余动作。",
-    "priority": 3,
-    "progress": 1.0,
-    "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "done",
-    "success_metrics": [],
-    "title": "后续：npm 发布 context-rot（当前按用户决定跳过）"
   }
 ]

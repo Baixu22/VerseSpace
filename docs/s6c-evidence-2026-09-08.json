@@ -1,0 +1,270 @@
+{
+	"date": "2026-09-08",
+	"purpose": "阶段 D 接力：S6c 按时序检查通知折叠、独立投递与同版本复读。",
+	"limitations": [
+		"模型与工具真实执行，场景与反馈由脚本安排，不证明自然用户效果。",
+		"四次完整启动的最终报告均为失败；nzbavy 的集成步骤在终端全部通过，后续自主开发超时。不能称完整链通过。",
+		"nzbavy 的独立开发重试也超时；当前响应数含重试，原失败报告保持不变。",
+		"当前 ledger 只使用 nzbavy 的黑板，不拼接其他现场凑门槛。",
+		"响应计数不含失败 HTTP 请求及原生 HTTP SSE；cost 仅为响应记录中的用量值。"
+	],
+	"checks": {
+		"workbenchFull": {
+			"passed": 605,
+			"failed": 0,
+			"files": 97,
+			"assertions": 2301,
+			"seconds": 91.1
+		},
+		"finalProviderChecks": {
+			"passed": 4,
+			"failed": 0
+		},
+		"reportPreservationCheck": {
+			"passed": 1,
+			"failed": 0
+		},
+		"typecheck": "根目录全项目检查与最终 Workbench 检查通过",
+		"biome": "本轮 8 个相关 TypeScript 文件通过",
+		"powershellSyntax": "通过",
+		"taskForest": "validate/export 及导出契约回归通过；候选提案未应用"
+	},
+	"oldFailureReplay": {
+		"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-mUMXLa",
+		"reportHash": "1ddce41d833a918886b636f7be3be6643563dba5a795249cad913310bdd20aa6",
+		"staleEvent": {
+			"id": "e-3e35744b6c58e9cf",
+			"eventSeq": 58
+		},
+		"readEvent": "fp-639c775c30ad4e5d",
+		"throughEventSeq": 74,
+		"result": {
+			"writer": "76d5eabc-a0e4-46fc-850d-c58874d7d4c5",
+			"noticeId": "notice-8274a9d9a723f9d3174bf5ff",
+			"delivery": "delivered",
+			"deliveryEventId": "e-c4d2c34bdf98e353",
+			"premise": "repaired",
+			"repairedPaths": ["src/alpha.ts"]
+		}
+	},
+	"runs": [
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-20QE4o",
+			"model": "minimax/minimax-m3:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型 HTTP 404（尝试 1 次）",
+			"reportHash": "3c94cb69498a46b185c901f2b885011549f4b614e7d55ced7f40e88e57b1f5de",
+			"reportResponses": 0,
+			"currentResponses": 0,
+			"recordedCost": 0,
+			"firstResponse": null,
+			"lastResponse": null
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-nzbavy",
+			"model": "cohere/north-mini-code:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：TimeoutError: The operation timed out.",
+			"reportHash": "3be289ff893a5a6038699606503187f29f9151bf51e8cb1873f7f2a0caf7f87f",
+			"reportResponses": 26,
+			"currentResponses": 30,
+			"recordedCost": 0,
+			"firstResponse": "2026-09-08T01:40:06.625Z",
+			"lastResponse": "2026-09-08T01:52:08.924Z"
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-KuAN9C",
+			"model": "poolside/laguna-s-2.1:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型 HTTP 429（尝试 3 次）",
+			"reportHash": "57f94eb6b01974401ec7d2e7321a8f801ff49f2add181b7cdc3d8c089a0038f5",
+			"reportResponses": 8,
+			"currentResponses": 8,
+			"recordedCost": 0,
+			"firstResponse": "2026-09-08T01:48:25.204Z",
+			"lastResponse": "2026-09-08T01:49:08.997Z"
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-WX3X6Z",
+			"model": "cohere/north-mini-code:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型达到 6 次工具循环上限",
+			"reportHash": "21a082bf6db7f015c5113542fe3eaa005014288350ca133e6c92e45f98600e1f",
+			"reportResponses": 9,
+			"currentResponses": 9,
+			"recordedCost": 0,
+			"firstResponse": "2026-09-08T01:55:28.870Z",
+			"lastResponse": "2026-09-08T01:56:15.875Z"
+		}
+	],
+	"currentSample": {
+		"blackboard": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-nzbavy\\.workbench",
+		"evidenceKind": "live-model",
+		"t0": {
+			"started": true,
+			"threads": 8,
+			"writers": 10
+		},
+		"sampleWindow": {
+			"restores": 2,
+			"noticeOutcomes": 6,
+			"sealDecisions": 1,
+			"targets": {
+				"restores": 3,
+				"noticeOutcomes": 5,
+				"sealDecisions": 3
+			},
+			"satisfied": false,
+			"missing": ["restores 2/3", "sealDecisions 1/3"]
+		},
+		"histogram": {
+			"aligned": 2,
+			"partial": 15,
+			"weak": 1,
+			"misaligned": 0,
+			"unknown": 9
+		},
+		"moat": [
+			{
+				"key": "A",
+				"name": "校准表行数",
+				"threshold": "≥ 50",
+				"source": "stats.noticeOutcomes.rows",
+				"value": 6,
+				"present": false
+			},
+			{
+				"key": "B",
+				"name": "推定写者是 git 或人的失效通知",
+				"threshold": "≥ 1 条",
+				"source": "events[premise_stale] ⋈ sessions/<writer>.kind",
+				"value": 1,
+				"present": true
+			},
+			{
+				"key": "C",
+				"name": "来自真实会话的 seal.decided: block",
+				"threshold": "≥ 1 次（且事后判定为正确封印）",
+				"source": "stats.seal.blocked + stats.seal.reviews.correct",
+				"value": 1,
+				"present": true
+			},
+			{
+				"key": "D",
+				"name": "notified / overlaps",
+				"threshold": "有真实值且落在 10-30%",
+				"source": "stats.premises.notifiedRatio",
+				"value": 0.113,
+				"present": true
+			}
+		],
+		"gate": {
+			"open": false,
+			"missing": ["A 校准表行数"]
+		},
+		"verdicts": [
+			{
+				"id": "resume-card",
+				"title": "判决一：恢复卡",
+				"status": "insufficient-evidence",
+				"action": "保留现状，复核恢复与消费记录；达到使用证据要求后再判断是否缩为纯事实行。",
+				"readings": [
+					{
+						"source": "stats.lifecycle.resumeNotesConsumed / stats.lifecycle.restores",
+						"value": 0.5,
+						"threshold": "≥ 0.3"
+					},
+					{
+						"source": "stats.lifecycle.resumeActions",
+						"value": 2,
+						"threshold": "> 0"
+					}
+				]
+			},
+			{
+				"id": "premise-detection",
+				"title": "判决二：前提检测",
+				"status": "insufficient-evidence",
+				"action": "补通知后的可观测活动；unknown 不能当作未忽略或未驳回。",
+				"readings": [
+					{
+						"source": "stats.noticeOutcomes.agent.delivered",
+						"value": 3,
+						"threshold": "> 0"
+					},
+					{
+						"source": "stats.noticeOutcomes.agent.dismissed / .delivered",
+						"value": 0,
+						"threshold": "≤ 0.5"
+					},
+					{
+						"source": "stats.noticeOutcomes.agent.ignored / .delivered",
+						"value": 0,
+						"threshold": "≤ 0.1"
+					},
+					{
+						"source": "stats.noticeOutcomes.agent.unknown",
+						"value": 0,
+						"threshold": "保留为未知"
+					},
+					{
+						"source": "(stats.noticeOutcomes.agent.dismissed + .unknown) / .delivered",
+						"value": 0,
+						"threshold": "≤ 0.5 才足以支持判据"
+					},
+					{
+						"source": "(stats.noticeOutcomes.agent.ignored + .unknown) / .delivered",
+						"value": 0,
+						"threshold": "≤ 0.1 才足以支持判据"
+					}
+				]
+			},
+			{
+				"id": "stage-c",
+				"title": "判决三：阶段 C",
+				"status": "insufficient-evidence",
+				"action": "阶段 C 已完成；本现场尚不足以重复支持范围判据，继续补分叉与真实继承观测。",
+				"readings": [
+					{
+						"source": "stats.forks.total",
+						"value": 2,
+						"threshold": "≥ 5"
+					},
+					{
+						"source": "events[thread.inheritance_observed]：agentContextInherited && premiseInherited，按 threadId 去重（TF-0125/0131）",
+						"value": 0,
+						"threshold": "≥ 1"
+					}
+				]
+			},
+			{
+				"id": "l3",
+				"title": "判决四：L3",
+				"status": "insufficient-evidence",
+				"action": "继续延后 L3，保留 TF-0099 / TF-0100 / TF-0101 的阻塞状态；工程开发照常推进。",
+				"readings": [
+					{
+						"source": "stats.observation.days（仅时间跨度，来源须另行核对）",
+						"value": 0.008750046296296296,
+						"threshold": "自然使用且 ≥ 14 天"
+					},
+					{
+						"source": "stats.forks.total / (stats.observation.days / 7)",
+						"value": null,
+						"threshold": "≥ 1"
+					},
+					{
+						"source": "stats.siblingAlternation.alternatingFamilies / .families（全部根家族为分母，TF-0122）",
+						"value": null,
+						"threshold": "≥ 0.3"
+					},
+					{
+						"source": "events[thread.resume_action]：resume_fact_opened / resume_branch_opened（TF-0129/0151）",
+						"value": null,
+						"threshold": "≥ 1 / 周；dismiss 与叙事展开不计事实消费"
+					}
+				]
+			}
+		]
+	}
+}

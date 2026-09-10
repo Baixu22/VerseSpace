@@ -63,10 +63,10 @@ workbench watch
 | `status` / `map` / `log` / `queue` | 状态概览 / DAG 文本图 / 事件流 / 执行队列 |
 | `doctor` | 全量一致性体检（错误退出码 1，可作 CI 闸门） |
 | `config set <key> <value>` | 修改 `workbench.yaml` |
-| `stats` | 分叉、恢复、通知结局与样本不足情况 |
+| `stats` | 分叉、恢复耗时、通知结局、地标认可率与样本不足情况 |
 | `sessions list/record` | 写者记录；登记 git 或人的文件改动 |
 | `premises` | 查看前提失效与通知；显式封印点 |
-| `context list/lower --writer <id>` | 查看隐式上下文及降低兴趣次数；降低过时条目的兴趣，再次读取后自动恢复 |
+| `context list/lower/review --writer <id>` | 查看上下文、降低过时条目的兴趣，以及记录地标认可或拒绝反馈 |
 
 所有命令支持 `--json`（机器可读）与 `--quiet`。
 
@@ -74,10 +74,13 @@ workbench watch
 
 ```bash
 workbench ui            # 打开 http://127.0.0.1:7700（自动开浏览器）
+workbench ui --no-open  # 只启动服务，适合自动验证与无界面环境
 workbench ui --port 8080 --ui-dir ./some-dist
 ```
 
-本地聊天面板支持线性对话、消息处分叉与双通道恢复卡，事实可追溯到事件和足迹。Claude CLI 支持工具足迹；HTTP 纯文本 provider 可聊天但读集不可观测，不参与读集继承。前端在 `apps/workbench-ui`（开发用 `bun run dev:ui`），构建时资源内嵌进单文件二进制（ADR-0005）。
+本地聊天面板支持线性对话、消息处分叉与双通道恢复卡，事实可点击查看原始消息、工具、事件和足迹。Claude CLI 支持工具足迹；HTTP 纯文本 provider 可聊天但读集不可观测，不参与读集继承。前端在 `apps/workbench-ui`（开发用 `bun run dev:ui`），资源内嵌进单文件二进制；npm 形态随 `dist/ui` 一起分发（ADR-0005）。
+
+HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必将它写入 `.workbench/workbench.yaml`。已保存的 `chat.apiKey` 优先；删除保存值不会清除进程环境中的密钥。聊天配置与面板状态 API 都只返回 `hasKey`，不返回密钥。OpenRouter 的 `chat.baseUrl` 可填 `https://openrouter.ai/api/v1` 或完整的 `/chat/completions` 地址，粘贴时两端的引号会被清理。
 
 ## `.workbench/` 目录结构
 
@@ -102,8 +105,20 @@ workbench ui --port 8080 --ui-dir ./some-dist
 ```bash
 bun install
 bun run test        # cd packages/workbench && bun test
+bun run build       # 本机二进制 + npm JS 包及 UI 资源
+bun run test:build  # 在独立工作区验证两种构建；需先运行 build
 bun run build:all   # 交叉编译四平台二进制到 dist/
 ```
+
+`test:build` 可用 `--native <二进制路径> --js <workbench.js 路径>` 指定独立构建。检测层基准可运行 `bun scripts/benchmark-premises.ts --json`；它验证合成场景的检测契约，不代表真实用户效果。
+
+显式设置 `E2E_LLM_KEY`、`E2E_LLM_MODEL`（可选 `E2E_LLM_BASE_URL`，默认 OpenRouter）后，`bun run test:live` 会创建全新的临时仓库，用真实模型决定 Read/Write 工具调用，验证恢复、分叉、通知、证据与封印链路，并单独验证原生 HTTP 流式回合。随后模型自主修复一个 URL 兼容问题，另一个线程恢复并复核，再验证三个持久分支确实继承 provider 历史与读集。工具只允许隔离仓库 `src/` 下的文本读写，不开放 shell，不读取配置或密钥；原始模型调用 ID、用量、线程和工具结果保存在该临时仓库。该模式会访问第三方模型服务；不会在普通 `bun test` 中运行。报告明确标注脚本驱动的动作和复核；模型判为 pass 也不能替代独立测试或冒充自然用户数据。
+
+Windows 上如已配置仓库外 `%LOCALAPPDATA%/HelmorWorkbench/credentials/openrouter.dpapi`（当前用户 DPAPI 加密），可直接运行 `powershell -NoProfile -File scripts/e2e/run-live.ps1`；加 `-CheckOnly` 只验证凭据可读取，不调用模型。脚本运行结束后恢复原环境变量，不输出或保存明文密钥。
+
+Windows 入口默认模型为 `cohere/north-mini-code:free`，可通过 `E2E_LLM_MODEL` 覆盖（此前的 `minimax/minimax-m3:free` 在 2026-09-08 返回 404）。S6c 在每次写入后检查各写者的家族通知，再分别记录投递与复读版本；通知离开待投递队列不等于前提已修复。完整集成阶段成功后立即保存 `runs/live-integration.json`，后续开发或分叉失败时，最终报告仍保留已完成的集成步骤，整轮 `ok` 仍为 `false`。
+
+模型产物会独立执行固定 12 项 URL 用例，最多交回模型纠正两轮，全部结果保存在 `runs/live-validation.json`。如完整场景在开发阶段之前失败，可加 `-DevelopmentWorkspace <隔离现场路径>` 单独运行开发、恢复和分叉；只接受已有授权标记的现场，会重新初始化示例源文件，原 `runs/live-report.json` 保持不变，专项通过不代表完整场景通过。
 
 架构决策见 [ADR 目录](../../docs/decisions/README.md)。目标、工位与 checkpoint CLI 保留兼容，当前开发主线是 ADR-0010 的前提守护；存量处置见 [ADR-0011](../../docs/decisions/0011-legacy-retention.md)。
 

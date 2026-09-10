@@ -11,7 +11,9 @@ test("accepts both isolated and tenant live authorization markers", async () => 
 			join(root, ".live-e2e-authorized"),
 			"isolated-live-model-fixture\n",
 		);
-		expect(await assertLiveAuthorized(root)).toBe("isolated-live-model-fixture");
+		expect(await assertLiveAuthorized(root)).toBe(
+			"isolated-live-model-fixture",
+		);
 		await writeFile(
 			join(root, ".live-e2e-authorized"),
 			"tenant-live-model-accumulation\n",

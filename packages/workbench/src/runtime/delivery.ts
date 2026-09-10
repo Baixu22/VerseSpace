@@ -1,7 +1,10 @@
 import type { Blackboard } from "../blackboard";
+import { foldNoticeFamilies, type NoticeFamilyFold } from "./notice-family";
 import { noticeIdForClaims } from "./notice-id";
+import { renderNotice } from "./notice-render";
 import type { StalePremiseClaim } from "./premises";
-import { formatNotice } from "./premises";
+
+export { DEFAULT_NOTICE_TOKEN_BUDGET, renderNotice } from "./notice-render";
 
 /**
  * R2 delivery (TF-0077): turn recorded `premise_stale` events into actual
@@ -26,6 +29,8 @@ export interface PendingNotice {
 	writerId: string;
 	claims: StalePremiseClaim[];
 	message: string;
+	/** Derived presentation metadata; never persisted as delivery truth. */
+	familyFold?: NoticeFamilyFold;
 }
 
 export type NoticeDeliveryOutcome = "delivered" | "queued";
@@ -50,118 +55,11 @@ export interface DrainResult {
 	pending: PendingNotice[];
 }
 
-export const DEFAULT_NOTICE_TOKEN_BUDGET = 300;
-
-function noticeCharBudget(tokenBudget: number): number {
-	if (!Number.isFinite(tokenBudget)) {
-		return DEFAULT_NOTICE_TOKEN_BUDGET * 4;
-	}
-	return Math.max(0, Math.trunc(tokenBudget * 4));
-}
-
-function truncateNotice(text: string, maxLength: number): string {
-	if (maxLength <= 0) {
-		return "";
-	}
-	if (text.length <= maxLength) {
-		return text;
-	}
-	if (maxLength === 1) {
-		return "…";
-	}
-	return `${text.slice(0, maxLength - 1)}…`;
-}
-
 function claimKey(
 	writer: string,
 	claim: { path: string; currentVersion?: string | null },
 ): string {
 	return `${writer}|${claim.path}|${claim.currentVersion ?? ""}`;
-}
-
-/** The delivery-side mirror of `formatNotice`: evidence a writer can act on. */
-export function renderNotice(
-	claims: StalePremiseClaim[],
-	tokenBudget = DEFAULT_NOTICE_TOKEN_BUDGET,
-): string {
-	const budgetChars = noticeCharBudget(tokenBudget);
-	if (budgetChars === 0) {
-		return "";
-	}
-	const header = formatNotice(claims.length);
-	if (header.length >= budgetChars) {
-		return truncateNotice(header, budgetChars);
-	}
-
-	// Add all compact path/version facts first. Diffs are lower priority and
-	// are appended only after the fact lines have a place, so a large diff can
-	// never hide every later path from the model.
-	let output = header;
-	const included: StalePremiseClaim[] = [];
-	let omittedClaims = 0;
-	for (const claim of claims) {
-		const prefix = `- ${claim.path}\n  观察版本 ${claim.observedVersion ?? "未知"} → 当前版本 ${claim.currentVersion ?? "未知"}`;
-		const separator = output === header ? "\n\n" : "\n";
-		if (output.length + separator.length + prefix.length > budgetChars) {
-			omittedClaims += 1;
-			continue;
-		}
-		output += `${separator}${prefix}`;
-		included.push(claim);
-	}
-
-	let omittedDiffs = 0;
-	const diffClaims = included.filter((claim) => Boolean(claim.diff));
-	// Reserve room for the omission footer before spending characters on diff.
-	const footerReserve =
-		omittedClaims > 0 || diffClaims.length > 0
-			? `\n\n（${omittedClaims} 个文件未展开；${diffClaims.length} 条 diff 因通知预算未完整展开；事件仍保留）`
-					.length
-			: 0;
-	let diffBudget = Math.max(0, budgetChars - output.length - footerReserve);
-	for (const claim of diffClaims) {
-		const marker = `\n\n${claim.path} 的 diff\n\`\`\`diff\n`;
-		const suffix = "\n```";
-		if (diffBudget <= marker.length + suffix.length) {
-			omittedDiffs += 1;
-			continue;
-		}
-		const room = diffBudget - marker.length - suffix.length;
-		const diff = claim.diff!.slice(0, room);
-		const truncated = diff.length < claim.diff!.length;
-		const tail = truncated ? "\n…（diff 已截断）" : "";
-		const section = `${marker}${diff}${tail}${suffix}`;
-		if (section.length > diffBudget) {
-			omittedDiffs += 1;
-			continue;
-		}
-		output += section;
-		diffBudget -= section.length;
-		if (truncated) {
-			omittedDiffs += 1;
-		}
-	}
-
-	const omittedTotal = omittedClaims + omittedDiffs;
-	if (omittedTotal === 0) {
-		return output.slice(0, budgetChars);
-	}
-	const footerParts: string[] = [];
-	if (omittedClaims > 0) {
-		footerParts.push(`${omittedClaims} 个文件未展开`);
-	}
-	if (omittedDiffs > 0) {
-		footerParts.push(`${omittedDiffs} 条 diff 因通知预算未完整展开`);
-	}
-	footerParts.push("事件仍保留");
-	const footer = `\n\n（${footerParts.join("；")}）`;
-	if (output.length + footer.length <= budgetChars) {
-		return `${output}${footer}`;
-	}
-	// Only diff sections are after the fact lines. Trim their tail to make the
-	// omission count fit; if the budget is tiny, the header/facts win.
-	const room = Math.max(0, budgetChars - footer.length);
-	return `${output.slice(0, room)}${footer}`.slice(0, budgetChars);
 }
 
 /**
@@ -261,7 +159,21 @@ export async function pendingPremiseNotices(
 			message: renderNotice(claims, options.tokenBudget),
 		});
 	}
-	return notices;
+	const families = foldNoticeFamilies(notices, allEvents);
+	return notices.map((notice) => {
+		const familyFold = families.get(notice.writerId);
+		return familyFold
+			? {
+					...notice,
+					familyFold,
+					message: renderNotice(
+						notice.claims,
+						options.tokenBudget,
+						new Set(familyFold.paths),
+					),
+				}
+			: notice;
+	});
 }
 
 /**
@@ -280,7 +192,7 @@ export async function drainPremiseQueue(
 
 	for (const notice of pending) {
 		let outcome: NoticeDeliveryOutcome | false = false;
-		if (options.deliver) {
+		if (options.deliver && notice.message.trim()) {
 			try {
 				const result = await options.deliver(
 					notice.writerId,

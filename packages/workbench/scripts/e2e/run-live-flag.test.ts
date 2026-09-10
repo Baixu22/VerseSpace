@@ -31,5 +31,7 @@ test("--start-round parser accepts a number and inherits from flag", async () =>
 	// Read run.ts and grep that --start-round is used to seed nextRoundIndex.
 	const source = await readFile(runTs, "utf8");
 	expect(source).toContain("--start-round");
-	expect(source).toMatch(/nextRoundIndex\s*=\s*Number\(\s*at\("--start-round"\)/);
+	expect(source).toMatch(
+		/nextRoundIndex\s*=\s*Number\(\s*at\("--start-round"\)/,
+	);
 });

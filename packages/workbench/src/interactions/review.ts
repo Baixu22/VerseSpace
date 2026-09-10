@@ -131,7 +131,7 @@ export function landmarkReviewJudgement(
 	const endorsed = reviewedHandles.filter(
 		(handle) => latest.get(handle)!.verdict === "endorse",
 	).length;
-	const total = landmarks.length;
+	const total = landmarkHandles.size;
 	return {
 		total,
 		reviewed: reviewedHandles.length,

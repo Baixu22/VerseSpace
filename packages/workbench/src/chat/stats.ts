@@ -1,145 +1,28 @@
 import type { Blackboard } from "../blackboard";
 import { foldLandmarkReviews } from "../interactions/review";
-import {
-	foldNoticeOutcomes,
-	type NoticeOutcomeTotals,
-} from "../runtime/notice-outcome";
+import { currentLandmarkAcceptance } from "../interactions/review-stats";
+import { foldNoticeOutcomes } from "../runtime/notice-outcome";
 import {
 	foldPremisePasses,
 	foldRecentPremisePasses,
-	type PremisePassTotals,
 } from "../runtime/premise-counts";
-import { foldSealDecisions, type SealTotals } from "../runtime/seal-counts";
-import {
-	type SealReviewTotals,
-	sealReviewTotals,
-} from "../runtime/seal-review";
+import { foldSealDecisions } from "../runtime/seal-counts";
+import { sealReviewTotals } from "../runtime/seal-review";
 import type { WorkbenchEvent } from "../types/event";
+import { restoreFirstActions } from "./restore-actions";
+import { foldRestoreTimings } from "./restore-timing";
+import { orderedEvents } from "./stats-events";
+import { familyRoot, forkDepth, siblingAlternation } from "./stats-forks";
+import type { ChatStats } from "./stats-types";
 import { ChatThreads, type StoredMessage, type ThreadMeta } from "./threads";
 
-const SIBLING_WINDOW_MS = 30 * 60_000;
-
-export interface ChatStats {
-	threads: {
-		total: number;
-		withMessages: number;
-		withFootprints: number;
-		withResumeNotes: number;
-		forked: number;
-		resumeNoteCoverage: number | null;
-		footprintCoverage: number | null;
-	};
-	forks: {
-		total: number;
-		perWeek: number | null;
-		depth: {
-			min: number;
-			max: number;
-			average: number;
-		};
-		families: {
-			count: number;
-			largestSize: number;
-		};
-	};
-	observation: {
-		startedAt: string | null;
-		endedAt: string | null;
-		days: number;
-	};
-	lifecycle: {
-		switches: number;
-		restores: number;
-		resumeNotesConsumed: number;
-		resumeActions: number;
-		restoreFirstAction: {
-			observed: number;
-			known: number;
-			unknown: number;
-			byKind: Record<string, number>;
-		};
-	};
-	siblingAlternation: {
-		available: boolean;
-		reason: string;
-		families: number;
-		alternatingFamilies: number;
-		rate: number | null;
-		transitions: number;
-		windowMinutes: number;
-	};
-	/** R2 predicate accounting (TF-0149): where candidate claims died. */
-	premises: PremisePassTotals;
-	/**
-	 * Seal decisions (TF-0134): hits, blocks, and what was let through —
-	 * plus the human review totals that close the calibration loop. A block
-	 * proves a refusal happened; only `reviews.correct` makes it "且事后判定
-	 * 为正确封印" (moat C's full threshold).
-	 */
-	seal: SealTotals & { reviews: SealReviewTotals };
-	/**
-	 * The calibration table (TF-0148): agent-side notice outcomes beside the
-	 * human-side resume-card actions. Both columns come from the same log.
-	 */
-	noticeOutcomes: NoticeOutcomeTotals;
-	/**
-	 * 近 7 天窗口的伴随读数（TF-0149）：聚合 notifiedRatio 随空闲重查的
-	 * dedup 累积自然衰减，窗口读数反映当前谓词健康度；聚合口径不变。
-	 */
-	premisesRecent: {
-		windowDays: number;
-		passes: number;
-		overlaps: number;
-		notified: number;
-		ratio: number | null;
-	};
-	/** 人工地标复核计数（TF-0154）：L1 验收「80% 用户认可」的数据源。 */
-	landmarkReviews: {
-		endorsed: number;
-		rejected: number;
-		lastAt: string | null;
-	};
-	dataQuality: {
-		insufficientHistory: boolean;
-		reasons: string[];
-	};
-}
+export type { ChatStats } from "./stats-types";
 
 function averageOf(values: number[]): number {
 	if (values.length === 0) {
 		return 0;
 	}
 	return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-function eventPayload(event: WorkbenchEvent): Record<string, unknown> {
-	return event.payload &&
-		typeof event.payload === "object" &&
-		!Array.isArray(event.payload)
-		? (event.payload as Record<string, unknown>)
-		: {};
-}
-
-function stringValue(value: unknown): string | null {
-	return typeof value === "string" && value.length > 0 ? value : null;
-}
-
-function eventOrder(event: WorkbenchEvent, index: number): number {
-	return Number.isSafeInteger(event.eventSeq)
-		? (event.eventSeq as number)
-		: Number.isSafeInteger(event.seq)
-			? (event.seq as number)
-			: index;
-}
-
-function orderedEvents(events: WorkbenchEvent[]): WorkbenchEvent[] {
-	return events
-		.map((event, index) => ({ event, index }))
-		.sort((a, b) => {
-			const order = eventOrder(a.event, a.index) - eventOrder(b.event, b.index);
-			return order || a.event.timestamp.localeCompare(b.event.timestamp);
-		})
-		.map(({ event }) => event);
 }
 
 function observationWindow(
@@ -173,182 +56,6 @@ function observationWindow(
 	};
 }
 
-function familyRoot(id: string, parents: Map<string, string>): string {
-	const seen = new Set<string>();
-	let current = id;
-	while (!seen.has(current)) {
-		seen.add(current);
-		const parent = parents.get(current);
-		if (!parent) {
-			return current;
-		}
-		current = parent;
-	}
-	return current;
-}
-
-function forkDepth(id: string, parents: Map<string, string>): number {
-	let depth = 0;
-	let current = id;
-	const seen = new Set<string>();
-	while (!seen.has(current)) {
-		seen.add(current);
-		const parent = parents.get(current);
-		if (!parent) {
-			break;
-		}
-		depth += 1;
-		current = parent;
-	}
-	return depth;
-}
-
-function actionKind(action: string): string {
-	const normalized = action.trim().toLowerCase().replace(/[_-]+/g, " ");
-	if (normalized.includes("scroll")) {
-		return "scroll-up";
-	}
-	if (normalized.includes("git log") || normalized === "gitlog") {
-		return "git-log";
-	}
-	return normalized.slice(0, 80) || "unknown";
-}
-
-function restoreFirstActions(
-	events: WorkbenchEvent[],
-): ChatStats["lifecycle"]["restoreFirstAction"] {
-	const ordered = orderedEvents(events);
-	const byKind: Record<string, number> = {};
-	let observed = 0;
-	let restores = 0;
-	for (let index = 0; index < ordered.length; index += 1) {
-		const restored = ordered[index]!;
-		if (restored.type !== "thread.restored") {
-			continue;
-		}
-		restores += 1;
-		const restoredPayload = eventPayload(restored);
-		const threadId = stringValue(restoredPayload.threadId);
-		if (!threadId) {
-			continue;
-		}
-		let action: string | null = null;
-		for (let next = index + 1; next < ordered.length; next += 1) {
-			const candidate = ordered[next]!;
-			const payload = eventPayload(candidate);
-			if (
-				candidate.type === "thread.switch" ||
-				candidate.type === "thread.restored"
-			) {
-				// A later lane transition closes this restore window regardless of
-				// which thread it names; actions after switching away cannot be
-				// attributed to the restored lane.
-				break;
-			}
-			if (
-				candidate.type === "thread.resume_action" &&
-				stringValue(payload.threadId) === threadId
-			) {
-				action = stringValue(payload.action);
-				break;
-			}
-		}
-		if (!action) {
-			continue;
-		}
-		observed += 1;
-		const kind = actionKind(action);
-		byKind[kind] = (byKind[kind] ?? 0) + 1;
-	}
-	return {
-		observed,
-		known: observed,
-		unknown: Math.max(0, restores - observed),
-		byKind,
-	};
-}
-
-function siblingAlternation(
-	threads: ThreadMeta[],
-	events: WorkbenchEvent[],
-	parents: Map<string, string>,
-): ChatStats["siblingAlternation"] {
-	const groups = new Map<
-		string,
-		Array<{ from: string; to: string; at: number }>
-	>();
-	for (const event of orderedEvents(events)) {
-		if (event.type !== "thread.switch") {
-			continue;
-		}
-		const payload = eventPayload(event);
-		const from = stringValue(payload.fromThreadId);
-		const to = stringValue(payload.toThreadId) ?? stringValue(payload.threadId);
-		if (!from || !to || from === to) {
-			continue;
-		}
-		const parent = parents.get(from);
-		if (!parent || parent !== parents.get(to)) {
-			continue;
-		}
-		const at = Date.parse(event.timestamp);
-		if (!Number.isFinite(at)) {
-			continue;
-		}
-		const bucket = groups.get(parent) ?? [];
-		bucket.push({ from, to, at });
-		groups.set(parent, bucket);
-	}
-	let transitions = 0;
-	let alternatingFamilies = 0;
-	for (const sequence of groups.values()) {
-		let familyTransitions = 0;
-		for (let index = 1; index < sequence.length; index += 1) {
-			const previous = sequence[index - 1]!;
-			const current = sequence[index]!;
-			if (
-				current.at - previous.at <= SIBLING_WINDOW_MS &&
-				(previous.to === current.from || previous.from === current.to)
-			) {
-				familyTransitions += 1;
-			}
-		}
-		transitions += familyTransitions;
-		if (familyTransitions >= 2) {
-			alternatingFamilies += 1;
-		}
-	}
-	const familyCount = new Set(
-		threads
-			.filter((thread) => thread.forkOf)
-			.map((thread) => familyRoot(thread.id, parents)),
-	).size;
-	const candidateFamilies = groups.size;
-	if (candidateFamilies === 0) {
-		return {
-			available: false,
-			reason:
-				familyCount === 0
-					? "没有可比较的分叉家族"
-					: "尚未观测到同一家族兄弟切换",
-			families: familyCount,
-			alternatingFamilies: 0,
-			rate: null,
-			transitions: 0,
-			windowMinutes: 30,
-		};
-	}
-	return {
-		available: true,
-		reason: "",
-		families: candidateFamilies,
-		alternatingFamilies,
-		rate: Number((alternatingFamilies / candidateFamilies).toFixed(3)),
-		transitions,
-		windowMinutes: 30,
-	};
-}
-
 export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 	const chat = new ChatThreads(bb);
 	const threads = await chat.list();
@@ -361,7 +68,10 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 			(await bb.sessions.footprint(thread.id)).length,
 		);
 	}
-	const events = await bb.events.all();
+	const [events, writers] = await Promise.all([
+		bb.events.all(),
+		bb.sessions.list(),
+	]);
 	const forkedThreads = threads.filter((thread) =>
 		Boolean(thread.forkOf?.sourceThreadId),
 	);
@@ -454,6 +164,10 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 				(event) => event.type === "thread.resume_action",
 			).length,
 			restoreFirstAction: firstActions,
+			restoreToMessage: foldRestoreTimings(
+				orderedEvents(events),
+				messagesByThread,
+			),
 		},
 		siblingAlternation: alternation,
 		premises: foldPremisePasses(events),
@@ -463,7 +177,13 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 			reviews: sealReviewTotals(events),
 		},
 		noticeOutcomes: foldNoticeOutcomes(events),
-		landmarkReviews: foldLandmarkReviews(events),
+		landmarkReviews: {
+			...foldLandmarkReviews(events),
+			current: currentLandmarkAcceptance(
+				orderedEvents(events),
+				writers.map((writer) => writer.id),
+			),
+		},
 		dataQuality: {
 			insufficientHistory:
 				threads.length === 0 || withFootprints === 0 || restores === 0,

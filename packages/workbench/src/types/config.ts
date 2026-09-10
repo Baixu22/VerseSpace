@@ -60,8 +60,9 @@ export const workbenchConfigSchema = z.object({
 		.default({ command: "claude -p --output-format stream-json" }),
 	/**
 	 * Chat runtime provider. claude = local CLI (stream-json); the rest are
-	 * HTTP streaming APIs. apiKey lives in workbench.yaml (local personal
-	 * tool) — the UI masks it and GET /api/config/chat never returns it.
+	 * HTTP streaming APIs. A saved apiKey takes precedence over the optional
+	 * WORKBENCH_CHAT_API_KEY environment credential. The latter is never saved;
+	 * the UI masks credentials and GET /api/config/chat never returns them.
 	 */
 	chat: z
 		.object({

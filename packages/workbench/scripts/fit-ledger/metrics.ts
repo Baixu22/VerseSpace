@@ -21,6 +21,18 @@ import type { WriterKind } from "../../src/types/session";
 /** 与 task-forest references/goal-alignment.md 的 fit 词表逐字一致。 */
 export type Fit = "aligned" | "partial" | "weak" | "misaligned" | "unknown";
 
+/**
+ * 样本来源是运行者的声明（--evidence-kind），不筛选事件，只决定哪些结论
+ * 允许被这批事件推动：L3 复评与人类认可类指标都只认 natural。
+ */
+export const EVIDENCE_KINDS = [
+	"unknown",
+	"scripted",
+	"live-model",
+	"natural",
+] as const;
+export type EvidenceKind = (typeof EVIDENCE_KINDS)[number];
+
 export interface Ctx {
 	stats: ChatStats;
 	events: WorkbenchEvent[];
@@ -39,6 +51,13 @@ export interface Probe {
 	metric: string;
 	source: string;
 	trace?: string;
+	/**
+	 * natural  该指标度量的是人的判断（如 L1「这是核心吗」）。脚本或模型运行
+	 *          安排的手势不构成人的判断——它们只会把读数收敛到脚本里的常数——
+	 *          所以只有 --evidence-kind natural 才准让实测值推动 fit；其余来源下
+	 *          值照常显示，fit 停在 unknown（TF-0154 证据栏、TF-0136 执行提示）。
+	 */
+	requires?: "natural";
 	read?(ctx: Ctx): { value: number | null; samples: number };
 	/** 有样本时的判据；不给就停在 partial（在用，但阈值还没定）。 */
 	judge?(value: number): Fit;
@@ -140,6 +159,12 @@ export const PROBES: Record<string, Probe> = {
 		source: "stats.seal.decisions",
 		read: (c) => plain(c.stats.seal.decisions),
 	},
+	"TF-0133": {
+		kind: "component",
+		metric: "实际交付的通知束数（预算与折叠正确性另由契约测试验证）",
+		source: "events[premise_notice_delivered]；不以 queued 充当 delivered",
+		read: (c) => plain(count(c, "premise_notice_delivered")),
+	},
 	"TF-0139": {
 		kind: "component",
 		metric: "会话观测埋点合计（切换 + 恢复 + 笔记消费 + 恢复动作）",
@@ -207,7 +232,7 @@ export const PROBES: Record<string, Probe> = {
 		kind: "record",
 		metric: "架构边界是否被后续评审引用",
 		source: "无运行时来源",
-		trace: "docs/decisions/0010-premise-custody.md（提案，待评审）",
+		trace: "docs/decisions/0010-premise-custody.md（已接受）",
 	},
 	"TF-0140": {
 		kind: "record",
@@ -229,40 +254,55 @@ export const PROBES: Record<string, Probe> = {
 		trace: "提交 b292dc4",
 	},
 	"TF-0151": {
-		kind: "record",
+		kind: "component",
 		metric: "R10 分支行是否被恢复卡消费（查看分支手势）",
-		source: "无独立事件类型：分支行的行为证据走恢复卡投影与 resume_action",
-		trace:
-			"scripts/e2e/scenario.ts S6（R10 渲染断言）；docs/tf0136-verdict.md 判决一",
+		source:
+			"events[thread.resume_action].payload.action = resume_branch_opened",
+		read: (ctx) =>
+			plain(
+				ctx.events.filter(
+					(event) =>
+						event.type === "thread.resume_action" &&
+						(event.payload as { action?: string } | null)?.action ===
+							"resume_branch_opened",
+				).length,
+			),
 	},
 	"TF-0136": {
 		kind: "record",
 		metric: "四项判决是否改变了下游决策",
 		source: "无运行时来源",
 		trace:
-			"docs/tf0136-verdict.md（L3 砍、恢复卡保留、阶段 C 不延后、折叠不开工）",
+			"docs/tf0136-verdict.md；scripts/fit-ledger/verdicts.ts（四项判据；L3 延后）",
 	},
 	"TF-0135": {
 		kind: "record",
 		metric: "范围仲裁结论是否写回并被执行",
 		source: "无运行时来源",
-		trace:
-			"docs/tf0136-verdict.md；fit 账本租户直方图（unknown 25/25 → 10/25）",
+		trace: "docs/tf0136-verdict.md；docs/fit-ledger.md（当前现场、读数与边界）",
 	},
 	"TF-0154": {
 		kind: "component",
 		metric:
-			"L1 认可率：endorsed /（endorsed + rejected），≥0.8 为 aligned（TF-0057 L1 的 80% 口径；对集合的 coverage 单列）",
-		source: "events[landmark.reviewed]（source=human）",
+			"L1 认可率：已认可地标 / 全部当前地标，按写者隔离并取最新复核；≥0.8 为 aligned",
+		source:
+			"stats.landmarkReviews.current.endorsedShare（完整集合；reviewedCoverage 单列）",
+		requires: "natural",
 		read: (ctx) => {
-			const { endorsed, rejected } = ctx.stats.landmarkReviews;
-			const samples = endorsed + rejected;
+			const current = ctx.stats.landmarkReviews.current;
 			return {
-				value: samples > 0 ? endorsed / samples : null,
-				samples,
+				value: current.endorsedShare,
+				samples: current.reviewed,
 			};
 		},
 		judge: (value) =>
 			value >= 0.8 ? "aligned" : value >= 0.5 ? "partial" : "weak",
+	},
+	"TF-0155": {
+		kind: "record",
+		metric: "真实模型执行、复读恢复与持久分叉验证是否可复跑",
+		source: "独立验证现场的模型调用记录；不是通用产品行为指标",
+		trace:
+			"docs/report-2026-09-07-live-model.md；docs/live-model-evidence-2026-09-07.json",
 	},
 };

@@ -89,6 +89,9 @@ const NODES = [
 	{ id: "TF-0140", title: "实验", status: "done", kind: "task" },
 	{ id: "TF-0133", title: "未开工", status: "proposed", kind: "task" },
 ];
+const L1_NODE = [
+	{ id: "TF-0154", title: "地标认可", status: "done", kind: "task" },
+];
 
 describe("fit 账本推导规则（TF-0137）", () => {
 	test("t0 判据：既要有真实线程，也要有注册写者，缺一不算开始", () => {
@@ -143,6 +146,52 @@ describe("fit 账本推导规则（TF-0137）", () => {
 		expect(rows.find((r) => r.id === "TF-0148")!.fit).toBe("partial");
 	});
 
+	test("人类认可类指标只认 natural 来源：脚本手势下值照常显示，fit 停在 unknown", () => {
+		// 47 个地标里 46 个被复核、35 个 endorse——正好是 landmark-coverage.ts 的
+		// 0.75 抛硬币常数。t0 已开始、样本充足，只差来源不是自然使用。
+		const started = ctx({
+			stats: stats({
+				threads: { total: 53 },
+				landmarkReviews: {
+					endorsed: 35,
+					rejected: 11,
+					lastAt: "t",
+					current: {
+						total: 47,
+						reviewed: 46,
+						endorsed: 35,
+						rejected: 11,
+						endorsedShare: 35 / 47,
+						reviewedCoverage: 46 / 47,
+						byWriter: [],
+					},
+				},
+			}),
+			writerKind: new Map([["w", "agent"]]),
+		});
+		for (const kind of ["unknown", "scripted", "live-model"] as const) {
+			const row = buildRows(L1_NODE, started, kind)[0]!;
+			expect(row.value).toBe(35 / 47);
+			expect(row.samples).toBe(46);
+			expect(row.fit).toBe("unknown");
+			expect(row.why).toContain("不构成用户认可");
+		}
+		// 同一批数字若真来自自然使用，才按 0.5 / 0.8 门槛判 partial / aligned。
+		expect(buildRows(L1_NODE, started, "natural")[0]!.fit).toBe("partial");
+		// 不带来源参数的调用视同 unknown，不会默认放行。
+		expect(buildRows(L1_NODE, started)[0]!.fit).toBe("unknown");
+		// 门只作用于 requires: natural 的指标：校准表行数照常按阈值判。
+		const calibration = buildRows(
+			NODES,
+			ctx({
+				stats: stats({ noticeOutcomes: { rows: 60 }, threads: { total: 1 } }),
+				writerKind: new Map([["w", "agent"]]),
+			}),
+			"live-model",
+		).find((r) => r.id === "TF-0148")!;
+		expect(calibration.fit).toBe("aligned");
+	});
+
 	test("record 类（决策/实验/修复）永远 unknown：trace 是指路，不是证据", () => {
 		const rows = buildRows(
 			NODES,
@@ -170,7 +219,7 @@ describe("fit 账本推导规则（TF-0137）", () => {
 	test("没进指标表的节点分两种说法：done 是账本缺口，未开工是没有可测行为", () => {
 		const rows = buildRows(
 			[
-				{ id: "TF-0133", title: "未开工", status: "proposed", kind: "task" },
+				{ id: "TF-0998", title: "未开工", status: "proposed", kind: "task" },
 				{ id: "TF-0999", title: "已完成但漏了", status: "done", kind: "task" },
 			],
 			ctx(),

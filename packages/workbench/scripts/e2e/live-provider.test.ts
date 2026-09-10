@@ -330,6 +330,93 @@ test("transient HTTP 500 replies are retried like 502/503", async () => {
 	}
 });
 
+test("an unparseable 200 body is retried once and recorded as invalid-json", async () => {
+	const root = await mkdtemp(join(tmpdir(), "live-provider-json-"));
+	const attemptsFile = join(root, "attempts.jsonl");
+	let received = 0;
+	const server = Bun.serve({
+		port: 0,
+		fetch: () => {
+			received++;
+			// A proxy answering 200 with its own HTML error page: the failure the
+			// live tenant hit twice on 2026-09-08 ("Failed to parse JSON").
+			if (received < 2)
+				return new Response("<html>gateway hiccup body-marker</html>", {
+					status: 200,
+					headers: { "content-type": "text/html" },
+				});
+			return Response.json({
+				choices: [
+					{
+						finish_reason: "stop",
+						message: { role: "assistant", content: "ok" },
+					},
+				],
+			});
+		},
+	});
+	try {
+		const reply = await completeLiveTurn(
+			{
+				baseUrl: `http://127.0.0.1:${server.port}`,
+				key: "test-key",
+				model: "test",
+			},
+			[{ role: "user", content: "ping" }],
+			AbortSignal.timeout(8000),
+			{ file: join(root, "calls.jsonl"), sessionId: "trace", attemptsFile },
+		);
+		expect(reply.content).toBe("ok");
+		expect(received).toBe(2);
+		const attempts = (await readFile(attemptsFile, "utf8"))
+			.trim()
+			.split("\n")
+			.map((line) => JSON.parse(line));
+		expect(attempts.map((row) => row.outcome)).toEqual([
+			"invalid-json",
+			"response",
+		]);
+		expect(attempts.map((row) => row.status)).toEqual([200, 200]);
+		expect(JSON.stringify(attempts)).not.toContain("body-marker");
+	} finally {
+		server.stop(true);
+		await rm(root, { recursive: true, force: true });
+	}
+});
+
+test("three unparseable bodies fail closed without echoing the body", async () => {
+	let received = 0;
+	const server = Bun.serve({
+		port: 0,
+		fetch: () => {
+			received++;
+			return new Response("not json body-marker", { status: 200 });
+		},
+	});
+	try {
+		let message = "";
+		try {
+			await completeLiveTurn(
+				{
+					baseUrl: `http://127.0.0.1:${server.port}`,
+					key: "test-key",
+					model: "test",
+				},
+				[{ role: "user", content: "ping" }],
+				AbortSignal.timeout(15_000),
+			);
+		} catch (error) {
+			message = String(error);
+		}
+		expect(message).toContain("无法解析为 JSON");
+		expect(message).toContain("尝试 3 次");
+		expect(message).not.toContain("body-marker");
+		expect(received).toBe(3);
+	} finally {
+		server.stop(true);
+	}
+});
+
 test("rate-limit attempts survive failure and cancelled backoff without recording secrets or phantom requests", async () => {
 	const root = await mkdtemp(join(tmpdir(), "live-provider-limit-"));
 	let received = 0;

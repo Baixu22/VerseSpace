@@ -84,10 +84,10 @@ export async function completeLiveTurn(
 			if (!response.ok) {
 				outcome = "http-error";
 				await response.body?.cancel();
-					if (
-						attempt < 2 &&
-						[408, 429, 500, 502, 503, 504].includes(response.status)
-					) {
+				if (
+					attempt < 2 &&
+					[408, 429, 500, 502, 503, 504].includes(response.status)
+				) {
 					const delay = Math.min(
 						10_000,
 						Math.max(
@@ -104,7 +104,7 @@ export async function completeLiveTurn(
 				);
 			}
 			outcome = "invalid-response";
-			const body = (await response.json()) as {
+			interface CompletionBody {
 				id?: string;
 				model?: string;
 				usage?: {
@@ -114,7 +114,25 @@ export async function completeLiveTurn(
 					cost?: number;
 				};
 				choices?: Array<{ message?: LiveMessage; finish_reason?: string }>;
-			};
+			}
+			let body: CompletionBody;
+			try {
+				body = JSON.parse(await response.text()) as CompletionBody;
+			} catch {
+				// Proxies sometimes answer 200 with an HTML error page or a truncated
+				// body (live-tenant 2026-09-08: two S7b rounds died on "Failed to
+				// parse JSON"). Nothing has been executed yet, so a bounded retry is
+				// as safe as the HTTP 5xx one. The body is never echoed: it may carry
+				// anything from gateway markup to reflected headers.
+				outcome = "invalid-json";
+				if (attempt < 2) {
+					retryDelay = 1_000;
+					continue;
+				}
+				throw new Error(
+					`真实模型返回了无法解析为 JSON 的正文（尝试 ${attempt + 1} 次）`,
+				);
+			}
 			const choice = body.choices?.[0];
 			if (!choice?.message || choice.finish_reason === "length")
 				throw new Error("真实模型回复为空或达到 token 上限，未执行截断工具");

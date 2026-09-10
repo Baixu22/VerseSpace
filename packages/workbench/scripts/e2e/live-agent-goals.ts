@@ -16,9 +16,9 @@ export interface LiveReadSpan {
 }
 
 const WRITE_DIRECTIVE =
-	/(?:^|\n)WRITE[ \t]+(src\/[A-Za-z0-9_.\/-]+)[ \t]*\r?\n([\s\S]*?)\r?\n?__END_WRITE__/;
+	/(?:^|\n)WRITE[ \t]+(src\/[A-Za-z0-9_./-]+)[ \t]*\r?\n([\s\S]*?)\r?\n?__END_WRITE__/;
 const READSPAN_DIRECTIVE =
-	/(?:^|\n)READSPAN[ \t]+(src\/[A-Za-z0-9_.\/-]+)[ \t]+(\d+)[ \t]+(\d+)[ \t]*(?:\r?\n|$)/g;
+	/(?:^|\n)READSPAN[ \t]+(src\/[A-Za-z0-9_./-]+)[ \t]+(\d+)[ \t]+(\d+)[ \t]*(?:\r?\n|$)/g;
 
 /** Parse the WRITE literal embedded in a live-agent user prompt, if any. */
 export function goalFromUserText(text: string): LiveGoal | null {
@@ -42,7 +42,8 @@ export function spansFromUserText(text: string): LiveReadSpan[] {
 		const path = match[1];
 		const offset = Number(match[2]);
 		const limit = Number(match[3]);
-		if (!path || !Number.isInteger(offset) || !Number.isInteger(limit)) continue;
+		if (!path || !Number.isInteger(offset) || !Number.isInteger(limit))
+			continue;
 		if (offset < 1 || limit < 1) continue;
 		spans.push({ path, offset, limit });
 	}
@@ -59,10 +60,18 @@ export function applyReadSpan(
 	raw: unknown,
 	spans: readonly LiveReadSpan[],
 ): unknown {
-	if (toolName !== "Read" || !spans.length || raw === null || typeof raw !== "object")
+	if (
+		toolName !== "Read" ||
+		!spans.length ||
+		raw === null ||
+		typeof raw !== "object"
+	)
 		return raw;
 	const args = raw as Record<string, unknown>;
-	const filePath = typeof args.file_path === "string" ? args.file_path.replace(/\\/g, "/") : "";
+	const filePath =
+		typeof args.file_path === "string"
+			? args.file_path.replace(/\\/g, "/")
+			: "";
 	const span = spans.find((item) => item.path === filePath);
 	if (!span) return raw;
 	return { ...args, offset: span.offset, limit: span.limit };

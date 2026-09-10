@@ -2,8 +2,9 @@
 // regenerates the embedded-asset manifest consumed by src/ui/server.ts.
 
 import { spawnSync } from "node:child_process";
-import { readdir, writeFile } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
+import { writeFileAtomic } from "../src/fs/atomic";
 
 const PKG_ROOT = resolve(import.meta.dir, "..");
 const REPO_ROOT = resolve(PKG_ROOT, "..", "..");
@@ -54,6 +55,6 @@ export async function prepareUiAssets(): Promise<void> {
 		map.push(`\t"${key}": a${index},`);
 	});
 	map.push("};");
-	await writeFile(MANIFEST, [...imports, ...map, ""].join("\n"), "utf8");
+	await writeFileAtomic(MANIFEST, [...imports, ...map, ""].join("\n"));
 	console.log(`ui assets: ${distFiles.length} files embedded`);
 }

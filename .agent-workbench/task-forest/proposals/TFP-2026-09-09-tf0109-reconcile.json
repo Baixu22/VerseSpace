@@ -1,0 +1,30 @@
+{
+  "applied_at": "2026-09-09T10:35:09.850166Z",
+  "base_graph_hash": "735a03e15560eb670b35fc431b38b3580a6361ade60929a15c795e0ab9613c74",
+  "base_summary": {
+    "edge_count": 225,
+    "node_count": 155,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "TF-0066 本机验证：CLI 2.1.251；headless -p 因 not_a_tty 与特性门控不绑定 messaging inbox，socket 投递不可用。",
+          "TF-0077 与 ADR-0010 已落地替代通道：持久队列 + --input-format stream-json stdin；运行中只排队，provider 成功结果后才确认，失败则保持待投递。",
+          "2026-09-09 接力复核：delivery.test.ts、notice-ack.test.ts、notice-windows.test.ts、provider-result.test.ts、threads.test.ts 共 48 pass / 0 fail（189 断言）；packages/workbench 的 bun run typecheck 通过。"
+        ],
+        "next_action": "已按既定 fallback 收敛：保留持久队列 + stream-json stdin 的轮次边界投递；不再建设跨会话 socket 消息总线。",
+        "progress": 100,
+        "status": "done"
+      },
+      "id": "TF-0109"
+    }
+  ],
+  "created_at": "2026-09-09T10:13:32.684063Z",
+  "proposal_id": "TFP-2026-09-09-tf0109-reconcile",
+  "rationale": "接力阶段 D 后按最新提示独立核验 TF-0109。既有 TF-0066 已完成本机最小连通性验证：Claude CLI headless -p 不绑定 messaging inbox，跨会话 socket 不可用；TF-0077 与 ADR-0010 已正式选用持久队列 + stream-json stdin 的轮次边界投递，provider 成功结果后才确认，失败或仅排队时保留待投递。2026-09-09 定向回归 48 pass / 0 fail，packages/workbench 类型检查通过。因此 TF-0109 的风险已经被验证并按既定降级策略收敛，不再是待开发风险。",
+  "session_id": "session-2026-09-09-tf0109-relay",
+  "status": "applied"
+}

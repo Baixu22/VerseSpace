@@ -1,0 +1,244 @@
+{
+  "applied_at": "2026-09-07T11:09:40.749427Z",
+  "base_graph_hash": "86a5883fcf63db1a65c8d9b4209769892ab7c4d5eaa0a98bd028136a47026c20",
+  "base_summary": {
+    "edge_count": 224,
+    "node_count": 154,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/positioning-v5.md",
+          "docs/positioning-v6.md",
+          "两轮共 11 路独立深度调研，关键断言均附一手来源",
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "地标反馈统计已按每个写者的完整当前集合及最新复核计数，旧的 reviewed 子集比例不再驱动 L1。工程样本 8/125=6.4%，不是 8/10=80%。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [
+          "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
+          "只在验证了失败原因并耗尽安全替代路径后报告硬阻塞；不得把空会话、可生成样本或暂缺人评当作工程阻塞。"
+        ],
+        "next_action": "用已接通的真实模型继续工程开发与负样本校准；不等待现成会话。人类偏好和长期效果单独标注，不作为当前开发的阻塞条件。"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/fable-brief/05-review/D0-D14",
+          "packages/workbench/src/chat/fork.ts 的 freshAgentSession: true",
+          "packages/workbench/src/runtime/premises.ts 的读集重算逻辑",
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "工程样本四门同时满足：校准 52 行、git/human 写者相关失效 1 条、封印及复核 10 次、notified/overlaps=20.3%。检测基准草案 10/10 符合契约，不声称用户精度或总体加速。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [
+          "真实模型数据源已具备；阶段 D 主动采样，不等待人工创建会话。"
+        ],
+        "next_action": "阶段 B/C 的工程功能已验收；继续用真实模型推进阶段 D 的证据与范围判断。"
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "恢复卡原始证据可点击查看；缺失引用与截断均明确说明，工具 ID 复用不擅自挑选唯一来源。",
+          "lifecycle.restoreToMessage 已接 UI、服务端、stats 与 fit 账本；当前工程样本有卡/无卡各 10 次。脚本两组中间操作不对称，不将其耗时差当作真实用户效果验收。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [],
+        "next_action": "工程已收口；后续观察人类耗时效果，不作为开发依赖。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done",
+        "summary": "恢复处境工程完成：真实模型读写后可恢复、查看事实与证据，全文读取漏报已修正。20% 人类耗时效果保留为长期观察，不冒称已验证，也不再阻塞当前开发。"
+      },
+      "id": "TF-0126"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "分支继承、R10、每轮通知预算、家族折叠及封印均有工程证据；本节点保留阶段 B 依赖，不以工程通过替代其效果指标。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [],
+        "next_action": "工程已收口；继续在真实模型任务中校准，不再等待阶段 B 的人类体验样本。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done",
+        "summary": "分支与并发工程已收口：R10、通知预算/折叠、封印降级，以及真实模型的持久上下文和读集继承均有运行证据。"
+      },
+      "id": "TF-0130"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "本机 .workbench 无 threads 目录、无 sessions 目录、events.jsonl 15 行且全为自举期 goal/checkpoint 事件、零 thread.* 事件：截至 2026-09-05T08:45Z t0 仍未开始",
+          "全盘唯一历史线程在另一仓库，2 条、0 分叉、0 足迹，早于 fork/恢复功能",
+          "前置条件已满足：TF-0128 事实段本轮落库，窗口不再早于事实段上线",
+          "复测 2026-09-05（Week 1 与 Week 2-3 节点全部落库之后）：.workbench/ 仍无 threads/ 与 sessions/，events.jsonl 仍为同样的 15 行、零 thread.*。代码侧前置条件现已全部到位（四个护城河数字都有了事件来源），唯一剩下的阻塞是真的开始用它",
+          "四个数字当前实测全为零，且这是「没有样本」而不是「样本为零」：premises.notifiedRatio 为 null（no-sample），seal.decisions = 0，noticeOutcomes.rows = 0",
+          "2026-09-05 起 t0 判据不再只是节点文字，而是可执行代码：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0，docs/fit-ledger.md 每次生成都把它印在最前面。t0 之前所有部件行强制 unknown，所以『t0 没开始』这件事现在会自己出现在账本里，不依赖谁记得提",
+          "2026-09-06 真实 stats：threads.total=0、threads.withMessages=0、threads.withFootprints=0。不能用创建空线程或测试数据冒充日用起点。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
+          "首个通过的真实模型现场：C:/Users/27933/AppData/Local/Temp/workbench-e2e-LHA3I4；t0=2026-09-07T10:15:07.056Z；计划长期观察 end_date=2026-09-21T10:15:07.056Z。后续运行另存独立现场，不混充连续日用。"
+        ],
+        "execution_hints": [],
+        "next_action": "工程样本源已可复跑；无需等待原仓库出现会话。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "requirements": [
+          "事实段与观测埋点已具备后登记实际线程/写者和 eventSeq。",
+          "真实模型可在隔离工作区主动生成工程样本；样本门为 restores>=3、noticeOutcomes>=5、sealDecisions>=3。",
+          "14 天窗口仅记录为长期观察信息，不成为当前工程开发依赖；不得伪造经过的日期。"
+        ],
+        "status": "done",
+        "summary": "真实模型工程采样 t0 已登记。数据源为隔离 Workbench 黑板，不要求先在主仓库手工建立线程；14 天日期作为长期观察信息，工程推进按已实现的样本量门。"
+      },
+      "id": "TF-0141"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [
+          "样本量门已具备；主动运行模型开发/恢复/分叉场景，不回退到空会话等待。"
+        ],
+        "next_action": "按真实模型样本继续判定；工程功能与长期用户效果分列。",
+        "status": "in_progress"
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "全仓库无 promotion_reverted / variant.promoted，原门槛结构性为零，已删除",
+          "事实消费事件由 TF-0139 产生、由 TF-0129 的事实段触发：窗口若早于事实段上线，该门槛会重复同一类错误——本轮 TF-0128 落库后前置条件已满足",
+          "判决二的两个比值依赖 TF-0148 的四态标注；notified 的分母依赖 TF-0149",
+          "2026-09-06 真实 stats 返回 insufficient-history：0 线程/0 fork/0 restored，无可判决样本。既定阈值保持不变。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [
+          "工程采样使用 scripts/fit-ledger/ledger.ts 的三类样本量门，日期跨度仅展示。",
+          "恢复、通知、阶段 C 和 L3 四项结论各写明证据强度；不把模型评审或脚本手势冒称人工认可，不自动开展或废止 L3。"
+        ],
+        "next_action": "使用已产生的真实模型会话作工程范围裁决；保留原长期观察日期，不因不足14天暂停可验证工作。",
+        "progress": 50,
+        "status": "in_progress"
+      },
+      "id": "TF-0136"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "新增 scripts/fit-ledger.ts（入口）+ scripts/fit-ledger/metrics.ts（指标表）/ledger.ts（推导与闸门）/render.ts（markdown），产出 docs/fit-ledger.md（86 行，由 --out 生成，不手工编辑）",
+          "账本不是手写的：scope 从 graph/{nodes,edges}.json 递归取 TF-0120 及全部后代（deprecated 不入账也不进分母，采纳 TF-0152 的分母口径），值从本仓库 .workbench 的 collectChatStats + events.all() + sessions.list() 读",
+          "验收五（词表一一对应）：fit 只用 aligned/partial/weak/misaligned/unknown 五个值，与 references/goal-alignment.md 逐字一致；节点原文的 known-positive/known-negative/harmful 一套弃用",
+          "验收五的一处必须写明的区分：同一个词表有两种问法。森林 alignment.fit 问『这个任务服不服务用户目标』（先验判断），账本 fit 问『建出来的东西有没有被真的用过』（后验证据）。共用词表是为了能互相引用，不是为了互相覆盖——账本永不写回森林的 alignment 字段。所以同一节点在账本 unknown 而在森林 aligned 并不矛盾",
+          "验收四（本批节点自身入账）：25 个节点计入 fit（里程碑不计），含 TF-0137 自己、TF-0138、TF-0140 与 TF-0148..TF-0153。零个 done 节点缺指标",
+          "验收七（benchmark 闸门）已是可执行代码：benchmarkGate() 四个数字缺一不开，并报出缺哪几个；当前四缺四，闸门关",
+          "验收六的机器已就位，值全为零：A 校准表行数 0（stats.noticeOutcomes.rows）、B 推定写者是 git 或人的失效通知 0（events[premise_stale] ⋈ sessions/<writer>.kind）、C seal 阻断 0（stats.seal.blocked）、D notified/overlaps 无样本（stats.premises.notifiedRatio）。四个数字都带来源，不再是印象",
+          "验收一（unknown 数量下降）当前不满足，且这是结构性的：实测 25/25 unknown。第一版跑出来时有两行是 partial（TF-0123 事件身份、TF-0145 世界事件各读到 15），追查发现那 15 条全是 2026-08-30 的自举期事件——用自测数据把行推离 unknown 正是纪律 2 要拦的。因此加了 t0 闸门",
+          "t0 闸门（判据取自 TF-0141）：真实线程数 > 0 且注册写者数 > 0 才准让实测值推动 fit；t0 之前部件行强制 unknown，但 measured 值照常显示（authored 指标与 measured 值在输出里分列）。实测 0 线程 / 0 写者 → 未开始",
+          "新增 scripts/fit-ledger/ledger.test.ts 9 个用例，钉的是规则不是数字：t0 判据缺一不算开始；同样 60 行校准表在 t0 前是 unknown、t0 后是 aligned；有样本但不够门槛是 partial 而非 aligned 或 unknown；record 类（决策/实验/修复）永远 unknown 且 trace 只是指路不是证据；里程碑不计入分布；done 却没进指标表报『账本自己的缺口』而未开工报『没有可测行为』；护城河闸门缺一不开；护城河 B 只认 git/human，agent 自己的通知不算；护城河 D 是区间不是下限，0.9 有值也不齐备",
+          "为什么停在 in_progress 而不是 done：七条验收里五条已满足（二、三、四、五、七），验收一与验收六的『值非零』部分在 t0 之前不可能满足。把它们算作已完成就是用测试通过替代真实使用——这正是本节点 requirements 明令禁止的。账本的贡献是把这个阻塞从一句断言变成一行可测数字",
+          "验收三（森林相关节点状态更新）：账本首跑的结论与森林现状一致（全 unknown），所以没有需要改的 fit 字段。这一致本身是结论——森林里那些 unknown 不是懒得填，是确实没数据",
+          "复核：cd packages/workbench && bun test --timeout 60000 → 509 pass / 0 fail（68 files，52.4s）；tsc --noEmit 与 biome check 均通过。tsconfig include 已把 scripts/fit-ledger.ts 与 scripts/fit-ledger 纳入类型检查",
+          "2026-09-06 真实使用样本仍为空，unknown 占比下降和 30 天护城河四个数字无法验收；9 项账本规则测试通过不替代使用数据。",
+          "2026-09-07 工程样本同时满足四门：A=52、B=1、C=10 且有复核、D=20.3%；完整快照见 docs/mainline-evidence-2026-09-07.json。",
+          "R10 现在通过 resume_branch_opened 入 component 账；地标认可率分母纠正为完整当前集合。新增基准 scripts/benchmark-premises.ts，10/10 检测契约场景通过，草案在 docs/benchmark-premises-2026-09-07.md。",
+          "这些证据关闭工程实现缺口，不声称完成真实用户的 20% 耗时或 80% 地标认可验收。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+        ],
+        "execution_hints": [
+          "TF-0133 已补 delivered 观测指标；队列事件不冒充交付。",
+          "复用真实模型运行器生成所需证据，保留模型失败和人工指标未知，不因未知停止工程。"
+        ],
+        "next_action": "真实模型账本已有非零读数；补足工程范围结论并持续主动采样。对外 benchmark 的50行门只限制对外结论，不限制开发。",
+        "progress": 85
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "add_node",
+      "alias": "live-model",
+      "node": {
+        "acceptance_criteria": [
+          "真模型集成场景、代码开发/复读修复、三路持久分叉可复跑。",
+          "凭据与文件边界、模型错误、全文读取、URL 兼容都有回归验证。",
+          "任务森林清除缺会话等待，保留真实模型和长期人类效果的区别。"
+        ],
+        "alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.95,
+          "user_goal": "继续节点开发，仅在真正无法推进时才报告硬阻塞。",
+          "validation_plan": [
+            "bun run test:live",
+            "bun test --timeout 60000",
+            "bun run typecheck",
+            "密钥扫描与 task-forest validate/export"
+          ],
+          "why_not_enough": "模型意见不是人工偏好；仍需独立测试，部分完整连跑暴露驱动器缺陷并已修正。",
+          "why_this_task": "把之前空会话/无数据的等待变成可执行且已验证的真实模型闭环。"
+        },
+        "confidence": 0.9,
+        "difficulty": "medium",
+        "evidence": [
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
+          "单独通过：22步真实集成、真实代码读写与复读后seal=pass、三路持久分叉保持源线程消息不变。"
+        ],
+        "execution_hints": [
+          "完成最终连跑和脱敏证据导出后收口。"
+        ],
+        "kind": "task",
+        "non_goals": [
+          "不开放生产 HTTP provider 的通用任意命令执行。",
+          "不发布 npm、不替用户决定 L3 产品范围。"
+        ],
+        "priority": 1,
+        "progress": 95,
+        "purpose": "让 Workbench 从空白工作区主动建立真实模型会话、运行文件工具并以实际记录推进后续开发。",
+        "requirements": [
+          "使用用户授权的第三方模型，不以确定性假回复冒充模型活动。",
+          "凭据存仓库外、加密或进程环境，公共接口不返回密钥。",
+          "模型只在隔离 src/ 操作；无 shell、无越界或符号链接访问。",
+          "模型口头完成不算执行，错误可见、重试有限、已有证据保留。"
+        ],
+        "status": "in_progress",
+        "title": "真实模型执行闭环与无空会话阻塞验证"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 1,
+        "reason": "为阶段 D 提供可主动获取的实际模型证据。"
+      },
+      "from": "live-model",
+      "to": "TF-0135",
+      "type": "child_of"
+    }
+  ],
+  "created_at": "2026-09-07T10:58:33.119425Z",
+  "proposal_id": "TFP-2026-09-07-live-model-unblocked",
+  "rationale": "落实用户本轮明确授权：用真实第三方模型主动产生开发和验证记录，不再以空会话/无自然使用为工程阻塞；不扩大为发布或L3取舍。",
+  "session_id": "session-2026-09-07-live-model",
+  "status": "applied"
+}

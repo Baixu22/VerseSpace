@@ -165,5 +165,8 @@ describe("折叠与 L1 判定（TF-0154）", () => {
 		expect(judgement.rejected).toBe(0);
 		expect(judgement.endorsedShare).toBe(0.5);
 		expect(judgement.reviewedCoverage).toBe(0.5);
+		expect(
+			landmarkReviewJudgement([...landmarks, landmarks[0]!], rows).total,
+		).toBe(4);
 	});
 });

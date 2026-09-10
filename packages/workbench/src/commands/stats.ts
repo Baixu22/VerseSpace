@@ -28,6 +28,16 @@ export async function statsCommand(command: Command): Promise<void> {
 	console.log(
 		`观察窗口：${stats.observation.days.toFixed(1)} 天（${stats.observation.startedAt ?? "无"} → ${stats.observation.endedAt ?? "无"}）`,
 	);
+	const timing = stats.lifecycle.restoreToMessage;
+	console.log(
+		`恢复到首条消息（近 ${timing.windowDays} 天）：有卡 ${timing.withCard.medianMs ?? "无样本"} ms / 无卡 ${timing.withoutCard.medianMs ?? "无样本"} ms` +
+			`（样本 ${timing.withCard.samples}/${timing.withoutCard.samples}，分组未知 ${timing.unknownCard.samples}，未配对 ${timing.incomplete}）`,
+	);
+	console.log(
+		timing.medianChangeRatio === null
+			? "  恢复耗时比较：unknown（缺少可比较样本或无卡中位数为零）"
+			: `  恢复耗时中位差异：${(timing.medianChangeRatio * 100).toFixed(1)}%（超过 20%：${timing.exceeds20Percent ? "是" : "否"}；观察值不代表因果）`,
+	);
 	// TF-0149: the ratio and its verdict always print. An out-of-band ratio
 	// that only lives in --json is the same thing as staying silent.
 	const premises = stats.premises;
@@ -60,6 +70,11 @@ export async function statsCommand(command: Command): Promise<void> {
 		);
 	}
 	printCalibrationTable(stats.noticeOutcomes);
+	const landmarks = stats.landmarkReviews.current;
+	console.log(
+		`地标认可：${landmarks.endorsed}/${landmarks.total} 个当前地标；已复核 ${landmarks.reviewed}/${landmarks.total}` +
+			`（${landmarks.reviewed === 0 ? "无复核样本" : `认可率 ${((landmarks.endorsedShare ?? 0) * 100).toFixed(1)}%`}，按写者隔离、最新复核计数）`,
+	);
 	if (!stats.siblingAlternation.available) {
 		console.log(`兄弟交替：暂不可测（${stats.siblingAlternation.reason}）`);
 	}

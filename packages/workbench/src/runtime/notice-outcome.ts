@@ -1,4 +1,5 @@
 import type { WorkbenchEvent } from "../types/event";
+import { deliveryWindows } from "./notice-windows";
 import { readSealRecord } from "./seal-counts";
 
 /**
@@ -59,7 +60,6 @@ export interface LabeledDelivery {
 	readObservability: "footprint" | "unobservable";
 }
 
-const DELIVERED = "premise_notice_delivered";
 const STALE = "premise_stale";
 const FOOTPRINT = "footprint";
 
@@ -126,9 +126,9 @@ function covers(target: string, claim: string): boolean {
 /**
  * Label every delivered notice from the log alone.
  *
- * Each delivery owns the window from itself up to the next delivery to the
- * same writer: activity after a second notice belongs to that second notice,
- * and attributing it to both would double-count the writer's one reaction.
+ * Each delivery owns its provider-attempt window, ending when the next
+ * successful notice attempt begins. Late acknowledgement must not discard
+ * same-turn repairs or attribute the next turn's reaction twice.
  */
 export function labelNoticeOutcomes(
 	events: WorkbenchEvent[],
@@ -152,17 +152,9 @@ export function labelNoticeOutcomes(
 		]);
 	}
 
-	const deliveryIndexes: number[] = [];
-	for (let index = 0; index < timeline.length; index += 1) {
-		if (timeline[index]!.type === DELIVERED) {
-			deliveryIndexes.push(index);
-		}
-	}
-
 	const labeled: LabeledDelivery[] = [];
-	for (let cursor = 0; cursor < deliveryIndexes.length; cursor += 1) {
-		const start = deliveryIndexes[cursor]!;
-		const event = timeline[start]!;
+	for (const window of deliveryWindows(timeline)) {
+		const event = timeline[window.delivery]!;
 		const payload = payloadOf(event);
 		const writer = typeof payload.writer === "string" ? payload.writer : "";
 		if (!writer) {
@@ -184,15 +176,6 @@ export function labelNoticeOutcomes(
 			payload.readObservability === "unobservable"
 				? "unobservable"
 				: "footprint";
-		// The window closes at the next delivery to this same writer.
-		let end = timeline.length;
-		for (let next = cursor + 1; next < deliveryIndexes.length; next += 1) {
-			const candidate = deliveryIndexes[next]!;
-			if (payloadOf(timeline[candidate]!).writer === writer) {
-				end = candidate;
-				break;
-			}
-		}
 		labeled.push({
 			writer,
 			noticeIds,
@@ -200,7 +183,7 @@ export function labelNoticeOutcomes(
 			at: event.timestamp,
 			readObservability,
 			...judgeWindow(
-				timeline.slice(start + 1, end),
+				timeline.slice(window.start, window.end),
 				writer,
 				paths,
 				readObservability,

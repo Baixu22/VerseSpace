@@ -9,7 +9,7 @@
  */
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { cli, type E2EWorkspace, cliJson } from "./driver";
+import { cli, cliJson, type E2EWorkspace } from "./driver";
 import { assertLiveAuthorized } from "./live-auth";
 
 const argv = Bun.argv.slice(2);
@@ -29,10 +29,12 @@ const ws: E2EWorkspace = {
 
 /** 对一位写者取凉意前几个 handle（不用锁定、不需要一致性），随机取一当判据。 */
 async function pickHandlesFor(writer: string): Promise<string[]> {
-	const listed = await cliJson<{ landmarks?: Array<{ handle: string }> }>(
-		ws,
-		["context", "list", "--writer", writer],
-	);
+	const listed = await cliJson<{ landmarks?: Array<{ handle: string }> }>(ws, [
+		"context",
+		"list",
+		"--writer",
+		writer,
+	]);
 	return (listed.landmarks ?? []).map((l) => l.handle);
 }
 

@@ -1,4 +1,5 @@
 import type { Blackboard } from "../blackboard";
+import type { WorkbenchEvent } from "../types/event";
 import { computeDoi } from "./doi";
 import { projectLandmarks } from "./project";
 import {
@@ -16,9 +17,15 @@ async function writerEvents(bb: Blackboard, writer: string) {
 		source: INTERACTIONS_SOURCE,
 		type: INTERACTIONS_TYPE,
 	});
+	return writerInteractionEvents(records, writer);
+}
+
+function writerInteractionEvents(records: WorkbenchEvent[], writer: string) {
 	return records.filter((event) => {
 		const item = event.payload as Partial<InteractionEvent> | null;
 		return (
+			event.source === INTERACTIONS_SOURCE &&
+			event.type === INTERACTIONS_TYPE &&
 			item &&
 			item.origin === writer &&
 			typeof item.handle === "string" &&
@@ -35,9 +42,19 @@ async function writerEvents(bb: Blackboard, writer: string) {
 /** Read-only context surface plus the manual-reduction tuning signal (TF-0110). */
 export async function collectInterest(bb: Blackboard, writer: string) {
 	const records = await writerEvents(bb, writer);
-	const events = records.map((event) => event.payload as InteractionEvent);
-	const result = computeDoi(events, Date.now());
-	const reductions = records.filter(
+	return interestFromEvents(records, writer);
+}
+
+/** Shared read-only projection for CLI context and stats from one log snapshot. */
+export function interestFromEvents(
+	records: WorkbenchEvent[],
+	writer: string,
+	now = Date.now(),
+) {
+	const scoped = writerInteractionEvents(records, writer);
+	const events = scoped.map((event) => event.payload as InteractionEvent);
+	const result = computeDoi(events, now);
+	const reductions = scoped.filter(
 		(event) => (event.payload as InteractionEvent).kind === "interest-reduced",
 	);
 	const byHandle: Record<string, number> = {};

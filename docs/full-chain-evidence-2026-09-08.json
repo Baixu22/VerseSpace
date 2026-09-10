@@ -1,0 +1,135 @@
+{
+	"generatedAt": "2026-09-08T12:00:00Z",
+	"source": "full-chain-pass",
+	"model": "step-3.7-flash",
+	"baseUrl": "https://api.hcnsec.cn/v1",
+	"site": "pyHJXU",
+	"ok": true,
+	"error": null,
+	"calls": 47,
+	"attempts": 47,
+	"steps": 22,
+	"allStepsOk": true,
+	"stats": {
+		"threads": 4,
+		"restores": 2,
+		"sealDecisions": 1,
+		"sealBlocked": 1,
+		"sealReviewsCorrect": 1,
+		"noticeOutcomeRows": 6,
+		"overlaps": 13,
+		"notified": 6,
+		"restoreToMessage": {
+			"windowDays": 7,
+			"withCard": {
+				"samples": 1,
+				"medianMs": 2731
+			},
+			"withoutCard": {
+				"samples": 1,
+				"medianMs": 8
+			},
+			"unknownCard": {
+				"samples": 0,
+				"medianMs": null
+			},
+			"incomplete": 0,
+			"medianChangeRatio": 340.375,
+			"exceeds20Percent": true
+		}
+	},
+	"ledgerT0": {
+		"started": true,
+		"threads": 4,
+		"writers": 6
+	},
+	"sampleWindow": {
+		"restores": 2,
+		"noticeOutcomes": 6,
+		"sealDecisions": 1,
+		"targets": {
+			"restores": 3,
+			"noticeOutcomes": 5,
+			"sealDecisions": 3
+		},
+		"satisfied": false,
+		"missing": ["restores 2/3", "sealDecisions 1/3"]
+	},
+	"development": {
+		"reader": "8aebb7bd-0691-407b-b665-0b8c28883b94",
+		"writer": "29c26018-e93f-445f-a50d-940fed6c0672",
+		"modelReviewEntries": 8,
+		"independentChecks": [
+			{
+				"total": 12,
+				"passed": 11,
+				"failures": [
+					{
+						"name": "尾部弯引号",
+						"input": "https://openrouter.ai/api/v1/chat/completions”",
+						"expected": "https://openrouter.ai/api/v1/chat/completions",
+						"actual": "https://openrouter.ai/api/v1/chat/completions%E2%80%9D/chat/completions"
+					}
+				]
+			},
+			{
+				"total": 12,
+				"passed": 12,
+				"failures": []
+			}
+		]
+	},
+	"forks": [
+		{
+			"threadId": "d952ef90-3f0a-4724-a653-e17196c652ba",
+			"scenario": "完整 endpoint 和重复斜杠"
+		},
+		{
+			"threadId": "47ff2224-ed21-45d6-8e7c-eb7a6de2e2e8",
+			"scenario": "反向代理前缀、query 和 fragment"
+		},
+		{
+			"threadId": "936872ec-5d76-4887-8998-6dbd45d9fe72",
+			"scenario": "非法 URL、scheme 和嵌入凭据"
+		}
+	],
+	"forksSourceTranscriptUnchanged": true,
+	"reportSha256": "1679f4f5ac3d6f235e3372da0609fd61f4b8af1c5adef57d0a8262ff7e648dec",
+	"patchThisTurn": [
+		"live-provider.ts max_tokens 2048 -> 4096",
+		"live-development.ts validateWithCorrections prompt 改为要求最小定点修改，不重写文件"
+	],
+	"priorPatchesThisSession": [
+		"live-agent-goals.ts goalCheck (previous session)",
+		"family-notice.ts CONTRACT_SUFFIX",
+		"live-provider.ts empty-stop retry",
+		"live-provider.test.ts +2 cases"
+	],
+	"verification": {
+		"bunTsc": "pass",
+		"bunTest": "612 pass / 0 fail (98 files, 2336 expects, 91.98s)",
+		"biome": "pass for 3 changed files"
+	},
+	"childReviews": {
+		"branch-1": {
+			"verdict": "pass",
+			"findingCount": 5,
+			"sha256": "d510858bff468faff7c8f53731f534748baef23d8323deb4ddf4f8865a54081f"
+		},
+		"branch-2": {
+			"verdict": "pass",
+			"findingCount": 4,
+			"sha256": "f04f45fc43725268a7cce875f8bbd286022bb053869b8fc002c40165e94f349f"
+		},
+		"branch-3": {
+			"verdict": "pass",
+			"findingCount": 4,
+			"sha256": "ac18fb174a2aa5e0f9170c510c95099e0aa3e09ce9fceadebd9983d79872768e"
+		},
+		"base-url": {
+			"shape": "list",
+			"entries": 8,
+			"sha256": "b3bae1e4736de80078f33ba70eef47250ace6c972e9e46414ba4ee31c7606143"
+		}
+	}
+}

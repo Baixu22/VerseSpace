@@ -1,0 +1,161 @@
+# fit 账本（TF-0137）
+
+> 本文件由 `bun run scripts/fit-ledger.ts --out ../../docs/fit-ledger.md` 生成，
+> 每周重跑覆盖一次。不要手工编辑：手写的结论没有来源，也就不能用于砍留决策。
+
+- 生成时间：2026-09-08T05:24:01.160Z
+- 数据源黑板：`C:\Users\27933\AppData\Local\Temp\workbench-e2e-jQOMyU\.workbench`
+- 样本来源（运行者声明）：真实模型执行，手势与场景由脚本安排。该声明不筛选或认证事件，混合现场须单独核对。
+- 事件跨度：0.0 天（2026-09-08T05:20:41.670Z → 2026-09-08T05:20:41.703Z）。工程窗口不以日历设门；L3 自然使用仍要求至少 14 天。
+
+两条纪律（词表与证据）：
+
+1. fit 只取 task-forest `alignment.fit` 的五个值：`aligned` / `partial` / `weak` / `misaligned` / `unknown`。
+2. 无真实使用一律 `unknown`。**测试通过不算使用**，所以「有测试」永远不会把一行推离 `unknown`。
+
+同一个词表，两种问法，别混：
+
+- 森林的 `alignment.fit` 问的是**这个任务服不服务用户目标**（先验判断，做之前就能填）。
+- 本账本的 fit 问的是**建出来的东西有没有被真的用过**（后验证据，只能等数据）。
+
+共用词表是为了能互相引用，不是为了互相覆盖：**账本永不写回森林的 `alignment` 字段**。
+所以本账本一行是 `unknown` 而同一节点在森林里是 `aligned`，两者不矛盾——前者说没数据，后者说方向对。
+
+## t0（现场采样起点，TF-0141）
+
+**已开始**：实测 1 条线程、1 个注册写者，部件行按该现场来源计入 fit。
+
+## 样本窗口（TF-0141）
+
+| 样本类别 | 实测 | 目标 | 齐 |
+| --- | --- | --- | --- |
+| 恢复周期 lifecycle.restores | 1 | 3 | **否** |
+| 通知结局 noticeOutcomes.rows | 0 | 5 | **否** |
+| 封印判决 seal.decisions | 0 | 3 | **否** |
+
+**窗口未凑齐**：还差 restores 1/3、noticeOutcomes 0/5、sealDecisions 0/3。凑齐之前结论一律 `unknown`，不以测试或日历替代。
+
+## 四项判决（TF-0136）
+
+仅从本现场提出判断与下一步，不自动修改卡片、谓词或森林状态。
+
+### 判决一：恢复卡：证据不足
+
+保留现状，复核恢复与消费记录；达到使用证据要求后再判断是否缩为纯事实行。
+
+| 来源 | 实测 | 判据 |
+| --- | --- | --- |
+| stats.lifecycle.resumeNotesConsumed / stats.lifecycle.restores | 0 | ≥ 0.3 |
+| stats.lifecycle.resumeActions | 0 | > 0 |
+
+### 判决二：前提检测：证据不足
+
+补通知后的可观测活动；unknown 不能当作未忽略或未驳回。
+
+| 来源 | 实测 | 判据 |
+| --- | --- | --- |
+| stats.noticeOutcomes.agent.delivered | 0 | > 0 |
+| stats.noticeOutcomes.agent.dismissed / .delivered | 无样本 | ≤ 0.5 |
+| stats.noticeOutcomes.agent.ignored / .delivered | 无样本 | ≤ 0.1 |
+| stats.noticeOutcomes.agent.unknown | 0 | 保留为未知 |
+| (stats.noticeOutcomes.agent.dismissed + .unknown) / .delivered | 无样本 | ≤ 0.5 才足以支持判据 |
+| (stats.noticeOutcomes.agent.ignored + .unknown) / .delivered | 无样本 | ≤ 0.1 才足以支持判据 |
+
+### 判决三：阶段 C：证据不足
+
+阶段 C 已完成；本现场尚不足以重复支持范围判据，继续补分叉与真实继承观测。
+
+| 来源 | 实测 | 判据 |
+| --- | --- | --- |
+| stats.forks.total | 0 | ≥ 5 |
+| events[thread.inheritance_observed]：agentContextInherited && premiseInherited，按 threadId 去重（TF-0125/0131） | 0 | ≥ 1 |
+
+### 判决四：L3：证据不足
+
+继续延后 L3，保留 TF-0099 / TF-0100 / TF-0101 的阻塞状态；工程开发照常推进。
+
+| 来源 | 实测 | 判据 |
+| --- | --- | --- |
+| stats.observation.days（仅时间跨度，来源须另行核对） | 3.8194444444444445e-7 | 自然使用且 ≥ 14 天 |
+| stats.forks.total / (stats.observation.days / 7) | 无样本 | ≥ 1 |
+| stats.siblingAlternation.alternatingFamilies / .families（全部根家族为分母，TF-0122） | 无样本 | ≥ 0.3 |
+| events[thread.resume_action]：resume_fact_opened / resume_branch_opened（TF-0129/0151） | 无样本 | ≥ 1 / 周；dismiss 与叙事展开不计事实消费 |
+
+## 恢复到首条消息（TF-0126，近 7 天）
+
+| 恢复时卡片 | 有效样本 | 中位耗时（ms） |
+| --- | --- | --- |
+| 可见 | 0 | 无样本 |
+| 不可见 | 1 | 8 |
+| 未记录 | 0 | 无样本 |
+
+未配对恢复：0。来源：`stats.lifecycle.restoreToMessage`；恢复事件与当次加载后的第一条用户消息配对，切走即结束。
+
+**比较 unknown**：缺少可比较样本或无卡中位数为零，不能判定 20% 门槛。
+
+## 数据质量：insufficient-history
+
+- no thread footprints
+
+## 地标集合认可（L1）
+
+当前地标 0 个，已复核 0 个，认可 0 个，不认可 0 个。
+
+**认可率 unknown**：暂无当前集合的复核样本。
+
+来源：`stats.landmarkReviews.current`。分母包含未复核地标；每个写者的每个条目只取最新结论，重复反馈不累加成认可率。
+
+## 护城河四个数字（样本齐备后回看）
+
+| | 数字 | 门槛 | 当前 | 齐备 | 来源 |
+| --- | --- | --- | --- | --- | --- |
+| A | 校准表行数 | ≥ 50 | 0 | **否** | `stats.noticeOutcomes.rows` |
+| B | 推定写者是 git 或人的失效通知 | ≥ 1 条 | 0 | **否** | `events[premise_stale] ⋈ sessions/<writer>.kind` |
+| C | 来自真实会话的 seal.decided: block | ≥ 1 次（且事后判定为正确封印） | 0 | **否** | `stats.seal.blocked + stats.seal.reviews.correct` |
+| D | notified / overlaps | 有真实值且落在 10-30% | 无样本 | **否** | `stats.premises.notifiedRatio` |
+
+**闸门关：** 缺 A 校准表行数、B 推定写者是 git 或人的失效通知、C 来自真实会话的 seal.decided: block、D notified / overlaps。缺任何一个先补它，不扩树。
+
+## fit 分布
+
+计入 fit 的节点 27 个（里程碑不计，deprecated 不入账也不进分母）：
+
+- aligned 0 · partial 7 · weak 0 · misaligned 0 · **unknown 20**
+
+## 逐节点
+
+| 节点 | 类型 | 状态 | fit | 可观测指标（authored） | 当前值（measured） | 依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| TF-0120 Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一 | 里程碑 | in_progress | `unknown` | 里程碑本身不是部件，fit 由其子节点上卷 | 无样本 | 里程碑不单独计 fit，避免把子节点的 unknown 重复计一次 |
+| TF-0121 阶段 A：证据与架构地基 | 里程碑 | done | `unknown` | 里程碑本身不是部件，fit 由其子节点上卷 | 无样本 | 里程碑不单独计 fit，避免把子节点的 unknown 重复计一次 |
+| TF-0122 stats fold：分叉 / 切换 / 恢复基线 | 部件 | done | `partial` | 基线可读：分叉 + 切换 + 恢复的合计次数 | 2 | 实测 2，来源 stats.forks.total / stats.lifecycle.switches / .restores |
+| TF-0123 稳定事件身份与因果时钟 | 部件 | done | `partial` | 带稳定身份（id + eventSeq）的事件条数 | 3 | 实测 3，来源 events[].id / events[].eventSeq |
+| TF-0124 会话生命周期事件与投影边界 | 部件 | done | `partial` | 会话生命周期事件条数（这些必须不进世界投影） | 3 | 实测 3，来源 events[type^=thread.] |
+| TF-0125 fork 继承事实拆分：transcript / agent context / premise | 部件 | done | `unknown` | 落定过三种继承事实的分叉数 | 0 | insufficient-history：events[thread.inheritance_observed] 无样本 |
+| TF-0138 ADR：前提守护架构与产品边界 | 决策/实验/修复 | done | `unknown` | 架构边界是否被后续评审引用 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/decisions/0010-premise-custody.md（已接受） |
+| TF-0139 会话观测埋点：switch / restored / 恢复事实消费 | 部件 | done | `partial` | 会话观测埋点合计（切换 + 恢复 + 笔记消费 + 恢复动作） | 2 | 实测 2，来源 stats.lifecycle.* |
+| TF-0140 Claude 上下文继承三问实验（10 分钟，成败皆 done） | 决策/实验/修复 | done | `unknown` | 实验结论是否改变了下游决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/report-2026-09-05-claude-fork-inheritance.md；已定形 TF-0131 并修订 ADR-0010 §5 |
+| TF-0142 通知通道语义与测试 | 部件 | done | `unknown` | 被显式标成不可观测的通道数（HTTP 无工具通道） | 0 | insufficient-history：stats.noticeOutcomes.agent.unknownBy.unobservable 无样本 |
+| TF-0143 足迹追加写路径预算与基准 | 部件 | done | `unknown` | 有足迹的线程数（写路径预算的分母） | 0 | insufficient-history：stats.threads.withFootprints 无样本 |
+| TF-0144 提交闸门：已实现的前提守护代码落库并对齐森林状态 | 决策/实验/修复 | done | `unknown` | 提交闸门是否真的挡住了『代码领先森林』 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：git log（TF-0144 之后的落库批次） |
+| TF-0145 contextgen 世界事件载荷上限 | 部件 | done | `unknown` | 进过世界投影的世界事件条数（截断行未单独计数，指标偏弱） | 0 | insufficient-history：events[!thread.*] 无样本 |
+| TF-0148 通知结局标注（护城河 A 的数据源） | 部件 | done | `unknown` | 校准表行数（护城河 A） | 0 | insufficient-history：stats.noticeOutcomes.rows 无样本 |
+| TF-0149 三层谓词逐层计数 | 部件 | done | `unknown` | notified / overlaps（护城河 D，目标区间 10-30%） | 无样本 | insufficient-history：stats.premises.notifiedRatio 无样本 |
+| TF-0150 git 作为写者：merge / rebase / checkout 后注册变更 | 部件 | done | `unknown` | 推定写者是 git 或人的失效通知条数（护城河 B） | 0 | insufficient-history：events[premise_stale] ⋈ sessions/<writer>.kind 无样本 |
+| TF-0153 修掉 CLI 黑板根定位缺陷：每条子命令都在读一个影子黑板 | 决策/实验/修复 | done | `unknown` | 影子黑板缺陷是否复发 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：提交 b292dc4 |
+| TF-0126 阶段 B：恢复处境（R2′ + 恢复卡） | 里程碑 | done | `unknown` | 里程碑本身不是部件，fit 由其子节点上卷 | 无样本 | 里程碑不单独计 fit，避免把子节点的 unknown 重复计一次 |
+| TF-0127 恢复时读集 diff（R2′） | 部件 | done | `partial` | 带读集 diff 的恢复次数 | 1 | 实测 1，来源 stats.lifecycle.restores |
+| TF-0128 双通道恢复卡：叙事 + 事实 + 证据 | 部件 | done | `unknown` | 恢复卡被真正消费的次数（笔记 + 恢复动作） | 0 | insufficient-history：stats.lifecycle.resumeNotesConsumed / .resumeActions 无样本 |
+| TF-0129 恢复覆盖率行与指标 | 部件 | done | `partial` | 足迹覆盖率（恢复卡事实段的分母） | 0 | 实测 0，来源 stats.threads.footprintCoverage |
+| TF-0151 恢复卡规则 R10：兄弟分支在你离开后改了什么 | 部件 | done | `unknown` | R10 分支行是否被恢复卡消费（查看分支手势） | 0 | insufficient-history：events[thread.resume_action].payload.action = resume_branch_opened 无样本 |
+| TF-0130 阶段 C：分支与并发收敛 | 里程碑 | done | `unknown` | 里程碑本身不是部件，fit 由其子节点上卷 | 无样本 | 里程碑不单独计 fit，避免把子节点的 unknown 重复计一次 |
+| TF-0131 分支读集继承与诚实开关 | 部件 | done | `unknown` | 写出 inherited 读集的分叉数 | 0 | insufficient-history：events[footprint.inherited] 无样本 |
+| TF-0133 通知预算：每轮一束 + 家族折叠 | 部件 | done | `unknown` | 实际交付的通知束数（预算与折叠正确性另由契约测试验证） | 0 | insufficient-history：events[premise_notice_delivered]；不以 queued 充当 delivered 无样本 |
+| TF-0134 封印观测与降级模式 | 部件 | done | `unknown` | 封印决策次数（护城河 C 的分母） | 0 | insufficient-history：stats.seal.decisions 无样本 |
+| TF-0135 阶段 D：fit 门与范围仲裁 | 里程碑 | in_progress | `unknown` | 里程碑本身不是部件，fit 由其子节点上卷 | 无样本 | 里程碑不单独计 fit，避免把子节点的 unknown 重复计一次 |
+| TF-0136 两周真实使用门与 L3 证据门 | 决策/实验/修复 | in_progress | `unknown` | 四项判决是否改变了下游决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/tf0136-verdict.md；scripts/fit-ledger/verdicts.ts（四项判据；L3 延后） |
+| TF-0137 fit 账本与砍留决策 | 决策/实验/修复 | in_progress | `unknown` | 账本是否被引用于一次真实砍留决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/fit-ledger.md；判决归 TF-0136，账本只提供行与来源 |
+| TF-0141 日用起点 t0 登记与两周观察窗口 | 部件 | done | `partial` | t0 是否已登记：真实线程数（判据的一半，另一半是注册写者） | 1 | 实测 1，来源 stats.threads.total × sessions/* |
+| TF-0154 地标认可反馈：L1 验收的事件通道 | 部件 | done | `unknown` | L1 认可率：已认可地标 / 全部当前地标，按写者隔离并取最新复核；≥0.8 为 aligned | 无样本 | insufficient-history：stats.landmarkReviews.current.endorsedShare（完整集合；reviewedCoverage 单列） 无样本 |
+| TF-0155 真实模型执行闭环与无空会话阻塞验证 | 决策/实验/修复 | done | `unknown` | 真实模型执行、复读恢复与持久分叉验证是否可复跑 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/report-2026-09-07-live-model.md；docs/live-model-evidence-2026-09-07.json |
+

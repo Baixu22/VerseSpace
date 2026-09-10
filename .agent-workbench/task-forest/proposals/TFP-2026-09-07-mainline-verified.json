@@ -1,0 +1,246 @@
+{
+  "applied_at": "2026-09-07T07:35:14.371368Z",
+  "base_graph_hash": "860763ce36f2991ca3dbe69476999bc3f08119debac19d256d702fc5dc007ee1",
+  "base_summary": {
+    "edge_count": 222,
+    "node_count": 153,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "thread.merged_back 已在本轮工作区落入 types/event.ts 白名单，并有 events.test.ts 校验单测（未知 thread 类型仍抛错）——TF-0132 五条验收里的第五条已完成，此证据随本节点保留",
+          "核对 resume-card.ts:14-23：ConflictRule 当前为 R1-R9，R10 是该联合的下一个空位",
+          "所有线程都在同一 projectRoot 下运行，fork 不建 worktree/分支：merge-tree 预测对线程不适用",
+          "checkpoint schema 只有 workspot 字段，没有线程/写者链接：Verifier 状态没有生产者",
+          "阶段 A 已完成代码复核与提交，R10 的本地开发前置解除。",
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "R10 的五项验收已覆盖：空分支、可解析引用、dismiss 跨轮、无伪 Verifier、两个 R10 命名空间的代码注释。相关实现为 chat/resume-card/branches.ts、chat/evidence.ts 与 UI evidence-refs.tsx。",
+          "工程样本内 resume_branch_opened=10，现由 fit 账本作为 component 指标读取，其他恢复动作不计作分支消费。"
+        ],
+        "next_action": "已完成工程实现与验收；使用效果由阶段 B 与全局目标继续判定。",
+        "progress": 100,
+        "progress_source": "manual",
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done",
+        "summary": "恢复卡 R10 已落地：以有证据的分支写入与当前失效前提生成摘要；空分支零痕迹、dismiss 控制注入，查看分支先记源线程动作；引用可点击查看原始记录。"
+      },
+      "id": "TF-0151"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "已提交 d7e262d：runtime/notice-id.ts 的稳定去重身份（刻意排除 diff）、types/config.ts 的 chat.noticeTokenBudget（默认 300，尚未有人强制）",
+          "drain 路径已按 (writer, path, version) 去重、同路径取最新版本",
+          "renderNotice 仍内嵌每个 claim 的完整 diff，git diff maxBuffer 为 1MB：token 上限仍是必需项",
+          "2026-09-06 真实 stats：overlaps=0、notified=0、notifiedRatio=null。300 token 预算与每写者合束已有测试；家族折叠的显式开工闸门尚未满足。",
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "开工前实测工程样本 notified/overlaps=14/40=35%，达到既定 >30% 门槛。后续同时修复插入边界误报；10 轮修复后样本当前比例 20.3%。",
+          "notice-family.ts 仅派生呈现元数据：不改 world 事件、不删除完整 claims、不共享各写者的 noticeId 或 ack；三路真实进程场景验证每位写者都有独立的前提与折叠行。",
+          "notice-render.ts 修复版本号被裁断、省略数量不准和部分 diff 无法展示；零预算及空通知保持待处理，不写虚假的 delivered。"
+        ],
+        "next_action": "已完成；持续观察真实通知结局，不因折叠修改前提或投递确认。",
+        "progress": 100,
+        "progress_source": "manual",
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done",
+        "summary": "同一写者一束通知；最新写入版本匹配且属于同一分叉家族、在近 30 分钟内的改动折为一行。预算内保留完整事实与准确省略数量，空通知不进入投递或确认。"
+      },
+      "id": "TF-0133"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07 修正 git 零上下文 diff 的插入点语义：-N,0 位于旧第 N 行之后。读取末尾之外及单行之后的插入不误报；范围内部重复起始行不漏报。",
+          "span-boundaries.test.ts 六个真实文件场景，修复前 3 项失败，修复后全部通过；真实进程场景同步验证末尾追加不进入失效读集。"
+        ]
+      },
+      "id": "TF-0075"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "恢复卡原始证据可点击查看；缺失引用与截断均明确说明，工具 ID 复用不擅自挑选唯一来源。",
+          "lifecycle.restoreToMessage 已接 UI、服务端、stats 与 fit 账本；当前工程样本有卡/无卡各 10 次。脚本两组中间操作不对称，不将其耗时差当作真实用户效果验收。"
+        ],
+        "next_action": "代码与工程场景已就绪；收集可比较的真实恢复记录，验证 20% 耗时指标及恢复首动作。",
+        "progress_source": "derived",
+        "status": "in_progress"
+      },
+      "id": "TF-0126"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "分支继承、R10、每轮通知预算、家族折叠及封印均有工程证据；本节点保留阶段 B 依赖，不以工程通过替代其效果指标。"
+        ],
+        "next_action": "功能类验收已通过；等待阶段 B 的体验验收与整体范围裁决后完成阶段收口。",
+        "progress_source": "derived",
+        "status": "in_progress"
+      },
+      "id": "TF-0130"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/fable-brief/05-review/D0-D14",
+          "packages/workbench/src/chat/fork.ts 的 freshAgentSession: true",
+          "packages/workbench/src/runtime/premises.ts 的读集重算逻辑",
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "工程样本四门同时满足：校准 52 行、git/human 写者相关失效 1 条、封印及复核 10 次、notified/overlaps=20.3%。检测基准草案 10/10 符合契约，不声称用户精度或总体加速。"
+        ],
+        "next_action": "完成真实使用效果与整体范围验收；技术主线已覆盖恢复、证据溯源、分支与有预算的通知。",
+        "progress_source": "derived",
+        "status": "in_progress"
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/positioning-v5.md",
+          "docs/positioning-v6.md",
+          "两轮共 11 路独立深度调研，关键断言均附一手来源",
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "地标反馈统计已按每个写者的完整当前集合及最新复核计数，旧的 reviewed 子集比例不再驱动 L1。工程样本 8/125=6.4%，不是 8/10=80%。"
+        ],
+        "next_action": "核对真实工作中的 L1 集合认可率与恢复收益；保留产品证伪要求，不把脚本事件当作自然用户认可。",
+        "status": "in_progress"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "新增 scripts/fit-ledger.ts（入口）+ scripts/fit-ledger/metrics.ts（指标表）/ledger.ts（推导与闸门）/render.ts（markdown），产出 docs/fit-ledger.md（86 行，由 --out 生成，不手工编辑）",
+          "账本不是手写的：scope 从 graph/{nodes,edges}.json 递归取 TF-0120 及全部后代（deprecated 不入账也不进分母，采纳 TF-0152 的分母口径），值从本仓库 .workbench 的 collectChatStats + events.all() + sessions.list() 读",
+          "验收五（词表一一对应）：fit 只用 aligned/partial/weak/misaligned/unknown 五个值，与 references/goal-alignment.md 逐字一致；节点原文的 known-positive/known-negative/harmful 一套弃用",
+          "验收五的一处必须写明的区分：同一个词表有两种问法。森林 alignment.fit 问『这个任务服不服务用户目标』（先验判断），账本 fit 问『建出来的东西有没有被真的用过』（后验证据）。共用词表是为了能互相引用，不是为了互相覆盖——账本永不写回森林的 alignment 字段。所以同一节点在账本 unknown 而在森林 aligned 并不矛盾",
+          "验收四（本批节点自身入账）：25 个节点计入 fit（里程碑不计），含 TF-0137 自己、TF-0138、TF-0140 与 TF-0148..TF-0153。零个 done 节点缺指标",
+          "验收七（benchmark 闸门）已是可执行代码：benchmarkGate() 四个数字缺一不开，并报出缺哪几个；当前四缺四，闸门关",
+          "验收六的机器已就位，值全为零：A 校准表行数 0（stats.noticeOutcomes.rows）、B 推定写者是 git 或人的失效通知 0（events[premise_stale] ⋈ sessions/<writer>.kind）、C seal 阻断 0（stats.seal.blocked）、D notified/overlaps 无样本（stats.premises.notifiedRatio）。四个数字都带来源，不再是印象",
+          "验收一（unknown 数量下降）当前不满足，且这是结构性的：实测 25/25 unknown。第一版跑出来时有两行是 partial（TF-0123 事件身份、TF-0145 世界事件各读到 15），追查发现那 15 条全是 2026-08-30 的自举期事件——用自测数据把行推离 unknown 正是纪律 2 要拦的。因此加了 t0 闸门",
+          "t0 闸门（判据取自 TF-0141）：真实线程数 > 0 且注册写者数 > 0 才准让实测值推动 fit；t0 之前部件行强制 unknown，但 measured 值照常显示（authored 指标与 measured 值在输出里分列）。实测 0 线程 / 0 写者 → 未开始",
+          "新增 scripts/fit-ledger/ledger.test.ts 9 个用例，钉的是规则不是数字：t0 判据缺一不算开始；同样 60 行校准表在 t0 前是 unknown、t0 后是 aligned；有样本但不够门槛是 partial 而非 aligned 或 unknown；record 类（决策/实验/修复）永远 unknown 且 trace 只是指路不是证据；里程碑不计入分布；done 却没进指标表报『账本自己的缺口』而未开工报『没有可测行为』；护城河闸门缺一不开；护城河 B 只认 git/human，agent 自己的通知不算；护城河 D 是区间不是下限，0.9 有值也不齐备",
+          "为什么停在 in_progress 而不是 done：七条验收里五条已满足（二、三、四、五、七），验收一与验收六的『值非零』部分在 t0 之前不可能满足。把它们算作已完成就是用测试通过替代真实使用——这正是本节点 requirements 明令禁止的。账本的贡献是把这个阻塞从一句断言变成一行可测数字",
+          "验收三（森林相关节点状态更新）：账本首跑的结论与森林现状一致（全 unknown），所以没有需要改的 fit 字段。这一致本身是结论——森林里那些 unknown 不是懒得填，是确实没数据",
+          "复核：cd packages/workbench && bun test --timeout 60000 → 509 pass / 0 fail（68 files，52.4s）；tsc --noEmit 与 biome check 均通过。tsconfig include 已把 scripts/fit-ledger.ts 与 scripts/fit-ledger 纳入类型检查",
+          "2026-09-06 真实使用样本仍为空，unknown 占比下降和 30 天护城河四个数字无法验收；9 项账本规则测试通过不替代使用数据。",
+          "2026-09-07 工程样本同时满足四门：A=52、B=1、C=10 且有复核、D=20.3%；完整快照见 docs/mainline-evidence-2026-09-07.json。",
+          "R10 现在通过 resume_branch_opened 入 component 账；地标认可率分母纠正为完整当前集合。新增基准 scripts/benchmark-premises.ts，10/10 检测契约场景通过，草案在 docs/benchmark-premises-2026-09-07.md。",
+          "这些证据关闭工程实现缺口，不声称完成真实用户的 20% 耗时或 80% 地标认可验收。"
+        ],
+        "next_action": "工程账本与检测基准已就绪；继续真实工作数据的效果判断和范围裁决，区分工程样本与自然使用。",
+        "status": "in_progress"
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "add_node",
+      "alias": "landmark-review",
+      "node": {
+        "acceptance_criteria": [
+          "手势只对当前投影里的条目有效：不在地标集合中的 handle 拒绝复核",
+          "landmark.reviewed 事件只认 source=human 与合法 verdict，坏 payload 不进折叠",
+          "L1 读数分母是整个当前地标集合（endorsedShare），复核覆盖单列（reviewedCoverage），不以局部复核冒充集合认可率",
+          "修正以新事件追加：同一地标取最新一次结论",
+          "负载与账本接通：E2E 每轮一次复核（1/5 轮 reject），fit 账本出现 TF-0154 的 component 行"
+        ],
+        "alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.85,
+          "user_goal": "Helmor = 写者中立的前提账本：对每个写者回答『你上次看到的东西，现在还成立吗』，而『这次干的活的核心』是否被用户认可是同一问题的注意面",
+          "validation_plan": [
+            "L1 读数随租户与真实使用累积",
+            "endorsedShare ≥ 0.8 时 TF-0057 的 L1 验收可判"
+          ],
+          "why_not_enough": "复核手势只产生认可数据，不保证地标投影本身的质量——投影质量由 DOI 与判决一承载",
+          "why_this_task": "TF-0057 的 L1 验收（地标 80% 用户认可）此前没有任何事件通道，是全局目标最后一块只能等的数据源"
+        },
+        "blocked_by": [],
+        "confidence": 0.85,
+        "context_tags": [
+          "landmark",
+          "l1",
+          "反馈手势"
+        ],
+        "created_at": "2026-09-06T10:05:00Z",
+        "deprecated_at": null,
+        "desired_outcomes": [
+          "每个写者的地标集合有人工认可的量化读数",
+          "L1 验收从『只能等』变成『有数据可判』"
+        ],
+        "deviations": [],
+        "difficulty": "low",
+        "estimated_total_minutes": null,
+        "evidence": [
+          "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
+          "reviewLandmark 只接受当前投影里的条目；review-stats.ts 复用同一投影，以完整当前集合为分母、按写者隔离并取最新结论。",
+          "stats.landmarkReviews.current 显示认可率和复核覆盖率；既有 raw 反馈事件计数不冒充集合质量。",
+          "E2E 第五轮记录 reject；该确定性负载只验证通道与负样本，不能证明真实用户 80% 认可。"
+        ],
+        "execution_hints": [],
+        "id": "TF-0154",
+        "kind": "task",
+        "next_action": "工程通道已完成；实际集合质量由 TF-0057 的 L1 验收继续判定。",
+        "non_goals": [
+          "不改变地标投影算法本身（DOI 归 TF-0088/0110）",
+          "不做 UI 手势（CLI 先行，UI 另立）"
+        ],
+        "priority": 1,
+        "progress": 100,
+        "progress_source": "manual",
+        "purpose": "给 TF-0057 的 L1 验收（地标集合 80% 用户认可）建事件通道，让全局目标最后一块『只能等』的验收变成有数据可判。",
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "requirements": [],
+        "source_sessions": [],
+        "status": "done",
+        "success_metrics": [
+          "landmark.reviewed 事件随使用累积，L1 认可率可从账本直接读出"
+        ],
+        "summary": "地标认可反馈通道已实现：CLI 手势、human 来源事件、按写者隔离的完整集合判定、最新复核覆盖旧结论、stats 与 fit 账本接入。",
+        "title": "地标认可反馈：L1 验收的事件通道",
+        "updated_at": "2026-09-06T10:05:00Z"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "地标反馈是 fit 与范围验收的数据源，纳入同一账本范围。"
+      },
+      "from": "landmark-review",
+      "to": "TF-0135",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "为 L1 的地标集合认可验收提供事件和读数。"
+      },
+      "from": "landmark-review",
+      "to": "TF-0086",
+      "type": "contributes_to"
+    }
+  ],
+  "created_at": "2026-09-07T07:34:07.002460Z",
+  "proposal_id": "TFP-2026-09-07-mainline-verified",
+  "rationale": "按用户持续推进节点开发的请求，同步有直接代码和运行证据的进展：关闭 R10 与通知家族折叠，补入已实现的地标反馈节点并纳入账本；恢复体验和产品效果仍保持未完成。不整体应用旧综合提案中的其他决策。",
+  "session_id": "codex-mainline-development-2026-09-07",
+  "status": "applied"
+}

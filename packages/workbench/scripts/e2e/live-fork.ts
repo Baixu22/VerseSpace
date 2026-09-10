@@ -103,8 +103,8 @@ export async function runLiveFork(ws: E2EWorkspace) {
 
 if (import.meta.main) {
 	const projectDir = process.argv[2];
-		if (!projectDir) throw new Error("需要已授权的 live 工作区");
-		await assertLiveAuthorized(projectDir, "需要已授权的 live 工作区");
+	if (!projectDir) throw new Error("需要已授权的 live 工作区");
+	await assertLiveAuthorized(projectDir, "需要已授权的 live 工作区");
 	await runLiveFork({
 		projectDir,
 		entry: resolve(import.meta.dir, "../../src/index.ts"),

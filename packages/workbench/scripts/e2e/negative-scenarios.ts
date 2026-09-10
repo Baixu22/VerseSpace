@@ -11,10 +11,10 @@
  * 用法：
  *   bun scripts/e2e/negative-scenarios.ts --workspace <tenant黑盘> [--rounds 1] [--seal-id <id>]
  */
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { cli, type E2EWorkspace, cliJson } from "./driver";
+import { cli, cliJson, type E2EWorkspace } from "./driver";
 import { assertLiveAuthorized } from "./live-auth";
 
 const argv = Bun.argv.slice(2);
@@ -27,7 +27,10 @@ const workspaceArg =
 	at("--workspace") ?? join(tmpdir(), "workbench-e2e-live-tenant");
 const projectDir = String(workspaceArg);
 
-await assertLiveAuthorized(projectDir, "租户负样本探测需要已有的 live 租户标记");
+await assertLiveAuthorized(
+	projectDir,
+	"租户负样本探测需要已有的 live 租户标记",
+);
 
 const ws: E2EWorkspace = {
 	projectDir,
@@ -94,7 +97,9 @@ async function rejectLandmarksFromWriters(): Promise<string[]> {
 			"负样本探测： 不该总是 endorse，补 reject 到 event log",
 		]);
 		if (rejected.code !== 0)
-			throw new Error(`context review ${writer.id}.${top} 失败: ${rejected.stderr}`);
+			throw new Error(
+				`context review ${writer.id}.${top} 失败: ${rejected.stderr}`,
+			);
 		touched.push(`${writer.id}.${top}`);
 	}
 	return touched;
@@ -104,7 +109,9 @@ async function rejectLandmarksFromWriters(): Promise<string[]> {
 // 3) 封印负复核（--incorrect）—— live-tenant 有 15 seal.decided 但 10/10 correct。
 // ---------------------------------------------------------------------------
 
-async function listSealDecisions(): Promise<Array<{ id: string; decision?: string }>> {
+async function listSealDecisions(): Promise<
+	Array<{ id: string; decision?: string }>
+> {
 	const path = join(ws.projectDir, ".workbench", "events", "events.jsonl");
 	const raw = await readFile(path, "utf8").catch(() => "");
 	const seen = new Set<string>();
@@ -150,12 +157,16 @@ async function readReviewedSealIds(): Promise<Set<string>> {
 }
 
 /** 找一个没被复核过的 seal.decided block 去检发 --incorrect。 */
-async function pickUnreviewedSealBlock(sealIdArg: string | undefined): Promise<string> {
+async function pickUnreviewedSealBlock(
+	sealIdArg: string | undefined,
+): Promise<string> {
 	if (sealIdArg) return sealIdArg;
 	const reviewed = await readReviewedSealIds();
 	const blocks = await listSealDecisions();
 	// 语感：最后决策在前头。把所有未被复核过的 block 找出，挑最近那条。
-	const candidates = blocks.filter((b) => b.decision === "block" && !reviewed.has(b.id));
+	const candidates = blocks.filter(
+		(b) => b.decision === "block" && !reviewed.has(b.id),
+	);
 	if (!candidates.length) {
 		// 若全都被复核过，不再覆盖：同一份 seal.decided 只有一条 soil；覆盖只能教会脚本伺事重复对账。
 		return "";
@@ -163,7 +174,9 @@ async function pickUnreviewedSealBlock(sealIdArg: string | undefined): Promise<s
 	return candidates.at(-1)!.id;
 }
 
-async function reviewLatestSealAsIncorrect(sealIdArg: string | undefined): Promise<string> {
+async function reviewLatestSealAsIncorrect(
+	sealIdArg: string | undefined,
+): Promise<string> {
 	const sealId = await pickUnreviewedSealBlock(sealIdArg);
 	if (!sealId) return "";
 	const reviewed = await cli(ws, [
@@ -189,13 +202,21 @@ const sealIdArg = at("--seal-id");
 for (let round = 1; round <= rounds; round++) {
 	console.log(`\n===== negative-scenarios round ${round}/${rounds} =====`);
 	await recordHumanWriterActivity();
-	touched.push({ kind: "human-writers", detail: HUMAN_WRITERS.map((w) => w.id).join(",") });
+	touched.push({
+		kind: "human-writers",
+		detail: HUMAN_WRITERS.map((w) => w.id).join(","),
+	});
 	const rejected = await rejectLandmarksFromWriters();
-	touched.push({ kind: "landmark-reject", detail: rejected.join(",") || "none" });
+	touched.push({
+		kind: "landmark-reject",
+		detail: rejected.join(",") || "none",
+	});
 	const sealId = await reviewLatestSealAsIncorrect(sealIdArg);
 	if (sealId) touched.push({ kind: "seal-incorrect", detail: sealId });
 	const shortSealId = sealId ? sealId.slice(0, 8) : "none-new";
-	console.log(`[round ${round}] done: ${rejected.length} landmark rejects, seal ${shortSealId}`);
+	console.log(
+		`[round ${round}] done: ${rejected.length} landmark rejects, seal ${shortSealId}`,
+	);
 }
 
 console.log(`negative-scenarios finished; actions=${touched.length}`);

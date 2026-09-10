@@ -14,6 +14,7 @@ import { noticeIdForText } from "../runtime/notice-id";
 import { type ProcHandle, spawnSupervised } from "../supervisor";
 import type { WorkbenchConfig } from "../types/config";
 import type { WorkbenchEvent } from "../types/event";
+import { chatApiKey } from "./credentials";
 import { buildVariants, clampFanout } from "./fanout";
 import {
 	buildForkDeclaration,
@@ -23,6 +24,7 @@ import {
 	type ForkOutcome,
 	forkSlice,
 } from "./fork";
+import { httpEndpoint } from "./http-endpoint";
 import {
 	collectSignals,
 	countUserTurns,
@@ -33,6 +35,7 @@ import {
 	promotionPatch,
 	UNNAMED_TITLE,
 } from "./promote";
+import type { RestoreObservation } from "./restore-timing";
 import { buildResumeNote, type ResumeBeat, type ResumeNote } from "./resume";
 
 /**
@@ -701,8 +704,10 @@ export class ChatThreads {
 	async recordRestored(
 		threadId: string,
 		fromThreadId: string | null = null,
+		observation: RestoreObservation = {},
 	): Promise<void> {
 		await this.appendThreadEvent("thread.restored", threadId, {
+			...observation,
 			fromThreadId,
 		});
 	}
@@ -826,6 +831,10 @@ export class ChatThreads {
 			);
 			const notices = selectedNotices.notices;
 			const noticeIds = selectedNotices.entries.map((entry) => entry.id);
+			// Delivery is acknowledged after success, but the model can repair a
+			// premise inside that very turn. Capture its causal lower bound now.
+			const activityAfterEventId =
+				notices.length > 0 ? (await this.bb.events.tail(1))[0]?.id : undefined;
 			const ackNotices = async (): Promise<boolean> => {
 				// Acknowledgement is cleanup, not a provider gate. If the process
 				// dies or the lock is busy, keeping the file gives at-least-once
@@ -843,6 +852,7 @@ export class ChatThreads {
 							writer: id,
 							noticeIds,
 							count: noticeIds.length,
+							...(activityAfterEventId ? { activityAfterEventId } : {}),
 							// Reads after a notice come back as footprints on the claude
 							// channel. HTTP providers have no tool channel: their
 							// post-notice reads are explicitly unobservable, never
@@ -1366,6 +1376,15 @@ export class ChatThreads {
 				}
 				const result =
 					typeof event.result === "string" ? event.result : undefined;
+				if (
+					event.is_error === true ||
+					(typeof event.subtype === "string" &&
+						event.subtype.startsWith("error"))
+				) {
+					turn.emit({ type: "error", message: result || "agent 回合执行失败" });
+					turn.resolve();
+					return;
+				}
 				if (result && turn.assistantTexts.length === 0) {
 					turn.assistantTexts.push(result);
 					turn.messageParts.push({ type: "text", text: result });
@@ -1405,6 +1424,7 @@ export class ChatThreads {
 		notice: string,
 		noticeId?: string,
 	): Promise<"queued" | false> {
+		if (!notice.trim()) return false;
 		// Batch writers share the sessions registry but have no chat transcript or
 		// stdin channel. Leave their notice pending instead of falsely marking it
 		// delivered into a directory nobody will ever drain.
@@ -1583,7 +1603,7 @@ export class ChatThreads {
 		onNoticesSent?: () => Promise<boolean>,
 	): Promise<void> {
 		const provider = chat.provider;
-		const key = chat.apiKey ?? "";
+		const key = chatApiKey(chat);
 		if (!key && provider !== "claude") {
 			emit({
 				type: "error",
@@ -1782,7 +1802,10 @@ export class ChatThreads {
 		const body: Record<string, unknown> = {};
 
 		if (provider === "anthropic") {
-			url = `${(chat.baseUrl ?? "https://api.anthropic.com").replace(/\/$/, "")}/v1/messages`;
+			url = httpEndpoint(
+				chat.baseUrl ?? "https://api.anthropic.com",
+				"/v1/messages",
+			);
 			headers["x-api-key"] = key;
 			headers["anthropic-version"] = "2023-06-01";
 			body.model = chat.model ?? "claude-sonnet-4-5";
@@ -1793,7 +1816,10 @@ export class ChatThreads {
 			body.stream = true;
 			body.messages = history;
 		} else if (provider === "openai-chat") {
-			url = `${(chat.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
+			url = httpEndpoint(
+				chat.baseUrl ?? "https://api.openai.com/v1",
+				"/chat/completions",
+			);
 			headers.authorization = `Bearer ${key}`;
 			body.model = chat.model ?? "gpt-4o-mini";
 			body.messages = history;
@@ -1806,7 +1832,10 @@ export class ChatThreads {
 			}
 		} else {
 			// openai-responses
-			url = `${(chat.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "")}/responses`;
+			url = httpEndpoint(
+				chat.baseUrl ?? "https://api.openai.com/v1",
+				"/responses",
+			);
 			headers.authorization = `Bearer ${key}`;
 			body.model = chat.model ?? "gpt-4o-mini";
 			body.input = history.map((m) => ({ role: m.role, content: m.content }));

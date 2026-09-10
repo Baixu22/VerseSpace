@@ -1,0 +1,87 @@
+{
+  "applied_at": "2026-09-07T08:42:43.485114Z",
+  "base_graph_hash": "4cf1520c8c3c1da5e6dff942e71f473ffafe3d9a1794b8e08efbe4706dae11d9",
+  "base_summary": {
+    "edge_count": 224,
+    "node_count": 154,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "核对真实工作中的 L1 集合认可率与恢复收益；保留产品证伪要求，不把脚本事件当作自然用户认可。"
+        ],
+        "next_action": "核对真实工作中的 L1 集合认可率与恢复收益；保留产品证伪要求，不把脚本事件当作自然用户认可。"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07：修复 JS bundle 相对运行目录查找 UI 资源的问题；资源相对 bundle 解析，输出到 dist/ui 并纳入 package.json files。",
+          "scripts/check-built.ts 已从独立工作区验证 Windows 原生包和 JS 包的初始化、当前统计和内嵌界面；npm pack --dry-run --ignore-scripts 确认 14 个 UI 资源在清单中。",
+          "新增 workbench ui --no-open，E2E 后台启动不再自动打开浏览器；记录见 docs/report-2026-09-07-mainline.md。"
+        ]
+      },
+      "id": "TF-0051"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "完成真实使用效果与整体范围验收；技术主线已覆盖恢复、证据溯源、分支与有预算的通知。"
+        ],
+        "next_action": "完成真实使用效果与整体范围验收；技术主线已覆盖恢复、证据溯源、分支与有预算的通知。"
+      },
+      "id": "TF-0120"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "代码与工程场景已就绪；收集可比较的真实恢复记录，验证 20% 耗时指标及恢复首动作。"
+        ],
+        "next_action": "代码与工程场景已就绪；收集可比较的真实恢复记录，验证 20% 耗时指标及恢复首动作。"
+      },
+      "id": "TF-0126"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "功能类验收已通过；等待阶段 B 的体验验收与整体范围裁决后完成阶段收口。"
+        ],
+        "next_action": "功能类验收已通过；等待阶段 B 的体验验收与整体范围裁决后完成阶段收口。"
+      },
+      "id": "TF-0130"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "使用已就绪的工程账本核对真实工作数据，按既定规则完成效果与范围裁决。"
+        ],
+        "next_action": "使用已就绪的工程账本核对真实工作数据，按既定规则完成效果与范围裁决。"
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "工程账本与检测基准已就绪；继续真实工作数据的效果判断和范围裁决，区分工程样本与自然使用。"
+        ],
+        "next_action": "工程账本与检测基准已就绪；继续真实工作数据的效果判断和范围裁决，区分工程样本与自然使用。"
+      },
+      "id": "TF-0137"
+    }
+  ],
+  "created_at": "2026-09-07T08:42:42.958111Z",
+  "proposal_id": "TFP-2026-09-07-build-handoff",
+  "rationale": "补记实际构建验证与 JS 资源打包修复；todo 投影优先读取 execution_hints，因此同步清除已完成阶段的旧执行提示，避免后续会话重复开发已完成内容。保留真实体验验收要求与未完成状态。",
+  "session_id": "codex-mainline-development-2026-09-07",
+  "status": "applied"
+}

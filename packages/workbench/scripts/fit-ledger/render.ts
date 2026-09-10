@@ -8,11 +8,16 @@
 import type { ChatStats } from "../../src/chat/stats";
 import type { MoatNumber, Row, SampleWindow } from "./ledger";
 import type { Fit } from "./metrics";
+import type { EvidenceKind, Verdict, VerdictStatus } from "./verdicts";
 
 export interface Report {
+	generatedAt: string;
 	blackboard: string;
+	evidenceKind: EvidenceKind;
 	observation: ChatStats["observation"];
 	dataQuality: ChatStats["dataQuality"];
+	restoreToMessage: ChatStats["lifecycle"]["restoreToMessage"];
+	landmarkAcceptance: ChatStats["landmarkReviews"]["current"];
 	/** TF-0141 的 t0 判据实测：有真实线程，且注册过写者。 */
 	t0: { started: boolean; threads: number; writers: number };
 	/** TF-0141 样本窗口（2026-09-06 重设计）：裁决看样本量，不看日历。 */
@@ -28,8 +33,21 @@ export interface Report {
 	histogram: Record<Fit, number>;
 	moat: MoatNumber[];
 	gate: { open: boolean; missing: string[] };
+	verdicts: Verdict[];
 	rows: Row[];
 }
+
+const EVIDENCE_LABEL: Record<EvidenceKind, string> = {
+	unknown: "未声明来源，四项判决保持证据不足",
+	scripted: "脚本工程场景",
+	"live-model": "真实模型执行，手势与场景由脚本安排",
+	natural: "自然使用记录（需核对原始现场）",
+};
+const VERDICT_LABEL: Record<VerdictStatus, string> = {
+	supported: "本现场支持判据",
+	"not-supported": "本现场不满足判据",
+	"insufficient-evidence": "证据不足",
+};
 
 const show = (value: number | string | null): string =>
 	value === null ? "无样本" : String(value);
@@ -50,11 +68,12 @@ export function renderMarkdown(report: Report): string {
 		"> 本文件由 `bun run scripts/fit-ledger.ts --out ../../docs/fit-ledger.md` 生成，",
 		"> 每周重跑覆盖一次。不要手工编辑：手写的结论没有来源，也就不能用于砍留决策。",
 		"",
-		`- 生成时间：${new Date().toISOString()}`,
+		`- 生成时间：${report.generatedAt}`,
 		`- 数据源黑板：\`${report.blackboard}\``,
+		`- 样本来源（运行者声明）：${EVIDENCE_LABEL[report.evidenceKind]}。该声明不筛选或认证事件，混合现场须单独核对。`,
 		`- 事件跨度：${report.observation.days.toFixed(1)} 天（${
 			report.observation.startedAt ?? "无"
-		} → ${report.observation.endedAt ?? "无"}）。跨度只是信息项，不做门槛。`,
+		} → ${report.observation.endedAt ?? "无"}）。工程窗口不以日历设门；L3 自然使用仍要求至少 14 天。`,
 		"",
 		"两条纪律（词表与证据）：",
 		"",
@@ -69,10 +88,10 @@ export function renderMarkdown(report: Report): string {
 		"共用词表是为了能互相引用，不是为了互相覆盖：**账本永不写回森林的 `alignment` 字段**。",
 		"所以本账本一行是 `unknown` 而同一节点在森林里是 `aligned`，两者不矛盾——前者说没数据，后者说方向对。",
 		"",
-		"## t0（日用起点，TF-0141）",
+		"## t0（现场采样起点，TF-0141）",
 		"",
 		report.t0.started
-			? `**已开始**：实测 ${report.t0.threads} 条真实线程、${report.t0.writers} 个注册写者，部件行的实测值开始计入 fit。`
+			? `**已开始**：实测 ${report.t0.threads} 条线程、${report.t0.writers} 个注册写者，部件行按该现场来源计入 fit。`
 			: `**未开始**：实测 ${report.t0.threads} 条线程、${report.t0.writers} 个注册写者。` +
 				"t0 之前 `events.jsonl` 里是自举期数据，所有部件行强制停在 `unknown`——" +
 				"下面的「当前值」照常显示，但不推动 fit。",
@@ -90,8 +109,48 @@ export function renderMarkdown(report: Report): string {
 		`| 封印判决 seal.decisions | ${window.sealDecisions} | ${window.targets.sealDecisions} | ${window.sealDecisions >= window.targets.sealDecisions ? "是" : "**否**"} |`,
 		"",
 		window.satisfied
-			? "**窗口已凑齐**：TF-0136 / TF-0135 可以按既定门槛裁决——看样本，不看日历。"
+			? "**工程窗口已凑齐**：可以核对四项判据；自然用户效果与 L3 长期门槛仍单独判断。"
 			: `**窗口未凑齐**：还差 ${window.missing.join("、")}。凑齐之前结论一律 \`unknown\`，不以测试或日历替代。`,
+		"",
+	);
+	lines.push(
+		"## 四项判决（TF-0136）",
+		"",
+		"仅从本现场提出判断与下一步，不自动修改卡片、谓词或森林状态。",
+		"",
+	);
+	for (const item of report.verdicts) {
+		lines.push(
+			`### ${item.title}：${VERDICT_LABEL[item.status]}`,
+			"",
+			item.action,
+			"",
+			"| 来源 | 实测 | 判据 |",
+			"| --- | --- | --- |",
+		);
+		for (const reading of item.readings) {
+			lines.push(
+				`| ${reading.source} | ${show(reading.value)} | ${reading.threshold} |`,
+			);
+		}
+		lines.push("");
+	}
+
+	const timing = report.restoreToMessage;
+	lines.push(
+		`## 恢复到首条消息（TF-0126，近 ${timing.windowDays} 天）`,
+		"",
+		"| 恢复时卡片 | 有效样本 | 中位耗时（ms） |",
+		"| --- | --- | --- |",
+		`| 可见 | ${timing.withCard.samples} | ${show(timing.withCard.medianMs)} |`,
+		`| 不可见 | ${timing.withoutCard.samples} | ${show(timing.withoutCard.medianMs)} |`,
+		`| 未记录 | ${timing.unknownCard.samples} | ${show(timing.unknownCard.medianMs)} |`,
+		"",
+		`未配对恢复：${timing.incomplete}。来源：\`stats.lifecycle.restoreToMessage\`；恢复事件与当次加载后的第一条用户消息配对，切走即结束。`,
+		"",
+		timing.medianChangeRatio === null
+			? "**比较 unknown**：缺少可比较样本或无卡中位数为零，不能判定 20% 门槛。"
+			: `中位耗时差异：${(timing.medianChangeRatio * 100).toFixed(1)}%；超过 20%：${timing.exceeds20Percent ? "是" : "否"}。这是观察值，不证明卡片导致变化，不自动改变卡片或节点状态。`,
 		"",
 	);
 
@@ -101,6 +160,25 @@ export function renderMarkdown(report: Report): string {
 			lines.push(`- ${reason}`);
 		}
 		lines.push("");
+	}
+	const landmarks = report.landmarkAcceptance;
+	lines.push(
+		"## 地标集合认可（L1）",
+		"",
+		`当前地标 ${landmarks.total} 个，已复核 ${landmarks.reviewed} 个，认可 ${landmarks.endorsed} 个，不认可 ${landmarks.rejected} 个。`,
+		"",
+		landmarks.reviewed === 0
+			? "**认可率 unknown**：暂无当前集合的复核样本。"
+			: `完整集合认可率 ${((landmarks.endorsedShare ?? 0) * 100).toFixed(1)}%；复核覆盖率 ${((landmarks.reviewedCoverage ?? 0) * 100).toFixed(1)}%。`,
+		"",
+		"来源：`stats.landmarkReviews.current`。分母包含未复核地标；每个写者的每个条目只取最新结论，重复反馈不累加成认可率。",
+		"",
+	);
+	if (report.evidenceKind !== "natural" && landmarks.reviewed > 0) {
+		lines.push(
+			`本现场来源为「${EVIDENCE_LABEL[report.evidenceKind]}」：复核手势由脚本或模型运行安排，读数只会收敛到脚本里的认可概率，不构成用户认可。TF-0154 行的 fit 因此停在 \`unknown\`；上面的数字只用于核对通道与覆盖率。`,
+			"",
+		);
 	}
 
 	lines.push(
@@ -119,7 +197,7 @@ export function renderMarkdown(report: Report): string {
 	lines.push("");
 	lines.push(
 		gate.open
-			? "**闸门开：** 四个数字齐备，可以开始写对外的 stale-premise benchmark。"
+			? "**数字闸门开：** 四个数字齐备，可以整理与本现场来源相符的 stale-premise benchmark；工程记录不能据此声称自然用户效果。"
 			: `**闸门关：** 缺 ${gate.missing.join("、")}。缺任何一个先补它，不扩树。`,
 		"",
 	);

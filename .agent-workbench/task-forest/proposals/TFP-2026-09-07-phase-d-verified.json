@@ -1,0 +1,118 @@
+{
+  "base_graph_hash": "5b42d2fc85e98f8e48209af72b5678dc980b9c772ee9510a4bb5bb9adee56c6b",
+  "base_summary": {
+    "edge_count": 225,
+    "node_count": 155,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "已提交 836e27f：chat/stats.ts、chat/stats.test.ts、commands/stats.ts、cli 注册",
+          "按 thread.forkOf 聚合，不用会被 reload 污染的 meta.forks",
+          "siblingAlternation 不可测时返回 available:false 与原因；无线程或无足迹时返回 insufficient-history",
+          "本机 .workbench 无 threads 目录、events 15 行：当前输出为 insufficient-history，属预期",
+          "2026-09-07：修复只拿已切换家族作分母的偏差；10 个根家族只用过 1 个现在为 10%，不是 100%。同根的嵌套兄弟组只算一个家族。",
+          "stats-forks.test.ts 新增 6 项回归（其中 5 项先暴露旧逻辑失败）：完整窗口、分散片段、时间倒退、30 分钟边界与无观测均覆盖。最终 Workbench 599 通过 / 0 失败。",
+          "真实模型现场 mUMXLa 统计为 2 个根家族、1 个交替家族、2 次交替；见 docs/report-2026-09-07-phase-d.md 与 docs/phase-d-evidence-2026-09-07.json。"
+        ],
+        "summary": "只读统计分叉、切换与恢复；兄弟交替按全部根家族计算，嵌套兄弟组去重，两次相连交替须落在同一个完整 30 分钟窗口，无观测保留未知。"
+      },
+      "id": "TF-0122"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
+          "2026-09-07：本轮完成 TF-0122 统计口径修复、TF-0136 四项判决与 TF-0137 来源声明，并增强 TF-0155 独立验收。未新增依赖、未修改 legacy UI/Rust、未发布或提交。",
+          "本轮证据见 docs/report-2026-09-07-phase-d.md：最终回归 599/0；专项 12/12 + 恢复复核 + 三路持久分叉通过；完整真实连跑的 S6c 超时仍保留。"
+        ],
+        "next_action": "继续校准负样本与自然使用效果；节点验收不以模型自评或脚本手势替代，不扩展 L3。",
+        "summary": "阶段 D 的可执行判据、来源区分和工程证据已补齐；继续把真实模型工程行为与长期自然使用效果分开，L3 保持延后。"
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "全仓库无 promotion_reverted / variant.promoted，原门槛结构性为零，已删除",
+          "事实消费事件由 TF-0139 产生、由 TF-0129 的事实段触发：窗口若早于事实段上线，该门槛会重复同一类错误——本轮 TF-0128 落库后前置条件已满足",
+          "判决二的两个比值依赖 TF-0148 的四态标注；notified 的分母依赖 TF-0149",
+          "2026-09-06 真实 stats 返回 insufficient-history：0 线程/0 fork/0 restored，无可判决样本。既定阈值保持不变。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
+          "2026-09-07：新增 fit-ledger/verdicts.ts 与规则测试；unknown 来源不能出支持结论，阶段 C 要求实际上下文与读集继承事件，L3 只认自然来源及已实现的事实/分支消费动作。",
+          "通知判据同时检查 observed 比值与把 unknown 全算作负结果的上界；显示舍入不能把真实超过阈值的比值改成通过。",
+          "mUMXLa 工程样本窗 7 次恢复/7 行校准/5 次封印已满足 3/5/3：恢复卡 2/7 未达标、前提检测 3 次投递均 repaired、阶段 C 5 次 fork 且 3 个实际继承观测、L3 证据不足。结论见 docs/fit-ledger.md。",
+          "docs/tf0136-verdict.md 已区分当前范围与历史未整体应用的候选；没有照抄旧候选废止 L3 或倒退已完成的阶段 C。80% 是工程验收估计，不表示长期自然使用门已通过。"
+        ],
+        "next_action": "以可执行判据继续复核恢复卡负样本与自然使用记录；工程进度不等待日历，L3 仍须自然使用门通过后再复评，不擅自开工或废止。",
+        "progress": 80,
+        "summary": "四项判据已由 fit-ledger 统一计算并附来源：工程样本门与 L3 的自然使用/14 天门分开；未知结果、负样本和原始计数如实保留，不自动执行范围变更。"
+      },
+      "id": "TF-0136"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "新增 scripts/fit-ledger.ts（入口）+ scripts/fit-ledger/metrics.ts（指标表）/ledger.ts（推导与闸门）/render.ts（markdown），产出 docs/fit-ledger.md（86 行，由 --out 生成，不手工编辑）",
+          "账本不是手写的：scope 从 graph/{nodes,edges}.json 递归取 TF-0120 及全部后代（deprecated 不入账也不进分母，采纳 TF-0152 的分母口径），值从本仓库 .workbench 的 collectChatStats + events.all() + sessions.list() 读",
+          "验收五（词表一一对应）：fit 只用 aligned/partial/weak/misaligned/unknown 五个值，与 references/goal-alignment.md 逐字一致；节点原文的 known-positive/known-negative/harmful 一套弃用",
+          "验收五的一处必须写明的区分：同一个词表有两种问法。森林 alignment.fit 问『这个任务服不服务用户目标』（先验判断），账本 fit 问『建出来的东西有没有被真的用过』（后验证据）。共用词表是为了能互相引用，不是为了互相覆盖——账本永不写回森林的 alignment 字段。所以同一节点在账本 unknown 而在森林 aligned 并不矛盾",
+          "验收四（本批节点自身入账）：25 个节点计入 fit（里程碑不计），含 TF-0137 自己、TF-0138、TF-0140 与 TF-0148..TF-0153。零个 done 节点缺指标",
+          "验收七（benchmark 闸门）已是可执行代码：benchmarkGate() 四个数字缺一不开，并报出缺哪几个；当前四缺四，闸门关",
+          "验收六的机器已就位，值全为零：A 校准表行数 0（stats.noticeOutcomes.rows）、B 推定写者是 git 或人的失效通知 0（events[premise_stale] ⋈ sessions/<writer>.kind）、C seal 阻断 0（stats.seal.blocked）、D notified/overlaps 无样本（stats.premises.notifiedRatio）。四个数字都带来源，不再是印象",
+          "验收一（unknown 数量下降）当前不满足，且这是结构性的：实测 25/25 unknown。第一版跑出来时有两行是 partial（TF-0123 事件身份、TF-0145 世界事件各读到 15），追查发现那 15 条全是 2026-08-30 的自举期事件——用自测数据把行推离 unknown 正是纪律 2 要拦的。因此加了 t0 闸门",
+          "t0 闸门（判据取自 TF-0141）：真实线程数 > 0 且注册写者数 > 0 才准让实测值推动 fit；t0 之前部件行强制 unknown，但 measured 值照常显示（authored 指标与 measured 值在输出里分列）。实测 0 线程 / 0 写者 → 未开始",
+          "新增 scripts/fit-ledger/ledger.test.ts 9 个用例，钉的是规则不是数字：t0 判据缺一不算开始；同样 60 行校准表在 t0 前是 unknown、t0 后是 aligned；有样本但不够门槛是 partial 而非 aligned 或 unknown；record 类（决策/实验/修复）永远 unknown 且 trace 只是指路不是证据；里程碑不计入分布；done 却没进指标表报『账本自己的缺口』而未开工报『没有可测行为』；护城河闸门缺一不开；护城河 B 只认 git/human，agent 自己的通知不算；护城河 D 是区间不是下限，0.9 有值也不齐备",
+          "为什么停在 in_progress 而不是 done：七条验收里五条已满足（二、三、四、五、七），验收一与验收六的『值非零』部分在 t0 之前不可能满足。把它们算作已完成就是用测试通过替代真实使用——这正是本节点 requirements 明令禁止的。账本的贡献是把这个阻塞从一句断言变成一行可测数字",
+          "验收三（森林相关节点状态更新）：账本首跑的结论与森林现状一致（全 unknown），所以没有需要改的 fit 字段。这一致本身是结论——森林里那些 unknown 不是懒得填，是确实没数据",
+          "复核：cd packages/workbench && bun test --timeout 60000 → 509 pass / 0 fail（68 files，52.4s）；tsc --noEmit 与 biome check 均通过。tsconfig include 已把 scripts/fit-ledger.ts 与 scripts/fit-ledger 纳入类型检查",
+          "2026-09-06 真实使用样本仍为空，unknown 占比下降和 30 天护城河四个数字无法验收；9 项账本规则测试通过不替代使用数据。",
+          "2026-09-07 工程样本同时满足四门：A=52、B=1、C=10 且有复核、D=20.3%；完整快照见 docs/mainline-evidence-2026-09-07.json。",
+          "R10 现在通过 resume_branch_opened 入 component 账；地标认可率分母纠正为完整当前集合。新增基准 scripts/benchmark-premises.ts，10/10 检测契约场景通过，草案在 docs/benchmark-premises-2026-09-07.md。",
+          "这些证据关闭工程实现缺口，不声称完成真实用户的 20% 耗时或 80% 地标认可验收。",
+          "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。",
+          "2026-09-07：--evidence-kind 明确区分 unknown/scripted/live-model/natural，默认 unknown，非法值拒绝；来源声明不筛选或认证事件，混合现场需核对。",
+          "docs/fit-ledger.md 已从 mUMXLa 真实黑板重新生成：27 个计入 fit 的节点，aligned 2、partial 16、unknown 9；不能把模型或脚本行为称为人类认可。",
+          "当前现场对外数字门 A=7/50，B=1，C=3 次 block 但缺正确性复核，D=12.7%；此前 ojHgSk 虽有正确封印复核，不能拿来补当前现场。门槛未全部达成，因此继续 in_progress。",
+          "四项判决与负样本快照：docs/report-2026-09-07-phase-d.md、docs/phase-d-evidence-2026-09-07.json。类型检查和 13 个相关 TS 文件 Biome 通过；599/0 回归不替代使用数据。"
+        ],
+        "next_action": "按现场补足校准量与正确封印复核，保留 unknown 和负样本；对外 benchmark 与自然用户效果仍分别验收，不用跨现场拼接凑门槛。",
+        "progress": 90,
+        "summary": "fit 账本已统一 JSON/Markdown 判决、来源与事件读数；默认未声明来源保持证据不足。账本按现场报告真实模型工程证据，不覆盖森林的先验 alignment，也不替代自然效果验收。"
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/report-2026-09-07-live-model.md；docs/live-model-evidence-2026-09-07.json。",
+          "最终完整连跑：40 次真实工具驱动模型请求，另有原生 HTTP SSE；22 步集成、自主开发/恢复、三路持久分叉全部通过。",
+          "补充同轮修复验证后，当前现场共有49次工具驱动模型请求、11线程、13写者、8次恢复、9行通知校准、11次封印决策。模型调用 usage.cost 合计0。",
+          "同轮观测因果边界：eventSeq188之后的复读发生在189/191等足迹，最终成功确认在198；修复后正确标为repaired=1，不冒称之后没有再开一轮就是无活动。",
+          "最终回归582 pass / 0 fail（92文件、1快照）；类型检查通过；检测基准11/11，独立URL用例9/9；源码、报告、森林和现场未检测到明文密钥。",
+          "Windows DPAPI凭据位于仓库外，run-live.ps1已验证可加载并完成真实运行。未发布、未提交、未废止或开工L3。",
+          "2026-09-07：新增固定 12 项 URL 独立验收，覆盖完整端点、引号、尾斜杠、代理/query/fragment、scheme/凭据拒绝与合法 @；最多两轮纠正，保留全部失败。模型意见不替代独立检查。",
+          "独立检查使用不继承模型凭据的异步 execFile，10 秒超时/256KB 输出上限；Windows 完整运行所见提前 spawnSync ETIMEDOUT 在切换后未再次出现，底层原因尚未精确复现。",
+          "本轮四现场累计 155 次工具驱动模型请求，响应记录 cost 合计 0。qIgw0d 补查为 8/9；nVzjUh 6/9 后超时；ojHgSk 当时 11/11、扩展后 11/12；mUMXLa 完整场景 S6c 失败，单独续跑开发/恢复/分叉后为 12/12。",
+          "mUMXLa 专项新增 23 次请求，三次 block→warn→复读后 pass，3 个持久分支真实继承且源 transcript/实现未改；原 live-report.json 的 ok:false 与 SHA256 未变化。专项成功不当作完整连跑成功。",
+          "S6c 原始事件 52 写 alpha、58/62 通知分支2、63 分支2复读新版本、65 写 family、74 确认投递；等待三人同时仍失效的假设不再成立。这不是检测漏报证据，场景修订仍未完成。",
+          "最终 Workbench 599 通过/0 失败（95 文件、1 快照），类型检查、Biome 与 task-forest 导出契约回归通过。详见 docs/report-2026-09-07-phase-d.md。"
+        ],
+        "next_action": "运行器已实现；后续修正 S6c 对三路写者同时保持失效的假设并补回归。真实模型可能主动复读修复，应区分仍失效与已可证修复，不能仅延长超时。"
+      },
+      "id": "TF-0155"
+    }
+  ],
+  "created_at": "2026-09-07T15:16:17.276327Z",
+  "proposal_id": "TFP-2026-09-07-phase-d-verified",
+  "rationale": "继续现有阶段 D 节点开发，完成兄弟交替口径修正、四项判据的统一输出与来源声明、模型产物独立验收。工程证据与自然使用验收分开，失败现场原样保留，不新增节点、不改变 L3 范围。进度更新按用户确认后应用，验收规则与旧证据不覆盖。",
+  "session_id": "session-2026-09-07-phase-d",
+  "status": "proposed"
+}

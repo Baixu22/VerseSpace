@@ -35,9 +35,14 @@ async function renameWithRetry(
 			return;
 		} catch (error) {
 			const code = (error as NodeJS.ErrnoException).code;
-			// Windows: EPERM/EACCES when the destination is briefly locked
-			// (antivirus, indexer). Back off and retry before giving up.
-			const retriable = code === "EPERM" || code === "EACCES";
+			// Windows: transient sharing violations can surface as EPERM/EACCES,
+			// EBUSY, or Bun's EUNKNOWN depending on which filesystem layer held
+			// the destination. Back off and retry before giving up.
+			const retriable =
+				code === "EPERM" ||
+				code === "EACCES" ||
+				code === "EBUSY" ||
+				(process.platform === "win32" && code === "EUNKNOWN");
 			if (!retriable || attempt >= attempts - 1) {
 				throw error;
 			}

@@ -267,4 +267,28 @@ describe("前提失效通知投递（R2 · TF-0077）", () => {
 			),
 		).toBe("");
 	});
+
+	test("零预算保留待投递事实，既不调用通道也不写 delivered", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await seedStalePremise(ws);
+			let calls = 0;
+			const result = await drainPremiseQueue(ws.bb, {
+				tokenBudget: 0,
+				deliver: async () => {
+					calls += 1;
+					return true;
+				},
+			});
+			expect(calls).toBe(0);
+			expect(result.delivered).toHaveLength(0);
+			expect(result.pending).toHaveLength(1);
+			expect(await pendingPremiseNotices(ws.bb)).toHaveLength(1);
+			expect(
+				await ws.bb.events.query({ type: "premise_notice_delivered" }),
+			).toHaveLength(0);
+		} finally {
+			await ws.cleanup();
+		}
+	});
 });

@@ -1,0 +1,56 @@
+{
+  "applied_at": "2026-09-07T11:20:55.492424Z",
+  "base_graph_hash": "1d02e101b63dd532a0c1695b0e1a8e3a47c941d7d45301f437bc93cc2fa602c4",
+  "base_summary": {
+    "edge_count": 225,
+    "node_count": 155,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/report-2026-09-07-live-model.md；docs/live-model-evidence-2026-09-07.json。",
+          "最终完整连跑：40 次真实工具驱动模型请求，另有原生 HTTP SSE；22 步集成、自主开发/恢复、三路持久分叉全部通过。",
+          "补充同轮修复验证后，当前现场共有49次工具驱动模型请求、11线程、13写者、8次恢复、9行通知校准、11次封印决策。模型调用 usage.cost 合计0。",
+          "同轮观测因果边界：eventSeq188之后的复读发生在189/191等足迹，最终成功确认在198；修复后正确标为repaired=1，不冒称之后没有再开一轮就是无活动。",
+          "最终回归582 pass / 0 fail（92文件、1快照）；类型检查通过；检测基准11/11，独立URL用例9/9；源码、报告、森林和现场未检测到明文密钥。",
+          "Windows DPAPI凭据位于仓库外，run-live.ps1已验证可加载并完成真实运行。未发布、未提交、未废止或开工L3。"
+        ],
+        "execution_hints": [],
+        "next_action": "已完成。后续需要数据时直接运行真实模型场景，不等待既有会话。",
+        "progress": 100,
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done",
+        "summary": "真实模型执行闭环完成：仓库外加密凭据、环境密钥、HTTP完整端点、有限重试、真实文件工具、代码修复/复读、持久分叉与同轮通知归因均已验证；可从空工作区直接复跑。"
+      },
+      "id": "TF-0155"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "本机 .workbench 无 threads 目录、无 sessions 目录、events.jsonl 15 行且全为自举期 goal/checkpoint 事件、零 thread.* 事件：截至 2026-09-05T08:45Z t0 仍未开始",
+          "全盘唯一历史线程在另一仓库，2 条、0 分叉、0 足迹，早于 fork/恢复功能",
+          "前置条件已满足：TF-0128 事实段本轮落库，窗口不再早于事实段上线",
+          "复测 2026-09-05（Week 1 与 Week 2-3 节点全部落库之后）：.workbench/ 仍无 threads/ 与 sessions/，events.jsonl 仍为同样的 15 行、零 thread.*。代码侧前置条件现已全部到位（四个护城河数字都有了事件来源），唯一剩下的阻塞是真的开始用它",
+          "四个数字当前实测全为零，且这是「没有样本」而不是「样本为零」：premises.notifiedRatio 为 null（no-sample），seal.decisions = 0，noticeOutcomes.rows = 0",
+          "2026-09-05 起 t0 判据不再只是节点文字，而是可执行代码：scripts/fit-ledger/ledger.ts 的 t0Started() = 真实线程数 > 0 且注册写者数 > 0，docs/fit-ledger.md 每次生成都把它印在最前面。t0 之前所有部件行强制 unknown，所以『t0 没开始』这件事现在会自己出现在账本里，不依赖谁记得提",
+          "2026-09-06 真实 stats：threads.total=0、threads.withMessages=0、threads.withFootprints=0。不能用创建空线程或测试数据冒充日用起点。",
+          "用户于2026-09-07授权使用真实第三方模型主动取得工程样本，不等待原仓库先出现线程。",
+          "最早通过现场workbench-e2e-LHA3I4：线程t0=2026-09-07T10:15:07.056Z；首事件e-bff30799596426cd，eventSeq=1，event timestamp=2026-09-07T10:15:07.063Z；计划长期观察end_date=2026-09-21T10:15:07.056Z。",
+          "最终现场workbench-e2e-VAKSgQ与最早现场分开保存；实际工程样本门按3次恢复/5行校准/3次封印，已满足。不是把2小时压成14天。",
+          "docs/live-model-evidence-2026-09-07.json"
+        ]
+      },
+      "id": "TF-0141"
+    }
+  ],
+  "created_at": "2026-09-07T11:20:54.980602Z",
+  "proposal_id": "TFP-2026-09-07-live-model-verified",
+  "rationale": "真实模型完整连跑与最后的同轮复读归因修复均已验证；按本轮获准的主动模型采样范围收口执行闭环。",
+  "session_id": "session-2026-09-07-live-model",
+  "status": "applied"
+}

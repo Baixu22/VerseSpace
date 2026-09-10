@@ -9,6 +9,7 @@
 	},
 	"files": [
 		"dist/workbench.js",
+		"dist/ui",
 		"README.md",
 		"CHANGELOG.md"
 	],
@@ -25,6 +26,8 @@
 		"build:all": "bun run scripts/build.ts --all",
 		"dev": "bun run src/index.ts",
 		"test": "bun test --timeout 60000",
+		"test:build": "bun run scripts/check-built.ts",
+		"test:live": "bun run scripts/e2e/live-run.ts",
 		"typecheck": "bunx tsc --noEmit"
 	},
 	"dependencies": {

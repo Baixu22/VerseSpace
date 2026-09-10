@@ -1,0 +1,44 @@
+{
+  "base_graph_hash": "860763ce36f2991ca3dbe69476999bc3f08119debac19d256d702fc5dc007ee1",
+  "base_summary": {
+    "edge_count": 222,
+    "node_count": 153,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "R10 落在拆分后的 packages/workbench/src/chat/resume-card 模块；ConflictRule 联合新增 R10，types.ts 与 branches.ts 注释明确这是恢复卡 card rule R10，不是 docs/fable-brief 的产品约束 R10。",
+          "branchResumeFacts 是只读 join：thread.forked 血缘 + 离开边界后的 footprint.generated 与当前 stale 读集交集 + 面向源线程的 premise_stale 佐证；不推断 Verifier 状态。",
+          "空分支、无 lineage、无 stale、无 baseline 均返回空；每个分支行 refs 非空；dismiss 只关闭注入而保留可返回卡片；restore-view.test.ts 与 apps/workbench-ui 的 R10 测试覆盖这些约束。",
+          "真进程 E2E S6/S6a/S6b 验证分支行、resume_branch_opened 记账、空分支零痕迹与 dismiss；packages/workbench 全套 539 pass / 0 fail / 1 snapshot。",
+          "修复 UI 手势时序：查看分支现在等待源线程的 resume_branch_opened 记账请求完成后才切换，避免慢网络下消费事件落到错误线程；新增延迟请求顺序测试。",
+          "packages/workbench typecheck、Biome、apps/workbench-ui typecheck/build/Vitest（7 tests）及 task-forest validate_task_forest_export.py 全部通过。"
+        ],
+        "next_action": "已完成；R10 证据随本节点保留，消费与裁决等待真实使用样本。",
+        "progress": 100,
+        "progress_source": "manual",
+        "remaining_minutes_max": 0,
+        "remaining_minutes_min": 0,
+        "status": "done"
+      },
+      "id": "TF-0151"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "四个子节点已完成并通过代码/E2E 复核；等待真实使用窗口验证恢复消费率与恢复间隔，再由 TF-0135/TF-0136 裁决收口。",
+        "progress_source": "derived",
+        "status": "in_progress"
+      },
+      "id": "TF-0126"
+    }
+  ],
+  "created_at": "2026-09-06T17:54:39.035675Z",
+  "proposal_id": "TFP-2026-09-07-r10-close",
+  "rationale": "本轮按主线继续推进可执行节点。TF-0151 的 R10 恢复卡规则已有实现、UI 手势、真进程 E2E 与完整测试证据；硬性阻塞（真实使用窗口、通知预算门、L3 裁决）不改动，只保留在对应节点。",
+  "session_id": "codex-2026-09-07-task-forest-mainline",
+  "status": "proposed"
+}

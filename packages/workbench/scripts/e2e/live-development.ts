@@ -10,12 +10,12 @@ import {
 	startServer,
 	waitFor,
 } from "./driver";
-import { validateWithCorrections } from "./live-validation";
 import { assertLiveAuthorized } from "./live-auth";
+import { validateWithCorrections } from "./live-validation";
 import { observeRestore } from "./restoration";
 
 export async function runLiveDevelopment(ws: E2EWorkspace) {
-		await assertLiveAuthorized(ws.projectDir, "仅允许已授权的隔离工作区");
+	await assertLiveAuthorized(ws.projectDir, "仅允许已授权的隔离工作区");
 	await mkdir(join(ws.projectDir, "runs"), { recursive: true });
 	await writeFile(
 		join(ws.projectDir, "src/base-url.ts"),

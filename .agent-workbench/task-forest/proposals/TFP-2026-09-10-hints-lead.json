@@ -1,0 +1,53 @@
+{
+  "applied_at": "2026-09-09T17:39:04.477431Z",
+  "base_graph_hash": "d60aadfe260a470d7c8ec239bd459b42dd86a271493d5a0b720159e95a3d7627",
+  "base_summary": {
+    "edge_count": 225,
+    "node_count": 155,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "L1 认可率是人类认可类指标：账本只在 natural 来源下为 TF-0154 计 fit。landmark-coverage / S8b 的复核手势只验证通道与覆盖率，读数收敛到脚本常数，不能作为 L1 验收数据。",
+          "工程采样使用 scripts/fit-ledger/ledger.ts 的三类样本量门，日期跨度仅展示。",
+          "恢复、通知、阶段 C 和 L3 四项结论各写明证据强度；不把模型评审或脚本手势冒称人工认可，不自动开展或废止 L3。",
+          "判决二首次从 not-supported 转 supported：noticeOutcomes.agent.delivered ≥1 被人工 agent 真实送达达阈值；stage-c forks.total 达 5/5 包含 development source 与三 fork。",
+          "判决四 l3 保持 insufficient-evidence，TF-0099/0100/0101 继续 blocked；判决一 resume-card 仍需自然使用 resumeNotesConsumed 读数后裁。",
+          "L3 的代码路径把 scripted/live-model 一律判 insufficient-evidence；这是纪律。不要为了「打破阻塞」改 evidence-kind。"
+        ]
+      },
+      "id": "TF-0136"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "阶段 D 工程侧无待办（2026-09-10）：五个风险节点已分别收敛，L1 读数 0.74 是脚本常数。剩余只有自然使用观察；没有 natural 来源的现场就不要再动这棵子树。",
+          "TF-0107 已收敛：提交 b032b3c + 2026-09-09 的 27 项投影回归与类型检查通过；不要再按旧提示重复打开。",
+          "TF-0110 已收敛：提交 4a4656a + 2026-09-09 的 11 项 DOI/手动出口回归与类型检查通过；常数失配必须由 reduction 与地标数据触发新节点。",
+          "其余 TF-0109/0111/0112 属于不同风险域，必须各自核验证据，不批量收口。",
+          "TF-0111/0112 已于 2026-09-10 分别核验收敛；风险节点全部关闭，不要再按旧提示重开。"
+        ]
+      },
+      "id": "TF-0135"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "execution_hints": [
+          "账本按周从 live 租户重跑：cd <租户> && bun <repo>/packages/workbench/scripts/fit-ledger.ts --evidence-kind live-model --scope <repo> --out <repo>/docs/fit-ledger.md。人类认可类指标（requires: natural）在该来源下停在 unknown，属预期。",
+          "七现场账本要点：soAvFB 校准超目标（7/5）、恢复和封印仍不足；样本跨现场不能拼接（沿用账本纪律）；其余现场只有 attempts/calls 数字没有全过程事件。"
+        ]
+      },
+      "id": "TF-0137"
+    }
+  ],
+  "created_at": "2026-09-09T17:39:04.213071Z",
+  "proposal_id": "TFP-2026-09-10-hints-lead",
+  "rationale": "todo 视图的 next 列取 execution_hints[0]；历次会话只追加不重排，导致三个阶段 D 节点的首条提示仍是 2026-09-07/08 的旧文案（TF-0135 自己的提示已警告过『不要再按旧提示重复打开』）。本提案只重排提示顺序、把 2026-09-10 的现行提示放到首位，不删除历史提示，不改状态。",
+  "session_id": "session-2026-09-10-l1-source-gate",
+  "status": "applied"
+}

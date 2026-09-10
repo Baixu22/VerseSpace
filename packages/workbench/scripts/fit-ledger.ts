@@ -12,6 +12,7 @@
  *   bun run scripts/fit-ledger.ts                    # 打到 stdout
  *   bun run scripts/fit-ledger.ts --out ../../docs/fit-ledger.md
  *   bun run scripts/fit-ledger.ts --json             # 机读
+ *   bun run scripts/fit-ledger.ts --evidence-kind live-model --json
  */
 
 import { writeFile } from "node:fs/promises";
@@ -29,9 +30,14 @@ import {
 } from "./fit-ledger/ledger";
 import type { Ctx } from "./fit-ledger/metrics";
 import { renderMarkdown } from "./fit-ledger/render";
+import { assessVerdicts, parseEvidenceKind } from "./fit-ledger/verdicts";
 
 async function main(): Promise<void> {
 	const argv = Bun.argv.slice(2);
+	const kindAt = argv.indexOf("--evidence-kind");
+	const evidenceKind = parseEvidenceKind(
+		kindAt < 0 ? "unknown" : (argv[kindAt + 1] ?? ""),
+	);
 	const bb = await resolveBlackboard();
 	const [stats, events, writers] = await Promise.all([
 		collectChatStats(bb),
@@ -50,7 +56,7 @@ async function main(): Promise<void> {
 	// --scope 让行集（森林，权威 scope）与值（黑板）可以来自两处：租户黑板
 	// 有样本但没森林，本仓库有森林但 t0 未开始——账本此前只能在一边全 unknown。
 	const scope = await loadScope(scopeRoot);
-	const rows = buildRows(scope, ctx);
+	const rows = buildRows(scope, ctx, evidenceKind);
 	const moat = moatNumbers(ctx);
 	const gate = benchmarkGate(moat);
 	const histogram = fitHistogram(rows);
@@ -60,42 +66,30 @@ async function main(): Promise<void> {
 		writers: ctx.writerKind.size,
 	};
 	const window = sampleWindow(ctx);
-
-	if (argv.includes("--json")) {
-		console.log(
-			JSON.stringify(
-				{
-					generatedAt: new Date().toISOString(),
-					blackboard: bb.paths.root,
-					observation: stats.observation,
-					dataQuality: stats.dataQuality,
-					t0,
-					sampleWindow: window,
-					premisesRecent: stats.premisesRecent,
-					histogram,
-					moat,
-					gate,
-					rows,
-				},
-				null,
-				2,
-			),
-		);
-		return;
-	}
-
-	const markdown = renderMarkdown({
+	const report = {
+		generatedAt: new Date().toISOString(),
 		blackboard: bb.paths.root,
+		evidenceKind,
 		observation: stats.observation,
 		dataQuality: stats.dataQuality,
 		t0,
 		sampleWindow: window,
 		premisesRecent: stats.premisesRecent,
+		restoreToMessage: stats.lifecycle.restoreToMessage,
+		landmarkAcceptance: stats.landmarkReviews.current,
 		histogram,
 		moat,
 		gate,
+		verdicts: assessVerdicts(ctx, evidenceKind),
 		rows,
-	});
+	};
+
+	if (argv.includes("--json")) {
+		console.log(JSON.stringify(report, null, 2));
+		return;
+	}
+
+	const markdown = renderMarkdown(report);
 	const outAt = argv.indexOf("--out");
 	const outPath = outAt >= 0 ? argv[outAt + 1] : undefined;
 	if (outPath) {

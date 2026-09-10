@@ -482,6 +482,7 @@ export function buildProgram(): Command {
 			"serve a local web dashboard for the blackboard (default port 7700)",
 		)
 		.option("--port <n>", "port to listen on", "7700")
+		.option("--no-open", "start the server without opening a browser")
 		.option(
 			"--ui-dir <path>",
 			"serve dashboard assets from this directory instead of the embedded bundle",

@@ -1,0 +1,98 @@
+{
+	"generatedAt": "2026-09-08T10:20:00Z",
+	"source": "empty-stop-retry-patch-verification",
+	"patchThis": {
+		"files": [
+			"packages/workbench/scripts/e2e/live-provider.ts (empty-stop retry branch)",
+			"packages/workbench/scripts/e2e/live-provider.test.ts (2 new cases)"
+		],
+		"tests": "612 pass / 0 fail (98 files, 92.75s)",
+		"typecheck": "pass"
+	},
+	"priorPatches": [
+		"live-agent-goals.ts (goalCheck)",
+		"family-notice.ts (CONTRACT_SUFFIX)"
+	],
+	"sites": [
+		{
+			"site": "OrxNjQ",
+			"tag": "pre-empty-stop-retry",
+			"note": "step-3.7-flash via hcnsec, S6c 32bdb71e 第3回合空 stop",
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-OrxNjQ",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型未返回正文或工具",
+			"steps": 0,
+			"allStepsOk": true,
+			"calls": 7,
+			"attempts": 7,
+			"reportSha256": "03ae5a22b91d240976bd0db38fe7e27e2794b11e60c611d424d2ae241867f3ff",
+			"stats": null,
+			"ledgerT0": null,
+			"sampleWindow": null,
+			"developmentPass": null,
+			"developmentTotal": null,
+			"modelReviewVerdict": null
+		},
+		{
+			"site": "QHLCDW",
+			"tag": "post-empty-stop-retry",
+			"note": "step-3.7-flash via hcnsec, 22/22 + development 12/12 + fork 3 branch verdicts pass; branch-1 revisit 撞 token 上限",
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-QHLCDW",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型回复为空或达到 token 上限，未执行截断工具",
+			"steps": 22,
+			"allStepsOk": true,
+			"calls": 38,
+			"attempts": 39,
+			"reportSha256": "912328f7fcdd38d5865ae94db9356db3af415f77c70ac3540d34a65eb9ce3f95",
+			"stats": {
+				"threads": 4,
+				"restores": 2,
+				"sealDecisions": 1,
+				"sealBlocked": 1,
+				"sealReviewsCorrect": 1,
+				"noticeOutcomeRows": 6,
+				"overlaps": 15,
+				"notified": 6,
+				"restoreToMessage": {
+					"windowDays": 7,
+					"withCard": {
+						"samples": 1,
+						"medianMs": 2033
+					},
+					"withoutCard": {
+						"samples": 1,
+						"medianMs": 10
+					},
+					"unknownCard": {
+						"samples": 0,
+						"medianMs": null
+					},
+					"incomplete": 0,
+					"medianChangeRatio": 202.3,
+					"exceeds20Percent": true
+				}
+			},
+			"ledgerT0": {
+				"started": true,
+				"threads": 4,
+				"writers": 6
+			},
+			"sampleWindow": {
+				"restores": 2,
+				"noticeOutcomes": 6,
+				"sealDecisions": 1,
+				"targets": {
+					"restores": 3,
+					"noticeOutcomes": 5,
+					"sealDecisions": 3
+				},
+				"satisfied": false,
+				"missing": ["restores 2/3", "sealDecisions 1/3"]
+			},
+			"developmentPass": 12,
+			"developmentTotal": 12,
+			"modelReviewVerdict": "pass"
+		}
+	]
+}

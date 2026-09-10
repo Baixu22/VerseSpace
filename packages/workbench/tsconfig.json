@@ -21,6 +21,9 @@
 		"scripts/ui-prepare.ts",
 		"scripts/measure-fork-inheritance.ts",
 		"scripts/fork-inheritance",
+		"scripts/e2e",
+		"scripts/benchmark-premises.ts",
+		"scripts/check-built.ts",
 		"scripts/fit-ledger.ts",
 		"scripts/fit-ledger"
 	]

@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
+import { isAbsolute, join, resolve, sep } from "node:path";
 import type { Blackboard } from "../blackboard";
+import { publicChatConfig } from "../chat/credentials";
+import { restoreObservationSchema } from "../chat/restore-timing";
 import { collectRestoreView } from "../chat/restore-view";
 import { ChatThreads } from "../chat/threads";
 import { runDoctor } from "../doctor";
@@ -10,6 +12,7 @@ import { drainPremiseQueue } from "../runtime/delivery";
 import { reconcilePremises } from "../runtime/premises";
 import { workbenchConfigSchema } from "../types/config";
 import { WORKBENCH_VERSION } from "../version";
+import { evidenceResponse } from "./evidence-route";
 
 export interface UiState {
 	version: string;
@@ -112,7 +115,7 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 	return {
 		version: WORKBENCH_VERSION,
 		project: bb.projectRoot,
-		config,
+		config: { ...config, chat: publicChatConfig(config.chat) },
 		goals,
 		queue,
 		workspots,
@@ -172,7 +175,14 @@ async function loadEmbeddedFiles(): Promise<Record<string, string>> {
 		const mod = (await import("./assets.generated.js")) as {
 			files: Record<string, string>;
 		};
-		return mod.files ?? {};
+		// JS bundles emit file imports relative to the bundle, not the user's
+		// workspace. Compiled binaries already provide absolute virtual paths.
+		return Object.fromEntries(
+			Object.entries(mod.files ?? {}).map(([key, path]) => [
+				key,
+				isAbsolute(path) ? path : resolve(import.meta.dir, path),
+			]),
+		);
 	} catch {
 		return {};
 	}
@@ -406,8 +416,7 @@ export async function createUiServer(
 		}
 		if (url.pathname === "/api/config/chat" && request.method === "GET") {
 			const config = await bb.config.load();
-			const { apiKey, ...rest } = config.chat;
-			return Response.json({ ...rest, hasKey: Boolean(apiKey) });
+			return Response.json(publicChatConfig(config.chat));
 		}
 		if (url.pathname === "/api/config/chat" && request.method === "PATCH") {
 			const body = (await request.json()) as Record<string, unknown>;
@@ -416,13 +425,13 @@ export async function createUiServer(
 			if (body.apiKey === "") {
 				next.apiKey = undefined; // empty string clears the key
 			}
+			if (body.effort === null) next.effort = undefined;
 			config.chat = workbenchConfigSchema.parse({
 				...config,
 				chat: next,
 			}).chat;
 			await bb.config.save(config);
-			const { apiKey, ...rest } = config.chat;
-			return Response.json({ ...rest, hasKey: Boolean(apiKey) });
+			return Response.json(publicChatConfig(config.chat));
 		}
 
 		// ── chat runtime: threads + streaming messages ──
@@ -436,11 +445,22 @@ export async function createUiServer(
 			return Response.json(await chat.create(body.title));
 		}
 		const chatMatch = url.pathname.match(
-			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-action))?$/,
+			/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-action|evidence))?$/,
 		);
 		if (chatMatch) {
-			const threadId = decodeURIComponent(chatMatch[1] ?? "");
+			let threadId: string;
+			try {
+				threadId = decodeURIComponent(chatMatch[1] ?? "");
+			} catch {
+				return Response.json({ error: "对话标识无效" }, { status: 400 });
+			}
+			if (!/^[a-zA-Z0-9_-]+$/.test(threadId)) {
+				return Response.json({ error: "对话标识无效" }, { status: 400 });
+			}
 			const sub = chatMatch[3];
+			if (sub === "evidence" && request.method === "GET") {
+				return evidenceResponse(bb, chat, threadId, url);
+			}
 			if (!sub && request.method === "GET") {
 				return Response.json(await collectRestoreView(bb, chat, threadId));
 			}
@@ -480,10 +500,17 @@ export async function createUiServer(
 				return Response.json({ ok: true });
 			}
 			if (sub === "restore" && request.method === "POST") {
-				const body = (await request.json().catch(() => ({}))) as {
-					fromThreadId?: string | null;
-				};
-				await chat.recordRestored(threadId, body.fromThreadId ?? null);
+				const body = restoreObservationSchema.safeParse(
+					await request.json().catch(() => ({})),
+				);
+				if (!body.success) {
+					return Response.json({ error: "恢复观测字段无效" }, { status: 400 });
+				}
+				await chat.recordRestored(
+					threadId,
+					body.data.fromThreadId ?? null,
+					body.data,
+				);
 				return Response.json({ ok: true });
 			}
 			if (sub === "resume-note/consume" && request.method === "POST") {

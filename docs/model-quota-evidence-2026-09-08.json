@@ -1,0 +1,264 @@
+{
+	"generatedAt": "2026-09-08T05:24:00.394Z",
+	"source": "live-model-attempts-with-no-successful-responses",
+	"runs": [
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-213YQX",
+			"report": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-213YQX\\runs\\live-report.json",
+			"sha256": "b37552f1da22375268975ece7fa786b56b60fe0ee346ce8fac4635bdcff7b929",
+			"model": "poolside/laguna-xs-2.1:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型 HTTP 429（尝试 3 次）",
+			"responses": 0,
+			"attempts": null
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-WDMYpS",
+			"report": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-WDMYpS\\runs\\live-report.json",
+			"sha256": "5fb3665e52552cd3796d3e9a4e5e89ace9e2c4690522f390ef743d45e28971ea",
+			"model": "inclusionai/ling-3.0-flash-fin:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型 HTTP 429（尝试 3 次）",
+			"responses": 0,
+			"attempts": null
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-otMBAh",
+			"report": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-otMBAh\\runs\\live-report.json",
+			"sha256": "07b41ea2f24ac66e178242284b76451d36f9c062dcaaba2f26a863c09ac4f1d5",
+			"model": "cohere/north-mini-code:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()",
+			"responses": 0,
+			"attempts": null
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-dp27bo",
+			"report": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-dp27bo\\runs\\live-report.json",
+			"sha256": "9f5e2c8ec6d6e60a5ed1bd0a58359fdf0e907afb4c15abd4ab6948366dfb6999",
+			"model": "cohere/north-mini-code:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型 HTTP 429（尝试 3 次）",
+			"responses": 0,
+			"attempts": [
+				{
+					"at": "2026-09-08T05:02:45.211Z",
+					"sessionId": "eae79ba0-6417-4620-9fdd-15e52eb6232c",
+					"model": "cohere/north-mini-code:free",
+					"attempt": 1,
+					"status": 429,
+					"outcome": "http-error",
+					"elapsedMs": 769
+				},
+				{
+					"at": "2026-09-08T05:02:47.991Z",
+					"sessionId": "eae79ba0-6417-4620-9fdd-15e52eb6232c",
+					"model": "cohere/north-mini-code:free",
+					"attempt": 2,
+					"status": 429,
+					"outcome": "http-error",
+					"elapsedMs": 208
+				},
+				{
+					"at": "2026-09-08T05:02:50.204Z",
+					"sessionId": "eae79ba0-6417-4620-9fdd-15e52eb6232c",
+					"model": "cohere/north-mini-code:free",
+					"attempt": 3,
+					"status": 429,
+					"outcome": "http-error",
+					"elapsedMs": 204
+				}
+			]
+		},
+		{
+			"workspace": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-jQOMyU",
+			"report": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-jQOMyU\\runs\\live-report.json",
+			"sha256": "8829d1784e47021a80eb2526aac057bdbe4dd8796490e78c059d445a7db801b3",
+			"model": "nvidia/nemotron-3.5-lightning:free",
+			"ok": false,
+			"error": "Error: 消息回合失败：Error: 真实模型 HTTP 429（尝试 3 次）",
+			"responses": 0,
+			"attempts": [
+				{
+					"at": "2026-09-08T05:20:41.821Z",
+					"sessionId": "802e330d-15bb-4e2b-865f-edc6749cb333",
+					"model": "nvidia/nemotron-3.5-lightning:free",
+					"attempt": 1,
+					"status": 429,
+					"outcome": "http-error",
+					"elapsedMs": 821
+				},
+				{
+					"at": "2026-09-08T05:20:44.651Z",
+					"sessionId": "802e330d-15bb-4e2b-865f-edc6749cb333",
+					"model": "nvidia/nemotron-3.5-lightning:free",
+					"attempt": 2,
+					"status": 429,
+					"outcome": "http-error",
+					"elapsedMs": 213
+				},
+				{
+					"at": "2026-09-08T05:20:46.880Z",
+					"sessionId": "802e330d-15bb-4e2b-865f-edc6749cb333",
+					"model": "nvidia/nemotron-3.5-lightning:free",
+					"attempt": 3,
+					"status": 429,
+					"outcome": "http-error",
+					"elapsedMs": 210
+				}
+			]
+		}
+	],
+	"quotaProbe": {
+		"status": 429,
+		"dailyFreeQuota": true,
+		"minuteFreeQuota": false,
+		"method": "额外一次诊断请求只提取 free-models-per-day / free-models-per-min 标志；原始响应和凭据不落盘。该请求未计入运行器尝试日志。"
+	},
+	"ledger": {
+		"blackboard": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-jQOMyU\\.workbench",
+		"dataQuality": {
+			"insufficientHistory": true,
+			"reasons": ["no thread footprints"]
+		},
+		"sampleWindow": {
+			"restores": 1,
+			"noticeOutcomes": 0,
+			"sealDecisions": 0,
+			"targets": {
+				"restores": 3,
+				"noticeOutcomes": 5,
+				"sealDecisions": 3
+			},
+			"satisfied": false,
+			"missing": ["restores 1/3", "noticeOutcomes 0/5", "sealDecisions 0/3"]
+		},
+		"gate": {
+			"open": false,
+			"missing": [
+				"A 校准表行数",
+				"B 推定写者是 git 或人的失效通知",
+				"C 来自真实会话的 seal.decided: block",
+				"D notified / overlaps"
+			]
+		},
+		"verdicts": [
+			{
+				"id": "resume-card",
+				"title": "判决一：恢复卡",
+				"status": "insufficient-evidence",
+				"action": "保留现状，复核恢复与消费记录；达到使用证据要求后再判断是否缩为纯事实行。",
+				"readings": [
+					{
+						"source": "stats.lifecycle.resumeNotesConsumed / stats.lifecycle.restores",
+						"value": 0,
+						"threshold": "≥ 0.3"
+					},
+					{
+						"source": "stats.lifecycle.resumeActions",
+						"value": 0,
+						"threshold": "> 0"
+					}
+				]
+			},
+			{
+				"id": "premise-detection",
+				"title": "判决二：前提检测",
+				"status": "insufficient-evidence",
+				"action": "补通知后的可观测活动；unknown 不能当作未忽略或未驳回。",
+				"readings": [
+					{
+						"source": "stats.noticeOutcomes.agent.delivered",
+						"value": 0,
+						"threshold": "> 0"
+					},
+					{
+						"source": "stats.noticeOutcomes.agent.dismissed / .delivered",
+						"value": null,
+						"threshold": "≤ 0.5"
+					},
+					{
+						"source": "stats.noticeOutcomes.agent.ignored / .delivered",
+						"value": null,
+						"threshold": "≤ 0.1"
+					},
+					{
+						"source": "stats.noticeOutcomes.agent.unknown",
+						"value": 0,
+						"threshold": "保留为未知"
+					},
+					{
+						"source": "(stats.noticeOutcomes.agent.dismissed + .unknown) / .delivered",
+						"value": null,
+						"threshold": "≤ 0.5 才足以支持判据"
+					},
+					{
+						"source": "(stats.noticeOutcomes.agent.ignored + .unknown) / .delivered",
+						"value": null,
+						"threshold": "≤ 0.1 才足以支持判据"
+					}
+				]
+			},
+			{
+				"id": "stage-c",
+				"title": "判决三：阶段 C",
+				"status": "insufficient-evidence",
+				"action": "阶段 C 已完成；本现场尚不足以重复支持范围判据，继续补分叉与真实继承观测。",
+				"readings": [
+					{
+						"source": "stats.forks.total",
+						"value": 0,
+						"threshold": "≥ 5"
+					},
+					{
+						"source": "events[thread.inheritance_observed]：agentContextInherited && premiseInherited，按 threadId 去重（TF-0125/0131）",
+						"value": 0,
+						"threshold": "≥ 1"
+					}
+				]
+			},
+			{
+				"id": "l3",
+				"title": "判决四：L3",
+				"status": "insufficient-evidence",
+				"action": "继续延后 L3，保留 TF-0099 / TF-0100 / TF-0101 的阻塞状态；工程开发照常推进。",
+				"readings": [
+					{
+						"source": "stats.observation.days（仅时间跨度，来源须另行核对）",
+						"value": 3.8194444444444445e-7,
+						"threshold": "自然使用且 ≥ 14 天"
+					},
+					{
+						"source": "stats.forks.total / (stats.observation.days / 7)",
+						"value": null,
+						"threshold": "≥ 1"
+					},
+					{
+						"source": "stats.siblingAlternation.alternatingFamilies / .families（全部根家族为分母，TF-0122）",
+						"value": null,
+						"threshold": "≥ 0.3"
+					},
+					{
+						"source": "events[thread.resume_action]：resume_fact_opened / resume_branch_opened（TF-0129/0151）",
+						"value": null,
+						"threshold": "≥ 1 / 周；dismiss 与叙事展开不计事实消费"
+					}
+				]
+			}
+		]
+	},
+	"checks": {
+		"providerAndReport": {
+			"passed": 6,
+			"failed": 0,
+			"assertions": 39
+		},
+		"fitLedger": {
+			"passed": 22,
+			"failed": 0,
+			"assertions": 58
+		},
+		"workbenchTypecheck": "passed",
+		"biome": "5 changed TypeScript files passed"
+	}
+}
