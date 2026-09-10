@@ -22,6 +22,33 @@ export interface LiveProvider {
 	baseUrl: string;
 }
 
+/**
+ * 无法解析的响应正文：只描述**结构**，不回显内容。
+ *
+ * 为什么需要它：2026-09-11 的第 26 轮真实采样重试用尽后失败，而错误信息除了
+ * 「无法解析为 JSON」什么都给不出——网关的 HTML 错误页与被截断的 JSON 是两种
+ * 完全不同的处置（前者要退避/换端点，后者要抬高 max_tokens 或换非流式）。
+ * 正文本身仍然绝不进错误信息与日志（可能带网关标记或反射头），所以只留长度、
+ * 首字符类别、是否闭合与 content-type 这四样结构事实。
+ */
+function bodyShape(text: string, response: Response): string {
+	const trimmed = text.trim();
+	const head =
+		trimmed.length === 0
+			? "空正文"
+			: trimmed.startsWith("<")
+				? "HTML"
+				: trimmed.startsWith("{")
+					? "JSON 开头"
+					: trimmed.startsWith("[")
+						? "数组开头"
+						: "其他";
+	const closed =
+		trimmed.endsWith("}") || trimmed.endsWith("]") ? "已闭合" : "未闭合";
+	const type = response.headers.get("content-type") ?? "无 content-type";
+	return `长度 ${text.length} · 形状 ${head} · ${closed} · ${type}`;
+}
+
 const replySchemaRaw = z.object({
 	role: z.literal("assistant"),
 	// Some OpenAI-compatible proxies (e.g. senseaudio vllm) omit `content`
@@ -62,6 +89,8 @@ export async function completeLiveTurn(
 		const attemptStarted = Date.now();
 		let status: number | null = null;
 		let outcome = "request-error";
+		/** 只在 invalid-json 时填：正文的结构指纹（绝不回显正文）。 */
+		let shape: string | undefined;
 		try {
 			const response = await fetch(endpoint, {
 				method: "POST",
@@ -116,8 +145,9 @@ export async function completeLiveTurn(
 				choices?: Array<{ message?: LiveMessage; finish_reason?: string }>;
 			}
 			let body: CompletionBody;
+			const raw = await response.text();
 			try {
-				body = JSON.parse(await response.text()) as CompletionBody;
+				body = JSON.parse(raw) as CompletionBody;
 			} catch {
 				// Proxies sometimes answer 200 with an HTML error page or a truncated
 				// body (live-tenant 2026-09-08: two S7b rounds died on "Failed to
@@ -125,12 +155,17 @@ export async function completeLiveTurn(
 				// as safe as the HTTP 5xx one. The body is never echoed: it may carry
 				// anything from gateway markup to reflected headers.
 				outcome = "invalid-json";
+				// 正文之外的**结构指纹**要留下：2026-09-11 真出现了一次重试用尽
+				// （第 26 轮），而当时除了「无法解析」之外什么都判断不了——是网关
+				// HTML、还是被截断的 JSON，处置完全不同。指纹只报长度/形状/结尾是
+				// 否闭合与 content-type，不回显任何正文内容。
+				shape = bodyShape(raw, response);
 				if (attempt < 2) {
 					retryDelay = 1_000;
 					continue;
 				}
 				throw new Error(
-					`真实模型返回了无法解析为 JSON 的正文（尝试 ${attempt + 1} 次）`,
+					`真实模型返回了无法解析为 JSON 的正文（尝试 ${attempt + 1} 次）：${shape}`,
 				);
 			}
 			const choice = body.choices?.[0];
@@ -206,6 +241,9 @@ export async function completeLiveTurn(
 							outcome !== "http-error"
 								? "aborted"
 								: outcome,
+						// 结构指纹进尝试记录：这样「重试用尽」之外，那 9 次被重试
+						// 兜住的 invalid-json 也能被事后归类（HTML 页 / 截断流）。
+						...(shape ? { bodyShape: shape } : {}),
 						elapsedMs: Date.now() - attemptStarted,
 					})}\n`,
 				);

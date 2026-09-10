@@ -377,6 +377,10 @@ test("an unparseable 200 body is retried once and recorded as invalid-json", asy
 			"response",
 		]);
 		expect(attempts.map((row) => row.status)).toEqual([200, 200]);
+		// 结构指纹进尝试记录：能看出是网关 HTML，又不回显正文
+		expect(attempts[0].bodyShape).toContain("HTML");
+		expect(attempts[0].bodyShape).toContain("text/html");
+		expect(attempts[0].bodyShape).toContain("长度");
 		expect(JSON.stringify(attempts)).not.toContain("body-marker");
 	} finally {
 		server.stop(true);
@@ -410,6 +414,10 @@ test("three unparseable bodies fail closed without echoing the body", async () =
 		}
 		expect(message).toContain("无法解析为 JSON");
 		expect(message).toContain("尝试 3 次");
+		// 2026-09-11 第 26 轮就是走到这条路上失败的：当时除了「无法解析」什么都
+		// 判断不了，现在至少能分出「网关 HTML」还是「截断的 JSON」。
+		expect(message).toContain("形状");
+		expect(message).toContain("长度");
 		expect(message).not.toContain("body-marker");
 		expect(received).toBe(3);
 	} finally {
