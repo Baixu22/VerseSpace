@@ -338,6 +338,9 @@ export function spawnSupervised(
 	const start = async (): Promise<void> => {
 		let file = argv[0] ?? "";
 		let args = argv.slice(1);
+		// Windows 的 .cmd/.bat 垫片必须经 cmd.exe 执行，且要用「逐字命令行」传参
+		// （原因见下方 spawn 处的注释）。
+		let verbatimArgs = false;
 		if (process.platform === "win32") {
 			const resolved = await resolveWindowsExecutable(file);
 			if (resolved === null) {
@@ -358,8 +361,12 @@ export function spawnSupervised(
 				const quoted = [resolved, ...args]
 					.map((part) => (part.includes(" ") ? `"${part}"` : part))
 					.join(" ");
-				args = ["/d", "/s", "/c", quoted];
+				// 再包一层引号：`cmd /s` 会剥掉最外层的**一对**引号，所以
+				// `cmd /c ""C:\a b\x.cmd" arg"` 才是「路径带空格」的标准形式；
+				// 只给路径加引号时，cmd 剥掉的是那对引号，路径在空格处断掉。
+				args = ["/d", "/s", "/c", `"${quoted}"`];
 				file = "cmd.exe";
+				verbatimArgs = true;
 			}
 		}
 
@@ -375,6 +382,16 @@ export function spawnSupervised(
 			env: options.env,
 			stdio: ["pipe", "pipe", "pipe"],
 			windowsHide: true,
+			// cmd.exe 只接受一条命令行，而 Node/bun 默认会把「含空格的单个 argv
+			// 元素」包成 "..."，并把元素内部的引号转义成 \"——cmd 不认 \"（它把
+			// 引号当分隔符），于是 `cmd /d /s /c "\"C:\...\bun.cmd\" ..."` 里的
+			// 第一段变成带反斜杠的字面量，cmd 直接报「不是内部或外部命令」。
+			// 路径带空格才会触发：`C:\Users\John Doe\AppData\Roaming\npm\x.cmd`、
+			// 或任何装在带空格目录下的垫片（2026-09-11 本机沙箱运行时就是
+			// `...\DoubaoWork\User Data\sandbox_runtime\...\node\bun.cmd`，导致
+			// 走 CLI 的对话全部「agent 退出码 1」且不产生任何输出）。逐字传递
+			// 让我们已经引号化好的那条命令行原样到达 cmd.exe。
+			windowsVerbatimArguments: verbatimArgs,
 			// POSIX: own process group so a group kill reaches grandchildren
 			detached: process.platform !== "win32",
 		});
