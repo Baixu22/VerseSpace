@@ -1,4 +1,5 @@
 import { appendFile } from "node:fs/promises";
+import { setTimeout } from "node:timers/promises";
 import { z } from "zod";
 import { liveTools } from "./live-tools";
 
@@ -19,33 +20,6 @@ export interface LiveProvider {
 	key: string;
 	model: string;
 	baseUrl: string;
-}
-
-/**
- * 重试之间的退避等待，**不用** `node:timers/promises` 的 `{ signal }` 版本。
- *
- * TF-0158 的 stuck point 就在这里：同一进程里先前有过一次 in-flight 中止之后，
- * `await setTimeout(delay, undefined, { signal })` 会永远不结算。`bun test` 里的
- * 表现是第 7 条（in-flight 中止）跑完、第 8 条的 500 退避停在这一行不再返回，
- * 而且连测试框架自己的 `--timeout` 都不响。裸定时器 + 显式监听 abort 语义等价
- * （abort 时同样以 signal 的原因拒绝），但不依赖那条会卡住的接线。
- */
-function backoff(delay: number, signal: AbortSignal): Promise<void> {
-	return new Promise<void>((resolve, reject) => {
-		const onAbort = () => {
-			globalThis.clearTimeout(timer);
-			reject(signal.reason ?? new Error("aborted"));
-		};
-		if (signal.aborted) {
-			onAbort();
-			return;
-		}
-		const timer = globalThis.setTimeout(() => {
-			signal.removeEventListener("abort", onAbort);
-			resolve();
-		}, delay);
-		signal.addEventListener("abort", onAbort, { once: true });
-	});
 }
 
 /**
@@ -110,7 +84,7 @@ export async function completeLiveTurn(
 	const requestMessages = [...messages];
 	let retryDelay = 0;
 	for (let attempt = 0; ; attempt++) {
-		if (retryDelay) await backoff(retryDelay, signal);
+		if (retryDelay) await setTimeout(retryDelay, undefined, { signal });
 		signal.throwIfAborted();
 		const attemptStarted = Date.now();
 		let status: number | null = null;
