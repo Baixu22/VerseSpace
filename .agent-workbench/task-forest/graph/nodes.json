@@ -2636,8 +2636,11 @@
     "display_order": 1400,
     "estimated_total_minutes": null,
     "evidence": [
-      "（本条为本轮新增）验收3 的人评通道分两层，别把两层混成一层：① 内容检查——人回答队列里那 2 条（`src/alpha.ts`、`src/beta.ts`），回答写的是 human 事件，能验证「列表里是不是这次干的活的核心」这件事本身；② 自然证据——fit 判据要 `requires: natural`，而本批现场声明是 live-model，所以即使人答完、值到 1.0，fit 仍停在 unknown。要拿到自然证据，需要一个**真实的会话现场**（人在运行时里干活），本机目前没有（仓库自己的黑板交互事件为 0）。",
-      "排队里的 2 条：`bun scripts/e2e/landmark-review-queue.ts --workspace %TEMP%\\workbench-e2e-live-tenant --template answers.json`，改 verdict 后 `--apply answers.json`。两条都认可 → 3/3 = 1.0（内容检查成立）。"
+      "（本轮·真缺陷）复核写入侧与读取侧口径分家：`reviewLandmark` 原先用 `collectInterest`（默认「现在」时钟 + 投影表）校验，而队列与 L1 的分母是「会话时钟下的地标集合」。租户事件已经是几小时前的，按「现在」算地标早跌到线下，于是**界面上列出的三条待办，回填时一条都进不去**（错误：不在当前地标集合中：src/beta.ts），复核通道整体失效——这正好卡住本节点唯一的验收通道。",
+      "（本轮·修复）`reviewLandmark` 改为读同一份投影：`interestFromEvents(records, writer, now, { clock: \"session\" })`，接受范围 = 地标集合 ∪ 投影表（真地标 + 系统当下展示的内容；仍拒绝「给没展示的东西点赞」）。src/interactions 41 pass / 0 fail，`bun test src` 574 pass / 0 fail。",
+      "（本轮·彩排验证，仅限副本）把租户复制一份到 %TEMP%\\workbench-review-rehearsal2，在副本上跑 `landmark-review-queue.ts --template` → 填三个 verdict → `--apply`：**已回填 3 条、跳过 0 条**，L1 读数 0.3333 → **1.0000（复核覆盖 1.0000）**，判据「≥0.8 已满足」由工具自己打出来。真实租户**没有被写入**：它的读数仍是 认可 1 / 全部 3 = 0.3333，待人自己回答。",
+      "（顺带发现·未处理）队列的 `--template` 会把已复核过的条目也列进模板（本次三条里 `editor-1/src/beta.ts` 现状已是 endorse），人看不出哪条已经答过——不影响正确性（同一地标取最新结论），但值得改成带 `current` 字段。",
+      "（环境噪声）`bun test src` 有一次报 `events blackboard API > assigns unique stable ids…` 失败，单跑 47 pass / 0 fail、复跑全绿，判定为抖动，与本轮改动无关。"
     ],
     "execution_hints": [
       "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
@@ -2648,7 +2651,7 @@
     ],
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "内容检查两条立刻可做（队列已生成）；自然证据需要先用工作台干一段真实活（产生 interactions），再在那个现场上跑 stats + 队列。",
+    "next_action": "人只需在原租户上跑三步（现在已验证可用）：① `bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace %TEMP%\\workbench-e2e-live-tenant --template answers.json`；② 把两条 `verdict: null` 改成 endorse / reject 并填 reason；③ `--apply answers.json`。之后读数会从 0.3333 变成 3/3（若两条都 endorse），fit 仍会停在 unknown（来源是 live-model，不是自然使用）。",
     "non_goals": [
       "a2a／多 agent 互聊协议",
       "手动工作流 DAG 编辑器",
@@ -2673,7 +2676,7 @@
     "success_metrics": [],
     "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-    "updated_at": "2026-09-10T18:28:06.815326Z"
+    "updated_at": "2026-09-10T20:22:37.291904Z"
   },
   "TF-0058": {
     "acceptance_criteria": [

@@ -1,6 +1,7 @@
 import type { Blackboard } from "../blackboard";
 import type { WorkbenchEvent } from "../types/event";
-import { collectInterest } from "./context";
+import { interestFromEvents } from "./context";
+import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
 
 export const LANDMARK_REVIEW_TYPE = "landmark.reviewed" as const;
 
@@ -31,8 +32,26 @@ export async function reviewLandmark(
 	if (verdict !== "endorse" && verdict !== "reject") {
 		throw new Error("verdict 必须是 endorse 或 reject");
 	}
-	const landmarks = (await collectInterest(bb, writer)).landmarks;
-	if (!landmarks.some((landmark) => landmark.handle === handle)) {
+	// 校验必须和**队列展示的同一份读数**对齐，否则人看到 N 条、却一条都回填不了。
+	// 2026-09-11 彩排实测：这里原先用 `collectInterest`（默认「现在」时钟 + 投影表，
+	// 含目录与回退项），而队列与 L1 的分母是「会话时钟下的文件级地标」——两段口径
+	// 一分家，界面上三条待办全部被拒（"不在当前地标集合中"），复核通道整体失效。
+	const records = await bb.events.query({
+		source: INTERACTIONS_SOURCE,
+		type: INTERACTIONS_TYPE,
+	});
+	const reading = interestFromEvents(records, writer, Date.now(), {
+		clock: "session",
+	});
+	// 用会话时钟下的**地标集合 ∪ 投影表**：集合是真地标（DOI>10，文件与目录都在内），
+	// 投影表是「系统当下展示给人看的东西」。两者都算「系统展示过的内容」，而不是
+	// 「给没展示的东西点赞」；唯一必须对齐的是**参考时刻**与读取侧一致（都走会话
+	// 时钟），否则界面列得出来、回填却被拒。
+	const acceptable = new Set([
+		...reading.landmarkHandles,
+		...reading.landmarks.map((row) => row.handle),
+	]);
+	if (!acceptable.has(handle)) {
 		throw new Error(`不在当前地标集合中：${handle}`);
 	}
 	const trimmed = reason?.trim();
