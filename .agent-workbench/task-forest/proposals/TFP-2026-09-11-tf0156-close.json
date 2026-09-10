@@ -1,0 +1,67 @@
+{
+  "applied_at": "2026-09-10T20:16:45.405727Z",
+  "base_graph_hash": "c68637c0f54aaabed252e91559a0f95fdfe251d76e95f478352650076a6d9dae",
+  "base_summary": {
+    "edge_count": 230,
+    "node_count": 158,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "set_status",
+      "fields": {
+        "acceptance_criteria": [
+          "（已满足）用 ≥3 个不同工作形状的真实现场跑标定扫描，给出文件级地标集合与容器占比的数字。",
+          "（已满足）定下 L1 分母的粒度规则并落在代码与测试上：文件级 + 会话时钟，两处都有回归用例（Revert 即红）。",
+          "（已满足）让文件级地标集合在真实现场非空且覆盖 ≥ 一半写者：相对选择落码后四个现场全部 100% 覆盖（有文件级触碰的会话口径），仓库自然现场 0 会话（不可计算，如实报出）。",
+          "（已满足）结论写回 positioning-v6 §11：分母、空集不可计算、单位、参考时刻四条都在，并附实测数字与复现入口。"
+        ],
+        "evidence": [
+          "（本轮）相对选择落码：`sessionFileTopK(records, writer, k, now)` 在 src/interactions/context.ts（按会话时钟下的 DOI 排序、只收 contentType === \"file\"、同分按字典序），`relativeLandmarkCoverage(events, writerIds, k)` 在 src/interactions/review-stats.ts（分母 = 有文件级触碰的会话，分子 = top-K 非空的会话）。回归用例在 review-stats.test.ts：绝对阈值口径给空集、相对选择给 3 条且不含目录、编辑次数并列时最近触碰排前、K 可调、会话与写者计数不串台。`bun test src/interactions` 41 pass / 0 fail。",
+          "（本轮）用落库函数在四个真实现场量：租户 会话 84 / 非空 84 / 覆盖 100% / 条目 188 / 去重文件 10；节点验证 32/32/100%/73/4；LHA3I4 15/15/100%/28/10；VAKSgQ 12/12/100%/27/10。仓库自身（自然现场）会话 0、覆盖 n/a。",
+          "（口径说明）分母取「有文件级触碰的会话」而不是「所有写者」：后者会把只有容器/git 触碰的写者算进分母，得出 84/103 = 82%。两个数字都远超验收线的 50%，差别只在分母定义，已在此写清以免以后各自引用不同数。",
+          "（仍未做，已另立节点）把这条口径**设为 L1 的默认分母**没有做：切换会让待人回答的队列从 3 条变成 188 条（每会话 top-3），那是与 TF-0057 的复核迁移绑在一起的决定，不属于本节点的「非空与覆盖」验收。已立 TF-0159 承接。",
+          "（既有）§11 口径四条（文件级分母 / 空集不可计算 / 每会话单位 / 会话时钟）已在文档；四现场标定扫描与负结论见 docs/report-2026-09-11-monitoring.md §4b、§4c。"
+        ],
+        "next_action": "本节点收口。后续口径切换在 TF-0159（与 TF-0057 的队列迁移一起做）。"
+      },
+      "id": "TF-0156",
+      "progress": 100,
+      "status": "done"
+    },
+    {
+      "action": "add_node",
+      "alias": "L1 分母切换（相对选择）",
+      "node": {
+        "acceptance_criteria": [
+          "① 切换后 L1 的读数在四个现场都能算出来（分母非空），且账本同时报阈值口径与相对口径两条，便于对照；旧复核结论在新口径下的映射规则写清楚（哪些作废、哪些沿用）。",
+          "② 队列规模与人工成本实测：给出每会话条数与总条目数，确认 §11「3–5 条」的表述与实际一致，不一致就改一处（文档或实现）。",
+          "③ 迁移不丢数据：切换前后 TF-0057 已记录的复核结论都还能被查出来（或明确标记为旧口径），不出现「结论还在但集合变了导致认可率无故跳变」的情况。"
+        ],
+        "evidence": [
+          "TF-0156 的相对选择落码：src/interactions/context.ts 的 sessionFileTopK、src/interactions/review-stats.ts 的 relativeLandmarkCoverage；四现场覆盖 100%（有文件级触碰的会话口径）。",
+          "切换的代价有实测：租户 84 个会话 × top-3 = 188 条，是人评不了的规模，这正是 v6 §11 把单位定成「每会话」的理由。"
+        ],
+        "id": "TF-0159",
+        "kind": "task",
+        "next_action": "先写迁移方案（旧结论如何处理 + 账本双口径），再动 review-stats 的默认分母。",
+        "priority": 2,
+        "progress": 0,
+        "status": "proposed",
+        "summary": "TF-0156 把相对选择做成了可计量的一条读数（relativeLandmarkCoverage），但 L1 现在的分母仍是绝对阈值口径（DOI>10 的文件级集合）。切换会改变待人回答的队列规模：租户从 3 条变成 188 条，因此要在「队列迁移」这件事里一起处理（保留阈值口径读数、逐步切换、复核结论如何映射），不能只改分母。",
+        "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做"
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "TF-0159",
+      "to": "TF-0156",
+      "type": "derived_from"
+    }
+  ],
+  "created_at": "2026-09-10T20:16:45.231576Z",
+  "proposal_id": "TFP-2026-09-11-tf0156-close",
+  "rationale": "验收三的验收数字（现场全部非空、触发写者覆盖率 ≥ 50%）现在由**落库的函数**给出，不再是扫描脚本里的临时实现：sessionFileTopK（context.ts）+ relativeLandmarkCoverage（review-stats.ts）都进了 src，带回归用例（41 pass / 0 fail）。四个现场实测：租户 84/84 = 100%、节点验证 32/32 = 100%、LHA3I4 15/15 = 100%、VAKSgQ 12/12 = 100%（分母是「有文件级触碰的会话」；若按「所有写者」算是 84/103 = 82%，两个口径都远超 50%）。仓库自身的自然现场仍是 0 个会话，与既有的「本机没有自然现场」结论一致。",
+  "session_id": null,
+  "status": "applied"
+}

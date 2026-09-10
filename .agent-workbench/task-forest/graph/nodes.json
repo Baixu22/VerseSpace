@@ -8700,7 +8700,7 @@
     "next_action": "实现相对选择：先定 K=3 与排序（窗口内相对份额或归一化到 [0,1]），在四个现场 + 仓库自然现场上把「非空率 / 每会话条目数 / 排序稳定性」跑成数字，数字站得住再改 L1 的分母实现，并把 §11 口径第 1 条同步改写。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -8711,11 +8711,11 @@
       "容器可以留在投影里做导航，但不能单独占 L1 分母的 40%"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "L1 的分母修好之后才看得见真问题：22 轮真实现场里 95 个写者只有 2 个产出地标（5 条），其中 2 条是 . / src 这类容器（40%）。标定扫描说明这不是阈值问题——容器占比由 DOI 的父级传播份额决定：floor=10 时 40%、floor=6 时 70%、floor=4 时 50%、edit=4 时 40–54%，而每种配置下去重的 handle 都只有 4 个（.、src、src/alpha.ts、src/beta.ts）。所以『80% 的地标是这次活的核心』现在一半在量容器占位；降阈值只会同时牺牲覆盖（floor=4 时仍有 52 个写者无地标）。",
     "title": "地标集合的粒度与覆盖：让核心真的进 L1 分母",
-    "updated_at": "2026-09-10T19:27:16.807364Z"
+    "updated_at": "2026-09-10T20:16:45.363686Z"
   },
   "TF-0157": {
     "acceptance_criteria": [
@@ -8830,5 +8830,52 @@
     "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
     "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
     "updated_at": "2026-09-10T20:13:48.738582Z"
+  },
+  "TF-0159": {
+    "acceptance_criteria": [
+      "① 切换后 L1 的读数在四个现场都能算出来（分母非空），且账本同时报阈值口径与相对口径两条，便于对照；旧复核结论在新口径下的映射规则写清楚（哪些作废、哪些沿用）。",
+      "② 队列规模与人工成本实测：给出每会话条数与总条目数，确认 §11「3–5 条」的表述与实际一致，不一致就改一处（文档或实现）。",
+      "③ 迁移不丢数据：切换前后 TF-0057 已记录的复核结论都还能被查出来（或明确标记为旧口径），不出现「结论还在但集合变了导致认可率无故跳变」的情况。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "created_at": "2026-09-10T20:16:45.363686Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "estimated_total_minutes": null,
+    "evidence": [
+      "TF-0156 的相对选择落码：src/interactions/context.ts 的 sessionFileTopK、src/interactions/review-stats.ts 的 relativeLandmarkCoverage；四现场覆盖 100%（有文件级触碰的会话口径）。",
+      "切换的代价有实测：租户 84 个会话 × top-3 = 188 条，是人评不了的规模，这正是 v6 §11 把单位定成「每会话」的理由。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0159",
+    "kind": "task",
+    "next_action": "先写迁移方案（旧结论如何处理 + 账本双口径），再动 review-stats 的默认分母。",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "proposed",
+    "success_metrics": [],
+    "summary": "TF-0156 把相对选择做成了可计量的一条读数（relativeLandmarkCoverage），但 L1 现在的分母仍是绝对阈值口径（DOI>10 的文件级集合）。切换会改变待人回答的队列规模：租户从 3 条变成 188 条，因此要在「队列迁移」这件事里一起处理（保留阈值口径读数、逐步切换、复核结论如何映射），不能只改分母。",
+    "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做",
+    "updated_at": "2026-09-10T20:16:45.363686Z"
   }
 }

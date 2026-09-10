@@ -13,9 +13,9 @@
     "context_tags": [],
     "desired_outcomes": [],
     "difficulty": "unknown",
-    "id": "TF-0156",
+    "id": "TF-0158",
     "kind": "task",
-    "next_action": "测量入口：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点> --top-k 3`（或 --top-k 5）；四站点都在 %TEMP%\\workbench-* 下，仓库自己的自然现场是 `--workspace D:\\helmor-main`。",
+    "next_action": "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
     "priority": 3,
     "progress": 0.0,
     "purpose": "",
@@ -24,7 +24,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "地标集合的粒度与覆盖：让核心真的进 L1 分母"
+    "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）"
   },
   {
     "alignment": {
@@ -40,10 +40,10 @@
     "context_tags": [],
     "desired_outcomes": [],
     "difficulty": "unknown",
-    "id": "TF-0158",
+    "id": "TF-0159",
     "kind": "task",
-    "next_action": "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
-    "priority": 3,
+    "next_action": "① 切换后 L1 的读数在四个现场都能算出来（分母非空），且账本同时报阈值口径与相对口径两条，便于对照；旧复核结论在新口径下的映射规则写清楚（哪些作废、哪些沿用）。",
+    "priority": 2,
     "progress": 0.0,
     "purpose": "",
     "ready": true,
@@ -51,7 +51,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）"
+    "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做"
   },
   {
     "alignment": {
@@ -84,7 +84,7 @@
     "kind": "global_task",
     "next_action": "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
     "priority": 1,
-    "progress": 95.2,
+    "progress": 100.0,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
