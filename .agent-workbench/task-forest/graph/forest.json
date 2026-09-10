@@ -5607,7 +5607,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T20:24:01.556558Z",
+  "generated_at": "2026-09-10T20:26:09.233228Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -8508,9 +8508,10 @@
       "display_order": 1400,
       "estimated_total_minutes": null,
       "evidence": [
-        "（本轮）队列模板不再需要人自己分辨哪条答过：每条多一个只读的 `current` 字段（`null` = 未复核，`endorse`/`reject` = 已有结论），`verdict` 仍然留空——这是刻意的（源码注释写明：模板自带现状会被照着点一遍，等于一次静默的重新认可）；回填只认 `verdict`，留空的条目会被拒并点名，不会变成悄悄认可。",
-        "（本轮）`--template` 现在认 `--pending-only`：真租户上实测，全量模板 3 条（其中 `editor-1/src/beta.ts` 的 current 已是 endorse），加 `--pending-only` 后只剩**两条待人回答**：`git-main/src/alpha.ts`、`git-main/src/beta.ts`。人只答这两条，不会碰到已认可的那条。",
-        "（本轮）`tsc` 0；真租户只做了读取（`--template` 不写黑板，模板落在 %TEMP%），读数仍是 认可 1 / 全部 3 = 0.3333。"
+        "（本轮）真实累积跑通：`& scripts/e2e/run-live.ps1 -DevelopmentWorkspace \"$env:TEMP\\workbench-e2e-live-tenant\"` → exit 0，四个阶段全过（读取旧实现建立前提 / 模型自主修复 endpoint 兼容 / 独立验收未通过 1 项后模型纠正 / 旧读者恢复复读并独立复核），随后 fork 三条分支（完整 endpoint 与重复斜杠 / 反向代理前缀与 query+fragment / 非法 URL 与嵌入凭据）。",
+        "（本轮）监控闭环实测：跑前 `[warn] sampling-stalled · 两次采样之间没有任何累积 — rounds=26 threads=105`；累积后 `样本 6 条（已追加本次）`、告警 5→4 条，该告警消失。剩余三条是长期项/等待人：`restore-latency`（info，脚本手势驱动，只作「卡变重了」的工程信号）、`calendar-window`（info，2.16 天）、`natural-pending`（info，L1 0.3333 / 待复核 2）。",
+        "（本轮·纠正自己的调用）live 累积入口只有 `run-live.ps1 -DevelopmentWorkspace <租户>`；直接 `bun live-development.ts --rounds 3` 会把 `--rounds` 当工作区路径，报 `ENOENT: --rounds\\.live-e2e-authorized`（授权标记要求内容为 `tenant-live-model-accumulation`）。这条写在这里，避免以后又绕一遍。",
+        "（仍未变）自然使用类指标只能等人：L1 认可率 0.3333（待复核 2 条，模板与回填已在第 8 轮修好并彩排通过）、恢复卡人类耗时无自然样本。监控的立场是不替人回答，只把待办变成「数量 + 一条命令」。"
       ],
       "execution_hints": [
         "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
@@ -8521,7 +8522,7 @@
       ],
       "id": "TF-0057",
       "kind": "global_task",
-      "next_action": "人在真租户上跑：`bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace \"$env:TEMP\\workbench-e2e-live-tenant\" --template answers.json --pending-only` → 填两条 verdict/reason → 同参数 `--apply answers.json`。两条都 endorse ⇒ 3/3 = 1.0（判据满足）；若有 reject ⇒ 读数低于 0.8，此时账本给的结论是「要改的是地标投影让核心真的进集合」，而不是调阈值或分母——这条也已写进 L1 的验收口径。",
+      "next_action": "① 人答两条地标复核（--template ... --pending-only → 填 verdict → --apply）；② 想继续累积就跑 run-live.ps1 -DevelopmentWorkspace <租户>（run-live.ps1 -CheckOnly 可只验凭据）。",
       "non_goals": [
         "a2a／多 agent 互聊协议",
         "手动工作流 DAG 编辑器",
@@ -8547,7 +8548,7 @@
       "success_metrics": [],
       "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
       "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-      "updated_at": "2026-09-10T20:23:54.963656Z"
+      "updated_at": "2026-09-10T20:26:03.084819Z"
     },
     "TF-0058": {
       "acceptance_criteria": [

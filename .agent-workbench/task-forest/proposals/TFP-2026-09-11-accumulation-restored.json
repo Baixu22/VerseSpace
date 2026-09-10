@@ -1,0 +1,29 @@
+{
+  "applied_at": "2026-09-10T20:26:03.125825Z",
+  "base_graph_hash": "b81ea91a58dcbde7cafe67c8b35483e99b38870431204b3258c761243ebd13b1",
+  "base_summary": {
+    "edge_count": 231,
+    "node_count": 159,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "（本轮）真实累积跑通：`& scripts/e2e/run-live.ps1 -DevelopmentWorkspace \"$env:TEMP\\workbench-e2e-live-tenant\"` → exit 0，四个阶段全过（读取旧实现建立前提 / 模型自主修复 endpoint 兼容 / 独立验收未通过 1 项后模型纠正 / 旧读者恢复复读并独立复核），随后 fork 三条分支（完整 endpoint 与重复斜杠 / 反向代理前缀与 query+fragment / 非法 URL 与嵌入凭据）。",
+          "（本轮）监控闭环实测：跑前 `[warn] sampling-stalled · 两次采样之间没有任何累积 — rounds=26 threads=105`；累积后 `样本 6 条（已追加本次）`、告警 5→4 条，该告警消失。剩余三条是长期项/等待人：`restore-latency`（info，脚本手势驱动，只作「卡变重了」的工程信号）、`calendar-window`（info，2.16 天）、`natural-pending`（info，L1 0.3333 / 待复核 2）。",
+          "（本轮·纠正自己的调用）live 累积入口只有 `run-live.ps1 -DevelopmentWorkspace <租户>`；直接 `bun live-development.ts --rounds 3` 会把 `--rounds` 当工作区路径，报 `ENOENT: --rounds\\.live-e2e-authorized`（授权标记要求内容为 `tenant-live-model-accumulation`）。这条写在这里，避免以后又绕一遍。",
+          "（仍未变）自然使用类指标只能等人：L1 认可率 0.3333（待复核 2 条，模板与回填已在第 8 轮修好并彩排通过）、恢复卡人类耗时无自然样本。监控的立场是不替人回答，只把待办变成「数量 + 一条命令」。"
+        ],
+        "next_action": "① 人答两条地标复核（--template ... --pending-only → 填 verdict → --apply）；② 想继续累积就跑 run-live.ps1 -DevelopmentWorkspace <租户>（run-live.ps1 -CheckOnly 可只验凭据）。"
+      },
+      "id": "TF-0057"
+    }
+  ],
+  "created_at": "2026-09-10T20:26:02.953764Z",
+  "proposal_id": "TFP-2026-09-11-accumulation-restored",
+  "rationale": "本轮把目标里「持续沉淀真实数据 + 监控自动发现阻塞」这条链路完整跑了一遍，并顺带纠正了一条我自己的错误调用：live 累积的入口是 run-live.ps1 -DevelopmentWorkspace <租户>（它加载凭据 → live-development.ts → live-fork.ts），不是 `bun live-development.ts --rounds N`（那样会把 `--rounds` 当成工作区路径，撞在 .live-e2e-authorized 授权标记上）。累积恢复后监控从 5 条告警降到 4 条，sampling-stalled 消失——正是「告警 → 修复 → 复验」的闭环。",
+  "session_id": null,
+  "status": "applied"
+}
