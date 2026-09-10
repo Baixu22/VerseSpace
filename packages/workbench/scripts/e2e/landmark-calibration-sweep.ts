@@ -20,6 +20,12 @@
  *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户>
  *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> --json
  *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> --top-k 3
+ *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> --clock session
+ *
+ * `--clock session` 把 DOI 的参考时刻换成**该写者自己最后一条事件**（L1 判定路径
+ * 的口径，见 positioning-v6 §11）：按「现在」算的话，同一段会话的地标会随日期
+ * 流逝自己跌到线下。实测负结论：换会话时钟只把 node-verified 现场从 0 条拉到 4
+ * 条、租户出厂读数不变——衰减不是空集的主因，绝对阈值才是。
  *
  * `--top-k K` 再测一条候选规则（TF-0156 验收三）：**相对选择** —— 每个写者按
  * DOI 降序取自己的文件级 top-K，而不是让所有人共用一个绝对阈值。绝对阈值要求
@@ -93,6 +99,27 @@ const scoped = (writer: string) =>
 		return item?.origin === writer && typeof item.handle === "string";
 	});
 
+/**
+ * DOI 的参考时刻。默认按「现在」算——这是 L1 曾经的做法，也是它在地标集合上
+ * 结构性失败的原因：DOI = Σ权重 − 衰减，(now − 事件时间) 的小时数直接进减项，
+ * 于是**任何一段时间之前干的活，分数都会一路跌成负数**，地标集合随着时间流逝
+ * 自己消失。§11 的判据问的是「一段会话结束后，系统能列出该会话的地标集合」——
+ * 参考时刻应该是**那段会话自己的最后一条事件**，而不是你今天来问它的时刻。
+ */
+type ClockMode = "now" | "session";
+
+function referenceTime(events: InteractionEvent[], mode: ClockMode): number {
+	if (mode === "now") return Date.now();
+	let latest = 0;
+	for (const event of events) {
+		const at = Date.parse(event.time);
+		if (Number.isFinite(at) && at > latest) latest = at;
+	}
+	return latest > 0 ? latest : Date.now();
+}
+
+const clock: ClockMode = at("--clock") === "session" ? "session" : "now";
+
 const rows: Array<{
 	label: string;
 	landmarks: number;
@@ -116,7 +143,7 @@ for (const { label, config } of SWEEP) {
 		const scopedRows = scoped(writer.id);
 		if (scopedRows.length === 0) continue;
 		const events = scopedRows.map((event) => event.payload as InteractionEvent);
-		const result = computeDoi(events, Date.now(), config);
+		const result = computeDoi(events, referenceTime(events, clock), config);
 		if (result.landmarks.length === 0) {
 			writersStarved += 1;
 			continue;
@@ -168,7 +195,11 @@ function measureTopK(k: number): {
 		const scopedRows = scoped(writer.id);
 		if (scopedRows.length === 0) continue;
 		const events = scopedRows.map((event) => event.payload as InteractionEvent);
-		const result = computeDoi(events, Date.now(), DEFAULT_DOI_CONFIG);
+		const result = computeDoi(
+			events,
+			referenceTime(events, clock),
+			DEFAULT_DOI_CONFIG,
+		);
 		const own = [...result.scores.values()]
 			.filter((score) => score.contentType === "file")
 			.sort((a, b) => b.doi - a.doi)

@@ -43,12 +43,17 @@ export function currentLandmarkAcceptance(
 	//
 	// 进一步收在文件级：目录能进 DOI 地标集合，却不能被回答成「这次干的活的
 	// 核心」。2026-09-11 四个现场实测目录占比 33%–75%，且阈值越低占比越高。
+	//
+	// 参考时刻取**会话自己的时钟**：§11 问的是「一段会话结束后，系统能列出该
+	// 会话的地标集合」，按「现在」算的话，同一段会话的地标会随日期流逝自己跌到
+	// 线下（DOI 的减项就是 now − 事件时间），验收读数既不可复现，也会把几天前
+	// 干过活的写者一律算成「没有地标」。
 	const byWriter = [...records].map(([writer, rows]) => ({
 		writer,
 		...landmarkReviewJudgement(
-			interestFromEvents(rows, writer, now).fileLandmarkHandles.map(
-				(handle) => ({ handle }),
-			),
+			interestFromEvents(rows, writer, now, {
+				clock: "session",
+			}).fileLandmarkHandles.map((handle) => ({ handle })),
 			reviews.get(writer) ?? [],
 		),
 	}));

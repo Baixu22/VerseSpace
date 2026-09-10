@@ -45,15 +45,42 @@ export async function collectInterest(bb: Blackboard, writer: string) {
 	return interestFromEvents(records, writer);
 }
 
+/**
+ * 一段交互的参考时刻：取该写者**自己最后一条事件**的时间。
+ *
+ * 为什么不能直接用「现在」：DOI = Σ权重 − 衰减，(now − 事件时间) 的小时数直接
+ * 进减项，于是同一段会话的地标集合会**随着时间流逝自己缩小**——今天算出来是
+ * 地标，下周再算就跌到线下。§11 问的是「一段会话结束后，系统能列出该会话的
+ * 地标集合」，参考时刻就该是那段会话自己的末尾；这样验收读数才是可复现的
+ * （跨四个真实现场实测：会话时钟把 node-verified 现场从 0 条拉到 4 条、floor=4
+ * 时写者覆盖 24 → 47，租户的出厂读数不变；也就是说衰减不是主因，绝对阈值才是）。
+ *
+ * **只给「判定一段会话干的是什么」的路径用**（L1 认可率、账本、标定扫描）。
+ * 实时上下文显示不能走它：那里的衰减是有意的（几天没碰的文件就该离开上下文），
+ * 用会话时钟会让陈旧文件永远留在 `visible` 里。所以默认仍是「现在」，
+ * 需要稳定的判定路径显式传 `{ clock: "session" }`。
+ */
+function sessionClock(events: InteractionEvent[], fallback: number): number {
+	let latest = 0;
+	for (const event of events) {
+		const at = Date.parse(event.time);
+		if (Number.isFinite(at) && at > latest) latest = at;
+	}
+	return latest > 0 ? latest : fallback;
+}
+
 /** Shared read-only projection for CLI context and stats from one log snapshot. */
 export function interestFromEvents(
 	records: WorkbenchEvent[],
 	writer: string,
 	now = Date.now(),
+	options: { clock?: "now" | "session" } = {},
 ) {
 	const scoped = writerInteractionEvents(records, writer);
 	const events = scoped.map((event) => event.payload as InteractionEvent);
-	const result = computeDoi(events, now);
+	const reference =
+		options.clock === "session" ? sessionClock(events, now) : now;
+	const result = computeDoi(events, reference);
 	const reductions = scoped.filter(
 		(event) => (event.payload as InteractionEvent).kind === "interest-reduced",
 	);
