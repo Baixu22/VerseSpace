@@ -5458,7 +5458,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T08:34:51.067179Z",
+  "generated_at": "2026-09-10T15:19:39.003517Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -8316,6 +8316,7 @@
         "TF-0060",
         "TF-0061",
         "TF-0068",
+        "TF-0113",
         "TF-0073",
         "TF-0080",
         "TF-0085",
@@ -8330,7 +8331,6 @@
         "TF-0110",
         "TF-0111",
         "TF-0112",
-        "TF-0113",
         "TF-0114",
         "TF-0120"
       ],
@@ -8343,7 +8343,7 @@
       ],
       "created_at": "2026-08-30T06:24:44.590684Z",
       "deprecated_at": null,
-      "derived_progress": 94.9,
+      "derived_progress": 86.3,
       "desired_outcomes": [
         "多写者并存时，runtime 能指出谁基于已过时的前提在工作",
         "裁决项速率可持续在约 1 条/10 分钟以内",
@@ -12106,6 +12106,7 @@
       ],
       "deviations": [],
       "difficulty": "very_high",
+      "display_order": 2000,
       "estimated_total_minutes": 5640,
       "evidence": [
         "docs/fable-brief/05-review/D0-D14",
@@ -12129,7 +12130,7 @@
       ],
       "primary_parent": "TF-0057",
       "priority": 1,
-      "progress": 0,
+      "progress": 0.0,
       "progress_source": "derived",
       "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
       "remaining_minutes_max": 5640,
@@ -12151,7 +12152,7 @@
       ],
       "summary": "以恢复处境、前提失效、分支事实为核心，砍掉内容级合并与树导航冲动，保留 L0 线性默认和加法式交互。",
       "title": "Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一",
-      "updated_at": "2026-09-07T11:09:40.706077Z"
+      "updated_at": "2026-09-10T15:18:13.276557Z"
     },
     "TF-0121": {
       "acceptance_criteria": [
@@ -13290,7 +13291,8 @@
         "2026-09-09：TF-0099 判决后 TF-0107..TF-0112 仍是 unresolved proposed 的风险点；不再由 L3 的 blocked 关系带，需打开拆哪个给条。",
         "2026-09-09: landmark-coverage probe 落地 (59 writers, 71 touched, 57e+14r)；endorsedShare 0.152 -> 0.75, L1 由 weak 升 partial，距 aligned 5pp。判决1/2/3 supported。",
         "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。",
-        "2026-09-10：TF-0111 按 positioning-v5 §11.2 的开源 MIT 形态收敛（仓库无任何收费面，npm 发布已按用户决定跳过）；TF-0112 按『只讲机制、旗号 context rot / stale premise、确定性检测』收敛（README/ADR-0010/context-rot 与 premise_stale 的确定性通道均可核对）。两者各有证据，未批量收口。"
+        "2026-09-10：TF-0111 按 positioning-v5 §11.2 的开源 MIT 形态收敛（仓库无任何收费面，npm 发布已按用户决定跳过）；TF-0112 按『只讲机制、旗号 context rot / stale premise、确定性检测』收敛（README/ADR-0010/context-rot 与 premise_stale 的确定性通道均可核对）。两者各有证据，未批量收口。",
+        "2026-09-10（SenseAudio 17 轮后核验）：fork/week、兄弟交替、恢复首动作基线齐备——forks=34、families=17（1 交替）、restores=38、恢复首动作 16 观测全为 resume card revealed、footprint 覆盖率 0.739；L3 结论=延后（已砍）；fit unknown 由首版 25/25 降至 6/25 且每条有来源。"
       ],
       "execution_hints": [
         "阶段 D 工程侧无待办（2026-09-10）：五个风险节点已分别收敛，L1 读数 0.74 是脚本常数。剩余只有自然使用观察；没有 natural 来源的现场就不要再动这棵子树。",
@@ -13301,7 +13303,7 @@
       ],
       "id": "TF-0135",
       "kind": "milestone",
-      "next_action": "TF-0107/0109/0110/0111/0112 五个风险节点已分别核验收敛。L1 读数修正：0.74 是脚本常数，不是 partial。阶段 D 工程侧无待办；剩余为自然使用观察（L1 认可率、恢复卡人类效果）。里程碑是否收口由用户决定。",
+      "next_action": "工程基线齐备且可复现；验收文第 1 条要求『基线与两周数据』，当前观测跨度 1.93 天（t0=2026-09-08）未达两周，且 success_metrics 含 14 天样本，故保持 in_progress；到期复跑 fit-ledger 即判。",
       "non_goals": [
         "不用主观好评替代行为数据"
       ],
@@ -13327,7 +13329,7 @@
       ],
       "summary": "建立两周真实使用门、L3 证据门与 fit 账本，把“能建”换成“有人用”。",
       "title": "阶段 D：fit 门与范围仲裁",
-      "updated_at": "2026-09-09T17:39:04.430243Z"
+      "updated_at": "2026-09-10T15:19:10.385167Z"
     },
     "TF-0136": {
       "acceptance_criteria": [
@@ -13377,7 +13379,8 @@
         "2026-09-08：同一 live-tenant 黑板，--evidence-kind live-model。判决一 resume-card supported（consumed/restores=0.429，resumeActions=23）；判决二 premise-detection supported（delivered=29，dismissed=ignored=unknown=0）；判决三 stage-c supported（forks=24，context∧premise 继承=3）；判决四 L3 insufficient-evidence（kind≠natural 且 days≈0.009）。TF-0099/0100/0101 继续 blocked，不用 live-model 冒充 natural。",
         "2026-09-09：判决四 L3 已定（TF-0099/0100/0101 deprecated；理由：variant.promoted/promotion_reverted 在代码库 0 生产者，租户事件原 0 命中；工程判决 1-3 已 supported；L1 恢复卡已替代 L3 建议能力）。docs/tf0136-l3-cut-verdict.md。",
         "2026-09-09: landmark-coverage probe 落地 (59 writers, 71 touched, 57e+14r)；endorsedShare 0.152 -> 0.75, L1 由 weak 升 partial，距 aligned 5pp。判决1/2/3 supported。",
-        "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。"
+        "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。",
+        "2026-09-10（SenseAudio S2 Flash 默认模型 17 轮真实累积后核验）：四条判决工程侧全部达门槛——判决一 consumed/restores=0.447≥0.3 且 resumeActions=34>0；判决二 dismissed=ignored=unknown=0；判决三 forks=34≥5、双继承=3≥1；判决四 L3 已砍。全部数字逐条追溯到 events.jsonl 且同一黑板两次复跑逐位一致，见 docs/report-2026-09-10-senseaudio-17round-acceptance.md。"
       ],
       "execution_hints": [
         "L1 认可率是人类认可类指标：账本只在 natural 来源下为 TF-0154 计 fit。landmark-coverage / S8b 的复核手势只验证通道与覆盖率，读数收敛到脚本常数，不能作为 L1 验收数据。",
@@ -13389,7 +13392,7 @@
       ],
       "id": "TF-0136",
       "kind": "task",
-      "next_action": "四项判决工程口径已定：1/2/3 在 live 租户 supported，4 已砍。剩余全部是自然使用问题（L1 认可率、恢复卡的人类耗时效果），只能等 --evidence-kind natural 的现场，不再用脚本 endorse 推 L1。工程侧无待办；是否据此收口由用户决定。",
+      "next_action": "工程侧四条判决数据全部达标且可复现（docs/report-2026-09-10-senseaudio-17round-acceptance.md）；验收文含两周窗口（summary: t0+14d，t0=2026-09-08 → 2026-09-22）与自然使用项，窗口未到故保持 in_progress，到期后按同一脚本复跑即判。",
       "next_action_from": "report-2026-09-10-l1-source-gate",
       "non_goals": [],
       "primary_parent": "TF-0135",
@@ -13415,7 +13418,7 @@
       ],
       "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。",
       "title": "两周真实使用门与 L3 证据门",
-      "updated_at": "2026-09-09T17:39:04.430243Z"
+      "updated_at": "2026-09-10T15:18:53.901419Z"
     },
     "TF-0137": {
       "acceptance_criteria": [
@@ -13479,7 +13482,8 @@
         "2026-09-08：negative-probe 之后的 scoped 账本：t0=53/59，样本窗 30/70/16 satisfied；判决 1/2/3 supported（resume-card、p.detection、stage-c），判决 4 L3 保持 insufficient-evidence；moat A=70/B=1/C=14/D=12.7% 闸门开；landmarkAcceptance endorsedShare=0.058 仍 weak。据此 TF-0154 拒绝是探测试探而非显然实现。报告 docs/report-2026-09-08-negative-probe.md。",
         "2026-09-09: landmark-coverage probe 落地 (59 writers, 71 touched, 57e+14r)；endorsedShare 0.152 -> 0.75, L1 由 weak 升 partial，距 aligned 5pp。判决1/2/3 supported。",
         "2026-09-10：账本对人类认可类指标加来源门（metrics.ts Probe.requires='natural'，ledger.ts buildRows 第三参数）。TF-0154 行在 live-model 来源下由 partial 回到 unknown：实测 0.739 只是 landmark-coverage.ts 的 ENDORSE_PROBABILITY=0.75 收敛值，不构成用户认可。其余 26 行与四项判决不变。ledger.test.ts / review-stats.test.ts 钉住规则；全量 622 pass / 0 fail。报告 docs/report-2026-09-10-l1-source-gate.md。",
-        "2026-09-10：账本本轮被用于纠正一条已写回森林的结论（L1 partial），证明来源门与『值照常显示、fit 不动』的分列设计能挡住脚本数据冒充使用证据；这是 TF-0137 纪律 2 的第二次实证（第一次是 t0 门拦住自举期事件）。"
+        "2026-09-10：账本本轮被用于纠正一条已写回森林的结论（L1 partial），证明来源门与『值照常显示、fit 不动』的分列设计能挡住脚本数据冒充使用证据；这是 TF-0137 纪律 2 的第二次实证（第一次是 t0 门拦住自举期事件）。",
+        "2026-09-10（SenseAudio 17 轮后核验）：账本四数字齐备且非零 A=95 / B=1 / C=18 / D=0.149，闸门开放；fit 分布 aligned 3 / partial 16 / unknown 6（partial 为已 done 节点有数据未设 judge 的保守展示）；52 条 premise_pass 事件 payload 独立重算 overlaps=980 / notified=146 与 stats 逐位一致，同一黑板两次跑读数一致。"
       ],
       "execution_hints": [
         "账本按周从 live 租户重跑：cd <租户> && bun <repo>/packages/workbench/scripts/fit-ledger.ts --evidence-kind live-model --scope <repo> --out <repo>/docs/fit-ledger.md。人类认可类指标（requires: natural）在该来源下停在 unknown，属预期。",
@@ -13487,7 +13491,7 @@
       ],
       "id": "TF-0137",
       "kind": "task",
-      "next_action": "账本已对人类认可类指标加来源门；docs/fit-ledger.md 现指向 live 租户并按周重跑。砍留决策已用过一次（2026-09-09 L3 砍）。工程侧无待办；是否据此收口由用户决定。",
+      "next_action": "账本工程读数齐备且可复现（docs/fit-ledger-2026-09-10-senseaudio-17rounds.md）；验收文第 6 条为『第 30 天回看四个数字存在且非零』（t0=2026-09-08 → 约 2026-10-08），未到故保持 in_progress；账本继续按周重跑。",
       "non_goals": [],
       "primary_parent": "TF-0135",
       "priority": 1,
@@ -13510,7 +13514,7 @@
       ],
       "summary": "建立 fit 账本，记录使用次数、展开率、dismiss 率与恢复改善；所有状态必须来自真实事件，不允许用测试通过替代。",
       "title": "fit 账本与砍留决策",
-      "updated_at": "2026-09-09T17:39:04.430243Z"
+      "updated_at": "2026-09-10T15:19:05.507792Z"
     },
     "TF-0138": {
       "acceptance_criteria": [
@@ -14211,7 +14215,7 @@
       ],
       "alignment": {
         "fit": "unknown",
-        "fit_confidence": 0,
+        "fit_confidence": 0.0,
         "user_goal": "把 Workbench 的前提守护做成日常可用，并让路线图本身可以直接落地开发",
         "validation_plan": [
           "三类产物各有口径并写回 TF-0144",
@@ -14239,6 +14243,7 @@
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "low",
+      "display_order": 100,
       "estimated_total_minutes": 60,
       "evidence": [
         "实测 2026-09-05：events 67MB / snapshots 61MB / exports 109MB，canonical graph/ 仅 864KB",
@@ -14261,7 +14266,7 @@
       ],
       "primary_parent": null,
       "priority": 1,
-      "progress": 0,
+      "progress": 0.0,
       "progress_source": "manual",
       "purpose": "在继续往这个仓库写规划之前定下体量口径，否则每次 proposal-apply 都会往历史里再压进约 100–200MB。",
       "remaining_minutes_max": 60,
@@ -14280,7 +14285,7 @@
       ],
       "summary": "裁决：exports/ 与 snapshots/ 出仓（gitignore），canonical 只保留 graph/ + config + events.jsonl；events.jsonl 的 before/after 全图冗余属 task-forest 引擎缺陷，交 TF-0152 承载。对森林自身执行与 TF-0145 相同的载荷纪律：历史留引用，不留快照体。",
       "title": "裁决：task-forest 历史与派生产物的体量口径（events / snapshots / exports）",
-      "updated_at": "2026-09-05T09:02:37.753534Z"
+      "updated_at": "2026-09-10T15:18:13.276557Z"
     },
     "TF-0148": {
       "acceptance_criteria": [
@@ -14524,7 +14529,7 @@
       ],
       "alignment": {
         "fit": "unknown",
-        "fit_confidence": 0,
+        "fit_confidence": 0.0,
         "user_goal": "",
         "validation_plan": [],
         "why_not_enough": "",
@@ -14545,6 +14550,7 @@
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "medium",
+      "display_order": 200,
       "estimated_total_minutes": null,
       "evidence": [
         "实测：proposal_applied 单行 515KB（before 257KB + after 258KB），142 行累计 66.5MB",
@@ -14559,7 +14565,7 @@
       "non_goals": [],
       "primary_parent": null,
       "priority": 2,
-      "progress": 100,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "森林自己违反了它给 Workbench 定的两条纪律（载荷上限、诚实的进度），修在工具侧一次，比每次 apply 付一次税便宜。",
       "remaining_minutes_max": 0,
@@ -14570,7 +14576,7 @@
       "success_metrics": [],
       "summary": "两处修正，都在 skill 侧（C:/Users/27933/.claude/skills/task-forest/scripts/task_forest.py），不在本仓库：(1) record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表，历史留引用不留快照体；(2) derived_progress 的子节点分母排除 deprecated / archived——当前 deprecate 一个子节点会把父里程碑的进度按 0 算进平均，砍东西反而让进度下降。",
       "title": "task-forest 引擎侧修正：历史载荷与派生分母",
-      "updated_at": "2026-09-05T17:44:32.869386Z"
+      "updated_at": "2026-09-10T15:18:13.276557Z"
     },
     "TF-0153": {
       "acceptance_criteria": [

@@ -30,7 +30,7 @@
     "kind": "global_task",
     "next_action": "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
     "priority": 1,
-    "progress": 94.9,
+    "progress": 86.3,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
