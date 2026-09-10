@@ -13,6 +13,7 @@ import {
 	type ThreadMeta,
 	useChatStore,
 } from "../../chat/store";
+import { TooltipProvider } from "../ui/tooltip";
 import { ResumeCard } from "./resume-card";
 
 vi.mock("../../auth", () => ({
@@ -152,7 +153,7 @@ describe("ResumeCard 交互", () => {
 		const calls = installRoutes();
 		seedCard(cardWith([BRANCH_FACT]));
 
-		render(<ResumeCard />);
+		render(<ResumeCard />, { wrapper: TooltipProvider });
 		screen.getByText("查看分支").click();
 
 		await waitFor(() => {
@@ -178,12 +179,59 @@ describe("ResumeCard 交互", () => {
 		).toEqual([]);
 	});
 
+	it("R10 记账请求较慢时仍等待完成后才切换", async () => {
+		const calls = installRoutes();
+		let releaseRecord!: () => void;
+		const recordReady = new Promise<void>((resolve) => {
+			releaseRecord = resolve;
+		});
+		apiFetchMock.mockImplementation(async (input, init) => {
+			const method = (init?.method ?? "GET").toUpperCase();
+			const body = init?.body
+				? (JSON.parse(String(init.body)) as Record<string, unknown>)
+				: null;
+			calls.push({ path: input, method, body });
+			if (input.endsWith("/resume-action")) {
+				await recordReady;
+			}
+			if (input === "/api/chat/threads/branch-1") {
+				return jsonResponse({
+					meta: thread("branch-1", "分支线程"),
+					messages: [],
+					suggestions: [],
+					decisionPoints: [],
+					resumeNote: null,
+				});
+			}
+			return jsonResponse({ ok: true });
+		});
+		seedCard(cardWith([BRANCH_FACT]));
+
+		render(<ResumeCard />, { wrapper: TooltipProvider });
+		screen.getByText("查看分支").click();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(calls.some((call) => call.path.endsWith("/switch"))).toBe(false);
+
+		releaseRecord();
+		await waitFor(() => {
+			expect(useChatStore.getState().activeId).toBe("branch-1");
+		});
+		const recordIndex = calls.findIndex((call) =>
+			call.path.endsWith("/resume-action"),
+		);
+		const switchIndex = calls.findIndex((call) =>
+			call.path.endsWith("/switch"),
+		);
+		expect(recordIndex).toBeGreaterThanOrEqual(0);
+		expect(switchIndex).toBeGreaterThan(recordIndex);
+	});
+
 	it("收起写 dismiss 且卡片消失；dismissed + revealed 复显仍在", async () => {
 		installRoutes();
 		seedCard(cardWith([BRANCH_FACT]));
 
-		const view = render(<ResumeCard />);
-		screen.getByText("收起").click();
+		const view = render(<ResumeCard />, { wrapper: TooltipProvider });
+		screen.getByRole("button", { name: "收起" }).click();
 
 		await waitFor(() => {
 			expect(useChatStore.getState().resumeCardDismissed).toBe(true);
@@ -211,7 +259,7 @@ describe("ResumeCard 交互", () => {
 			]),
 		);
 
-		render(<ResumeCard />);
+		render(<ResumeCard />, { wrapper: TooltipProvider });
 		expect(screen.getByText("src/a.ts")).toBeTruthy();
 		expect(screen.queryByText("src/d.ts")).toBeNull();
 		screen.getByText("及另", { exact: false }).click();
@@ -228,9 +276,32 @@ describe("ResumeCard 交互", () => {
 		).toBe(true);
 	});
 
+	it("事实行只在展开时记 resume_fact_opened，收起不重复记账", async () => {
+		const calls = installRoutes();
+		seedCard(cardWith([readSetFact("src/a.ts")]));
+
+		render(<ResumeCard />, { wrapper: TooltipProvider });
+		const disclosure = screen.getByRole("button", { name: /src\/a\.ts/ });
+		disclosure.click();
+		await waitFor(() => {
+			expect(screen.getByText("diff 未保留；版本证据仍可核对。")).toBeTruthy();
+		});
+		disclosure.click();
+
+		await waitFor(() => {
+			expect(
+				calls.filter(
+					(c) =>
+						c.path === "/api/chat/threads/thread-1/resume-action" &&
+						c.body?.action === "resume_fact_opened",
+				),
+			).toHaveLength(1);
+		});
+	});
+
 	it("无恢复卡时一个节点都不渲染", () => {
 		installRoutes();
-		const view = render(<ResumeCard />);
+		const view = render(<ResumeCard />, { wrapper: TooltipProvider });
 		expect(view.container.firstChild).toBeNull();
 	});
 });

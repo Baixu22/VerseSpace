@@ -1,0 +1,88 @@
+.aui-md {
+	font-size: var(--text-body);
+	line-height: 1.8;
+	overflow-wrap: anywhere;
+}
+.aui-md > :first-child {
+	margin-top: 0;
+}
+.aui-md > :last-child {
+	margin-bottom: 0;
+}
+.aui-md p {
+	margin-block: 0.75em;
+}
+.aui-md :is(h1, h2, h3, h4) {
+	margin-block: 1.25em 0.6em;
+	font-size: var(--text-title);
+	font-weight: 600;
+	line-height: 1.5;
+}
+.aui-md h1 {
+	font-size: var(--text-heading);
+}
+.aui-md :is(ul, ol) {
+	margin-block: 0.75em;
+	padding-left: 1.5em;
+}
+.aui-md ul {
+	list-style: disc;
+}
+.aui-md ol {
+	list-style: decimal;
+}
+.aui-md li + li {
+	margin-top: 0.35em;
+}
+.aui-md li > p {
+	margin-block: 0.25em;
+}
+.aui-md a {
+	color: var(--accent-default);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.aui-md blockquote {
+	margin-block: 1em;
+	border-left: 2px solid var(--border-strong);
+	padding-left: 1em;
+	color: var(--fg-muted);
+}
+.aui-md pre {
+	max-width: 100%;
+	margin-block: 1em;
+	overflow-x: auto;
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-lg);
+	background: var(--panel-code-bg);
+	padding: 1rem;
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	line-height: 1.7;
+}
+.aui-md :not(pre) > code {
+	border: 1px solid var(--border-subtle);
+	border-radius: 0.25rem;
+	background: var(--bg-elevated);
+	padding: 0.1em 0.35em;
+	font-family: var(--font-mono);
+	font-size: var(--text-ui);
+}
+.aui-md table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--text-small);
+}
+.aui-md :is(th, td) {
+	border: 1px solid var(--border-default);
+	padding: 0.6em 0.9em;
+	text-align: left;
+}
+.aui-md th {
+	background: var(--bg-elevated);
+	font-weight: 500;
+}
+.aui-md hr {
+	margin-block: 1.5em;
+	border-color: var(--border-subtle);
+}

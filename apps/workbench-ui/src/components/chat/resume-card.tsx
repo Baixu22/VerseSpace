@@ -1,108 +1,15 @@
+import { RotateCcw, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import type {
-	ResumeCardFactRow,
-	ResumeCardNarrativeRow,
-} from "../../chat/store";
 import { useChatStore } from "../../chat/store";
-
-const BEAT_LABEL: Record<ResumeCardNarrativeRow["kind"], string> = {
-	doing: "\u4f60\u5728\u505a\u4ec0\u4e48",
-	decided: "\u4f60\u51b3\u5b9a\u4e86\u4ec0\u4e48",
-	next: "\u4e0b\u4e00\u6b65",
-};
+import { FADE_IN, STAGGER_PARENT, TWEEN_DISCLOSURE } from "../../lib/motion";
+import { cn } from "../../lib/utils";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Tooltip } from "../ui/tooltip";
+import { ResumeFactRow, ResumeNarrativeRow } from "./resume-card-rows";
 
 const FACTS_PREVIEW_COUNT = 3;
-
-function FactRow({ fact }: { fact: ResumeCardFactRow }) {
-	const [open, setOpen] = useState(false);
-	const recordAction = useChatStore((s) => s.recordResumeAction);
-	const switchThread = useChatStore((s) => s.switchThread);
-	return (
-		<li className="rounded border border-border-subtle px-2 py-1.5 text-micro">
-			<div className="flex items-start gap-2">
-				<span
-					className="min-w-0 flex-1 truncate text-fg-muted"
-					title={fact.path}
-				>
-					{fact.path}
-				</span>
-				{fact.branch ? (
-					<button
-						type="button"
-						className="shrink-0 cursor-pointer text-accent-default hover:underline"
-						onClick={() => {
-							void recordAction("resume_branch_opened");
-							void switchThread(fact.branch!.threadId);
-						}}
-					>
-						查看分支
-					</button>
-				) : null}
-				<button
-					type="button"
-					className="shrink-0 text-fg-subtle hover:text-fg-default"
-					onClick={() => {
-						setOpen((value) => !value);
-						void recordAction("resume_fact_opened");
-					}}
-				>
-					{open ? "\u6536\u8d77\u8bc1\u636e" : "\u67e5\u770b\u8bc1\u636e"}
-				</button>
-			</div>
-			<div className="mt-0.5 text-fg-subtle">{fact.summary}</div>
-			<div className="mt-0.5 break-all text-fg-subtle">
-				refs: {fact.refs.join(" \u00b7 ")}
-			</div>
-			{fact.annotation ? (
-				<div className="mt-0.5 text-status-warning">
-					{"\u26a0"} {fact.annotation.label}
-				</div>
-			) : null}
-			{open ? (
-				<div className="mt-1 space-y-1 text-fg-subtle">
-					{fact.branch ? (
-						<ul className="max-h-40 overflow-auto">
-							{fact.branch.paths.map((path) => (
-								<li key={path}>{path}</li>
-							))}
-						</ul>
-					) : fact.diff ? (
-						<pre className="max-h-40 overflow-auto rounded bg-bg-base p-1.5 font-mono text-micro">
-							{fact.diff}
-						</pre>
-					) : (
-						<div>
-							{
-								"diff \u672a\u4fdd\u7559\uff1b\u7248\u672c\u8bc1\u636e\u4ecd\u53ef\u6838\u5bf9\u3002"
-							}
-						</div>
-					)}
-				</div>
-			) : null}
-		</li>
-	);
-}
-
-function NarrativeRow({ row }: { row: ResumeCardNarrativeRow }) {
-	return (
-		<li className="flex items-start gap-2">
-			<span className="shrink-0 rounded bg-muted px-1 text-micro text-fg-subtle">
-				{BEAT_LABEL[row.kind]}
-			</span>
-			<span className="flex-1 text-micro text-fg-muted">
-				{row.text}
-				{row.annotation ? (
-					<span className="ml-1 text-status-warning">
-						{"\u26a0"} {row.annotation.label}
-					</span>
-				) : null}
-				<span className="mt-0.5 block break-all text-fg-subtle">
-					refs: {row.refs.join(" \u00b7 ")}
-				</span>
-			</span>
-		</li>
-	);
-}
 
 /** Dual-channel restore card: facts first, narrative second (TF-0128). */
 export function ResumeCard() {
@@ -114,97 +21,155 @@ export function ResumeCard() {
 	const consume = useChatStore((s) => s.consumeResumeNote);
 	const dismiss = useChatStore((s) => s.dismissResumeCard);
 	const [factsExpanded, setFactsExpanded] = useState(false);
-	if (!card) {
-		return null;
-	}
-	if (dismissed && !revealed) {
-		return null;
-	}
-	const facts = card.facts;
+	if (!card || (dismissed && !revealed)) return null;
+
 	const visibleFacts = factsExpanded
-		? facts
-		: facts.slice(0, FACTS_PREVIEW_COUNT);
-	const hiddenCount = Math.max(0, facts.length - visibleFacts.length);
+		? card.facts
+		: card.facts.slice(0, FACTS_PREVIEW_COUNT);
+	const hiddenCount = Math.max(0, card.facts.length - visibleFacts.length);
 	return (
-		<div className="mx-6 mb-2 rounded-xl border border-border-subtle bg-bg-surface px-3 py-2">
-			<div className="flex items-center gap-2">
-				<span className="text-micro text-fg-muted">
-					{"\u6062\u590d\u5361"}
-					{note
-						? ` \u00b7 \u79bb\u5f00\u4e8e ${new Date(note.draftedAt).toLocaleString()}`
-						: ""}
-				</span>
-				<span className="flex-1 text-micro text-fg-subtle">
-					{note?.confirmedAt
-						? "\u00b7 \u5df2\u786e\u8ba4"
-						: note
-							? "\u00b7 \u5f85\u786e\u8ba4"
-							: ""}
-					{delta > 0
-						? ` \u00b7 \u4f60\u4e0d\u5728\u65f6\u591a\u4e86 ${delta} \u6761`
-						: ""}
-				</span>
-				<button
-					type="button"
-					onClick={() => void dismiss()}
-					className="text-micro text-fg-subtle hover:text-fg-default"
-				>
-					{"\u6536\u8d77"}
-				</button>
+		<motion.section
+			{...FADE_IN}
+			transition={TWEEN_DISCLOSURE}
+			aria-label="恢复卡"
+			className="mb-3 overflow-hidden rounded-xl border border-border-subtle bg-bg-surface shadow-sm"
+		>
+			<header className="flex items-center gap-2 border-b border-border-subtle px-3 py-2.5">
+				<div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent-default/10 text-accent-default">
+					<RotateCcw className="size-3.5" />
+				</div>
+				<div className="min-w-0 flex-1">
+					<div className="flex flex-wrap items-center gap-1.5">
+						<span className="text-small font-medium text-fg-default">
+							恢复卡
+						</span>
+						{note ? (
+							<Badge
+								variant="secondary"
+								className={cn(
+									"h-4 px-1.5 text-small font-normal",
+									note.confirmedAt && "text-status-success",
+								)}
+							>
+								{note.confirmedAt ? "已确认" : "待确认"}
+							</Badge>
+						) : null}
+						{delta > 0 ? (
+							<Badge
+								variant="outline"
+								className="h-4 px-1.5 text-small font-normal"
+							>
+								新增 {delta} 条
+							</Badge>
+						) : null}
+					</div>
+					<p className="mt-0.5 truncate text-small text-fg-subtle">
+						{note
+							? `离开于 ${new Date(note.draftedAt).toLocaleString()}`
+							: card.coverage.text}
+					</p>
+				</div>
 				{note && !note.confirmedAt ? (
-					<button
+					<Button
 						type="button"
+						variant="ghost"
+						size="xs"
+						className="text-status-success"
 						onClick={() => void useChatStore.getState().confirmResumeNote()}
-						className="text-micro text-fg-subtle hover:text-status-success"
 					>
-						{"\u786e\u8ba4"}
-					</button>
+						确认
+					</Button>
+				) : null}
+				<Tooltip content="收起恢复卡">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						className="text-fg-muted"
+						aria-label="收起"
+						onClick={() => void dismiss()}
+					>
+						<X className="size-3.5" />
+					</Button>
+				</Tooltip>
+			</header>
+
+			<div className="grid gap-3 px-3 py-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(15rem,0.85fr)]">
+				<div className="min-w-0">
+					<div className="flex items-center justify-between gap-2">
+						<span className="shrink-0 text-small font-medium text-fg-muted">
+							事实 {card.facts.length > 0 ? `· ${card.facts.length}` : ""}
+						</span>
+						<Tooltip content={card.coverage.text}>
+							<span className="min-w-0 truncate text-small text-fg-subtle">
+								{card.coverage.text}
+							</span>
+						</Tooltip>
+					</div>
+					{card.facts.length > 0 ? (
+						<>
+							<motion.ul
+								initial="hidden"
+								animate="show"
+								variants={STAGGER_PARENT}
+								className="mt-2 space-y-1.5"
+							>
+								<AnimatePresence initial={false}>
+									{visibleFacts.map((fact) => (
+										<ResumeFactRow
+											key={`${fact.source}-${fact.branch?.threadId ?? fact.path}-${fact.currentVersion ?? "missing"}`}
+											fact={fact}
+										/>
+									))}
+								</AnimatePresence>
+							</motion.ul>
+							{hiddenCount > 0 ? (
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="mt-1 text-fg-subtle"
+									onClick={() => {
+										setFactsExpanded(true);
+										void consume("facts");
+									}}
+								>
+									及另 {hiddenCount} 条
+								</Button>
+							) : null}
+						</>
+					) : (
+						<p className="mt-2 text-small text-fg-subtle">
+							{card.coverage.status === "unknown"
+								? "尚无可比较的文件记录。"
+								: "没有检测到前提变化。"}
+						</p>
+					)}
+				</div>
+
+				{card.narrative.length > 0 || delta > 0 ? (
+					<div className="min-w-0 border-t border-border-subtle pt-3 lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
+						<span className="text-small font-medium text-fg-muted">
+							接力脉络
+						</span>
+						{delta > 0 ? (
+							<p className="mt-2 rounded-md bg-accent-default/8 px-2 py-1.5 text-small text-fg-muted">
+								你不在时这条对话多了 {delta} 条，往下翻看新内容。
+							</p>
+						) : null}
+						<motion.ol
+							initial="hidden"
+							animate="show"
+							variants={STAGGER_PARENT}
+							className="relative mt-2 space-y-3 before:absolute before:bottom-1 before:left-[3px] before:top-2 before:w-px before:bg-border-subtle"
+						>
+							{card.narrative.map((row, index) => (
+								<ResumeNarrativeRow key={`${row.kind}-${index}`} row={row} />
+							))}
+						</motion.ol>
+					</div>
 				) : null}
 			</div>
-			<div className="mt-2 text-micro text-fg-subtle">{card.coverage.text}</div>
-			{facts.length > 0 ? (
-				<div className="mt-2">
-					<div className="text-micro text-fg-subtle">
-						{"\u4e8b\u5b9e"} ({facts.length})
-					</div>
-					<ul className="mt-1.5 space-y-1.5">
-						{visibleFacts.map((fact) => (
-							<FactRow
-								key={`${fact.source}-${fact.branch?.threadId ?? fact.path}-${fact.currentVersion ?? "missing"}`}
-								fact={fact}
-							/>
-						))}
-					</ul>
-					{hiddenCount > 0 ? (
-						<button
-							type="button"
-							className="mt-1 text-micro text-fg-subtle hover:text-fg-default"
-							onClick={() => {
-								setFactsExpanded(true);
-								void consume("facts");
-							}}
-						>
-							{"\u53ca\u53e6"} {hiddenCount} {"\u6761"}
-						</button>
-					) : null}
-				</div>
-			) : null}
-			{card.narrative.length > 0 ? (
-				<ol className="mt-2 space-y-1.5 border-t border-border-subtle pt-2">
-					{delta > 0 ? (
-						<li className="text-micro text-fg-subtle">
-							{"\u4f60\u4e0d\u5728\u65f6\u8fd9\u6761\u5bf9\u8bdd\u591a\u4e86"}{" "}
-							{delta}{" "}
-							{
-								"\u6761\u2014\u2014\u5f80\u4e0b\u7ffb\u770b\u65b0\u5185\u5bb9\u3002"
-							}
-						</li>
-					) : null}
-					{card.narrative.map((row, index) => (
-						<NarrativeRow key={`${row.kind}-${index}`} row={row} />
-					))}
-				</ol>
-			) : null}
-		</div>
+		</motion.section>
 	);
 }

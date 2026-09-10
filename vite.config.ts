@@ -97,9 +97,9 @@ export default defineConfig(async () => ({
 		// and packages/context-rot (56 spec files) are the same case and are
 		// covered by `test:workbench` / `test:context-rot`.
 		// Same for the Rust + fixtures trees which contain no TS tests.
-		// `worktrees/` is a gitignored dispatch-output tree holding full copies of
-		// the repo: without this it doubles the suite (221 extra spec files) and
-		// every one of them fails on broken module resolution.
+		// `worktrees/` and `.claude/worktrees/` are gitignored dispatch or review
+		// copies of the repo. Without both exclusions, Vitest duplicates the suite
+		// and can exhaust memory while collecting agent worktrees.
 		exclude: [
 			"**/node_modules/**",
 			"**/dist/**",
@@ -110,6 +110,7 @@ export default defineConfig(async () => ({
 			"fixtures/**",
 			"e2e/**",
 			"worktrees/**",
+			".claude/worktrees/**",
 		],
 	},
 }));

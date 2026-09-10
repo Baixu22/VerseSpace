@@ -14,6 +14,7 @@ if (typeof Element !== "undefined") {
 }
 
 if (typeof window !== "undefined") {
+	window.scrollTo = () => {};
 	if (typeof window.ResizeObserver === "undefined") {
 		class ResizeObserverMock {
 			observe() {}

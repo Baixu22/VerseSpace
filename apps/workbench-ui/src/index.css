@@ -8,6 +8,8 @@
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 @import "../../../src/styles/color-theme.css";
+@import "./styles/interactions.css";
+@import "./styles/chat.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -78,6 +80,10 @@
 	}
 	html {
 		@apply font-sans;
+		color-scheme: light;
+	}
+	html.dark {
+		color-scheme: dark;
 	}
 	html,
 	body,
@@ -87,6 +93,22 @@
 	}
 	body {
 		@apply bg-background text-foreground;
-		overflow-y: auto;
+		overflow: hidden;
 	}
+	button:focus-visible,
+	[role="button"]:focus-visible,
+	summary:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 3px;
+	}
+}
+
+.ui-field {
+	@apply h-10 w-full min-w-0 rounded-lg border border-input bg-bg-base px-3 text-ui text-fg-default outline-none;
+	transition:
+		border-color var(--ui-motion-fast),
+		box-shadow var(--ui-motion-fast);
+}
+.ui-field:focus-visible {
+	@apply border-ring ring-2 ring-ring/20;
 }

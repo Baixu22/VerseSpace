@@ -1,0 +1,101 @@
+/* One timing scale for controls, tooltips, and modal surfaces. */
+:root {
+	--ui-motion-fast: 140ms;
+	--ui-motion-panel: 180ms;
+	--ui-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ui-control,
+.ui-row {
+	transition-property:
+		color, background-color, border-color, box-shadow, opacity, transform;
+	transition-duration: var(--ui-motion-fast);
+	transition-timing-function: var(--ui-ease);
+}
+
+.ui-overlay,
+.ui-tooltip {
+	animation: ui-fade-in var(--ui-motion-fast) var(--ui-ease) both;
+}
+.ui-overlay[data-state="closed"],
+.ui-tooltip[data-state="closed"] {
+	animation-name: ui-fade-out;
+}
+
+.ui-select {
+	transform-origin: var(--radix-select-content-transform-origin);
+	animation: ui-select-in var(--ui-motion-fast) var(--ui-ease) both;
+}
+.ui-select[data-state="closed"] {
+	animation: ui-fade-out var(--ui-motion-fast) var(--ui-ease) both;
+}
+
+@keyframes ui-select-in {
+	from {
+		opacity: 0;
+		transform: scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.ui-sheet {
+	--sheet-offset: 16px;
+	animation: ui-sheet-in var(--ui-motion-panel) var(--ui-ease) both;
+}
+.ui-sheet[data-side="left"] {
+	--sheet-offset: -16px;
+}
+.ui-sheet[data-state="closed"] {
+	animation: ui-sheet-out var(--ui-motion-fast) var(--ui-ease) both;
+}
+
+@keyframes ui-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes ui-fade-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+@keyframes ui-sheet-in {
+	from {
+		opacity: 0;
+		transform: translateX(var(--sheet-offset));
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+@keyframes ui-sheet-out {
+	from {
+		opacity: 1;
+		transform: translateX(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateX(var(--sheet-offset));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0s !important;
+		scroll-behavior: auto !important;
+	}
+}

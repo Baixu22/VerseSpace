@@ -3,6 +3,7 @@ import {
 	useExternalStoreRuntime,
 	WebSpeechSynthesisAdapter,
 } from "@assistant-ui/react";
+import { useState } from "react";
 import { type StoredMessage, useActiveMessages, useChatStore } from "./store";
 
 function toThreadMessage(m: StoredMessage): ThreadMessage {
@@ -39,6 +40,7 @@ function toThreadMessage(m: StoredMessage): ThreadMessage {
  * the frontend is a thin external-store rendering layer over it.
  */
 export function useChatRuntimeAdapter() {
+	const [speech] = useState(() => new WebSpeechSynthesisAdapter());
 	const messages = useActiveMessages();
 	const runningThreadId = useChatStore((s) => s.runningThreadId);
 	const activeId = useChatStore((s) => s.activeId);
@@ -62,7 +64,7 @@ export function useChatRuntimeAdapter() {
 		onReload: async () => useChatStore.getState().reload(),
 		adapters: {
 			// browser-native TTS; enables ActionBarPrimitive.Speak/StopSpeaking
-			speech: new WebSpeechSynthesisAdapter(),
+			speech,
 			feedback: {
 				submit: (feedback: {
 					message: ThreadMessage;

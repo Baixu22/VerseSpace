@@ -135,8 +135,8 @@ describe("App 首屏渲染", () => {
 		await waitFor(() => {
 			expect(calls.some((c) => c.url === "/api/chat/threads")).toBe(true);
 		});
-		expect(screen.getByText("新对话")).toBeInTheDocument();
-		expect(screen.getByText(/workbench runtime 承载/)).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "新对话" })).toBeInTheDocument();
+		expect(screen.getByText("从一个想法开始")).toBeInTheDocument();
 		expect(root.children.length).toBeGreaterThan(0);
 		expectNoRenderLoopErrors();
 	});
@@ -147,7 +147,9 @@ describe("App 首屏渲染", () => {
 		const root = mountApp();
 
 		await waitFor(() => {
-			expect(screen.getByText("首个线程")).toBeInTheDocument();
+			expect(
+				screen.getByRole("button", { name: "首个线程" }),
+			).toBeInTheDocument();
 		});
 		await waitFor(() => {
 			expect(

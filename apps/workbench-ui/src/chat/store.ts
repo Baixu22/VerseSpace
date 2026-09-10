@@ -192,7 +192,11 @@ interface ChatState {
 	/** The thread with an in-flight run, if any. */
 	runningThreadId: string | null;
 	/** 最近一次分叉的继承声明（TF-0093）：切线程或手动关闭后消失。 */
-	forkNotice: string | null;
+	forkNotice: {
+		text: string;
+		threadId: string;
+		anchorMessageId: string;
+	} | null;
 	/** 当前线程的系统提议下一步（TF-0095），随线程 GET 刷新。 */
 	suggestions: Suggestion[];
 	/** 当前线程的决策账本（TF-0095），无分歧时为空数组＝完全不渲染。 */
@@ -215,7 +219,7 @@ interface ChatState {
 	switchThread(id: string): Promise<void>;
 	send(text: string): Promise<void>;
 	reload(): Promise<void>;
-	fork(messageId: string): Promise<void>;
+	fork(messageId: string): Promise<string | null>;
 	dismissForkNotice(): void;
 	setDraft(threadId: string, text: string): void;
 	/** 切换离开时收起草稿：进停放快照，composer 清空（清场）。 */
@@ -456,7 +460,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		await apiFetch(`/api/chat/threads/${id}/restore`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ fromThreadId: prevId }),
+			body: JSON.stringify({
+				fromThreadId: prevId,
+				resumeCardVisible: Boolean(
+					data.resumeCard && !data.resumeCardDismissed,
+				),
+				lastMessageId: data.messages.at(-1)?.id ?? null,
+			}),
 		}).catch(() => {});
 	},
 
@@ -706,14 +716,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	/**
-	 * 追溯式分叉（TF-0093）：锚点消息上一个手势，零仪式。新线程继承
-	 * 锚点（含）之前的消息前缀，原线程不动；声明随响应返回，这里负责
-	 * 把新线程插进列表并切换过去。
+	 * 追溯式分叉（TF-0093）：新线程继承锚点（含）之前的消息前缀，
+	 * 原线程不动。新线程先入列表，用户确认反馈后再通过明确动作进入。
 	 */
 	async fork(messageId) {
 		const threadId = get().activeId;
 		if (!threadId || get().runningThreadId) {
-			return;
+			return null;
 		}
 		const generation = switchGeneration;
 		const outcome = await apiFetch(`/api/chat/threads/${threadId}/fork`, {
@@ -729,30 +738,45 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				}>,
 		);
 		if (!outcome.ok || !outcome.thread) {
-			return;
+			return null;
 		}
-		// 先入列表再切换：switchThread 见缓存未命中会拉取新线程的消息
+		const forkedThread = outcome.thread;
+		// 先入列表：源线程保持可见，用户确认结果后再主动跳转。
 		set((s) => ({
 			threads: [
-				outcome.thread as ThreadMeta,
-				...s.threads.filter((item) => item.id !== outcome.thread!.id),
+				forkedThread,
+				...s.threads.filter((item) => item.id !== forkedThread.id),
 			],
 		}));
 		if (generation !== switchGeneration || get().activeId !== threadId) {
-			return;
+			return null;
 		}
-		await get().switchThread(outcome.thread.id);
-		// 继承声明（硬要求）：分叉完成了什么、继承了什么、什么从新开始
+		// Keep the source visible so the success state completes before the user
+		// follows the explicit jump action. Creation stays zero-ceremony while
+		// navigation remains predictable.
 		const d = outcome.declaration;
-		if (get().activeId === outcome.thread.id) {
-			set({
-				forkNotice: d
-					? `已分叉：继承「${outcome.thread.forkOf?.sourceTitle ?? "原对话"}」的前 ${d.inheritedMessages} 条消息（含锚点）；agent 会话从新开始，原对话保持不变。`
-					: null,
-			});
-		}
+		set((s) => ({
+			threads: s.threads.map((thread) =>
+				thread.id === threadId
+					? {
+							...thread,
+							forks: {
+								...thread.forks,
+								[messageId]: (thread.forks?.[messageId] ?? 0) + 1,
+							},
+						}
+					: thread,
+			),
+			forkNotice: d
+				? {
+						text: `已分叉：继承「${forkedThread.forkOf?.sourceTitle ?? "原对话"}」的前 ${d.inheritedMessages} 条消息（含锚点）；agent 会话从新开始，原对话保持不变。`,
+						threadId: forkedThread.id,
+						anchorMessageId: messageId,
+					}
+				: null,
+		}));
+		return forkedThread.id;
 	},
-
 	dismissForkNotice() {
 		set({ forkNotice: null });
 	},

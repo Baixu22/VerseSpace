@@ -2,66 +2,140 @@ import {
 	ThreadListItemPrimitive,
 	ThreadListPrimitive,
 } from "@assistant-ui/react";
-import { useMemo } from "react";
+import { Archive, GitFork, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useChatStore } from "../../chat/store";
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
+import { Tooltip } from "../ui/tooltip";
 
-/**
- * Thread sidebar built from the real ThreadListPrimitive family — the data
- * comes from the external-store threadList adapter (workbench server files).
- *
- * 分叉线程（TF-0093）在标题旁渲染血统徽标：分叉结果必须在线程列表可见，
- * 且明确声明它继承了什么（悬停查看）。
- */
-export function ThreadListSidebar() {
-	// Selector must return a stored reference — deriving a fresh object here
-	// makes the zustand snapshot uncached and loops React into error #185
-	// (Maximum update depth) on first mount.
-	const threads = useChatStore((s) => s.threads);
-	const forkOfById = useMemo(
-		() =>
-			Object.fromEntries(
-				threads
-					.filter((t) => t.forkOf)
-					.map((t) => [t.id, t.forkOf as NonNullable<typeof t.forkOf>]),
-			),
+/** Forks remain peers; the temporary outline shows shared lineage without a tree. */
+export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
+	const threads = useChatStore((state) => state.threads);
+	const activeId = useChatStore((state) => state.activeId);
+	const [hoveredId, setHoveredId] = useState<string | null>(null);
+	const [focusedId, setFocusedId] = useState<string | null>(null);
+	const byId = useMemo(
+		() => new Map(threads.map((thread) => [thread.id, thread])),
 		[threads],
 	);
+	const lineage = useMemo(() => {
+		const id = hoveredId ?? focusedId;
+		if (!id) return null;
+		const sourceId = byId.get(id)?.forkOf?.sourceThreadId ?? id;
+		const related = new Set(
+			threads
+				.filter(
+					(thread) =>
+						thread.id === sourceId ||
+						thread.forkOf?.sourceThreadId === sourceId,
+				)
+				.map((thread) => thread.id),
+		);
+		return related.size > 1 ? related : null;
+	}, [hoveredId, focusedId, byId, threads]);
+
 	return (
-		<ThreadListPrimitive.Root className="flex-1 overflow-y-auto px-2 pb-3">
-			<ThreadListPrimitive.New className="mx-1 mb-2 flex w-[calc(100%-8px)] items-center justify-center rounded-lg border border-border py-1.5 text-small hover:bg-muted">
-				新对话
+		<ThreadListPrimitive.Root className="flex min-h-0 flex-1 flex-col px-3 pb-3">
+			<ThreadListPrimitive.New asChild>
+				<Button
+					variant="outline"
+					size="lg"
+					className="mb-5 mt-1 w-full justify-start gap-2 bg-bg-elevated"
+					onClick={onNavigate}
+				>
+					<Plus className="size-4" /> 新对话
+				</Button>
 			</ThreadListPrimitive.New>
-			<ThreadListPrimitive.Items>
-				{({ threadListItem }) => {
-					const forkOf = forkOfById[threadListItem.id];
-					return (
-						<ThreadListItemPrimitive.Root className="group/item data-[active]:bg-muted">
-							<div className="flex items-center gap-1 rounded-lg px-1 hover:bg-muted">
-								<ThreadListItemPrimitive.Trigger className="min-w-0 flex-1 truncate px-1.5 py-2 text-left text-small">
-									{forkOf ? <span aria-hidden>↳ </span> : null}
-									<ThreadListItemPrimitive.Title />
-								</ThreadListItemPrimitive.Trigger>
-								{forkOf ? (
-									<span
-										title={`继承自「${forkOf.sourceTitle}」的前 ${forkOf.inheritedMessages} 条消息（到此为止）；agent 会话从新开始`}
-										className="shrink-0 rounded bg-muted px-1 text-micro text-fg-subtle"
-									>
-										分叉
-									</span>
-								) : null}
-								<div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover/item:opacity-100">
-									<ThreadListItemPrimitive.Archive className="px-1 text-micro text-fg-subtle hover:text-fg-default">
-										归档
-									</ThreadListItemPrimitive.Archive>
-									<ThreadListItemPrimitive.Delete className="px-1 text-micro text-status-danger hover:text-status-danger">
-										删除
-									</ThreadListItemPrimitive.Delete>
+			<p className="mb-2 px-2 text-mini font-medium text-fg-muted">对话</p>
+			<div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain">
+				<ThreadListPrimitive.Items>
+					{({ threadListItem }) => {
+						const thread = byId.get(threadListItem.id);
+						const forkOf = thread?.forkOf;
+						const active = activeId === threadListItem.id;
+						return (
+							<ThreadListItemPrimitive.Root
+								className="group/item relative"
+								data-lineage-id={threadListItem.id}
+								onFocusCapture={() => setFocusedId(threadListItem.id)}
+								onBlurCapture={(event) => {
+									if (!event.currentTarget.contains(event.relatedTarget))
+										setFocusedId(null);
+								}}
+								onPointerEnter={() => setHoveredId(threadListItem.id)}
+								onPointerLeave={() => setHoveredId(null)}
+							>
+								<div
+									className={cn(
+										"ui-row relative flex min-h-11 items-center gap-1 rounded-lg px-2 hover:bg-muted/60",
+										active && "bg-muted text-fg-default",
+										lineage?.has(threadListItem.id) &&
+											"ring-1 ring-accent-default/30 ring-inset",
+									)}
+								>
+									{forkOf ? (
+										<GitFork className="size-3.5 shrink-0 text-fg-muted" />
+									) : (
+										<MessageSquare className="size-3.5 shrink-0 text-fg-subtle" />
+									)}
+									<Tooltip content={thread?.title || "新对话"} side="right">
+										<ThreadListItemPrimitive.Trigger
+											aria-current={active ? "page" : undefined}
+											onClick={onNavigate}
+											className="min-w-0 flex-1 cursor-pointer truncate rounded-md px-1.5 py-3 text-left text-ui"
+										>
+											<ThreadListItemPrimitive.Title />
+										</ThreadListItemPrimitive.Trigger>
+									</Tooltip>
+									{forkOf ? (
+										<Tooltip
+											content={
+												"继承自「" +
+												forkOf.sourceTitle +
+												"」的前 " +
+												forkOf.inheritedMessages +
+												" 条消息；模型上下文继承以分叉声明为准。"
+											}
+											side="right"
+										>
+											<span className="shrink-0 rounded-md bg-bg-elevated px-1.5 py-0.5 text-mini text-fg-muted">
+												继承 {forkOf.inheritedMessages}
+											</span>
+										</Tooltip>
+									) : null}
+									<div className="ui-control pointer-events-none absolute right-1 flex items-center rounded-lg border border-border-subtle bg-bg-surface p-0.5 opacity-0 shadow-sm group-hover/item:pointer-events-auto group-hover/item:opacity-100 group-focus-within/item:pointer-events-auto group-focus-within/item:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:border-0 [@media(hover:none)]:opacity-100 [@media(hover:none)]:shadow-none">
+										<Tooltip content="归档对话">
+											<ThreadListItemPrimitive.Archive asChild>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													aria-label="归档"
+													className="text-fg-muted"
+												>
+													<Archive className="size-3.5" />
+												</Button>
+											</ThreadListItemPrimitive.Archive>
+										</Tooltip>
+										<Tooltip content="删除对话">
+											<ThreadListItemPrimitive.Delete asChild>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													aria-label="删除"
+													className="text-fg-muted hover:bg-status-danger/10 hover:text-status-danger"
+												>
+													<Trash2 className="size-3.5" />
+												</Button>
+											</ThreadListItemPrimitive.Delete>
+										</Tooltip>
+									</div>
 								</div>
-							</div>
-						</ThreadListItemPrimitive.Root>
-					);
-				}}
-			</ThreadListPrimitive.Items>
+							</ThreadListItemPrimitive.Root>
+						);
+					}}
+				</ThreadListPrimitive.Items>
+			</div>
 		</ThreadListPrimitive.Root>
 	);
 }

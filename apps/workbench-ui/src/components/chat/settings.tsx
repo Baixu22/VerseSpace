@@ -1,252 +1,108 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { apiFetch } from "../../auth";
+import { type ChatConfig, chatConfigQuery } from "../../chat/config";
 import { Button } from "../ui/button";
+import { SettingsFields } from "./settings-fields";
 
-export interface ChatConfig {
-	provider: "claude" | "openai-chat" | "openai-responses" | "anthropic";
-	model?: string;
-	apiKey?: string;
-	baseUrl?: string;
-	temperature?: number;
-	maxTokens?: number;
-	effort?: "low" | "medium" | "high";
-	hasKey?: boolean;
-}
-
-const PROVIDERS: Array<{
-	value: ChatConfig["provider"];
-	label: string;
-	hint: string;
-}> = [
-	{
-		value: "claude",
-		label: "Claude Code CLI（本机）",
-		hint: "stream-json + 会话续聊，无需 API Key",
-	},
-	{
-		value: "openai-chat",
-		label: "OpenAI · Chat Completions",
-		hint: "流式 SSE，需 API Key",
-	},
-	{
-		value: "openai-responses",
-		label: "OpenAI · Responses",
-		hint: "支持推理力度（effort）控制",
-	},
-	{
-		value: "anthropic",
-		label: "Anthropic · Messages",
-		hint: "流式 SSE，需 API Key",
-	},
-];
-
-export function SettingsPanel({ onClose }: { onClose: () => void }) {
-	const [config, setConfig] = useState<ChatConfig | null>(null);
-	const [note, setNote] = useState<string | null>(null);
-
-	useEffect(() => {
-		void apiFetch("/api/config/chat")
-			.then((r) => r.json() as Promise<ChatConfig>)
-			.then(setConfig);
-	}, []);
-
-	const patch = async (body: Partial<ChatConfig>) => {
-		const saved = await apiFetch("/api/config/chat", {
-			method: "PATCH",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(body),
-		}).then((r) => r.json() as Promise<ChatConfig>);
-		setConfig(saved);
-		setNote("已保存");
-		setTimeout(() => setNote(null), 1200);
+export function SettingsPanel() {
+	const query = useQuery(chatConfigQuery);
+	const client = useQueryClient();
+	const [draft, setDraft] = useState<Partial<ChatConfig>>({});
+	const save = useMutation({
+		// Blur and selection changes can overlap; preserve their ordering.
+		scope: { id: "chat-config" },
+		mutationFn: async (body: Partial<ChatConfig>): Promise<ChatConfig> => {
+			const response = await apiFetch("/api/config/chat", {
+				method: "PATCH",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(body),
+			});
+			if (!response.ok) throw new Error("保存失败，你的输入已保留。请重试。");
+			return response.json();
+		},
+		onSuccess: (saved, body) => {
+			client.setQueryData(chatConfigQuery.queryKey, saved);
+			setDraft((current) => {
+				const next = { ...current };
+				for (const key of Object.keys(body) as (keyof ChatConfig)[]) {
+					if (current[key] === body[key]) delete next[key];
+				}
+				return next;
+			});
+		},
+	});
+	const patch = (body: Partial<ChatConfig>) => {
+		const changed = Object.fromEntries(
+			Object.entries(body).filter(
+				([key, value]) =>
+					value !== undefined &&
+					value !== query.data?.[key as keyof ChatConfig] &&
+					!(value === "" && query.data?.[key as keyof ChatConfig] == null) &&
+					!(
+						save.isPending && value === save.variables[key as keyof ChatConfig]
+					),
+			),
+		) as Partial<ChatConfig>;
+		if (Object.keys(changed).length === 0) return;
+		setDraft((current) => ({ ...current, ...changed }));
+		save.mutate(changed);
 	};
 
-	const field =
-		"w-full rounded-lg border border-input bg-input/30 px-2.5 py-1.5 text-small outline-none focus-visible:border-ring";
-	const label = "text-small text-fg-muted";
-
 	return (
-		<div className="fixed inset-0 z-30 flex justify-end bg-black/40">
-			<div className="flex h-full w-[380px] flex-col border-l border-border bg-bg-surface">
-				<div className="flex items-center gap-2 border-b border-border px-4 py-3">
-					<span className="text-title font-semibold">对话设置</span>
-					<Button
-						size="xs"
-						variant="ghost"
-						className="ml-auto"
-						onClick={onClose}
-					>
-						关闭
-					</Button>
-				</div>
-				{!config ? (
-					<p className="p-4 text-small text-fg-muted">加载中…</p>
-				) : (
-					<div className="flex-1 space-y-4 overflow-y-auto p-4">
-						<div>
-							<p className={label}>提供商</p>
-							<select
-								className={field}
-								value={config.provider}
-								onChange={(e) =>
-									void patch({
-										provider: e.target.value as ChatConfig["provider"],
-									})
-								}
-							>
-								{PROVIDERS.map((p) => (
-									<option key={p.value} value={p.value}>
-										{p.label}
-									</option>
-								))}
-							</select>
-							<p className="mt-1 text-micro text-fg-subtle">
-								{PROVIDERS.find((p) => p.value === config.provider)?.hint}
-							</p>
-						</div>
-
-						<div>
-							<p className={label}>模型（留空用提供商默认）</p>
-							<input
-								className={field}
-								value={config.model ?? ""}
-								placeholder={
-									config.provider === "anthropic"
-										? "claude-sonnet-4-5"
-										: config.provider === "claude"
-											? "（跟随本机登录）"
-											: "gpt-4o-mini"
-								}
-								onChange={(e) =>
-									setConfig({ ...config, model: e.target.value })
-								}
-								onBlur={() => void patch({ model: config.model || undefined })}
-							/>
-						</div>
-
-						{config.provider !== "claude" ? (
-							<div>
-								<p className={label}>
-									API Key{config.hasKey ? "（已保存，留空不变）" : ""}
-								</p>
-								<input
-									type="password"
-									className={field}
-									value={config.apiKey ?? ""}
-									onChange={(e) =>
-										setConfig({ ...config, apiKey: e.target.value })
-									}
-									onBlur={() =>
-										void patch({ apiKey: config.apiKey || undefined })
-									}
-								/>
-							</div>
-						) : null}
-
-						{config.provider !== "claude" ? (
-							<div>
-								<p className={label}>Base URL（可选，代理/网关）</p>
-								<input
-									className={field}
-									value={config.baseUrl ?? ""}
-									placeholder={
-										config.provider === "anthropic"
-											? "https://api.anthropic.com"
-											: "https://api.openai.com/v1"
-									}
-									onChange={(e) =>
-										setConfig({ ...config, baseUrl: e.target.value })
-									}
-									onBlur={() =>
-										void patch({ baseUrl: config.baseUrl || undefined })
-									}
-								/>
-							</div>
-						) : null}
-
-						{config.provider !== "claude" ? (
-							<div>
-								<p className={label}>
-									温度（temperature）：{config.temperature ?? 1}
-								</p>
-								<input
-									type="range"
-									min={0}
-									max={2}
-									step={0.1}
-									value={config.temperature ?? 1}
-									className="w-full"
-									onChange={(e) =>
-										setConfig({
-											...config,
-											temperature: Number(e.target.value),
-										})
-									}
-									onMouseUp={() =>
-										void patch({ temperature: config.temperature ?? 1 })
-									}
-									onTouchEnd={() =>
-										void patch({ temperature: config.temperature ?? 1 })
-									}
-								/>
-							</div>
-						) : null}
-
-						{config.provider !== "claude" ? (
-							<div>
-								<p className={label}>最大输出 Token</p>
-								<input
-									type="number"
-									min={64}
-									className={field}
-									value={config.maxTokens ?? ""}
-									placeholder={
-										config.provider === "anthropic"
-											? "1024（必填默认）"
-											: "不限制"
-									}
-									onChange={(e) =>
-										setConfig({
-											...config,
-											maxTokens: Number(e.target.value) || undefined,
-										})
-									}
-									onBlur={() => void patch({ maxTokens: config.maxTokens })}
-								/>
-							</div>
-						) : null}
-
-						{config.provider === "openai-responses" ? (
-							<div>
-								<p className={label}>推理力度（reasoning effort）</p>
-								<select
-									className={field}
-									value={config.effort ?? ""}
-									onChange={(e) =>
-										void patch({
-											effort: (e.target.value ||
-												undefined) as ChatConfig["effort"],
-										})
-									}
-								>
-									<option value="">默认</option>
-									<option value="low">low</option>
-									<option value="medium">medium</option>
-									<option value="high">high</option>
-								</select>
-							</div>
-						) : null}
-
-						<p className="text-micro text-fg-subtle">
-							配置存于 .workbench/workbench.yaml（本机文件）。API Key
-							仅存本地，接口永不下发明文。
-						</p>
+		<>
+			<div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6">
+				{query.data ? (
+					<SettingsFields
+						config={{ ...query.data, ...draft }}
+						onChange={(body) =>
+							setDraft((current) => ({ ...current, ...body }))
+						}
+						onSave={patch}
+					/>
+				) : query.isError ? (
+					<div role="alert" className="space-y-3 text-small text-status-danger">
+						<p>{query.error.message}</p>
+						<Button variant="outline" onClick={() => void query.refetch()}>
+							重新加载
+						</Button>
 					</div>
+				) : (
+					<p role="status" className="text-small text-fg-muted">
+						正在加载设置…
+					</p>
 				)}
-				<div className="border-t border-border px-4 py-2 text-small text-status-success">
-					{note}
-				</div>
 			</div>
-		</div>
+			<div className="flex min-h-14 shrink-0 items-center gap-2 border-t border-border-subtle px-5 py-3 text-small text-fg-muted">
+				{save.isError ? (
+					<>
+						<span role="alert" className="flex-1 text-status-danger">
+							{save.error.message}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => save.mutate(save.variables)}
+						>
+							重试
+						</Button>
+					</>
+				) : (
+					<span role="status" className="inline-flex items-center gap-2">
+						{save.isPending ? (
+							<Loader2 className="size-3.5 animate-spin" />
+						) : save.isSuccess ? (
+							<Check className="size-3.5 text-status-success" />
+						) : null}
+						{save.isPending
+							? "正在保存…"
+							: save.isSuccess
+								? "已保存"
+								: "修改后自动保存"}
+					</span>
+				)}
+			</div>
+		</>
 	);
 }

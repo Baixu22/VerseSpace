@@ -1,0 +1,105 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { apiFetch } from "../auth";
+import { type ResumeCardView, useChatStore } from "./store";
+
+vi.mock("../auth", () => ({ apiFetch: vi.fn() }));
+const api = vi.mocked(apiFetch);
+const response = (data: unknown) =>
+	({ ok: true, json: async () => data }) as Response;
+const card: ResumeCardView = {
+	coverage: { status: "unknown", text: "覆盖范围未知" },
+	narrative: [],
+	facts: [],
+	dismissed: false,
+	inject: true,
+};
+
+function view(
+	id: string,
+	resumeCard: ResumeCardView | null,
+	dismissed = false,
+) {
+	return {
+		meta: {
+			id,
+			title: id,
+			createdAt: "2026-09-07T00:00:00Z",
+			status: "idle",
+			permissionMode: "default",
+		},
+		messages: [
+			{
+				id: "last-loaded",
+				role: "assistant",
+				text: "已记录",
+				at: "2026-09-07T00:00:00Z",
+			},
+		],
+		suggestions: [],
+		decisionPoints: [],
+		resumeNote: null,
+		resumeCard,
+		resumeCardDismissed: dismissed,
+	};
+}
+
+afterEach(() => {
+	vi.resetAllMocks();
+	useChatStore.setState({
+		activeId: null,
+		threads: [],
+		messages: {},
+		drafts: {},
+		parked: {},
+	});
+});
+
+describe("恢复耗时的 UI 观测", () => {
+	it.each([
+		{ label: "有卡", resumeCard: card, dismissed: false, visible: true },
+		{ label: "卡已收起", resumeCard: card, dismissed: true, visible: false },
+		{ label: "无卡", resumeCard: null, dismissed: false, visible: false },
+	])("$label：带上实际可见性和加载时的消息边界", async ({
+		resumeCard,
+		dismissed,
+		visible,
+	}) => {
+		api.mockImplementation(async (path) =>
+			response(
+				path === "/api/chat/threads/target"
+					? view("target", resumeCard, dismissed)
+					: { ok: true },
+			),
+		);
+		await useChatStore.getState().switchThread("target");
+		const call = api.mock.calls.find(([path]) => path.endsWith("/restore"));
+		expect(JSON.parse(String(call?.[1]?.body))).toEqual({
+			fromThreadId: null,
+			resumeCardVisible: visible,
+			lastMessageId: "last-loaded",
+		});
+	});
+
+	it("慢请求已过时，不记录那个线程的恢复样本", async () => {
+		let release!: (value: Response) => void;
+		const pending = new Promise<Response>((resolve) => {
+			release = resolve;
+		});
+		api.mockImplementation(async (path) => {
+			if (path === "/api/chat/threads/slow") return pending;
+			return response(
+				path === "/api/chat/threads/fast" ? view("fast", null) : { ok: true },
+			);
+		});
+		const slow = useChatStore.getState().switchThread("slow");
+		await useChatStore.getState().switchThread("fast");
+		release(response(view("slow", card)));
+		await slow;
+		expect(
+			api.mock.calls
+				.filter(([path]) => path.endsWith("/restore"))
+				.map(([path]) => path),
+		).toEqual(["/api/chat/threads/fast/restore"]);
+		expect(useChatStore.getState().activeId).toBe("fast");
+	});
+});
