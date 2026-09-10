@@ -5551,7 +5551,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T18:26:37.441493Z",
+  "generated_at": "2026-09-10T18:28:12.139352Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -8452,10 +8452,8 @@
       "display_order": 1400,
       "estimated_total_minutes": null,
       "evidence": [
-        "验收3（L1）当前读数：分母 3 条文件级地标（git-main 的 src/alpha.ts、src/beta.ts；editor-1 的 src/beta.ts），已认可 1、待复核 2 → 0.3333。口径本轮收紧：分母只收文件级地标（`. / src` 这类目录不进分母，实测目录占原分母 40%，人无法把它们回答成核心）。",
-        "队列与回填：`bun scripts/e2e/landmark-review-queue.ts --workspace %TEMP%\\workbench-e2e-live-tenant --template answers.json`，改 verdict 后用 `--apply answers.json` 回填；两条都认可即 3/3 = 1.0 ≥ 0.8。",
-        "本轮新增 1 个跑次（累计 24 轮，失败 0）；样本窗口 restores 50 / noticeOutcomes 133 / sealDecisions 26，四项判决 3 supported + l3 insufficient-evidence。",
-        "监控（4 条告警全为 info，无 warn/high）：模型层可恢复错误 http-error×3 / invalid-response×2 / invalid-json×9 被有界重试兜住；恢复耗时超线是脚本手势决定，按新规则降为 info。"
+        "（本条为本轮新增）验收3 的人评通道分两层，别把两层混成一层：① 内容检查——人回答队列里那 2 条（`src/alpha.ts`、`src/beta.ts`），回答写的是 human 事件，能验证「列表里是不是这次干的活的核心」这件事本身；② 自然证据——fit 判据要 `requires: natural`，而本批现场声明是 live-model，所以即使人答完、值到 1.0，fit 仍停在 unknown。要拿到自然证据，需要一个**真实的会话现场**（人在运行时里干活），本机目前没有（仓库自己的黑板交互事件为 0）。",
+        "排队里的 2 条：`bun scripts/e2e/landmark-review-queue.ts --workspace %TEMP%\\workbench-e2e-live-tenant --template answers.json`，改 verdict 后 `--apply answers.json`。两条都认可 → 3/3 = 1.0（内容检查成立）。"
       ],
       "execution_hints": [
         "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
@@ -8466,7 +8464,7 @@
       ],
       "id": "TF-0057",
       "kind": "global_task",
-      "next_action": "只剩人评：把 answers.json 里两条 verdict 改成 endorse / reject 后 `--apply`；两条都认可即 0.8 达成，AC3 收口。",
+      "next_action": "内容检查两条立刻可做（队列已生成）；自然证据需要先用工作台干一段真实活（产生 interactions），再在那个现场上跑 stats + 队列。",
       "non_goals": [
         "a2a／多 agent 互聊协议",
         "手动工作流 DAG 编辑器",
@@ -8492,7 +8490,7 @@
       "success_metrics": [],
       "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
       "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-      "updated_at": "2026-09-10T18:24:47.687706Z"
+      "updated_at": "2026-09-10T18:28:06.815326Z"
     },
     "TF-0058": {
       "acceptance_criteria": [
@@ -14891,24 +14889,20 @@
       "difficulty": "unknown",
       "estimated_total_minutes": null,
       "evidence": [
-        "AC1（≥3 个不同工作形状的真实现场）已满足：2026-09-11 跑了 4 个现场（租户 workbench-e2e-live-tenant 103 写者、workbench-node-verified 32 写者、workbench-e2e-LHA3I4 16 写者、workbench-e2e-VAKSgQ 13 写者），命令 `bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点>`。",
-        "出厂参数（floor=10 edit=2）逐现场：租户 地标 5 条（容器 2，占 40%，文件级 3）· 触发写者 2 / 无地标 76；节点验证 0 条 · 0 / 32；LHA3I4 0 条 · 0 / 15；VAKSgQ 0 条 · 0 / 12。四个现场里三个是空集。",
-        "把阈值降到底也不救：节点验证在 floor=4 edit=2 仍是 0 条；LHA3I4 / VAKSgQ 在 floor=4/6 × edit=2/4 的所有组合上都是 0 条。",
-        "目录占比随阈值上升：租户 floor=10 → 40%、floor=6 → 75%、floor=4 → 52%；节点验证 floor=10 edit=4 → 33%、floor=6 edit=4 → 50%。「调低阈值提高覆盖」会把分母越调越脏。",
-        "粒度问题与阈值无关：四个阈值组合下去重 handle 始终只有 4 个（., src, src/alpha.ts, src/beta.ts）——阈值改的是「有几条触发」，不是「粒度有多细」。",
-        "实现（AC2 前半）：`interestFromEvents` 新增 `fileLandmarkHandles`（DOI>10 且 contentType=file），`currentLandmarkAcceptance` 改用它做分母；回归用例钉住「目录能进 DOI 地标集合，但不进 L1 分母」，夹具的 contentType 走真实 `contentTypeOf`（手写 file 会让这条测试失去意义）。",
-        "监控侧：新增告警规则 `landmark-set-empty`（零地标 + 有写者 → warn），已在 workbench-node-verified 现场实测触发：『写者 32 个，地标集合 0 条』。零地标现场 L1 无从计算，不能再静静躲在『等自然使用』后面。",
-        "口径变化后的租户读数：分母 5 → 3（排除 `.` 与 `src`），认可 1 / 3 = 0.3333，待复核 2 条。分母缩小后更难达标，说明这次收口径不是为了把数字做漂亮。"
+        "（本条为本轮新增）相对选择测量（新增 `--top-k K`，命令 `bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点> --top-k 3`）：有集合的写者 租户 78/103（空集 25，都是只有容器/git 触碰的写者）· 节点验证 32/32 · LHA3I4 15/16 · VAKSgQ 12/13。相对选择把非空率从「3/4 现场为零」拉到了几乎全覆盖。",
+        "但测量的另一半是反证：真实现场里 DOI 普遍为负（例：`src/alpha.ts(-13.0)`、`src/family.ts(-16.0)`），因为衰减按小时推进而触碰只有 1–2 次。也就是说 top-K 排的是「衰减最小的 K 个」，排序由时间主导而不是重要性——绝对分不适合当选择器，相对选择目前也只是把「谁更像核心」换成了「谁最近被动过」。",
+        "规模也不支持批量人评：103 个写者 × top-3 = 174 条，人去逐条回答不现实。v6 §11 的单位是「一段会话结束后，系统能列出该会话的地标集合」——判断粒度应该是每会话（人评自己那一段），不是把全租户的集合摊平成一张表。",
+        "本机没有自然现场：仓库自己的黑板 `D:\\helmor-main\\.workbench` 有 7 个写者、但 file 级交互事件为 0（四个阈值组合与 top-3 都是空集）——CLI 侧调用不产生 interactions 事件，唯一有交互数据的都是脚本租户。自然 L1 需要一个真实会话（人在运行时里干活）。"
       ],
       "execution_hints": [
-        "复现四个现场：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace %TEMP%\\workbench-e2e-live-tenant`（其余三个站点同目录下）。",
-        "监控侧复现零地标告警：`bun scripts/fit-monitor.ts --workspace %TEMP%\\workbench-node-verified-032fd3ea64a74c539a5d9d8cfeb3bf37 --evidence-kind scripted --no-append`。",
-        "相对选择的设计要点：每写者按 DOI 降序取文件级 top-K（K 小，3–5），空集合只在写者没有任何文件级触碰时出现；这也把 L1 的单位从『全部写者一锅算』推向 v6 §11 原文的『一段会话结束后列该会话的地标集合』。",
-        "别用 landmarkFloor=0 凑非空：那会把所有被碰过一次的文件都算成地标，分母变成噪声。"
+        "测量入口：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点> --top-k 3`（或 --top-k 5）；四站点都在 %TEMP%\\workbench-* 下，仓库自己的自然现场是 `--workspace D:\\helmor-main`。",
+        "改代码前必须先决定单位：是「每会话 top-K」还是「全租户共用阈值」——前者符合 v6 §11 原文，也让人评规模回到「一段会话 3–5 条」。",
+        "若走相对选择，还需要一个有下界的分数（例如只看 score > 0 或按近期窗口归一化），否则 top-K 会一直把「没被碰、只是衰减最小」的文件排进来。",
+        "别自己给自己合成自然数据：脚本租户的复核只会收敛到脚本常数，这一点在 fit 账本里已经有闸门。"
       ],
       "id": "TF-0156",
       "kind": "task",
-      "next_action": "按 AC3 做相对选择：先只做测量（在四个现场上算「每写者文件级 top-K」的非空率与覆盖率，K=3/5 各跑一遍），数字站得住再改代码与测试。",
+      "next_action": "先定单位（每会话 top-K，K=3）并解决负分排序问题（先试「score 归一化到 [0,1] 再排序」或「窗口内相对份额」），在四个站点 + 仓库自然现场上把「非空率 / 每会话条目数 / 排序是否稳定」跑成数字；仍不要先改 L1 的分母。",
       "non_goals": [],
       "primary_parent": "TF-0057",
       "priority": 3,
@@ -14927,7 +14921,7 @@
       "success_metrics": [],
       "summary": "L1 的分母修好之后才看得见真问题：22 轮真实现场里 95 个写者只有 2 个产出地标（5 条），其中 2 条是 . / src 这类容器（40%）。标定扫描说明这不是阈值问题——容器占比由 DOI 的父级传播份额决定：floor=10 时 40%、floor=6 时 70%、floor=4 时 50%、edit=4 时 40–54%，而每种配置下去重的 handle 都只有 4 个（.、src、src/alpha.ts、src/beta.ts）。所以『80% 的地标是这次活的核心』现在一半在量容器占位；降阈值只会同时牺牲覆盖（floor=4 时仍有 52 个写者无地标）。",
       "title": "地标集合的粒度与覆盖：让核心真的进 L1 分母",
-      "updated_at": "2026-09-10T18:24:47.687706Z"
+      "updated_at": "2026-09-10T18:28:06.815326Z"
     },
     "TF-0157": {
       "acceptance_criteria": [

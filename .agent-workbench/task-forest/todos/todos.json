@@ -15,7 +15,7 @@
     "difficulty": "unknown",
     "id": "TF-0156",
     "kind": "task",
-    "next_action": "复现四个现场：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace %TEMP%\\workbench-e2e-live-tenant`（其余三个站点同目录下）。",
+    "next_action": "测量入口：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点> --top-k 3`（或 --top-k 5）；四站点都在 %TEMP%\\workbench-* 下，仓库自己的自然现场是 `--workspace D:\\helmor-main`。",
     "priority": 3,
     "progress": 0.0,
     "purpose": "",

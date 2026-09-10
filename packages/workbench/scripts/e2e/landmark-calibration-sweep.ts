@@ -19,6 +19,12 @@
  * 用法：
  *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户>
  *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> --json
+ *   bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> --top-k 3
+ *
+ * `--top-k K` 再测一条候选规则（TF-0156 验收三）：**相对选择** —— 每个写者按
+ * DOI 降序取自己的文件级 top-K，而不是让所有人共用一个绝对阈值。绝对阈值要求
+ * 「同一条 handle 在衰减窗口内被推过 10 分」，真实形状（很多文件各碰一两次）下
+ * 四个现场有三个直接空集；相对选择只在「这个写者一个文件都没碰」时才为空。
  */
 
 import { openBlackboard } from "../../src/blackboard";
@@ -143,10 +149,59 @@ for (const { label, config } of SWEEP) {
 	});
 }
 
+/**
+ * 候选规则：每写者按 DOI 降序取自己的文件级 top-K（相对选择）。
+ * 返回每人集合的大小分布与去重 handle，用来回答「非空率」与「覆盖」两个数字。
+ */
+function measureTopK(k: number): {
+	writers: number;
+	withSet: number;
+	items: number;
+	handles: string[];
+	examples: string[];
+} {
+	let withSet = 0;
+	let items = 0;
+	const handles = new Set<string>();
+	const examples: string[] = [];
+	for (const writer of writers) {
+		const scopedRows = scoped(writer.id);
+		if (scopedRows.length === 0) continue;
+		const events = scopedRows.map((event) => event.payload as InteractionEvent);
+		const result = computeDoi(events, Date.now(), DEFAULT_DOI_CONFIG);
+		const own = [...result.scores.values()]
+			.filter((score) => score.contentType === "file")
+			.sort((a, b) => b.doi - a.doi)
+			.slice(0, k);
+		if (own.length === 0) continue;
+		withSet += 1;
+		items += own.length;
+		for (const score of own) handles.add(score.handle);
+		if (examples.length < 3)
+			examples.push(
+				`${writer.id.slice(0, 10)}… → ${own.map((score) => `${score.handle}(${score.doi.toFixed(1)})`).join(", ")}`,
+			);
+	}
+	return {
+		writers: writers.length,
+		withSet,
+		items,
+		handles: [...handles],
+		examples,
+	};
+}
+
+const topK = Number(at("--top-k") ?? "0");
+
 if (argv.includes("--json")) {
 	console.log(
 		JSON.stringify(
-			{ blackboard: bb.paths.root, writers: writers.length, rows },
+			{
+				blackboard: bb.paths.root,
+				writers: writers.length,
+				rows,
+				topK: topK > 0 ? measureTopK(topK) : null,
+			},
 			null,
 			1,
 		),
@@ -157,4 +212,11 @@ if (argv.includes("--json")) {
 		console.log(
 			`${row.label.padEnd(22)} 地标 ${String(row.landmarks).padStart(4)} 条（容器 ${String(row.containers).padStart(3)}，占 ${((row.containers / Math.max(1, row.landmarks)) * 100).toFixed(0)}%，文件级 ${String(row.files).padStart(4)}）· 触发写者 ${row.writersHit}（文件级 ${row.writersFileHit} / 无地标写者 ${row.writersStarved}）· 去重 handle ${row.handles.length} [${row.handles.slice(0, 8).join(", ")}]`,
 		);
+	if (topK > 0) {
+		const measured = measureTopK(topK);
+		console.log(
+			`相对选择 top-${topK}：有集合的写者 ${measured.withSet} / ${measured.writers}（空集 ${measured.writers - measured.withSet}）· 条目 ${measured.items} 条 · 去重文件 handle ${measured.handles.length} 个 [${measured.handles.slice(0, 8).join(", ")}]`,
+		);
+		for (const line of measured.examples) console.log(`  例：${line}`);
+	}
 }
