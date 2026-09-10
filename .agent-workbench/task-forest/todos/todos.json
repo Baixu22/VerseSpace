@@ -1,6 +1,33 @@
 [
   {
     "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
+    "id": "TF-0156",
+    "kind": "task",
+    "next_action": "扫描：cd packages/workbench && bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> [--json]",
+    "priority": 3,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "地标集合的粒度与覆盖：让核心真的进 L1 分母"
+  },
+  {
+    "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.75,
       "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
@@ -30,7 +57,7 @@
     "kind": "global_task",
     "next_action": "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
     "priority": 1,
-    "progress": 86.3,
+    "progress": 95.2,
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -38,194 +65,5 @@
     "status": "in_progress",
     "success_metrics": [],
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "l0",
-      "前端"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0085",
-    "kind": "requirement",
-    "next_action": "新增任何交互功能时，不增加发出第一条消息前的任何步骤",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "要求 L0：线性对话是默认且不动它"
-  },
-  {
-    "alignment": {
-      "fit": "aligned",
-      "fit_confidence": 0.75,
-      "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
-      "validation_plan": [
-        "t0+14d：TF-0136 四条判据",
-        "t0+30d：护城河四个数字存在且非零",
-        "任一数字缺失则先补它，不扩树"
-      ],
-      "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
-      "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
-    },
-    "blocked_by": [],
-    "confidence": 0.88,
-    "context_tags": [
-      "architecture",
-      "premise-custody",
-      "fable-5-1"
-    ],
-    "desired_outcomes": [
-      "用户回到旧线程时先看到“哪些前提变了”，其次才是叙事",
-      "分支不再被误当成上下文继承，读集只在真实继承时传递",
-      "并发通知保持精度优先且不淹没注意力"
-    ],
-    "difficulty": "very_high",
-    "id": "TF-0120",
-    "kind": "milestone",
-    "next_action": "真实模型数据源已具备；阶段 D 主动采样，不等待人工创建会话。",
-    "priority": 1,
-    "progress": 97.7,
-    "purpose": "把三支柱从并列子系统收敛为“一条日志、两类事实、三个投影”的前提守护架构，后续开发以此为主线。",
-    "ready": true,
-    "remaining_minutes_max": 5640,
-    "remaining_minutes_min": 2820,
-    "status": "in_progress",
-    "success_metrics": [
-      "阶段 A 的三个基础件全部收口并可通过测试",
-      "恢复卡事实段的每条事实可溯源",
-      "分支继承不再把 UI 前缀误当 agent 前提",
-      "通知单轮注入不超过配置预算",
-      "L3 砍留决策有真实使用数据支撑"
-    ],
-    "title": "Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "两周窗口有明确 start_date 与 end_date",
-        "每条 fit 结论引用 stats 输出或事件 ID",
-        "L3 有明确继续或延后结论"
-      ],
-      "why_not_enough": "两周样本来自单一用户，只能否决 L3，不能证明普适价值",
-      "why_this_task": "全图 140/142 节点 fit 未知，再往下建只会扩大『能建但没人用』的面积"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "fit",
-      "gate",
-      "roadmap"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0135",
-    "kind": "milestone",
-    "next_action": "阶段 D 工程侧无待办（2026-09-10）：五个风险节点已分别收敛，L1 读数 0.74 是脚本常数。剩余只有自然使用观察；没有 natural 来源的现场就不要再动这棵子树。",
-    "priority": 1,
-    "progress": 90.8,
-    "purpose": "用真实使用数据决定三支柱继续、收缩还是砍掉，结束 117/119 fit unknown 的结构性风险。",
-    "ready": true,
-    "remaining_minutes_max": 600,
-    "remaining_minutes_min": 300,
-    "status": "in_progress",
-    "success_metrics": [
-      "有明确日用起点和 14 天样本",
-      "每个 fit 结论可追溯到事件或 stats 输出",
-      "L3 有继续/延后结论",
-      "fit unknown 占比下降"
-    ],
-    "title": "阶段 D：fit 门与范围仲裁"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "stats --json 导出 14 天样本",
-        "三条门槛逐条对照事件来源与产生节点",
-        "结论写回森林节点"
-      ],
-      "why_not_enough": "门槛只能否决，不能证明；通过也只说明值得再看一层",
-      "why_this_task": "L3 是最贵的一层，必须由行为证据而不是排期决定是否继续"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "l3",
-      "gate",
-      "fit"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0136",
-    "kind": "task",
-    "next_action": "L1 认可率是人类认可类指标：账本只在 natural 来源下为 TF-0154 计 fit。landmark-coverage / S8b 的复核手势只验证通道与覆盖率，读数收敛到脚本常数，不能作为 L1 验收数据。",
-    "priority": 1,
-    "progress": 62.0,
-    "purpose": "用可观测行为而不是架构偏好决定 L3 是否值得继续。",
-    "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
-    "status": "in_progress",
-    "success_metrics": [
-      "L3 的继续/延后决策可追溯到 stats 输出"
-    ],
-    "title": "两周真实使用门与 L3 证据门"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
-      "validation_plan": [
-        "账本每行引用 stats 输出或事件 ID",
-        "本批 TF-0120..TF-0146 全部入账",
-        "fit 词表与 alignment.fit 一致"
-      ],
-      "why_not_enough": "账本记录事实，不替代裁决",
-      "why_this_task": "没有账本，unknown 会永远是 unknown，砍留决策只能靠印象"
-    },
-    "blocked_by": [],
-    "confidence": 0.85,
-    "context_tags": [
-      "fit",
-      "ledger",
-      "decision"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0137",
-    "kind": "task",
-    "next_action": "账本按周从 live 租户重跑：cd <租户> && bun <repo>/packages/workbench/scripts/fit-ledger.ts --evidence-kind live-model --scope <repo> --out <repo>/docs/fit-ledger.md。人类认可类指标（requires: natural）在该来源下停在 unknown，属预期。",
-    "priority": 1,
-    "progress": 92.0,
-    "purpose": "把“真实使用有没有用”变成任务森林的一等状态。",
-    "ready": true,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 90,
-    "status": "in_progress",
-    "success_metrics": [
-      "fit unknown 占比下降，且每个非 unknown 结论都有数据引用"
-    ],
-    "title": "fit 账本与砍留决策"
   }
 ]

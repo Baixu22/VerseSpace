@@ -1,43 +1,43 @@
 {
-	"proposal_id": "TFP-2026-09-10-acceptance-17rounds",
-	"created_at": "2026-09-10T15:05:00.000000Z",
-	"applied_at": null,
-	"status": "proposed",
-	"base_graph_hash": null,
-	"base_summary": {
-		"edge_count": 225,
-		"node_count": 155,
-		"workspace_path": "D:\\helmor-main"
-	},
-	"session_id": "session-2026-09-10-senseaudio-17rounds",
-	"rationale": "SenseAudio S2 Flash 默认模型下 17 轮真实 live 累积（本轮 3 轮）后，把 TF-0136 / TF-0137 / TF-0135 的验收文本逐条对照真实读数给出结论，报告 docs/report-2026-09-10-senseaudio-17round-acceptance.md。三项判决、四个护城河数字、工程基线在 live-model 现场全部达门槛且可追溯到 stats 或事件；TF-0141 工程样本门满足。仅 L1（TF-0154）与恢复卡人类效果为 requires: natural，不可由脚本手势验收。本次只记录验收事实与来源，不改节点状态与进度；是否按此收口由用户决定。",
-	"changes": [
-		{
-			"action": "update_node",
-			"id": "TF-0136",
-			"fields": {
-				"evidence": [
-					"2026-09-10：SenseAudio S2 Flash 默认模型 17 轮累积后，判决一恢复卡 supported（consumed/restores=0.4375 ≥ 0.3，resumeActions=27 > 0）；判决二前提检测 supported（dismissed=ignored=unknown=0）；判决三阶段 C supported（forks 28+，真实继承 3 ≥ 1）；判决四 L3 维持 insufficient-evidence（已砍，TF-0099/0100/0101 废止）。全套读数 docs/report-2026-09-10-senseaudio-17round-acceptance.md，快照 docs/fit-ledger-2026-09-10-senseaudio-17rounds.md。"
-				]
-			}
-		},
-		{
-			"action": "update_node",
-			"id": "TF-0137",
-			"fields": {
-				"evidence": [
-					"2026-09-10：SenseAudio 17 轮累积后护城河四数字齐备且非零：A 校准表行数 95（≥50）、B git/human 失效通知 1（≥1）、C 真实会话 seal block 18（≥1 且正确）、D notified/overlaps 0.149（10-30%）；benchmark 闸门 open。fit 账本分布 aligned 3 / partial 16 / unknown 6（partial 均为已 done 节点有数据未设 judge 的保守展示）。"
-				]
-			}
-		},
-		{
-			"action": "update_node",
-			"id": "TF-0135",
-			"fields": {
-				"evidence": [
-					"2026-09-10：SenseAudio 17 轮累积后工程基线齐备：t0=69 线程/75 写者，样本窗 restores 38 / noticeOutcomes 95 / sealDecisions 20 满足；兄弟交替 14 家族 1 交替、恢复首动作 13 次全为 resume card revealed、footprint 覆盖率 0.737。剩余只有 L1 认可与恢复卡人类耗时为 natural 指标。"
-				]
-			}
-		}
-	]
+  "applied_at": "2026-09-10T17:43:24.038022Z",
+  "base_graph_hash": null,
+  "base_summary": {
+    "edge_count": 225,
+    "node_count": 155,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-10：SenseAudio S2 Flash 默认模型 17 轮累积后，判决一恢复卡 supported（consumed/restores=0.4375 ≥ 0.3，resumeActions=27 > 0）；判决二前提检测 supported（dismissed=ignored=unknown=0）；判决三阶段 C supported（forks 28+，真实继承 3 ≥ 1）；判决四 L3 维持 insufficient-evidence（已砍，TF-0099/0100/0101 废止）。全套读数 docs/report-2026-09-10-senseaudio-17round-acceptance.md，快照 docs/fit-ledger-2026-09-10-senseaudio-17rounds.md。"
+        ]
+      },
+      "id": "TF-0136"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-10：SenseAudio 17 轮累积后护城河四数字齐备且非零：A 校准表行数 95（≥50）、B git/human 失效通知 1（≥1）、C 真实会话 seal block 18（≥1 且正确）、D notified/overlaps 0.149（10-30%）；benchmark 闸门 open。fit 账本分布 aligned 3 / partial 16 / unknown 6（partial 均为已 done 节点有数据未设 judge 的保守展示）。"
+        ]
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-10：SenseAudio 17 轮累积后工程基线齐备：t0=69 线程/75 写者，样本窗 restores 38 / noticeOutcomes 95 / sealDecisions 20 满足；兄弟交替 14 家族 1 交替、恢复首动作 13 次全为 resume card revealed、footprint 覆盖率 0.737。剩余只有 L1 认可与恢复卡人类耗时为 natural 指标。"
+        ]
+      },
+      "id": "TF-0135"
+    }
+  ],
+  "created_at": "2026-09-10T15:05:00.000000Z",
+  "proposal_id": "TFP-2026-09-10-acceptance-17rounds",
+  "rationale": "SenseAudio S2 Flash 默认模型下 17 轮真实 live 累积（本轮 3 轮）后，把 TF-0136 / TF-0137 / TF-0135 的验收文本逐条对照真实读数给出结论，报告 docs/report-2026-09-10-senseaudio-17round-acceptance.md。三项判决、四个护城河数字、工程基线在 live-model 现场全部达门槛且可追溯到 stats 或事件；TF-0141 工程样本门满足。仅 L1（TF-0154）与恢复卡人类效果为 requires: natural，不可由脚本手势验收。本次只记录验收事实与来源，不改节点状态与进度；是否按此收口由用户决定。",
+  "session_id": "session-2026-09-10-senseaudio-17rounds",
+  "status": "applied"
 }
