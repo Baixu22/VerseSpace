@@ -28,6 +28,33 @@
   },
   {
     "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
+    "id": "TF-0157",
+    "kind": "task",
+    "next_action": "复现：cd packages/workbench && bun test src/chat/fork-inheritance.test.ts --timeout 60000",
+    "priority": 3,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "本机套件两类红：fork 继承 / 通知通道 10 例失败，全量跑停留"
+  },
+  {
+    "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.75,
       "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",

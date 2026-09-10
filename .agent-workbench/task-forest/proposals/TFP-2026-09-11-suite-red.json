@@ -1,0 +1,63 @@
+{
+  "applied_at": "2026-09-10T18:12:59.923759Z",
+  "base_graph_hash": "8371a7debe721f997d7d833537cf566d8971053eba1e8e6fd5d35e87a9a8ed50",
+  "base_summary": {
+    "edge_count": 227,
+    "node_count": 156,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "suite-red",
+      "node": {
+        "acceptance_criteria": [
+          "定位根因：先分清『假 claude 没启动』与『启动了但输出没被消费』——查 %TEMP% 下 wb-fork-honesty-* 的 argv.log 是否落盘、supervisor 是否真的 spawn、chat.run 的失败是否被吞掉",
+          "10 例要么修好，要么把环境前提写进用例（不得用 skip 收口）",
+          "全量 bun test 在本机能于 15 分钟内跑完并给出总账（当前 >20 分钟不结束）",
+          "结论写回节点，并说明它是否影响此前以『全绿』表述过的验收证据（TF-0120 / TF-0135 等的工程证据）"
+        ],
+        "evidence": [
+          "命令与读数：cd packages/workbench && bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor --timeout 60000 → 214 用例、68.14 秒、204 pass / 10 fail（其中『turn in flight：notifySession 只排队』60 秒超时）。",
+          "与本次改动无关：git diff 另存为 patch 后 checkout 掉 context.ts / review-stats.ts / review-stats.test.ts，再跑 src/chat/fork-inheritance.test.ts → 1 pass / 4 fail（与带改动时完全一致），随后已恢复改动（tsc=0、interactions 39 用例全绿）。",
+          "沙箱因素已排除：在测试进程内 spawnSync('bun',['--version']) 与 spawnSync('bun --version',{shell:true}) 均 status 0、输出 1.4.2。",
+          "失败样例：fork-inheritance.test.ts:131 expect(footprint(source.id).length).toBeGreaterThan(0) 收到 0；:176 expect(agentContextPlan?.mode).toBe('fork-session') 收到 undefined；:220 读集行数收到 0（期望 ≥2）。",
+          "对照：src/chat 里不依赖假 claude 的用例（如『HTTP provider：上下文靠历史重发算继承』）仍然 pass，说明失败集中在 spawn 假 claude 的那条路径上。"
+        ],
+        "execution_hints": [
+          "复现：cd packages/workbench && bun test src/chat/fork-inheritance.test.ts --timeout 60000",
+          "假 claude 的落盘位置：%TEMP%/wb-fork-honesty-*/argv.log（用例的 restore() 会删目录，要看得先注释掉或改成保留）",
+          "spawn 路径：src/chat/threads.ts 的 chatCommand() 读 WORKBENCH_CHAT_COMMAND（懒读，测试可以按轮改）；进程由 src/supervisor.ts 的 spawnSupervised 起。",
+          "先跑单个文件、再跑整个 src/chat，最后才跑全量——全量会停留，注意用超时兜住。"
+        ],
+        "kind": "task",
+        "next_action": "按验收一先归因：确认假 claude 是否真的启动、argv.log 有没有落盘，再决定是修代码还是修用例。不要用 skip 收口。",
+        "progress": 0,
+        "requirements": [
+          "不许用 skip 或放宽断言把红变绿",
+          "先归因再修；本节点不以『在我机器上复现不了』收口"
+        ],
+        "status": "proposed",
+        "summary": "packages/workbench 子集跑 `bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor`（68 秒）得到 204 pass / 10 fail：分支读集继承（TF-0131）4 例、ChatThreads 追溯式分叉（TF-0093）1 例、通知通道语义（TF-0142）5 例（其中一例 60 秒超时）。失败形态一致：假 claude 的 tool_use 没有变成足迹（footprint 为 0）、fork 的 agentContextPlan?.mode 读到 undefined。已知：与 2026-09-11 的 L1 改动无关（revert 后同样失败）；与沙箱无关（测试进程内 spawnSync 带管道 / shell 两种方式都成功）。2026-09-07 报告里的『全量 569 pass / 0 fail』说明这中间有回归或环境漂移，需要归因。全量 bun test 会停留：CPU 20 分钟不增长、无输出，只能中断。",
+        "title": "本机套件两类红：fork 继承 / 通知通道 10 例失败，全量跑停留"
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "suite-red",
+      "to": "TF-0114",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "from": "suite-red",
+      "to": "TF-0113",
+      "type": "related_to"
+    }
+  ],
+  "created_at": "2026-09-10T18:12:59.744451Z",
+  "proposal_id": "TFP-2026-09-11-suite-red",
+  "rationale": "2026-09-11 做 L1 分母修正后的回归核验时发现：packages/workbench 的聊天侧有 10 个用例在本机稳定失败（fork 继承 4 例 + threads 分叉 1 例 + 通知通道 5 例），且全量 bun test 会停留（CPU 平坦、20 分钟不结束）。已用「把我的改动 revert 后重跑」确认与本次 L1 修正无关（revert 前后同为 1 pass / 4 fail）；也已排除沙箱因素（在测试进程内 spawnSync 带管道与 shell 两种方式都成功，bun --version 返回 1.4.2）。README/报告的『全量 569 pass / 0 fail』是 2026-09-07 的读数，中间发生了什么需要归因。本提案只新增一个节点，不改任何代码。",
+  "session_id": null,
+  "status": "applied"
+}

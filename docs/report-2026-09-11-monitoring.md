@@ -100,5 +100,8 @@ bun D:\helmor-main\packages\workbench\scripts\e2e\landmark-calibration-sweep.ts 
 ## 7. 还剩什么
 
 1. **L1 的 2 条人评**（TF-0057 AC3）：人回答后 `--apply`，判据 ≥ 0.8 即可收口；当前 0.4 里含 3 条脚本结论，人重新回答会覆盖它们。
-2. **TF-0156**：按扫描数字定粒度规则（文件级）与覆盖目标，再改常量与投影，补测试。
-3. **长期观察**（不阻塞工程）：14 天日历窗口 2026-09-22 到期后复跑一次账本；恢复卡的人类耗时仍需 `--evidence-kind natural` 的现场。
+2. **TF-0156 地标粒度与覆盖**：按扫描数字定粒度规则（文件级）与覆盖目标，再改常量与投影，补测试。
+3. **TF-0157 本机套件的两类红**（本轮做回归核验时发现，已立节点）：`bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor` 得到 204 pass / 10 fail——fork 继承（TF-0131）4 例、追溯式分叉（TF-0093）1 例、通知通道（TF-0142）5 例；全量 `bun test` 还会停留（CPU 20 分钟不增长）。已确认与本次 L1 改动无关（revert 后同样失败）且与沙箱无关（测试进程内带管道 spawn 成功）。2026-09-07 报告里的"全量 569 pass / 0 fail"与今天之间的差异需要归因。
+4. **长期观察**（不阻塞工程）：14 天日历窗口 2026-09-22 到期后复跑一次账本；恢复卡的人类耗时仍需 `--evidence-kind natural` 的现场。
+
+> 本报告的"全绿"只指本轮实际跑过的范围：22 轮真实采样 5/5 全绿、`bun test src/interactions` 39 用例全绿、`bun test scripts/fit-monitor` 13 用例全绿、`bunx tsc --noEmit` 退出 0。第 3 条列出的 10 例红在此之前就是红的，未计入本轮读数。
