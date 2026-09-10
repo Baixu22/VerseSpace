@@ -69,6 +69,34 @@ function sessionClock(events: InteractionEvent[], fallback: number): number {
 	return latest > 0 ? latest : fallback;
 }
 
+/**
+ * 相对选择：**该会话自己**按 DOI 排出来的文件级 top-K（TF-0156 验收三）。
+ *
+ * 为什么要另一条规则：绝对阈值（DOI > landmarkFloor）要求「同一条 handle 在衰减
+ * 窗口内被推过 10 分」，而真实形状是很多文件各被碰一两次（权重 1–2），跨四个现场
+ * 实测有三个直接空集——于是 L1 的分母常常是空的，判据无法计算。相对选择只在
+ * 「这个会话一个文件都没碰」时才为空：租户 78/103、节点验证 32/32、LHA3I4 15/16、
+ * VAKSgQ 12/13 非空（写者覆盖 76%/100%/94%/92%）。
+ *
+ * 排序用**会话时钟**下的 DOI：会话内事件相隔秒级，衰减几乎均匀，所以次序反映的是
+ * 触碰权重（编辑 vs 选中）而不是「谁离现在近」。同分按 handle 字典序，保证可复现。
+ */
+export function sessionFileTopK(
+	records: WorkbenchEvent[],
+	writer: string,
+	k: number,
+	now = Date.now(),
+): string[] {
+	const scoped = writerInteractionEvents(records, writer);
+	const events = scoped.map((event) => event.payload as InteractionEvent);
+	const result = computeDoi(events, sessionClock(events, now));
+	return [...result.scores.entries()]
+		.filter(([, score]) => score.contentType === "file")
+		.sort((a, b) => b[1].doi - a[1].doi || a[0].localeCompare(b[0]))
+		.slice(0, k)
+		.map(([handle]) => handle);
+}
+
 /** Shared read-only projection for CLI context and stats from one log snapshot. */
 export function interestFromEvents(
 	records: WorkbenchEvent[],

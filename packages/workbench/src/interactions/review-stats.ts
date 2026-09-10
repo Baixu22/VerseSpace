@@ -1,5 +1,5 @@
 import type { WorkbenchEvent } from "../types/event";
-import { interestFromEvents } from "./context";
+import { interestFromEvents, sessionFileTopK } from "./context";
 import {
 	collectLandmarkReviews,
 	type LandmarkReview,
@@ -11,6 +11,74 @@ type Judgement = ReturnType<typeof landmarkReviewJudgement>;
 export type LandmarkAcceptance = Judgement & {
 	byWriter: Array<Judgement & { writer: string }>;
 };
+
+/**
+ * 相对选择的可计量性（TF-0156 验收三）：分母 = 有文件级交互的会话；分子 = 该会话
+ * 的文件级 top-K 非空的会话数。用绝对阈值时这个分子在四个现场里三个是 0，L1 就
+ * 算不出来；相对选择的覆盖实测是 76% / 100% / 94% / 92%。
+ *
+ * 这条读数**不改** L1 现在的分母（`currentLandmarkAcceptance` 仍是阈值口径），
+ * 是为了让「切换口径」这件事有数字支撑、且不搅动已经发出去的复核队列。
+ */
+export type RelativeLandmarkCoverage = {
+	k: number;
+	/** 有文件级触碰的会话数。 */
+	sessions: number;
+	/** top-K 非空的会话数（只在「一个文件都没碰」时为空）。 */
+	withSet: number;
+	/** 全部条目数。 */
+	items: number;
+	/** withSet / sessions，没有会话时为 null。 */
+	share: number | null;
+	/** 去重后的文件 handle 数。 */
+	distinctHandles: number;
+};
+
+export function relativeLandmarkCoverage(
+	events: WorkbenchEvent[],
+	writerIds: string[],
+	k = 3,
+	now = Date.now(),
+): RelativeLandmarkCoverage {
+	const records = new Map(
+		writerIds.map((writer) => [writer, [] as WorkbenchEvent[]]),
+	);
+	for (const event of events) {
+		if (
+			event.source !== INTERACTIONS_SOURCE ||
+			event.type !== INTERACTIONS_TYPE
+		)
+			continue;
+		const writer = (event.payload as { origin?: string } | null)?.origin;
+		if (writer) records.get(writer)?.push(event);
+	}
+	let sessions = 0;
+	let withSet = 0;
+	let items = 0;
+	const handles = new Set<string>();
+	for (const [writer, rows] of records) {
+		const hasFile = rows.some(
+			(event) =>
+				(event.payload as { contentType?: string } | null)?.contentType ===
+				"file",
+		);
+		if (!hasFile) continue;
+		sessions += 1;
+		const top = sessionFileTopK(rows, writer, k, now);
+		if (top.length === 0) continue;
+		withSet += 1;
+		items += top.length;
+		for (const handle of top) handles.add(handle);
+	}
+	return {
+		k,
+		sessions,
+		withSet,
+		items,
+		share: sessions > 0 ? withSet / sessions : null,
+		distinctHandles: handles.size,
+	};
+}
 
 /** Each (writer, handle) is one current landmark; repeated reviews are corrections. */
 export function currentLandmarkAcceptance(

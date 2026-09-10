@@ -4,9 +4,14 @@ import type { Blackboard } from "../blackboard";
 import { collectChatStats } from "../chat/stats";
 import { ChatThreads } from "../chat/threads";
 import { makeTempWorkbench } from "../test/fixtures";
-import { collectInterest } from "./context";
+import {
+	collectInterest,
+	interestFromEvents,
+	sessionFileTopK,
+} from "./context";
 import { contentTypeOf } from "./derive";
 import { reviewLandmark } from "./review";
+import { relativeLandmarkCoverage } from "./review-stats";
 import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
 
 /**
@@ -40,6 +45,61 @@ async function appendEdits(
 		});
 	}
 }
+
+test("TF-0156 验收三：绝对阈值空集时，相对选择的 top-K 仍然列得出来", async () => {
+	const ws = await makeTempWorkbench();
+	try {
+		const chat = new ChatThreads(ws.bb);
+		const worker = await chat.create("W");
+		const idle = await chat.create("I");
+		for (const writer of [worker.id, idle.id]) {
+			await ws.bb.sessions.recordActivity(writer, {
+				activity: "work",
+				agent: writer,
+				used: [],
+				generated: [],
+			});
+		}
+		// 真实工作形状：每个文件只被编辑一两次（权重 2），离地标线（10）差得远，
+		// 所以绝对阈值口径下这个会话的地标集合是空的（`interestFromEvents` 已测）。
+		for (const path of ["a.ts", "b.ts", "c.ts", "d.ts"]) {
+			await appendEdits(ws.bb, worker.id, path, 2);
+		}
+		await appendEdits(ws.bb, worker.id, "src", 3); // 目录不能进 top-K
+
+		const rows = await ws.bb.events.query({
+			source: INTERACTIONS_SOURCE,
+			type: INTERACTIONS_TYPE,
+		});
+		expect(interestFromEvents(rows, worker.id).fileLandmarkHandles).toEqual([]);
+		const top3 = sessionFileTopK(rows, worker.id, 3);
+		expect(top3).toHaveLength(3);
+		expect(top3).not.toContain("src"); // 目录永远不进 top-K
+		// 编辑次数并列时，**最近的触碰排前**：会话时钟下衰减最小的那个 DOI 最高。
+		// 这条次序是确定的（同分才回落到字典序），所以可以钉住。
+		expect(top3[0]).toBe("d.ts");
+		// K 可以调大，四个文件都在（目录不在）
+		expect(sessionFileTopK(rows, worker.id, 10).sort()).toEqual([
+			"a.ts",
+			"b.ts",
+			"c.ts",
+			"d.ts",
+		]);
+		const coverage = relativeLandmarkCoverage(rows, [worker.id, idle.id], 3);
+		// 分母是「有文件级触碰的会话」：没碰过文件的会话不算进去，不然覆盖率会被
+		// 拉高成假象
+		expect(coverage).toMatchObject({
+			k: 3,
+			sessions: 1,
+			withSet: 1,
+			items: 3,
+			share: 1,
+			distinctHandles: 3,
+		});
+	} finally {
+		await ws.cleanup();
+	}
+});
 
 test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认可与同名条目不串台", async () => {
 	const ws = await makeTempWorkbench();
