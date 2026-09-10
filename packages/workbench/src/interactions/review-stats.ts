@@ -40,12 +40,15 @@ export function currentLandmarkAcceptance(
 	// 投影在没有真地标时会回退到可见集 top-N，那张表里的目录与项目根按
 	// project.ts 自己的注释「不是地标」。用回退表当分母会让 L1 量到显示策略，
 	// 而恰好是「这个写者没有地标」这件事被藏起来。
+	//
+	// 进一步收在文件级：目录能进 DOI 地标集合，却不能被回答成「这次干的活的
+	// 核心」。2026-09-11 四个现场实测目录占比 33%–75%，且阈值越低占比越高。
 	const byWriter = [...records].map(([writer, rows]) => ({
 		writer,
 		...landmarkReviewJudgement(
-			interestFromEvents(rows, writer, now).landmarkHandles.map((handle) => ({
-				handle,
-			})),
+			interestFromEvents(rows, writer, now).fileLandmarkHandles.map(
+				(handle) => ({ handle }),
+			),
 			reviews.get(writer) ?? [],
 		),
 	}));

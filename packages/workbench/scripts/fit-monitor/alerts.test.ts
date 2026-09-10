@@ -124,9 +124,21 @@ const severityOf = (alerts: Alert[], id: string): string | undefined =>
 const withAlerts = (overrides: Partial<MonitorSample> = {}): Alert[] =>
 	evaluateAlerts(sample(), sample(overrides));
 
+/** 同一份快照，`at` 往后挪 minutes 分钟（用来区分「隔了一段真实时间」）。 */
+const sampleLater = (
+	minutes: number,
+	overrides: Partial<MonitorSample> = {},
+): MonitorSample =>
+	sample({
+		at: new Date(
+			Date.parse("2026-09-10T00:00:00.000Z") + minutes * 60_000,
+		).toISOString(),
+		...overrides,
+	});
+
 describe("fit 监控告警规则", () => {
 	it("门槛齐备但没有新累积时：没有 high，只有长期项与停滞提醒", () => {
-		const alerts = evaluateAlerts(sample(), sample());
+		const alerts = evaluateAlerts(sample(), sampleLater(20));
 		expect(alerts.filter((alert) => alert.severity === "high")).toEqual([]);
 		expect(ids(alerts).sort()).toEqual([
 			"calendar-window",
@@ -136,6 +148,41 @@ describe("fit 监控告警规则", () => {
 		]);
 		expect(severityOf(alerts, "calendar-window")).toBe("info");
 		expect(severityOf(alerts, "natural-pending")).toBe("info");
+		// 现场来源是 live-model：恢复耗时的分子分母都由脚本顺序决定，记 info。
+		expect(severityOf(alerts, "restore-latency")).toBe("info");
+	});
+
+	it("自然现场里恢复耗时超线才是 warn：脚本顺序决定的不该算回归", () => {
+		const scripted = evaluateAlerts(
+			sample({ evidenceKind: "scripted" }),
+			sample({ evidenceKind: "scripted" }),
+		);
+		expect(severityOf(scripted, "restore-latency")).toBe("info");
+		const natural = evaluateAlerts(
+			sample({ evidenceKind: "natural" }),
+			sample({ evidenceKind: "natural" }),
+		);
+		expect(severityOf(natural, "restore-latency")).toBe("warn");
+	});
+
+	it("地标集合为空是 warn：零地标是标定问题，不是「还没轮到」", () => {
+		const empty = withAlerts({
+			natural: {
+				total: 0,
+				reviewed: 0,
+				endorsed: 0,
+				rejected: 0,
+				endorsedShare: null,
+				reviewedCoverage: null,
+				pending: 0,
+			},
+		});
+		expect(severityOf(empty, "landmark-set-empty")).toBe("warn");
+		expect(
+			empty.find((alert) => alert.id === "landmark-set-empty")?.evidence,
+		).toContain("地标集合 0 条");
+		// 分母为空时不再报「等自然使用」：那是两件不同的事。
+		expect(ids(empty)).not.toContain("natural-pending");
 	});
 
 	it("L1 待复核是 info 而不是故障：脚本不能替人回答", () => {
@@ -260,9 +307,11 @@ describe("fit 监控告警规则", () => {
 		);
 	});
 
-	it("两次采样之间没有累积是 warn（监控在空转）", () => {
-		const alerts = evaluateAlerts(sample(), sample({ model: sample().model }));
-		expect(severityOf(alerts, "sampling-stalled")).toBe("warn");
+	it("隔了十分钟还没有累积才是空转；连着刷新报告不算故障", () => {
+		const backToBack = evaluateAlerts(sample(), sampleLater(1));
+		expect(severityOf(backToBack, "sampling-stalled")).toBeUndefined();
+		const stalled = evaluateAlerts(sample(), sampleLater(30));
+		expect(severityOf(stalled, "sampling-stalled")).toBe("warn");
 	});
 
 	it("重试率超过 5% 是 warn，可恢复错误本身只记 info", () => {

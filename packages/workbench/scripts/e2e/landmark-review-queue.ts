@@ -77,6 +77,7 @@ async function buildQueue(): Promise<{
 	bb: Awaited<ReturnType<typeof openBlackboard>>;
 	rows: QueueRow[];
 	starvedWriters: number;
+	containerLandmarks: number;
 	judgement: ReturnType<typeof landmarkReviewJudgement> & { byWriter: number };
 }> {
 	const bb = openBlackboard(blackboardAt as string);
@@ -94,11 +95,16 @@ async function buildQueue(): Promise<{
 	let reviewed = 0;
 	let endorsed = 0;
 	let starvedWriters = 0;
+	let containerLandmarks = 0;
 	for (const writer of writers) {
 		const interest = await collectInterest(bb, writer.id);
-		// 只列真地标（DOI>10）：L1 的分母就是它。没有地标的写者不是「没有核心」，
-		// 而是这一层没触发，单独计数。
-		if (interest.landmarkHandles.length === 0) {
+		// 只列真地标（DOI>10）里的文件级条目：L1 的分母就是它。没有地标的写者不是
+		// 「没有核心」，而是这一层没触发，单独计数；目录（含项目根）能被推到地标线
+		// 以上、也能被复核，但人没法把它回答成「这次干的活的核心」，所以它不进分母，
+		// 只记个数——「目录占了多少」这件事本身是标定信号，不能看不见。
+		containerLandmarks +=
+			interest.landmarkHandles.length - interest.fileLandmarkHandles.length;
+		if (interest.fileLandmarkHandles.length === 0) {
 			if (interest.visible.length > 0) starvedWriters += 1;
 			continue;
 		}
@@ -106,13 +112,13 @@ async function buildQueue(): Promise<{
 			(review) => review.writer === writer.id,
 		);
 		const judgement = landmarkReviewJudgement(
-			interest.landmarkHandles.map((handle) => ({ handle })),
+			interest.fileLandmarkHandles.map((handle) => ({ handle })),
 			writerReviews,
 		);
 		total += judgement.total;
 		reviewed += judgement.reviewed;
 		endorsed += judgement.endorsed;
-		for (const handle of interest.landmarkHandles) {
+		for (const handle of interest.fileLandmarkHandles) {
 			rows.push({
 				writer: writer.id,
 				handle,
@@ -123,6 +129,7 @@ async function buildQueue(): Promise<{
 	}
 	return {
 		bb,
+		containerLandmarks,
 		rows: rows.sort(
 			(a, b) =>
 				Number(a.current !== null) - Number(b.current !== null) ||
@@ -142,7 +149,8 @@ async function buildQueue(): Promise<{
 	};
 }
 
-const { bb, rows, judgement, starvedWriters } = await buildQueue();
+const { bb, rows, judgement, starvedWriters, containerLandmarks } =
+	await buildQueue();
 
 const applyPath = at("--apply");
 if (applyPath) {
@@ -212,11 +220,15 @@ if (applyPath) {
 		`- 当前读数：认可 ${judgement.endorsed} / 全部地标 ${judgement.total} = ${judgement.endorsedShare?.toFixed(4) ?? "无样本"}；复核覆盖 ${judgement.reviewedCoverage?.toFixed(4) ?? "无样本"}`,
 	);
 	lines.push(
-		`- 待复核 ${pending.length} 条（下表 ${shown.length} 条）。判据：地标集合中 ≥ 80% 是用户认可的「这次干的活的核心」（positioning-v6 §11：地标集合 = DOI>10）。`,
+		`- 待复核 ${pending.length} 条（下表 ${shown.length} 条）。判据：地标集合中 ≥ 80% 是用户认可的「这次干的活的核心」（positioning-v6 §11：地标集合 = DOI>10，本队列只列文件级）。`,
 	);
 	lines.push(
-		`- 另有 ${starvedWriters} 个写者没有任何地标（只有回退可见表，不是地标集合）：这一层没触发，属标定问题，不计入 L1 分母。`,
+		`- 另有 ${starvedWriters} 个写者没有任何文件级地标（只有回退可见表，不是地标集合）：这一层没触发，属标定问题，不计入 L1 分母。`,
 	);
+	if (containerLandmarks > 0)
+		lines.push(
+			`- 还有 ${containerLandmarks} 条目录地标（\`.\` / \`src\` 这类）被排除在分母外：它们确实过了 DOI>10，但没法被回答成「这次干的活的核心」；这个计数是标定信号，越低越好。`,
+		);
 	lines.push("");
 	lines.push(
 		"这一项只能由人回答：脚本与模型安排的手势会把读数收敛到脚本常数，不构成用户认可。下表里已有的结论如果来自脚本，" +

@@ -62,6 +62,15 @@ export function interestFromEvents(
 		const handle = (event.payload as InteractionEvent).handle;
 		byHandle[handle] = (byHandle[handle] ?? 0) + 1;
 	}
+	/**
+	 * L1 的单位是文件级地标：目录（含项目根 `.`）也在 DOI 集合里，但它们不能被
+	 * 人回答成「这次干的活的核心」。2026-09-11 跨四个真实现场实测，地标集合里
+	 * 目录占 33%–75%，且阈值越低占比越高（现场 A：floor=10 → 40%，floor=6 → 75%）
+	 * ——所以「调低阈值提高覆盖」这条路会把分母越调越脏。文件级是本轮的数据结论。
+	 */
+	const fileLandmarks = result.landmarks.filter(
+		(handle) => result.scores.get(handle)?.contentType === "file",
+	);
 	return {
 		writer,
 		landmarks: projectLandmarks(result, events),
@@ -74,6 +83,12 @@ export function interestFromEvents(
 		 * 占当时分母的 96%）。
 		 */
 		landmarkHandles: result.landmarks,
+		/**
+		 * 文件级地标：L1 实际用的分母（上面那条注释说的是「不能拿投影当分母」，
+		 * 这条说的是「不能把目录算进分母」）。想知道目录被排除了多少，用
+		 * `landmarkHandles.length - fileLandmarkHandles.length`。
+		 */
+		fileLandmarkHandles: fileLandmarks,
 		visible: result.visible,
 		reductions: {
 			total: reductions.length,

@@ -7,7 +7,7 @@
  */
 
 import { readdir, readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { openBlackboard } from "../../src/blackboard";
 import { collectChatStats } from "../../src/chat/stats";
 import type { WorkbenchEvent } from "../../src/types/event";
@@ -97,6 +97,7 @@ export async function collectModelTrace(workspace: string): Promise<{
  */
 export async function readLatestSnapshot(
 	dir: string,
+	workspace: string,
 ): Promise<{ file: string; fits: Map<string, Fit> } | null> {
 	const entries = await readdir(dir).catch(() => [] as string[]);
 	const candidates: Array<{ path: string; at: number }> = [];
@@ -109,6 +110,10 @@ export async function readLatestSnapshot(
 	const newest = candidates.sort((a, b) => b.at - a.at)[0];
 	if (!newest) return null;
 	const text = await readFile(newest.path, "utf8").catch(() => "");
+	// 账本落库在仓库的 docs/ 下，而监控可以指向任意现场：文档必须自己说明是哪个
+	// 现场，才拿它跟当前黑板比。否则「换一个现场跑监控」会立刻报出一堆假漂移
+	// （2026-09-11：拿节点验证现场的读数去比租户的报告，一次报了两条）。
+	if (!aboutSite(text, workspace)) return null;
 	const fits = new Map<string, Fit>();
 	for (const line of text.split("\n")) {
 		if (!line.startsWith("| TF-")) continue;
@@ -118,6 +123,12 @@ export async function readLatestSnapshot(
 		if (id && fit) fits.set(id, fit as Fit);
 	}
 	return fits.size > 0 ? { file: newest.path, fits } : null;
+}
+
+/** 文档是不是在讲这个现场：正文里出现该现场目录名才算。 */
+function aboutSite(text: string, workspace: string): boolean {
+	const name = basename(workspace.replace(/[\\/]+$/, ""));
+	return name.length > 0 && text.includes(name);
 }
 
 export async function buildSample(options: {
@@ -163,7 +174,7 @@ export async function buildSample(options: {
 		ids: unknownRows.map((row) => row.id),
 	};
 	const landmark = stats.landmarkReviews.current;
-	const snapshot = await readLatestSnapshot(snapshotDir);
+	const snapshot = await readLatestSnapshot(snapshotDir, workspace);
 	const mismatched: Array<{ id: string; snapshot: Fit; current: Fit }> = [];
 	if (snapshot) {
 		for (const row of counted) {
@@ -172,7 +183,11 @@ export async function buildSample(options: {
 				mismatched.push({ id: row.id, snapshot: previous, current: row.fit });
 		}
 	}
-	const proseDrift = await readReportProseDrift(snapshotDir, histogram);
+	const proseDrift = await readReportProseDrift(
+		snapshotDir,
+		histogram,
+		workspace,
+	);
 	const moat = moatNumbers(ctx);
 	return {
 		at: (options.now ?? new Date()).toISOString(),
@@ -238,6 +253,7 @@ export type { WorkbenchEvent };
 export async function readReportProseDrift(
 	dir: string,
 	histogram: Record<Fit, number>,
+	workspace: string,
 ): Promise<{ file: string; claimed: [number, number, number] } | null> {
 	const entries = await readdir(dir).catch(() => [] as string[]);
 	const candidates: Array<{ path: string; at: number }> = [];
@@ -250,21 +266,33 @@ export async function readReportProseDrift(
 	const newest = candidates.sort((a, b) => b.at - a.at)[0];
 	if (!newest) return null;
 	const text = await readFile(newest.path, "utf8").catch(() => "");
-	const match = text.match(
-		/aligned\s*(\d+)\s*[·、,]\s*partial\s*(\d+)\s*[·、,]\s*unknown\s*(\d+)/,
-	);
-	if (!match) return null;
-	const claimed: [number, number, number] = [
-		Number(match[1]),
-		Number(match[2]),
-		Number(match[3]),
-	];
+	if (!aboutSite(text, workspace)) return null;
+	// 一行里同时出现三个标签就算一条声明，三个数字各自取（不要求相邻）：正文常见
+	// 的写法是 `aligned 3 · partial 15 · weak 0 · misaligned 0 · unknown 9`，中间
+	// 夹着 weak / misaligned。要求 `partial` 紧邻 `unknown` 会漏掉这条正确的声明，
+	// 只剩一句解释历史的错数字，于是把已经改好的报告报成漂移。
+	const claims: Array<[number, number, number]> = [];
+	for (const line of text.split("\n")) {
+		if (
+			!/aligned\s*\d+/.test(line) ||
+			!/partial\s*\d+/.test(line) ||
+			!/unknown\s*\d+/.test(line)
+		)
+			continue;
+		claims.push([
+			Number(line.match(/aligned\s*(\d+)/)?.[1]),
+			Number(line.match(/partial\s*(\d+)/)?.[1]),
+			Number(line.match(/unknown\s*(\d+)/)?.[1]),
+		]);
+	}
+	if (claims.length === 0) return null;
 	const actual: [number, number, number] = [
 		histogram.aligned,
 		histogram.partial,
 		histogram.unknown,
 	];
-	return claimed.join() === actual.join()
-		? null
-		: { file: newest.path, claimed };
+	// 只要正文里有一条与账本一致，就说明这份报告已经跟着账本改过；剩下的错数字
+	// 是它在解释历史，不算漂移。一条都不一致才报，并给出第一条错的那串。
+	const matched = claims.some((claim) => claim.join() === actual.join());
+	return matched ? null : { file: newest.path, claimed: claims[0]! };
 }

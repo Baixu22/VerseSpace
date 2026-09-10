@@ -27,6 +27,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# Native commands are exempt from that preference: under 5.1 a native process
+# writing to stderr turns into a terminating NativeCommandError, so any caller
+# that merges streams ("./monitor.ps1 -Rounds 3 2>&1 | ...") would kill the batch
+# on the first progress line and never run the monitor. Both bun calls below run
+# with the preference relaxed and check $LASTEXITCODE explicitly instead.
+$nativePreference = $ErrorActionPreference
 $ws = if ($Workspace) { (Resolve-Path -LiteralPath $Workspace).Path } else { Join-Path $env:TEMP 'workbench-e2e-live-tenant' }
 $previousLiveKey = $env:E2E_LLM_KEY
 $previousLiveModel = $env:E2E_LLM_MODEL
@@ -43,8 +49,11 @@ try {
 		}
 		Write-Output ("[monitor] model {0} - endpoint {1} - tenant {2} - appending {3} round(s) from index {4}" -f $env:E2E_LLM_MODEL, $env:E2E_LLM_BASE_URL, $ws, $Rounds, ($done + 1))
 		$runScript = Join-Path $PSScriptRoot 'run.ts'
+		$ErrorActionPreference = 'Continue'
 		& bun $runScript --live --rounds $Rounds --start-round ($done + 1) --workspace $ws
-		if ($LASTEXITCODE -ne 0) {
+		$runExit = $LASTEXITCODE
+		$ErrorActionPreference = $nativePreference
+		if ($runExit -ne 0) {
 			$runsDir = Join-Path $ws 'runs'
 			Write-Output ("[monitor] the sampling batch had failing rounds; tenant kept at {0}" -f $runsDir)
 			$exitCode = 1
@@ -56,8 +65,11 @@ try {
 	if ($Out) { $monitorArgs += @('--out', $Out) }
 	if ($Json) { $monitorArgs += '--json' }
 	if ($NoAppend) { $monitorArgs += '--no-append' }
+	$ErrorActionPreference = 'Continue'
 	& bun @monitorArgs
-	if ($LASTEXITCODE -ne 0) { $exitCode = $LASTEXITCODE }
+	$monitorExit = $LASTEXITCODE
+	$ErrorActionPreference = $nativePreference
+	if ($monitorExit -ne 0) { $exitCode = $monitorExit }
 } finally {
 	$env:E2E_LLM_KEY = $previousLiveKey
 	$env:E2E_LLM_MODEL = $previousLiveModel

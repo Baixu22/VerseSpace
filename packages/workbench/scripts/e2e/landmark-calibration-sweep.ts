@@ -48,9 +48,6 @@ const blackboardAt = workspace.endsWith(".workbench")
 	? workspace
 	: `${workspace}/.workbench`;
 
-/** 容器（目录）没有扩展名；这是投影里 `src` / `.` 那一类的判据。 */
-const isContainer = (handle: string) => !/\.[A-Za-z0-9]+$/.test(handle);
-
 const SWEEP: Array<{ label: string; config: DoiConfig }> = [
 	{ label: "floor=10 edit=2（出厂）", config: DEFAULT_DOI_CONFIG },
 	{
@@ -94,15 +91,20 @@ const rows: Array<{
 	label: string;
 	landmarks: number;
 	containers: number;
+	/** 文件级地标：L1 的分母用的就是它。 */
+	files: number;
 	writersHit: number;
+	writersFileHit: number;
 	writersStarved: number;
 	handles: string[];
 }> = [];
 for (const { label, config } of SWEEP) {
 	let writersHit = 0;
+	let writersFileHit = 0;
 	let writersStarved = 0;
 	let landmarks = 0;
 	let containers = 0;
+	let files = 0;
 	const handles = new Set<string>();
 	for (const writer of writers) {
 		const scopedRows = scoped(writer.id);
@@ -115,16 +117,27 @@ for (const { label, config } of SWEEP) {
 		}
 		writersHit += 1;
 		landmarks += result.landmarks.length;
+		let writerFiles = 0;
 		for (const handle of result.landmarks) {
-			containers += Number(isContainer(handle));
+			// 容器判据用真实 contentType（DOI 结果里就有），不是「有没有扩展名」
+			// 这种字符串启发式——`computeDoi` 对父级传播产生的条目会显式标 directory。
+			const isContainer = result.scores.get(handle)?.contentType !== "file";
+			containers += Number(isContainer);
+			if (!isContainer) {
+				files += 1;
+				writerFiles += 1;
+			}
 			handles.add(handle);
 		}
+		if (writerFiles > 0) writersFileHit += 1;
 	}
 	rows.push({
 		label,
 		landmarks,
 		containers,
+		files,
 		writersHit,
+		writersFileHit,
 		writersStarved,
 		handles: [...handles].sort(),
 	});
@@ -142,6 +155,6 @@ if (argv.includes("--json")) {
 	console.log(`黑板 ${bb.paths.root} · 写者 ${writers.length} 个`);
 	for (const row of rows)
 		console.log(
-			`${row.label.padEnd(22)} 地标 ${String(row.landmarks).padStart(4)} 条（容器 ${String(row.containers).padStart(3)}，占 ${((row.containers / Math.max(1, row.landmarks)) * 100).toFixed(0)}%）· 触发写者 ${row.writersHit} / 无地标写者 ${row.writersStarved} · 去重 handle ${row.handles.length} [${row.handles.slice(0, 8).join(", ")}]`,
+			`${row.label.padEnd(22)} 地标 ${String(row.landmarks).padStart(4)} 条（容器 ${String(row.containers).padStart(3)}，占 ${((row.containers / Math.max(1, row.landmarks)) * 100).toFixed(0)}%，文件级 ${String(row.files).padStart(4)}）· 触发写者 ${row.writersHit}（文件级 ${row.writersFileHit} / 无地标写者 ${row.writersStarved}）· 去重 handle ${row.handles.length} [${row.handles.slice(0, 8).join(", ")}]`,
 		);
 }

@@ -132,7 +132,12 @@ export function evaluateAlerts(
 				evidence: `失败跑次 ${previous.rounds.failed}→${current.rounds.failed}（累计 ${current.rounds.total} 轮）`,
 			});
 
+		// 只有「隔了一段真实时间」还没累积才算空转：连着跑两次监控（比如补一份
+		// 报告）本来就什么都不会变，那不是故障。
+		const gapMinutes =
+			(Date.parse(current.at) - Date.parse(previous.at)) / 60_000;
 		if (
+			gapMinutes >= 10 &&
 			current.rounds.total === previous.rounds.total &&
 			current.threads === previous.threads &&
 			current.writers === previous.writers &&
@@ -207,7 +212,10 @@ export function evaluateAlerts(
 	if (current.restoreToMessage.exceeds20Percent === true)
 		push({
 			id: "restore-latency",
-			severity: "warn",
+			// 本现场不是自然使用时，这条读数的分子分母都由脚本顺序决定（恢复后先
+			// 断言卡再发消息），把它记成 warn 会让每个脚本现场都挂一条假警报；
+			// 降成 info 但保留数字——「卡变重了」这个工程信号仍然要看得见。
+			severity: current.evidenceKind === "natural" ? "warn" : "info",
 			title: "恢复到首条消息的中位耗时超过 +20%",
 			detail:
 				"本项由脚本手势驱动（恢复后先断言卡再发消息），不能当人类耗时证据；只作为「卡变重了」的工程信号。",
@@ -246,6 +254,20 @@ export function evaluateAlerts(
 			detail:
 				"脚本与模型安排的手势只会把读数收敛到脚本常数，不构成用户认可；把待复核地标排成队列，人过了就是自然证据。",
 			evidence: `当前 ${fmt(current.natural.endorsedShare)}（认可 ${current.natural.endorsed} / 全部 ${current.natural.total}），待复核 ${current.natural.pending}`,
+		});
+
+	// 地标集合为空不是「还没轮到」，是标定本身没打中：2026-09-11 跨四个真实现场
+	// 实测，三个现场在出厂参数下一条地标都出不来（把 floor 降到 4 仍然是 0），
+	// 第四个现场 5 条里 2 条是目录。分母为空的现场，L1 无从计算，判据也就无从
+	// 被满足——这条必须显式报出来，不能让它静静地躲在「等自然使用」后面。
+	if (current.natural.total === 0 && current.writers > 0)
+		push({
+			id: "landmark-set-empty",
+			severity: "warn",
+			title: "地标集合为空：L1 在该现场无法计算",
+			detail:
+				"零地标说明没有写者在衰减窗口内把单个 handle 推过地标线；这是参数标定问题（不是样本不够），先按 TF-0156 调粒度与选择规则，再谈认可率。",
+			evidence: `写者 ${current.writers} 个，地标集合 0 条，待复核 0 条`,
 		});
 
 	if (current.days < 14)

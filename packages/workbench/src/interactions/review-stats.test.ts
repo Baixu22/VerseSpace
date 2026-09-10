@@ -5,6 +5,7 @@ import { collectChatStats } from "../chat/stats";
 import { ChatThreads } from "../chat/threads";
 import { makeTempWorkbench } from "../test/fixtures";
 import { collectInterest } from "./context";
+import { contentTypeOf } from "./derive";
 import { reviewLandmark } from "./review";
 import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
 
@@ -12,6 +13,9 @@ import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
  * 造真地标：DOI = Σweight − 衰减，edit 权重 2、地标阈值 10，所以同一个文件
  * 要在衰减窗口内被编辑 6 次才越过地标线。这串数字本身就是 2026-09-11 的发现：
  * 真实工作形状是每个文件 1–2 次编辑，于是「地标集合」几乎总是空集。
+ *
+ * contentType 走真实派生（`contentTypeOf`），不要手写：夹具把 `src` 标成 file
+ * 的话，测的就不是「目录不进 L1 分母」这件事了。
  */
 async function appendEdits(
 	bb: Blackboard,
@@ -29,7 +33,7 @@ async function appendEdits(
 				time,
 				kind: "edit",
 				origin,
-				contentType: "file",
+				contentType: contentTypeOf(handle),
 				handle,
 				delta: 1,
 			},
@@ -57,6 +61,9 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 		// 只把 a.ts 推到地标线以上：b.ts..e.ts / z.ts 留在可见但非地标。
 		await appendEdits(ws.bb, a.id, "a.ts", 6);
 		await appendEdits(ws.bb, b.id, "a.ts", 6);
+		// 目录也能被推到地标线以上（它同样进 DOI 集合、也能被复核），但 L1 的
+		// 分母只收文件级：人没法把 `src` 回答成「这次干的活的核心」。
+		await appendEdits(ws.bb, a.id, "src", 10);
 		for (let repeat = 0; repeat < 3; repeat += 1)
 			await reviewLandmark(ws.bb, a.id, "a.ts", "endorse");
 		await reviewLandmark(ws.bb, b.id, "a.ts", "reject");
@@ -67,13 +74,20 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 		const writerB = current.byWriter.find((row) => row.writer === b.id)!;
 		// 分母来自 DOI>10 的 handle：被编辑 6 次的 a.ts 进集合，只被触碰一次的
 		// b.ts..e.ts / z.ts 不进——「被显示过」不等于「是地标」。
-		const handlesA = (await collectInterest(ws.bb, a.id)).landmarkHandles;
-		const handlesB = (await collectInterest(ws.bb, b.id)).landmarkHandles;
+		const interestA = await collectInterest(ws.bb, a.id);
+		const interestB = await collectInterest(ws.bb, b.id);
+		const handlesA = interestA.landmarkHandles;
+		const handlesB = interestB.landmarkHandles;
 		expect(handlesA).toContain("a.ts");
 		expect(handlesA).not.toContain("b.ts");
 		expect(handlesB).toContain("a.ts");
 		expect(handlesB).not.toContain("z.ts");
-		expect(writerA.total).toBe(handlesA.length);
+		// 目录进了 DOI 地标集合，但不进 L1 的分母。
+		expect(handlesA).toContain("src");
+		expect(interestA.fileLandmarkHandles).not.toContain("src");
+		expect(interestA.fileLandmarkHandles).toContain("a.ts");
+		expect(writerA.total).toBe(interestA.fileLandmarkHandles.length);
+		expect(writerA.total).toBeLessThan(handlesA.length);
 		expect(writerA).toMatchObject({
 			reviewed: 1,
 			endorsed: 1,
@@ -103,7 +117,9 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 		const row = buildRows(scope, ctx, "natural")[0]!;
 		expect(row.value).toBe(1 / current.total);
 		expect(row.samples).toBe(2);
-		expect(row.fit).toBe("weak");
+		// 两个写者各一个文件级地标，认可 1 / 共 2 = 0.5，正好压在 partial 边界
+		// （≥0.8 aligned / ≥0.5 partial / 否则 weak）。
+		expect(row.fit).toBe("partial");
 		// The same reviews under a scripted or model-run source measure the
 		// script, not a user: value stays visible, fit does not move.
 		for (const kind of ["unknown", "scripted", "live-model"] as const) {
