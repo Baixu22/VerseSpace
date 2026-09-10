@@ -65,6 +65,15 @@ export function interestFromEvents(
 	return {
 		writer,
 		landmarks: projectLandmarks(result, events),
+		/**
+		 * 真地标 handle（DOI > landmarkFloor），L1 的分母（positioning-v6 §11
+		 * 「地标集合（DOI>10）」）。必须与上面的投影分开：投影在没有真地标时会
+		 * 回退到可见集 top-N（列表永不为空），那张回退表里有目录和项目根，
+		 * 但它不是地标集合——拿回退表当分母，L1 量的就是「显示了什么」而不是
+		 * 「地标的命中率」（2026-09-11 实测：租户 95 个写者里 27 个只有回退表，
+		 * 占当时分母的 96%）。
+		 */
+		landmarkHandles: result.landmarks,
 		visible: result.visible,
 		reductions: {
 			total: reductions.length,

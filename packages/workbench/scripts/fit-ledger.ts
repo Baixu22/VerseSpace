@@ -13,9 +13,16 @@
  *   bun run scripts/fit-ledger.ts --out ../../docs/fit-ledger.md
  *   bun run scripts/fit-ledger.ts --json             # 机读
  *   bun run scripts/fit-ledger.ts --evidence-kind live-model --json
+ *   bun run scripts/fit-ledger.ts --blackboard <租户>/.workbench --scope <仓库>
+ *
+ * --blackboard 是给「黑板与森林分处两地」用的：不写它时黑板由 cwd 决定，而
+ * 从仓库里跑租户账本会静默读到仓库自己的黑板（2026-09-10 实测：7 线程 / 0 地标），
+ * 看起来有数、其实不是同一个现场。显式传路径让样本源不再依赖你站在哪。
  */
 
 import { writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { openBlackboard } from "../src/blackboard";
 import { collectChatStats } from "../src/chat/stats";
 import { resolveBlackboard } from "../src/commands/context";
 import type { WriterKind } from "../src/types/session";
@@ -38,7 +45,13 @@ async function main(): Promise<void> {
 	const evidenceKind = parseEvidenceKind(
 		kindAt < 0 ? "unknown" : (argv[kindAt + 1] ?? ""),
 	);
-	const bb = await resolveBlackboard();
+	const blackboardAt =
+		argv.indexOf("--blackboard") >= 0
+			? argv[argv.indexOf("--blackboard") + 1]
+			: undefined;
+	const bb = blackboardAt
+		? openBlackboard(resolve(blackboardAt))
+		: await resolveBlackboard();
 	const [stats, events, writers] = await Promise.all([
 		collectChatStats(bb),
 		bb.events.all(),

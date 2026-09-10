@@ -25,6 +25,8 @@
 		"scripts/benchmark-premises.ts",
 		"scripts/check-built.ts",
 		"scripts/fit-ledger.ts",
-		"scripts/fit-ledger"
+		"scripts/fit-ledger",
+		"scripts/fit-monitor.ts",
+		"scripts/fit-monitor"
 	]
 }

@@ -36,10 +36,16 @@ export function currentLandmarkAcceptance(
 		bucket.push(review);
 		reviews.set(review.writer, bucket);
 	}
+	// L1 的分母是「地标集合（DOI>10）」（positioning-v6 §11），不是投影列表：
+	// 投影在没有真地标时会回退到可见集 top-N，那张表里的目录与项目根按
+	// project.ts 自己的注释「不是地标」。用回退表当分母会让 L1 量到显示策略，
+	// 而恰好是「这个写者没有地标」这件事被藏起来。
 	const byWriter = [...records].map(([writer, rows]) => ({
 		writer,
 		...landmarkReviewJudgement(
-			interestFromEvents(rows, writer, now).landmarks,
+			interestFromEvents(rows, writer, now).landmarkHandles.map((handle) => ({
+				handle,
+			})),
 			reviews.get(writer) ?? [],
 		),
 	}));

@@ -79,13 +79,15 @@ benchmark 闸门：**开**（`missing: []`）。
 
 兄弟交替率 0.071 低于 L3 判据的 0.3，但这只影响 L3 复评（已砍），不构成工程验收障碍；该指标用于长期观察。
 
-## fit 账本分布（25 行,after 本轮）
+## fit 账本分布（32 行,t0 = 本轮之前）
 
-aligned 3 · partial 16 · unknown 6。16 个 partial 全是已 done 节点在账本中的"在用但未设阈值"状态（probe 有 read 无 judge 的保守展示），不是待办。unknown 6 个：record 类（无运行时来源）4 + 里程碑上卷 2 + TF-0154（L1，natural 门）。
+aligned 3 · partial 15 · unknown 9（直方图只统计 27 行，5 条里程碑按上卷处理）。15 个 partial 全是已 done 节点在账本中的"在用但未设阈值"状态（probe 有 read 无 judge 的保守展示），不是待办。unknown 9 个 = record 类（无运行时来源）7 + 无样本部件 1（TF-0142）+ TF-0154（L1，natural 门）。
+
+> **2026-09-11 更正**：本节原文写作「aligned 3 · partial 16 · unknown 6」与机读快照 `docs/fit-ledger-2026-09-10-senseaudio-17rounds.md` 不符，属转述错误（生成的表格正确、转述的正文写错）。`bun scripts/fit-monitor.ts` 的 `report-prose-drift` 告警把它抓出来，现按机读产物更正，并已同步修正 TF-0137 的证据文本。
 
 ## 必须等 natural 的两项（本轮不能验收）
 
-1. **L1 认可率（TF-0154）**：当前 total 53 / reviewed 9 / endorsedShare 0.151。数字随样本波动且全部来自脚本手势；只有 `--evidence-kind natural` 的真用户复核才能推动 fit。
+1. **L1 认可率（TF-0154）**：本轮记下的 total 53 / reviewed 9 / endorsedShare 0.151 用的是投影列表当分母——其中含无地标时回退到可见集 top-N 的显示表。2026-09-11 已按 positioning-v6 §11「地标集合（DOI>10）」改为真地标（52 条里绝大多数不是地标），见 TF-0154 的更正证据与偏差 TFD。口径仍不变：数字随样本波动且全部来自脚本手势；只有 `--evidence-kind natural` 的真用户复核才能推动 fit。
 2. **恢复卡的人类耗时与认可**：restoreToMessage medianChangeRatio 321x（withCard 1936ms vs withoutCard 6ms）源头上是 E2E 脚本恢复后先断言卡再发消息；不构成自然用户拖慢证据，不推 fit。
 
 ## 结论
