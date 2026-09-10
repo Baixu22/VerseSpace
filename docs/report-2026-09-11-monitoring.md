@@ -176,6 +176,15 @@ bun scripts/fit-monitor.ts --workspace "$env:TEMP\workbench-node-verified-032fd3
 **第二类："全量停留" = live-provider.test.ts 通过后进程不退出（另立 TF-0158）**
 
 `scripts/e2e/live-provider.test.ts` 的 7 个用例在 25ms 内全部通过，然后 Bun 进程**不退出**：没有总账、CPU 静止、没有残留子进程——正是此前记的"20 分钟 CPU 不增长、无输出"。单独跑如此；把 `scripts/e2e` 并行跑会升级成 Bun 段错误（`Segmentation fault at address 0xFFFFFFFFFFFFFFFF`，日志停在 `e2e.test.ts` 的 S7 之后）；`--concurrency 1` 跑到 S11 后同样没有总账。该文件 11 个 `Bun.serve` 都已在 `finally` 里 `stop(true)`，所以泄漏不在监听器上——按 Bun 运行时问题记录，不复用这个节点收口。
+
+（同日第五步补正）挂起位置后来定位到**用例粒度**：该文件有 11 个用例，完整跑只报 7 个 pass；第 8 条（`transient HTTP 500 replies are retried like 502/503`）**单跑 2.04s 通过**，但用 `-t "in-flight request|transient HTTP 500"` 让第 7 条（in-flight 中止）先跑就会挂。也就是说根因在「中止流程遗留状态 + 带 signal 的退避定时器」的组合里，不是「测试文件整体泄漏」。
+
+### 3d. 真实采样的失败率与模型层诊断（新增两轮 → 累计 26 轮）
+
+第 25、26 轮跑完，累计 26 轮里**失败 6 次**（约 23%），本轮这次失败的原因是**模型层 invalid-json 重试用尽**。监控自己把它报了出来：`[high] round-failures · 本轮批次有跑次失败 — 失败跑次 5→6（累计 26 轮）`，另外 `model-error-outcomes` 统计到 `http-error×3、invalid-response×2、invalid-json×12`。这两个数字放在一起看，结论是**上游返回非 JSON 正文（网关页/截断流）是这个通道最不稳的一环**，而不是我们的编排逻辑：
+
+- **处置**：invalid-json 与 HTTP 错误两类失败现在都带**结构指纹**（长度 / 形状 HTML|JSON 开头|其他 / 是否闭合 / content-type），既进错误信息也进尝试记录；正文本身仍然绝不回显（凭证与反射头安全）。这样下一次同类失败能直接判断「该退避换端点」还是「该抬 max_tokens」——本轮之前只能知道「无法解析」。
+- **未处置**：失败率本身（23%）没有下降——本轮只提高了可诊断性，没有改变重试策略。降失败率（退避曲线、必要时换端点）是下一轮的问题，不能算作已解决。
 4. **长期观察**（不阻塞工程）：14 天日历窗口 2026-09-22 到期后复跑一次账本；恢复卡的人类耗时仍需 `--evidence-kind natural` 的现场。
 
 > 本报告的"全绿"只指本轮实际跑过的范围：24 轮真实采样 7/7 全绿、`bun test` 近全量 101 个文件 627 pass / 0 fail / 85.22s、`bunx tsc --noEmit` 退出 0、`biome check` 无发现。唯一排除的 `scripts/e2e/live-provider.test.ts` 自己的 7 例也是绿的，只是 Bun 进程通过后不退出（TF-0158）。
