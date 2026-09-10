@@ -40,9 +40,9 @@
     "context_tags": [],
     "desired_outcomes": [],
     "difficulty": "unknown",
-    "id": "TF-0157",
+    "id": "TF-0158",
     "kind": "task",
-    "next_action": "复现：cd packages/workbench && bun test src/chat/fork-inheritance.test.ts --timeout 60000",
+    "next_action": "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
     "priority": 3,
     "progress": 0.0,
     "purpose": "",
@@ -51,7 +51,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "本机套件两类红：fork 继承 / 通知通道 10 例失败，全量跑停留"
+    "title": "scripts/e2e/live-provider.test.ts 通过后 Bun 进程不退出（并行时升级为段错误）"
   },
   {
     "alignment": {

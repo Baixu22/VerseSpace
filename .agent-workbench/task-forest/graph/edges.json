@@ -2746,5 +2746,17 @@
     "to": "TF-0113",
     "type": "related_to",
     "updated_at": "2026-09-10T18:12:59.881560Z"
+  },
+  "TFE-0233": {
+    "blocking": false,
+    "confidence": 0.6,
+    "created_at": "2026-09-10T19:21:42.560264Z",
+    "created_from_session": null,
+    "from": "TF-0158",
+    "id": "TFE-0233",
+    "reason": "",
+    "to": "TF-0157",
+    "type": "derived_from",
+    "updated_at": "2026-09-10T19:21:42.560264Z"
   }
 }

@@ -118,7 +118,8 @@ bun scripts/e2e/landmark-review-queue.ts --workspace "..." --apply answers.json 
 | TF-0154 地标通道 | done（证据更正） | 分母契约修正 + 回归用例 |
 | TF-0057 总目标 | **in_progress（只剩 AC3 的人评）** | AC1/AC2 工程侧证据已齐；AC3 = 队列里那 2 条（分母 3，已认可 1） |
 | TF-0156 地标粒度与覆盖 | proposed（AC1 已满足，AC2 半） | 四现场标定 + 文件级分母落码 |
-| TF-0157 套件两类红 | proposed（新） | 10 例失败 + 全量跑停留，已排除本次改动与沙箱 |
+| TF-0157 套件两类红 | **done**（两个根因，一个真 bug 已修，一个另立节点） | 见 3c 节：.cmd 垫片引号缺陷 + live-provider 通过后不退出 |
+| TF-0158 e2e 进程不退出 | proposed（新） | live-provider.test.ts 7 例全绿后进程不退出；并行跑 e2e 段错误 |
 
 偏差记录三条（`deviations/deviations.jsonl`）：
 
@@ -152,7 +153,19 @@ bun scripts/fit-monitor.ts --workspace "$env:TEMP\workbench-node-verified-032fd3
 
 1. **L1 的 2 条人评**（TF-0057 AC3）分两层：**内容检查**现在就能做——人回答队列里那 2 条（`src/alpha.ts`、`src/beta.ts`），两条都认可即 3/3 = 1.0；**自然证据**需要先在运行时里干一段真实活（产生 `interactions` 事件）再到那个现场跑 stats + 队列——本机目前没有自然现场（仓库自己的黑板交互事件为 0），所以即使答完，fit 仍会停在 `unknown`，这是纪律不是缺陷。
 2. **TF-0156 的 AC3（非空与覆盖）**：相对选择的测量已完成，但结果是"解决了非空、没解决排序"——下一步先定单位（每会话 top-K）与负分排序，再改代码；AC4 把两条结论（分母 = 文件级地标集合、空集 = L1 不可计算）写回 `positioning-v6` §11 或新 ADR。
-3. **TF-0157 本机套件的两类红**（本轮做回归核验时发现，已立节点）：`bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor` 得到 204 pass / 10 fail——fork 继承（TF-0131）4 例、追溯式分叉（TF-0093）1 例、通知通道（TF-0142）5 例；全量 `bun test` 还会停留（CPU 20 分钟不增长）。已确认与本次 L1 改动无关（revert 后同样失败）且与沙箱无关（测试进程内带管道 spawn 成功）。2026-09-07 报告里的"全量 569 pass / 0 fail"与今天之间的差异需要归因。
+3. **TF-0157 本机套件的两类红 → 已收口（两个独立根因）**：见 3c 节。10 例失败是**产品缺陷**（已修 + 回归用例），"全量停留"是 **Bun 进程通过后不退出**（已定位，另立 TF-0158）。全量总账：102 个测试文件里排除该文件的 101 个跑完，**627 pass / 0 fail / 85.22s**（对照 2026-09-07 的 569 pass：套件大了 58 例且不再停留）。
+
+### 3c. 套件两类红的根因：一个真产品 bug + 一个 Bun 退出问题
+
+**第一类：10 例失败 = Windows 上"路径带空格的 .cmd 垫片"必然启动失败（已修）**
+
+假 claude 的 `argv.log` 不落盘，但 supervisor **确实 spawn 了**——失败在 cmd.exe 包装层。`.cmd/.bat` 垫片必须经 cmd.exe 执行，而原实现把"已给路径加引号"的整条命令行作为**单个 argv 元素**交给 spawn；Node/bun 会把元素内部的引号转义成 `\"`，cmd 不认这种转义（它把引号当分隔符），于是 cmd 看到的是带反斜杠的字面量路径，报「不是内部或外部命令」。只有路径带空格才触发——本机沙箱运行时在 `...\DoubaoWork\User Data\...\node\bun.cmd`，而 npm 全局垫片常见位置 `C:\Users\John Doe\AppData\Roaming\npm\` 同理。**产品侧影响比测试大**：这类 Windows 用户整条对话链路都是「agent 退出码 1」且没有任何诊断信息。
+
+实测三条候选写法：直接 spawn `.cmd` 会 EINVAL（必须经 cmd.exe）；只给路径加一层引号时 `cmd /s` 会把那对引号剥掉、路径在空格处断掉；**再包一层引号 + 逐字传递（`windowsVerbatimArguments`）才是对的**。修复落在 `src/supervisor/index.ts`，回归用例放 `src/supervisor/index.test.ts`（带空格的临时目录装 `.cmd` 垫片，退掉修复即红）。结果：`bun test src/chat` **122 pass / 10 fail → 132 pass / 0 fail**，耗时 63s → 5.3s（此前假 agent 根本没起来，失败靠超时堆积）。
+
+**第二类："全量停留" = live-provider.test.ts 通过后进程不退出（另立 TF-0158）**
+
+`scripts/e2e/live-provider.test.ts` 的 7 个用例在 25ms 内全部通过，然后 Bun 进程**不退出**：没有总账、CPU 静止、没有残留子进程——正是此前记的"20 分钟 CPU 不增长、无输出"。单独跑如此；把 `scripts/e2e` 并行跑会升级成 Bun 段错误（`Segmentation fault at address 0xFFFFFFFFFFFFFFFF`，日志停在 `e2e.test.ts` 的 S7 之后）；`--concurrency 1` 跑到 S11 后同样没有总账。该文件 11 个 `Bun.serve` 都已在 `finally` 里 `stop(true)`，所以泄漏不在监听器上——按 Bun 运行时问题记录，不复用这个节点收口。
 4. **长期观察**（不阻塞工程）：14 天日历窗口 2026-09-22 到期后复跑一次账本；恢复卡的人类耗时仍需 `--evidence-kind natural` 的现场。
 
-> 本报告的"全绿"只指本轮实际跑过的范围：24 轮真实采样 7/7 全绿、`bun test src/interactions scripts/fit-ledger scripts/fit-monitor` 77 用例全绿、`bunx tsc --noEmit` 退出 0、`biome check` 无发现。第 3 条列出的 10 例红在此之前就是红的，未计入本轮读数。
+> 本报告的"全绿"只指本轮实际跑过的范围：24 轮真实采样 7/7 全绿、`bun test` 近全量 101 个文件 627 pass / 0 fail / 85.22s、`bunx tsc --noEmit` 退出 0、`biome check` 无发现。唯一排除的 `scripts/e2e/live-provider.test.ts` 自己的 7 例也是绿的，只是 Bun 进程通过后不退出（TF-0158）。

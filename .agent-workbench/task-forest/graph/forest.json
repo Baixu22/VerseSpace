@@ -74,7 +74,8 @@
     "TFE-0225",
     "TFE-0227",
     "TFE-0230",
-    "TFE-0232"
+    "TFE-0232",
+    "TFE-0233"
   ],
   "edge_index": {
     "TF-0001": {
@@ -2769,15 +2770,30 @@
         "TFE-0231"
       ],
       "cross_edges": [
-        "TFE-0232"
+        "TFE-0232",
+        "TFE-0233"
       ],
-      "incoming": [],
+      "incoming": [
+        "TFE-0233"
+      ],
       "outgoing": [
         "TFE-0231",
         "TFE-0232"
       ],
       "tree_child_edges": [],
       "tree_parent_edge": "TFE-0231"
+    },
+    "TF-0158": {
+      "blocking_edges": [],
+      "cross_edges": [
+        "TFE-0233"
+      ],
+      "incoming": [],
+      "outgoing": [
+        "TFE-0233"
+      ],
+      "tree_child_edges": [],
+      "tree_parent_edge": null
     }
   },
   "edge_type_counts": {
@@ -2785,7 +2801,7 @@
     "clarifies": 1,
     "contributes_to": 2,
     "depends_on": 65,
-    "derived_from": 3,
+    "derived_from": 4,
     "duplicates": 0,
     "related_to": 3,
     "supersedes": 1
@@ -5548,10 +5564,22 @@
       "to": "TF-0113",
       "type": "related_to",
       "updated_at": "2026-09-10T18:12:59.881560Z"
+    },
+    "TFE-0233": {
+      "blocking": false,
+      "confidence": 0.6,
+      "created_at": "2026-09-10T19:21:42.560264Z",
+      "created_from_session": null,
+      "from": "TF-0158",
+      "id": "TFE-0233",
+      "reason": "",
+      "to": "TF-0157",
+      "type": "derived_from",
+      "updated_at": "2026-09-10T19:21:42.560264Z"
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T18:28:12.139352Z",
+  "generated_at": "2026-09-10T19:21:47.753950Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -14945,7 +14973,7 @@
       "context_tags": [],
       "created_at": "2026-09-10T18:12:59.880427Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "unknown",
@@ -14969,7 +14997,7 @@
       "non_goals": [],
       "primary_parent": "TF-0114",
       "priority": 3,
-      "progress": 0.0,
+      "progress": 100.0,
       "progress_source": "manual",
       "purpose": "",
       "remaining_minutes_max": null,
@@ -14979,18 +15007,75 @@
         "先归因再修；本节点不以『在我机器上复现不了』收口"
       ],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "packages/workbench 子集跑 `bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor`（68 秒）得到 204 pass / 10 fail：分支读集继承（TF-0131）4 例、ChatThreads 追溯式分叉（TF-0093）1 例、通知通道语义（TF-0142）5 例（其中一例 60 秒超时）。失败形态一致：假 claude 的 tool_use 没有变成足迹（footprint 为 0）、fork 的 agentContextPlan?.mode 读到 undefined。已知：与 2026-09-11 的 L1 改动无关（revert 后同样失败）；与沙箱无关（测试进程内 spawnSync 带管道 / shell 两种方式都成功）。2026-09-07 报告里的『全量 569 pass / 0 fail』说明这中间有回归或环境漂移，需要归因。全量 bun test 会停留：CPU 20 分钟不增长、无输出，只能中断。",
       "title": "本机套件两类红：fork 继承 / 通知通道 10 例失败，全量跑停留",
-      "updated_at": "2026-09-10T18:12:59.880427Z"
+      "updated_at": "2026-09-10T19:21:42.560264Z"
+    },
+    "TF-0158": {
+      "acceptance_criteria": [
+        "定位是哪个句柄（fetch 连接池 / 定时器 / 子进程 / 沙箱交互）让进程在全部用例通过后仍不退出，并给出最小复现。",
+        "修复后 `bun test scripts/e2e` 能自行结束并打印总账；若判定为 Bun 运行时缺陷，给出可上报的最小复现与 workaround（例如在文件末尾显式释放），并把它写进本节点的证据。"
+      ],
+      "alignment": {
+        "fit": "unknown",
+        "fit_confidence": 0.0,
+        "user_goal": "",
+        "validation_plan": [],
+        "why_not_enough": "",
+        "why_this_task": ""
+      },
+      "alignment_records": [],
+      "assumptions": [],
+      "children": [],
+      "confidence": 0.6,
+      "context_tags": [],
+      "created_at": "2026-09-10T19:21:42.560264Z",
+      "deprecated_at": null,
+      "derived_progress": 0.0,
+      "desired_outcomes": [],
+      "deviations": [],
+      "difficulty": "unknown",
+      "estimated_total_minutes": null,
+      "evidence": [
+        "复现（单独）：cd packages/workbench && bun test scripts/e2e/live-provider.test.ts --timeout 20000 → 7 例 pass，随后停住不给总账。",
+        "复现（并行）：bun test scripts/e2e --timeout 20000 → 段错误，日志停在 e2e.test.ts 的 S11 之前一处。",
+        "复现（串行）：bun test scripts/e2e --concurrency 1 --timeout 60000 → 跑到 e2e.test.ts 的 S11 之后停住。",
+        "对照：同一目录下的 e2e.test.ts（48s）、family-notice-evidence、live-agent-goals、live-auth 单独跑都能正常退出。"
+      ],
+      "execution_hints": [
+        "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
+        "注意 AbortSignal.timeout 与 fetch keep-alive：可试 `Connection: close`、`fetch(url, { keepalive: false })` 或请求后显式 server.stop(true) + 等待。",
+        "别把 workaround 写成 `process.exit(0)` 藏在用例里：那会掩盖真实泄漏，写不下就如实记为环境/运行时问题。"
+      ],
+      "id": "TF-0158",
+      "kind": "task",
+      "next_action": "先用最小脚本二分：一个 Bun.serve + 一次 fetch 是否能让进程正常退出；再把 live-provider.ts 里用到的每个异步资源逐个加回去。",
+      "non_goals": [],
+      "parent_id": "TF-0114",
+      "primary_parent": null,
+      "priority": 3,
+      "progress": 0.0,
+      "progress_source": "manual",
+      "purpose": "",
+      "remaining_minutes_max": null,
+      "remaining_minutes_min": null,
+      "requirements": [],
+      "source_sessions": [],
+      "status": "proposed",
+      "success_metrics": [],
+      "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
+      "title": "scripts/e2e/live-provider.test.ts 通过后 Bun 进程不退出（并行时升级为段错误）",
+      "updated_at": "2026-09-10T19:21:42.560264Z"
     }
   },
   "reason": "rebuild",
   "roots": [
     "TF-0001",
     "TF-0147",
-    "TF-0152"
+    "TF-0152",
+    "TF-0158"
   ],
   "schema_version": 1,
   "status_legend": {
@@ -15006,7 +15091,7 @@
   "status_queues": {
     "actionable_todos": [
       "TF-0156",
-      "TF-0157"
+      "TF-0158"
     ],
     "blocked": [],
     "by_status": {
@@ -15168,14 +15253,15 @@
         "TF-0152",
         "TF-0153",
         "TF-0154",
-        "TF-0155"
+        "TF-0155",
+        "TF-0157"
       ],
       "in_progress": [
         "TF-0057"
       ],
       "proposed": [
         "TF-0156",
-        "TF-0157"
+        "TF-0158"
       ],
       "ready": [],
       "review_needed": []
@@ -15184,16 +15270,16 @@
     "open": [
       "TF-0057",
       "TF-0156",
-      "TF-0157"
+      "TF-0158"
     ],
     "ready": [],
     "review_needed": []
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 148,
-    "edge_count": 229,
-    "node_count": 157,
+    "done_count": 149,
+    "edge_count": 230,
+    "node_count": 158,
     "open_count": 3,
     "review_needed_count": 0
   },
