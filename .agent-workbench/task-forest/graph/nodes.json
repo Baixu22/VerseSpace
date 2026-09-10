@@ -2629,18 +2629,17 @@
     ],
     "deviations": [
       "TFD-fbff0c5a0f",
-      "TFD-3e6852f0aa"
+      "TFD-3e6852f0aa",
+      "TFD-c9e94e96e9"
     ],
     "difficulty": "very_high",
     "display_order": 1400,
     "estimated_total_minutes": null,
     "evidence": [
-      "docs/positioning-v5.md",
-      "docs/positioning-v6.md",
-      "两轮共 11 路独立深度调研，关键断言均附一手来源",
-      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
-      "地标反馈统计已按每个写者的完整当前集合及最新复核计数，旧的 reviewed 子集比例不再驱动 L1。工程样本 8/125=6.4%，不是 8/10=80%。",
-      "2026-09-07：用户提供 OpenRouter 模型并明确要求主动产生实际模型活动、不因缺少既有会话而阻塞。已完成真实工具、恢复、封印和持久分叉验证；记录见 docs/report-2026-09-07-live-model.md。"
+      "验收3（L1）当前读数：分母 3 条文件级地标（git-main 的 src/alpha.ts、src/beta.ts；editor-1 的 src/beta.ts），已认可 1、待复核 2 → 0.3333。口径本轮收紧：分母只收文件级地标（`. / src` 这类目录不进分母，实测目录占原分母 40%，人无法把它们回答成核心）。",
+      "队列与回填：`bun scripts/e2e/landmark-review-queue.ts --workspace %TEMP%\\workbench-e2e-live-tenant --template answers.json`，改 verdict 后用 `--apply answers.json` 回填；两条都认可即 3/3 = 1.0 ≥ 0.8。",
+      "本轮新增 1 个跑次（累计 24 轮，失败 0）；样本窗口 restores 50 / noticeOutcomes 133 / sealDecisions 26，四项判决 3 supported + l3 insufficient-evidence。",
+      "监控（4 条告警全为 info，无 warn/high）：模型层可恢复错误 http-error×3 / invalid-response×2 / invalid-json×9 被有界重试兜住；恢复耗时超线是脚本手势决定，按新规则降为 info。"
     ],
     "execution_hints": [
       "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
@@ -2651,7 +2650,7 @@
     ],
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "三条验收只剩 AC3 的人评部分：先跑 landmark-review-queue 的人工回答（≤5 条，脚本不可替代），再由 TF-0156 修地标粒度与覆盖；AC1/AC2 的工程侧证据已齐（见本节点 evidence 与 docs/report-2026-09-11-monitoring.md）。",
+    "next_action": "只剩人评：把 answers.json 里两条 verdict 改成 endorse / reject 后 `--apply`；两条都认可即 0.8 达成，AC3 收口。",
     "non_goals": [
       "a2a／多 agent 互聊协议",
       "手动工作流 DAG 编辑器",
@@ -2676,7 +2675,7 @@
     "success_metrics": [],
     "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-    "updated_at": "2026-09-10T18:01:30.571325Z"
+    "updated_at": "2026-09-10T18:24:47.687706Z"
   },
   "TF-0058": {
     "acceptance_criteria": [
@@ -8553,7 +8552,8 @@
     ],
     "deviations": [
       "TFD-f44720fb5f",
-      "TFD-3e6852f0aa"
+      "TFD-3e6852f0aa",
+      "TFD-c9e94e96e9"
     ],
     "difficulty": "low",
     "estimated_total_minutes": null,
@@ -8661,10 +8661,10 @@
   },
   "TF-0156": {
     "acceptance_criteria": [
-      "用 ≥3 个不同工作形状的真实现场（单文件多改 / 多文件少改 / 目录级操作）跑 landmark-calibration-sweep.ts，给出文件级地标集合与容器占比的数字",
-      "定下 L1 分母的粒度规则（文件级；容器留在投影里做折叠展示但不单独占 L1 分母）并落在代码与测试上，同一现场容器占比从 40% 降到 ≤10%",
-      "覆盖有数字：真实形状下至少一半写者产出非空地标集合；不得靠把 landmarkFloor 降到 0 达成，且必须同时报告容器占比（扫描脚本已内置该列）",
-      "结论写回 positioning-v6 §11 的 L1 段落或新 ADR，判据文字不再允许两种读法（『地标集合』= DOI>10 的 handle 集合）"
+      "（已满足）用 ≥3 个不同工作形状的真实现场跑标定扫描，给出文件级地标集合与容器占比的数字——4 个现场的数字见证据栏。",
+      "（实现了一半）定下 L1 分母的粒度规则并落在代码与测试上：分母 = 文件级地标集合（目录不进）。已落码：`fileLandmarkHandles` + review-stats + 回归用例 + 队列脚本单独报『目录被排除了几条』。未完成的一半是覆盖，见第三条。",
+      "（未满足）让文件级地标集合在真实现场非空且覆盖 ≥ 一半写者：出厂参数下 4 个现场里 3 个是空集，降到 floor=4 仍是空集——要改的是选择规则（按写者相对取核心集）而不是继续调绝对阈值。验收数字：4 个现场全部非空、触发写者覆盖率 ≥ 50%。",
+      "（未满足）结论写回 positioning-v6 §11 的 L1 段落或新 ADR：至少落两条——分母 = 文件级地标集合；空的地标集合下 L1 不可计算（要报出来，不是记 0 分）。"
     ],
     "alignment": {
       "fit": "unknown",
@@ -8681,23 +8681,30 @@
     "created_at": "2026-09-10T18:01:30.570322Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-c9e94e96e9"
+    ],
     "difficulty": "unknown",
     "estimated_total_minutes": null,
     "evidence": [
-      "2026-09-11 租户实测：真地标 5 条 = src/alpha.ts、src/beta.ts（各 DOI 32.2、编辑 21 次）+ git-main 的 . 与 src + editor-1 的 src/beta.ts；容器 2/5 = 40%；另有 27 个写者一个真地标都没有（只有回退显示表）。",
-      "标定扫描（bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户>）：floor=10/edit=2 → 地标 5 条（容器 40%）触发写者 2/无地标 70；floor=6 → 10 条（70%）7/65；floor=4 → 42 条（50%）20/52；edit=4&floor=10 → 5 条（40%）2/70；edit=4&floor=6 → 46 条（54%）20/52。",
-      "L1 分母契约缺陷已先修（见 TF-0154 的 2026-09-11 条）：修前 113 条分母里 108 条来自回退表、56/111 是容器，判据结构性不可达；修后 5 条。"
+      "AC1（≥3 个不同工作形状的真实现场）已满足：2026-09-11 跑了 4 个现场（租户 workbench-e2e-live-tenant 103 写者、workbench-node-verified 32 写者、workbench-e2e-LHA3I4 16 写者、workbench-e2e-VAKSgQ 13 写者），命令 `bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点>`。",
+      "出厂参数（floor=10 edit=2）逐现场：租户 地标 5 条（容器 2，占 40%，文件级 3）· 触发写者 2 / 无地标 76；节点验证 0 条 · 0 / 32；LHA3I4 0 条 · 0 / 15；VAKSgQ 0 条 · 0 / 12。四个现场里三个是空集。",
+      "把阈值降到底也不救：节点验证在 floor=4 edit=2 仍是 0 条；LHA3I4 / VAKSgQ 在 floor=4/6 × edit=2/4 的所有组合上都是 0 条。",
+      "目录占比随阈值上升：租户 floor=10 → 40%、floor=6 → 75%、floor=4 → 52%；节点验证 floor=10 edit=4 → 33%、floor=6 edit=4 → 50%。「调低阈值提高覆盖」会把分母越调越脏。",
+      "粒度问题与阈值无关：四个阈值组合下去重 handle 始终只有 4 个（., src, src/alpha.ts, src/beta.ts）——阈值改的是「有几条触发」，不是「粒度有多细」。",
+      "实现（AC2 前半）：`interestFromEvents` 新增 `fileLandmarkHandles`（DOI>10 且 contentType=file），`currentLandmarkAcceptance` 改用它做分母；回归用例钉住「目录能进 DOI 地标集合，但不进 L1 分母」，夹具的 contentType 走真实 `contentTypeOf`（手写 file 会让这条测试失去意义）。",
+      "监控侧：新增告警规则 `landmark-set-empty`（零地标 + 有写者 → warn），已在 workbench-node-verified 现场实测触发：『写者 32 个，地标集合 0 条』。零地标现场 L1 无从计算，不能再静静躲在『等自然使用』后面。",
+      "口径变化后的租户读数：分母 5 → 3（排除 `.` 与 `src`），认可 1 / 3 = 0.3333，待复核 2 条。分母缩小后更难达标，说明这次收口径不是为了把数字做漂亮。"
     ],
     "execution_hints": [
-      "扫描：cd packages/workbench && bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> [--json]",
-      "队列与人评（人只需回答 5 条以内）：bun scripts/e2e/landmark-review-queue.ts --workspace <租户> --template answers.json；填 verdict 后 --apply answers.json",
-      "纪律：人类认可类读数只在 natural 来源下计 fit；脚本手势（landmark-coverage 的 ENDORSE_PROBABILITY）只验证通道，不推 L1。",
-      "判据出处：docs/positioning-v6.md §11『地标集合（DOI>10）』，Mylyn 对照 84.17%。"
+      "复现四个现场：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace %TEMP%\\workbench-e2e-live-tenant`（其余三个站点同目录下）。",
+      "监控侧复现零地标告警：`bun scripts/fit-monitor.ts --workspace %TEMP%\\workbench-node-verified-032fd3ea64a74c539a5d9d8cfeb3bf37 --evidence-kind scripted --no-append`。",
+      "相对选择的设计要点：每写者按 DOI 降序取文件级 top-K（K 小，3–5），空集合只在写者没有任何文件级触碰时出现；这也把 L1 的单位从『全部写者一锅算』推向 v6 §11 原文的『一段会话结束后列该会话的地标集合』。",
+      "别用 landmarkFloor=0 凑非空：那会把所有被碰过一次的文件都算成地标，分母变成噪声。"
     ],
     "id": "TF-0156",
     "kind": "task",
-    "next_action": "先在 ≥3 个真实现场跑扫描定粒度规则，再把容器从 L1 分母去掉（投影保留折叠展示）并补测试，最后重跑账本与队列。不要用降阈值凑 L1。",
+    "next_action": "按 AC3 做相对选择：先只做测量（在四个现场上算「每写者文件级 top-K」的非空率与覆盖率，K=3/5 各跑一遍），数字站得住再改代码与测试。",
     "non_goals": [],
     "priority": 3,
     "progress": 0.0,
@@ -8715,7 +8722,7 @@
     "success_metrics": [],
     "summary": "L1 的分母修好之后才看得见真问题：22 轮真实现场里 95 个写者只有 2 个产出地标（5 条），其中 2 条是 . / src 这类容器（40%）。标定扫描说明这不是阈值问题——容器占比由 DOI 的父级传播份额决定：floor=10 时 40%、floor=6 时 70%、floor=4 时 50%、edit=4 时 40–54%，而每种配置下去重的 handle 都只有 4 个（.、src、src/alpha.ts、src/beta.ts）。所以『80% 的地标是这次活的核心』现在一半在量容器占位；降阈值只会同时牺牲覆盖（floor=4 时仍有 52 个写者无地标）。",
     "title": "地标集合的粒度与覆盖：让核心真的进 L1 分母",
-    "updated_at": "2026-09-10T18:01:30.570322Z"
+    "updated_at": "2026-09-10T18:24:47.687706Z"
   },
   "TF-0157": {
     "acceptance_criteria": [

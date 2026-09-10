@@ -1,0 +1,75 @@
+{
+  "applied_at": "2026-09-10T18:24:47.730298Z",
+  "base_graph_hash": "60d7f8034815fe5654d8d218b1cf11a0a1503d52f9e360f4ab534843bf9d773f",
+  "base_summary": {
+    "edge_count": 229,
+    "node_count": 157,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "（已满足）用 ≥3 个不同工作形状的真实现场跑标定扫描，给出文件级地标集合与容器占比的数字——4 个现场的数字见证据栏。",
+          "（实现了一半）定下 L1 分母的粒度规则并落在代码与测试上：分母 = 文件级地标集合（目录不进）。已落码：`fileLandmarkHandles` + review-stats + 回归用例 + 队列脚本单独报『目录被排除了几条』。未完成的一半是覆盖，见第三条。",
+          "（未满足）让文件级地标集合在真实现场非空且覆盖 ≥ 一半写者：出厂参数下 4 个现场里 3 个是空集，降到 floor=4 仍是空集——要改的是选择规则（按写者相对取核心集）而不是继续调绝对阈值。验收数字：4 个现场全部非空、触发写者覆盖率 ≥ 50%。",
+          "（未满足）结论写回 positioning-v6 §11 的 L1 段落或新 ADR：至少落两条——分母 = 文件级地标集合；空的地标集合下 L1 不可计算（要报出来，不是记 0 分）。"
+        ],
+        "evidence": [
+          "AC1（≥3 个不同工作形状的真实现场）已满足：2026-09-11 跑了 4 个现场（租户 workbench-e2e-live-tenant 103 写者、workbench-node-verified 32 写者、workbench-e2e-LHA3I4 16 写者、workbench-e2e-VAKSgQ 13 写者），命令 `bun scripts/e2e/landmark-calibration-sweep.ts --workspace <站点>`。",
+          "出厂参数（floor=10 edit=2）逐现场：租户 地标 5 条（容器 2，占 40%，文件级 3）· 触发写者 2 / 无地标 76；节点验证 0 条 · 0 / 32；LHA3I4 0 条 · 0 / 15；VAKSgQ 0 条 · 0 / 12。四个现场里三个是空集。",
+          "把阈值降到底也不救：节点验证在 floor=4 edit=2 仍是 0 条；LHA3I4 / VAKSgQ 在 floor=4/6 × edit=2/4 的所有组合上都是 0 条。",
+          "目录占比随阈值上升：租户 floor=10 → 40%、floor=6 → 75%、floor=4 → 52%；节点验证 floor=10 edit=4 → 33%、floor=6 edit=4 → 50%。「调低阈值提高覆盖」会把分母越调越脏。",
+          "粒度问题与阈值无关：四个阈值组合下去重 handle 始终只有 4 个（., src, src/alpha.ts, src/beta.ts）——阈值改的是「有几条触发」，不是「粒度有多细」。",
+          "实现（AC2 前半）：`interestFromEvents` 新增 `fileLandmarkHandles`（DOI>10 且 contentType=file），`currentLandmarkAcceptance` 改用它做分母；回归用例钉住「目录能进 DOI 地标集合，但不进 L1 分母」，夹具的 contentType 走真实 `contentTypeOf`（手写 file 会让这条测试失去意义）。",
+          "监控侧：新增告警规则 `landmark-set-empty`（零地标 + 有写者 → warn），已在 workbench-node-verified 现场实测触发：『写者 32 个，地标集合 0 条』。零地标现场 L1 无从计算，不能再静静躲在『等自然使用』后面。",
+          "口径变化后的租户读数：分母 5 → 3（排除 `.` 与 `src`），认可 1 / 3 = 0.3333，待复核 2 条。分母缩小后更难达标，说明这次收口径不是为了把数字做漂亮。"
+        ],
+        "execution_hints": [
+          "复现四个现场：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace %TEMP%\\workbench-e2e-live-tenant`（其余三个站点同目录下）。",
+          "监控侧复现零地标告警：`bun scripts/fit-monitor.ts --workspace %TEMP%\\workbench-node-verified-032fd3ea64a74c539a5d9d8cfeb3bf37 --evidence-kind scripted --no-append`。",
+          "相对选择的设计要点：每写者按 DOI 降序取文件级 top-K（K 小，3–5），空集合只在写者没有任何文件级触碰时出现；这也把 L1 的单位从『全部写者一锅算』推向 v6 §11 原文的『一段会话结束后列该会话的地标集合』。",
+          "别用 landmarkFloor=0 凑非空：那会把所有被碰过一次的文件都算成地标，分母变成噪声。"
+        ],
+        "next_action": "按 AC3 做相对选择：先只做测量（在四个现场上算「每写者文件级 top-K」的非空率与覆盖率，K=3/5 各跑一遍），数字站得住再改代码与测试。"
+      },
+      "id": "TF-0156"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "验收3（L1）当前读数：分母 3 条文件级地标（git-main 的 src/alpha.ts、src/beta.ts；editor-1 的 src/beta.ts），已认可 1、待复核 2 → 0.3333。口径本轮收紧：分母只收文件级地标（`. / src` 这类目录不进分母，实测目录占原分母 40%，人无法把它们回答成核心）。",
+          "队列与回填：`bun scripts/e2e/landmark-review-queue.ts --workspace %TEMP%\\workbench-e2e-live-tenant --template answers.json`，改 verdict 后用 `--apply answers.json` 回填；两条都认可即 3/3 = 1.0 ≥ 0.8。",
+          "本轮新增 1 个跑次（累计 24 轮，失败 0）；样本窗口 restores 50 / noticeOutcomes 133 / sealDecisions 26，四项判决 3 supported + l3 insufficient-evidence。",
+          "监控（4 条告警全为 info，无 warn/high）：模型层可恢复错误 http-error×3 / invalid-response×2 / invalid-json×9 被有界重试兜住；恢复耗时超线是脚本手势决定，按新规则降为 info。"
+        ],
+        "next_action": "只剩人评：把 answers.json 里两条 verdict 改成 endorse / reject 后 `--apply`；两条都认可即 0.8 达成，AC3 收口。"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "correction": "`interestFromEvents` 增加 `fileLandmarkHandles`（contentType=file）；`currentLandmarkAcceptance`、复核队列、标定扫描都以它为准；`landmarkHandles` 保留为「DOI 地标集合全量」用于显示与诊断；队列单独报「被排除的目录条数」。同时给监控加 `landmark-set-empty` 规则：零地标现场 L1 不可计算，必须显式报出来。",
+        "created_at": "2026-09-10T18:24:47.558307Z",
+        "detail": "同日先修了「分母取投影列表」的契约错误（投影在没有真地标时会回退到可见集 top-N，分母 113 条里 108 条来自零地标写者），随后跨四个现场实测发现第二层问题：真地标集合里目录占 33%–75%，且阈值越低占比越高。目录能过 DOI>10，但人无法把 `.` 或 `src` 回答成「这次干的活的核心」，把它留在分母里等于把 L1 变成显示策略的度量。",
+        "id": "TFD-c9e94e96e9",
+        "kind": "measurement_unit_refinement",
+        "reason": "positioning-v6 §11 的 L1 问的是「该会话的地标集合里有多少是核心」——地标集合的元素必须是人能回答的对象；目录不是。四个现场的数据把这层口径问题变成可量化的事实（而非口味问题）。",
+        "related_task_ids": [
+          "TF-0156",
+          "TF-0057",
+          "TF-0154"
+        ],
+        "summary": "L1 分母从「DOI>10 的全部 handle」收成「DOI>10 的文件级 handle」，读数随之从 0.4 变 0.3333"
+      }
+    }
+  ],
+  "created_at": "2026-09-10T18:24:47.550304Z",
+  "proposal_id": "TFP-2026-09-11-landmark-granularity",
+  "rationale": "跨四个真实现场跑标定后，TF-0156 的问题比原假设更硬：出厂参数下 3/4 现场的地标集合是空的（把 floor 降到 4 仍是 0），唯一非空的现场里目录占 40%，且阈值越低目录占比越高（floor=6 → 75%）。据此本轮把 L1 分母的粒度收成「文件级」（目录能进 DOI 集合、能复核，但不进 L1 分母），并新增监控规则 landmark-set-empty（零地标 = 标定问题，不是样本不够）。TF-0156 的 AC1 已满足，AC2 实现了一半（单位已落码与测试，覆盖未解决），AC3 按数据改写成「相对选择」而不是继续调绝对阈值。",
+  "session_id": null,
+  "status": "applied"
+}

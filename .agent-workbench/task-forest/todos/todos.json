@@ -15,7 +15,7 @@
     "difficulty": "unknown",
     "id": "TF-0156",
     "kind": "task",
-    "next_action": "扫描：cd packages/workbench && bun scripts/e2e/landmark-calibration-sweep.ts --workspace <租户> [--json]",
+    "next_action": "复现四个现场：`bun scripts/e2e/landmark-calibration-sweep.ts --workspace %TEMP%\\workbench-e2e-live-tenant`（其余三个站点同目录下）。",
     "priority": 3,
     "progress": 0.0,
     "purpose": "",
