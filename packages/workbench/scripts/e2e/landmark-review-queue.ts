@@ -192,11 +192,20 @@ if (applyPath) {
 				: "L1 判据（≥ 0.8）未满足：要改的是地标投影让核心真的进集合，不是阈值也不是分母。",
 		);
 } else if (at("--template")) {
-	// 刻意留空：模板若自带现状，照着点一遍就是一次静默的重新认可，而脚本手势
-	// 产生的结论本来就不构成用户认可——必须由人重新回答。
-	const template = rows.map((row) => ({
+	// verdict 刻意留空：模板若自带现状，照着点一遍就是一次静默的重新认可，而脚本手势
+	// 产生的结论本来就不构成用户认可——必须由人重新回答。（回填只认 verdict，
+	// 留空的那条会被拒并点名，不会被悄悄当成认可。）
+	//
+	// 但「哪条已经答过」得让人看得见：不知道现状，人要么把已认可的那条再点一遍，
+	// 要么漏掉真正待办的那条。所以 `current` 只作展示、回填时忽略。
+	// 只答待办那几条：加 `--pending-only`。
+	const source = argv.includes("--pending-only")
+		? rows.filter((row) => row.current === null)
+		: rows;
+	const template = source.map((row) => ({
 		writer: row.writer,
 		handle: row.handle,
+		current: row.current,
 		verdict: null,
 		reason: "",
 	}));
