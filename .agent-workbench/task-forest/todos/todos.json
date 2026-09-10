@@ -51,7 +51,7 @@
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "scripts/e2e/live-provider.test.ts 通过后 Bun 进程不退出（并行时升级为段错误）"
+    "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）"
   },
   {
     "alignment": {

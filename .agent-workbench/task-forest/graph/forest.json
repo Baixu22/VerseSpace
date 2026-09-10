@@ -5579,7 +5579,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T19:27:22.162169Z",
+  "generated_at": "2026-09-10T19:36:47.780480Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -15014,8 +15014,10 @@
     },
     "TF-0158": {
       "acceptance_criteria": [
-        "定位是哪个句柄（fetch 连接池 / 定时器 / 子进程 / 沙箱交互）让进程在全部用例通过后仍不退出，并给出最小复现。",
-        "修复后 `bun test scripts/e2e` 能自行结束并打印总账；若判定为 Bun 运行时缺陷，给出可上报的最小复现与 workaround（例如在文件末尾显式释放），并把它写进本节点的证据。"
+        "（本轮满足）已定位到用例粒度并找到触发器：`-t \"in-flight request|transient HTTP 500\"` 复现挂起（第 7 条过、第 8 条不返回），第 8 条单独跑 2.04s 通过。",
+        "（未满足）给出根因或可上报的最小复现：下一步在该组合里区分两种可能——① 第 7 条的 fetch 中止遗留了未结算的 promise/监听器；② Bun 在「已中止过的 signal 之后，带 signal 的 `setTimeout` 不再触发」这一运行时缺陷。最小脚本可以只用两个 `completeLiveTurn` 调用（先中止、再 500 退避）而不依赖测试框架。",
+        "（未满足）在根因解决前，全量测试读数必须能自动化采集：给出「排除该文件」或「拆分该文件」后的统一入口，让 627 pass 这类总账可重复取到，而不是每次都要人工挑文件。",
+        "（本轮满足）受影响的可疑路径已加固：invalid-json 与 HTTP 错误两类失败现在都带**结构指纹**（长度/形状/是否闭合/content-type，绝不回显正文），第 26 轮那种「只知道无法解析、判断不了是网关页还是截断流」的情况不会再出现；两条用例单独跑 2 pass / 0 fail。"
       ],
       "alignment": {
         "fit": "unknown",
@@ -15038,10 +15040,11 @@
       "difficulty": "unknown",
       "estimated_total_minutes": null,
       "evidence": [
-        "复现（单独）：cd packages/workbench && bun test scripts/e2e/live-provider.test.ts --timeout 20000 → 7 例 pass，随后停住不给总账。",
-        "复现（并行）：bun test scripts/e2e --timeout 20000 → 段错误，日志停在 e2e.test.ts 的 S11 之前一处。",
-        "复现（串行）：bun test scripts/e2e --concurrency 1 --timeout 60000 → 跑到 e2e.test.ts 的 S11 之后停住。",
-        "对照：同一目录下的 e2e.test.ts（48s）、family-notice-evidence、live-agent-goals、live-auth 单独跑都能正常退出。"
+        "（本轮修正）原观察「7 个用例全绿后进程不退出」不准确：该文件有 **11** 个用例（grep 逐行确认），完整跑一次只报 7 个 pass 且无总账，第 8 个是 line 299 的 `transient HTTP 500 replies are retried like 502/503`。",
+        "（新证据）`bun test scripts/e2e/live-provider.test.ts -t \"transient HTTP 500\" --timeout 10000` → **1 pass / 10 filtered out / 0 fail / exit 0，用时 2.04s**（其中 2s 是那条 `retry-after: 2` 的退避）。所以该用例本身没有死锁：它只在**被前面 7 个用例预热过之后**才不返回，属跨用例相互作用。",
+        "（本轮二分收敛）`bun test scripts/e2e/live-provider.test.ts -t \"in-flight request|transient HTTP 500\"` → 第 7 条 `live provider stops an in-flight request at the caller's turn deadline` **7.12ms 通过**，随后第 8 条**不再返回**（进程被手动终止）。而第 8 条单独跑 2.04s 通过。据此：触发器是**第 7 条的 in-flight 中止**与第 8 条的**带退避重试**之间的相互作用——第 7 条跑过之后，第 8 条里那个 `await setTimeout(退避, undefined, { signal })` 就再也不返回。这条线索把范围收窄到「中止流程遗留状态 + 带 signal 的定时器」，而不是「测试文件整体泄漏」。",
+        "（仍在）并行跑 scripts/e2e 目录会升级成 Bun 段错误（`panic(main thread): Segmentation fault at address 0xFFFFFFFFFFFFFFFF`，日志停在 e2e.test.ts 的 S7 之后）；`--concurrency 1` 跑到 S11 后同样没有总账。11 个 Bun.serve 都在 finally 里 stop(true)，所以泄漏不在监听器。",
+        "（无关但同期）第 26 轮真实采样失败一次，原因是模型层 invalid-json 重试用尽；已给该路径补了正文的结构指纹（长度/形状/是否闭合/content-type，不回显正文），诊断信息见 docs/report-2026-09-11-monitoring.md。"
       ],
       "execution_hints": [
         "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
@@ -15050,7 +15053,7 @@
       ],
       "id": "TF-0158",
       "kind": "task",
-      "next_action": "先用最小脚本二分：一个 Bun.serve + 一次 fetch 是否能让进程正常退出；再把 live-provider.ts 里用到的每个异步资源逐个加回去。",
+      "next_action": "沿本轮二分继续：把第 7 条的中止与第 8 条的退避抽成一个最小脚本（两次 completeLiveTurn，先 abort 再 500），确认是否 `setTimeout(..., { signal })` 在「先前中止过的 signal」存在时不触发；若是运行时缺陷就按 AC2 上报并给出仓库侧规避写法（退避改用不带 signal 的定时器 + 显式 abort 监听）。",
       "non_goals": [],
       "parent_id": "TF-0114",
       "primary_parent": null,
@@ -15065,8 +15068,8 @@
       "status": "proposed",
       "success_metrics": [],
       "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
-      "title": "scripts/e2e/live-provider.test.ts 通过后 Bun 进程不退出（并行时升级为段错误）",
-      "updated_at": "2026-09-10T19:21:42.560264Z"
+      "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
+      "updated_at": "2026-09-10T19:36:42.254496Z"
     }
   },
   "reason": "rebuild",
