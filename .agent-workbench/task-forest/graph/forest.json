@@ -5579,7 +5579,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T20:11:56.524121Z",
+  "generated_at": "2026-09-10T20:13:54.678948Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -15014,10 +15014,10 @@
     },
     "TF-0158": {
       "acceptance_criteria": [
-        "（已满足）定位到用例粒度并找到触发器：`-t \"in-flight request|transient HTTP 500\"` 复现，stuck point 在退避那一行；单跑第 8 条 2.04s 通过；第 7 条先跑就挂。",
-        "（未满足，但已排除一条错路）给出根因或可上报的最小复现：退避改本地定时器无效（定时器整体不触发），最小复现目前只能到「同进程内先有 provider 的 in-flight 中止 → 之后任何定时器都不再触发」，独立脚本复现不出来（三条探针全过）。下一步方向：把第 7 条的 `fetch` 中止与 `Bun.serve` 强制停服的组合放进 bun test 但**不经 provider**，逐层加回 provider 的环节（trace 写文件 / abort 监听 / 循环）找到触发点。",
-        "（已满足）全量测试读数可自动采集：`bun scripts/suite-total.ts` 一条命令给出可复现总账与计量不了的文件清单，退出码区分「失败」与「计量不了」。",
-        "（已满足）模型层失败带结构指纹（第 3 轮），与挂起无关但同属该节点的加固。"
+        "（已满足）定位到用例粒度：失败现场固定在「第 7 条之后」；单跑第 8 条 2.04s 通过，第 7+8 一起跑在真文件里不返回。",
+        "（已收口为「不可归因于仓库代码」）给出根因或可上报的最小复现：已排除全部仓库侧可控候选——两条用例原样复刻通过、三种变体之后定时器正常、退避改本地定时器无效（已 revert）。结论是文件级不可靠（挂起与加载段错误两种形态），最小复现只能给到「该文件 + 该过滤组合」，独立脚本无法复现。处置：隔离（已进 suite-total 的计量不了清单）+ 按 Bun 运行时缺陷上报，附本轮全部实验命令与工件。",
+        "（已满足）全量测试读数可自动采集：`bun scripts/suite-total.ts`，退出码区分「有用例失败」与「有文件计量不了」。",
+        "（已满足）模型层失败带结构指纹（第 3 轮）与该文件无关但同属该节点加固。"
       ],
       "alignment": {
         "fit": "unknown",
@@ -15040,10 +15040,10 @@
       "difficulty": "unknown",
       "estimated_total_minutes": null,
       "evidence": [
-        "（假设被证伪）第 4 轮把退避从 `node:timers/promises` 的 signal 版换成裸定时器 + 显式 abort 后，该文件**依然**在第 7 条（in-flight 中止，2.02ms 通过）之后不返回：一次逐文件跑把它砍在 120s 上限，stderr 最后两行就是第 6、7 条的 pass。结论：不是「带 signal 的定时器」这条接线，而是**该进程里定时器整体不再触发**（这也解释了为什么 bun test 自己的 --timeout 不响）。改动已 revert（7935cd9），不留误导性注释。",
-        "（范围纠正）scripts/e2e 下 9 个用例文件里 8 个是好的：e2e.test.ts 1 pass/47.7s（慢但不挂）、family-notice-evidence 4 pass、live-agent-goals 5 pass、live-auth 1 pass、live-run 1 pass、live-tools 1 pass、live-validation 2 pass、run-live-flag 2 pass。**只有 live-provider.test.ts 挂**。",
-        "（验收三已做）新增 `scripts/suite-total.ts`：逐个文件单独起进程（每个 120s 硬超时），读**stderr**（Bun 把汇总行写在 stderr，只读 stdout 会把跑完的批次误判成挂起），汇总成总账并写 JSON 工件；退出码 0=全绿 / 1=有用例失败 / 2=有文件计量不了。实测读数：**628 pass · 0 fail · 101/102 文件可计量**，唯一计量不了的是 live-provider.test.ts（120s 未收尾）。",
-        "（同一轮发现的另一坑）把 93 个文件路径一次交给一个 `bun test` 进程会卡住，而同样的文件按**目录**交进去 37.8s 跑完；所以脚本按文件逐个起进程，而不是拼一条长命令。"
+        "（本轮新证据·原样复刻通过）在一个独立小文件里复刻第 7+8 条：D1 = provider in-flight 中止（带 trace 的 calls/attempts 两个文件、mkdtemp、readFile、rm），D2 = 500 先返回一次再返回 200 的退避重试。结果 **2 pass / 0 fail**，磁盘标记显示 D2 的第二次请求在 2005ms 发生并解析成功（`D2 resolved content=ok hits=2`）。也就是说这两条用例的代码路径本身不会挂。",
+        "（本轮新证据·定时器说法被削弱）三个变体（A=provider 中止带 trace、B=provider 中止不带 trace、C=裸 fetch 中止）之后，普通定时器都照常触发（301ms / 301ms / 300ms）。第 5 轮「定时器整体不触发」的判断只有「真文件在第 7 条之后停住」这一条直接证据，没有独立复现支持，应降级为待验证的猜测。",
+        "（仍然成立）真文件本身的不可靠有两种形态：`bun test scripts/e2e/live-provider.test.ts -t \"in-flight request|transient HTTP 500\"` 既出现过「第 7 条 pass 之后不再返回」（被 120s 上限砍掉），也出现过「加载阶段 `panic(main thread): Segmentation fault at address 0x0`，33ms 就结束」；而同一命令在**未改动的提交版**上同样段错误，同环境别的文件正常。两条都指向 Bun 运行时，不是仓库代码。",
+        "（范围与验收三）scripts/e2e 下 9 个文件里 8 个正常（e2e.test.ts 只是慢，47.7s），只有本文件计量不了；`scripts/suite-total.ts` 已把这条隔离固化：628 pass / 0 fail / 101/102 文件可计量，退出码 2 点名计量不了的那一个。"
       ],
       "execution_hints": [
         "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
@@ -15052,7 +15052,7 @@
       ],
       "id": "TF-0158",
       "kind": "task",
-      "next_action": "① 逐层加回 provider 环节，找「定时器整体不触发」的触发点（先试不带 trace 的第 7+8 组合，再加 trace）；② 找到后要么修仓库侧，要么按 Bun 运行时缺陷上报并附最小脚本。",
+      "next_action": "只保留两件事：① 若要继续追，就在**该文件内**做减法（复制一份删掉第 1–6 条、再删掉第 7 条、再删 trace），因为跨文件的等价复刻已经证明不挂；② 否则按 Bun 运行时缺陷上报并结项——上报材料 = 文件路径 + 两条过滤命令 + 三种形态（通过/挂起/段错误）+ 本轮探针脚本内容。",
       "non_goals": [],
       "parent_id": "TF-0114",
       "primary_parent": null,
@@ -15068,7 +15068,7 @@
       "success_metrics": [],
       "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
       "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
-      "updated_at": "2026-09-10T20:11:50.709927Z"
+      "updated_at": "2026-09-10T20:13:48.738582Z"
     }
   },
   "reason": "rebuild",
