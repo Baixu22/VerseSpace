@@ -5579,7 +5579,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-10T19:36:47.780480Z",
+  "generated_at": "2026-09-10T19:44:12.711602Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -15014,10 +15014,10 @@
     },
     "TF-0158": {
       "acceptance_criteria": [
-        "（本轮满足）已定位到用例粒度并找到触发器：`-t \"in-flight request|transient HTTP 500\"` 复现挂起（第 7 条过、第 8 条不返回），第 8 条单独跑 2.04s 通过。",
-        "（未满足）给出根因或可上报的最小复现：下一步在该组合里区分两种可能——① 第 7 条的 fetch 中止遗留了未结算的 promise/监听器；② Bun 在「已中止过的 signal 之后，带 signal 的 `setTimeout` 不再触发」这一运行时缺陷。最小脚本可以只用两个 `completeLiveTurn` 调用（先中止、再 500 退避）而不依赖测试框架。",
-        "（未满足）在根因解决前，全量测试读数必须能自动化采集：给出「排除该文件」或「拆分该文件」后的统一入口，让 627 pass 这类总账可重复取到，而不是每次都要人工挑文件。",
-        "（本轮满足）受影响的可疑路径已加固：invalid-json 与 HTTP 错误两类失败现在都带**结构指纹**（长度/形状/是否闭合/content-type，绝不回显正文），第 26 轮那种「只知道无法解析、判断不了是网关页还是截断流」的情况不会再出现；两条用例单独跑 2 pass / 0 fail。"
+        "（已满足）定位到用例粒度并找到触发器：`-t \"in-flight request|transient HTTP 500\"` 复现，stuck point 精确到退避那一行；单跑第 8 条 2.04s 通过。",
+        "（部分满足：已按 stuck point 改，但端到端未验）给出根因或可上报的最小复现：仓库侧已不再依赖那条接线（裸定时器 + 显式 abort）；最小复现目前只能到「同一进程内有 provider 的 in-flight 中止 → 后续带 signal 的定时器不结算」，独立脚本复现不出来。**端到端复跑被 Bun 段错误挡住**（改前改后都崩），所以这条只能算部分满足：需要在环境稳定后重跑第 7+8 条确认修复有效，并顺带确认全量总账能自动采集。",
+        "（未满足）在根因解决前，全量测试读数必须能自动化采集：给出「排除该文件」或「拆分该文件」后的统一入口，让 627 pass 这类总账可重复取到。现在多了一个理由——该文件还可能直接段错误，任何全量脚本都得能承受它。",
+        "（本轮满足）模型层失败带结构指纹（上一轮）与退避不再走会卡住的接线（本轮）都是对该节点的加固；两者都不改变成功路径的行为。"
       ],
       "alignment": {
         "fit": "unknown",
@@ -15040,11 +15040,11 @@
       "difficulty": "unknown",
       "estimated_total_minutes": null,
       "evidence": [
-        "（本轮修正）原观察「7 个用例全绿后进程不退出」不准确：该文件有 **11** 个用例（grep 逐行确认），完整跑一次只报 7 个 pass 且无总账，第 8 个是 line 299 的 `transient HTTP 500 replies are retried like 502/503`。",
-        "（新证据）`bun test scripts/e2e/live-provider.test.ts -t \"transient HTTP 500\" --timeout 10000` → **1 pass / 10 filtered out / 0 fail / exit 0，用时 2.04s**（其中 2s 是那条 `retry-after: 2` 的退避）。所以该用例本身没有死锁：它只在**被前面 7 个用例预热过之后**才不返回，属跨用例相互作用。",
-        "（本轮二分收敛）`bun test scripts/e2e/live-provider.test.ts -t \"in-flight request|transient HTTP 500\"` → 第 7 条 `live provider stops an in-flight request at the caller's turn deadline` **7.12ms 通过**，随后第 8 条**不再返回**（进程被手动终止）。而第 8 条单独跑 2.04s 通过。据此：触发器是**第 7 条的 in-flight 中止**与第 8 条的**带退避重试**之间的相互作用——第 7 条跑过之后，第 8 条里那个 `await setTimeout(退避, undefined, { signal })` 就再也不返回。这条线索把范围收窄到「中止流程遗留状态 + 带 signal 的定时器」，而不是「测试文件整体泄漏」。",
-        "（仍在）并行跑 scripts/e2e 目录会升级成 Bun 段错误（`panic(main thread): Segmentation fault at address 0xFFFFFFFFFFFFFFFF`，日志停在 e2e.test.ts 的 S7 之后）；`--concurrency 1` 跑到 S11 后同样没有总账。11 个 Bun.serve 都在 finally 里 stop(true)，所以泄漏不在监听器。",
-        "（无关但同期）第 26 轮真实采样失败一次，原因是模型层 invalid-json 重试用尽；已给该路径补了正文的结构指纹（长度/形状/是否闭合/content-type，不回显正文），诊断信息见 docs/report-2026-09-11-monitoring.md。"
+        "（stuck point 已精确到行）临时探针（在循环里加 console.error）跑第 7+8 条组合，输出停在：`[probe] response status=500` → `[probe] attempt=1 retryDelay=2000` → 再无下一行。也就是说卡死点是 `if (retryDelay) await setTimeout(retryDelay, undefined, { signal })` 这一行本身，信号量版本在「同一进程先前有过一次 in-flight 中止」之后不再结算；连 bun test 自己的 `--timeout` 也不救（它不是没超时，是超时定时器也不响）。",
+        "（排除法）把这个形状搬到 bun test 之外都不能复现：① 被 AbortSignal.timeout 中止的 fetch 之后，带 signal 的定时器照常 2001ms 响；② handler 是永不返回的 promise + 中止 + `server.stop(true)` 之后，带 signal 的定时器照常 2002ms 响；③ 把同样的三步写成 3 个用例放在 bun test 里也全绿（1001ms / 301ms）。所以复现需要「第 7 条的 provider 逻辑 + 第 8 条的退避」这一组合在测试进程里的残留状态，而不是单纯的服务器或定时器形状。",
+        "（已改）退避改为裸定时器 + 显式监听 abort（`backoff(delay, signal)`，语义等价：abort 时以 signal 原因拒绝，与文件里既有的 `rejects.toThrow(\"turn deadline\")` 一致；第 11 条对退避取消只要求「抛错且不记录幽灵请求」，任何拒绝都满足）。typecheck 与 biome 干净。",
+        "（新失败模式）改后与改前**都**会以 Bun 段错误收场：`bun test scripts/e2e/live-provider.test.ts -t \"in-flight request|transient HTTP 500\"` 现在稳定输出 `panic(main thread): Segmentation fault at address 0x0`（加载阶段 ~33ms），而**未改动的提交版在同一命令下同样段错误**，且同一环境里别的测试文件正常（`src/interactions` 40 pass、临时探针 3 pass）。所以这是 Bun 1.4.2 在该文件上的运行时问题，与本次改动无关——但也意味着修复的端到端复跑这轮拿不到。",
+        "（相对可信的旁证）该文件在崩溃前的最后一次完整观察是 7 pass 后无总账；并行跑 scripts/e2e 目录曾以 `Segmentation fault at address 0xFFFFFFFFFFFFFFFF` 收场。两条都指向 Bun 运行时，而不是仓库代码。"
       ],
       "execution_hints": [
         "先用 `bun --inspect` 或 `Bun.serve` 之外的最小脚本缩小范围：只保留一个 Bun.serve + 一次 fetch，看进程是否退出。",
@@ -15053,7 +15053,7 @@
       ],
       "id": "TF-0158",
       "kind": "task",
-      "next_action": "沿本轮二分继续：把第 7 条的中止与第 8 条的退避抽成一个最小脚本（两次 completeLiveTurn，先 abort 再 500），确认是否 `setTimeout(..., { signal })` 在「先前中止过的 signal」存在时不触发；若是运行时缺陷就按 AC2 上报并给出仓库侧规避写法（退避改用不带 signal 的定时器 + 显式 abort 监听）。",
+      "next_action": "环境稳定后按顺序做三件事：① 重跑 `-t \"in-flight request|transient HTTP 500\"`，确认退避改动让第 8 条恢复；② 重跑整个文件看是否 11 pass 有总账；③ 加一个能承受该文件崩溃/挂起的全量入口（例如 `bun test src scripts --filter` 排除该文件，或把退避用例拆到独立文件），把「627 pass」这类读数变成可自动重复采集的。",
       "non_goals": [],
       "parent_id": "TF-0114",
       "primary_parent": null,
@@ -15069,7 +15069,7 @@
       "success_metrics": [],
       "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
       "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
-      "updated_at": "2026-09-10T19:36:42.254496Z"
+      "updated_at": "2026-09-10T19:44:06.842174Z"
     }
   },
   "reason": "rebuild",

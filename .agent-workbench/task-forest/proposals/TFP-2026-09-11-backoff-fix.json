@@ -1,0 +1,36 @@
+{
+  "applied_at": "2026-09-10T19:44:06.883180Z",
+  "base_graph_hash": "9d6d46d893a4e80ba52b0c5cdb1b1897741e6fda6afb0fd9315bc48ef1f6512d",
+  "base_summary": {
+    "edge_count": 230,
+    "node_count": 158,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "（已满足）定位到用例粒度并找到触发器：`-t \"in-flight request|transient HTTP 500\"` 复现，stuck point 精确到退避那一行；单跑第 8 条 2.04s 通过。",
+          "（部分满足：已按 stuck point 改，但端到端未验）给出根因或可上报的最小复现：仓库侧已不再依赖那条接线（裸定时器 + 显式 abort）；最小复现目前只能到「同一进程内有 provider 的 in-flight 中止 → 后续带 signal 的定时器不结算」，独立脚本复现不出来。**端到端复跑被 Bun 段错误挡住**（改前改后都崩），所以这条只能算部分满足：需要在环境稳定后重跑第 7+8 条确认修复有效，并顺带确认全量总账能自动采集。",
+          "（未满足）在根因解决前，全量测试读数必须能自动化采集：给出「排除该文件」或「拆分该文件」后的统一入口，让 627 pass 这类总账可重复取到。现在多了一个理由——该文件还可能直接段错误，任何全量脚本都得能承受它。",
+          "（本轮满足）模型层失败带结构指纹（上一轮）与退避不再走会卡住的接线（本轮）都是对该节点的加固；两者都不改变成功路径的行为。"
+        ],
+        "evidence": [
+          "（stuck point 已精确到行）临时探针（在循环里加 console.error）跑第 7+8 条组合，输出停在：`[probe] response status=500` → `[probe] attempt=1 retryDelay=2000` → 再无下一行。也就是说卡死点是 `if (retryDelay) await setTimeout(retryDelay, undefined, { signal })` 这一行本身，信号量版本在「同一进程先前有过一次 in-flight 中止」之后不再结算；连 bun test 自己的 `--timeout` 也不救（它不是没超时，是超时定时器也不响）。",
+          "（排除法）把这个形状搬到 bun test 之外都不能复现：① 被 AbortSignal.timeout 中止的 fetch 之后，带 signal 的定时器照常 2001ms 响；② handler 是永不返回的 promise + 中止 + `server.stop(true)` 之后，带 signal 的定时器照常 2002ms 响；③ 把同样的三步写成 3 个用例放在 bun test 里也全绿（1001ms / 301ms）。所以复现需要「第 7 条的 provider 逻辑 + 第 8 条的退避」这一组合在测试进程里的残留状态，而不是单纯的服务器或定时器形状。",
+          "（已改）退避改为裸定时器 + 显式监听 abort（`backoff(delay, signal)`，语义等价：abort 时以 signal 原因拒绝，与文件里既有的 `rejects.toThrow(\"turn deadline\")` 一致；第 11 条对退避取消只要求「抛错且不记录幽灵请求」，任何拒绝都满足）。typecheck 与 biome 干净。",
+          "（新失败模式）改后与改前**都**会以 Bun 段错误收场：`bun test scripts/e2e/live-provider.test.ts -t \"in-flight request|transient HTTP 500\"` 现在稳定输出 `panic(main thread): Segmentation fault at address 0x0`（加载阶段 ~33ms），而**未改动的提交版在同一命令下同样段错误**，且同一环境里别的测试文件正常（`src/interactions` 40 pass、临时探针 3 pass）。所以这是 Bun 1.4.2 在该文件上的运行时问题，与本次改动无关——但也意味着修复的端到端复跑这轮拿不到。",
+          "（相对可信的旁证）该文件在崩溃前的最后一次完整观察是 7 pass 后无总账；并行跑 scripts/e2e 目录曾以 `Segmentation fault at address 0xFFFFFFFFFFFFFFFF` 收场。两条都指向 Bun 运行时，而不是仓库代码。"
+        ],
+        "next_action": "环境稳定后按顺序做三件事：① 重跑 `-t \"in-flight request|transient HTTP 500\"`，确认退避改动让第 8 条恢复；② 重跑整个文件看是否 11 pass 有总账；③ 加一个能承受该文件崩溃/挂起的全量入口（例如 `bun test src scripts --filter` 排除该文件，或把退避用例拆到独立文件），把「627 pass」这类读数变成可自动重复采集的。"
+      },
+      "id": "TF-0158"
+    }
+  ],
+  "created_at": "2026-09-10T19:44:06.709110Z",
+  "proposal_id": "TFP-2026-09-11-backoff-fix",
+  "rationale": "本轮把 TF-0158 的 stuck point 精确到一行并按其形状改了代码：退避等待不再用 node:timers/promises 的 { signal } 版本。同时发现该文件现在会以 Bun 段错误收场（提交版同样段错误），说明这条链路的失败模式不止一种，端到端复跑被环境的不稳定卡住，必须如实记下来。",
+  "session_id": null,
+  "status": "applied"
+}
