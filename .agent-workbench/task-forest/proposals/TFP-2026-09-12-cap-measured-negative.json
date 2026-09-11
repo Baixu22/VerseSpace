@@ -1,4 +1,5 @@
 {
+  "applied_at": "2026-09-11T03:04:14.121942Z",
   "base_graph_hash": "4d4b2ecbb211bbccd07502213776fe9c6ce01ef630e257e01f44d63a008427ca",
   "base_summary": {
     "edge_count": 233,
@@ -32,5 +33,5 @@
   "proposal_id": "TFP-2026-09-12-cap-measured-negative",
   "rationale": "本轮把候选 B（递减收益上限）实现为默认关闭的参数并**实量**，结果是明确的负结论：它能把租户那 3 条重复刷分的地标清成 0 条，但既不能让空集现场长出地标，也**逐字不改**相对选择的排名（89 会话 / 10 文件不变）——因为那些噪声会话只碰过一个文件，这不是权重问题。据此推翻上一轮写下的「B 为主」推荐，改推候选 C（来源门：零声明产物 + 单 handle + 单种类的会话不进候选）。参数保留为默认关闭的诊断项，带回归用例。",
   "session_id": null,
-  "status": "proposed"
+  "status": "applied"
 }
