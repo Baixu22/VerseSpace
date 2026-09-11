@@ -169,3 +169,67 @@ describe("地标集合规模（验收 2）", () => {
 		expect(result.landmarks.length).toBeLessThanOrEqual(15);
 	});
 });
+
+/**
+ * TF-0161 候选 B：递减收益上限（**默认不设**，行为与出厂逐字一致）。
+ *
+ * 实测背景（2026-09-12，四个真实现场）：租户那 3 条地标靠同一 handle 上 25 次
+ * 同种手势越线，7 开启上限后清成 0 条；但对**相对选择**（每会话 top-K）逐字无
+ * 影响（89 会话 / 10 文件不变）——那些会话只碰过一个文件，所以这不是权重问题。
+ * 因此该参数只作诊断与候选，默认关闭。
+ */
+describe("TF-0161 递减收益上限（默认关闭）", () => {
+	const repeatEvents: InteractionEvent[] = Array.from(
+		{ length: 25 },
+		(_, index) => ({
+			time: new Date(T0 + index * 1_000).toISOString(),
+			kind: "edit" as const,
+			handle: "src/heartbeat.ts",
+			contentType: "file" as const,
+			origin: "ws-a",
+			delta: 1,
+		}),
+	);
+	const diverseEvents: InteractionEvent[] = [
+		...[0, 1, 2].map((index) => ({
+			time: new Date(T0 + index * 1_000).toISOString(),
+			kind: "edit" as const,
+			handle: "src/real.ts",
+			contentType: "file" as const,
+			origin: "ws-a",
+			delta: 1,
+		})),
+		...[0, 1, 2].map((index) => ({
+			time: new Date(T0 + 60_000 + index * 1_000).toISOString(),
+			kind: "selection" as const,
+			handle: "src/real.ts",
+			contentType: "file" as const,
+			origin: "ws-a",
+			delta: 1,
+		})),
+	];
+	const withCap = {
+		...DEFAULT_DOI_CONFIG,
+		repeatCap: { free: 3, after: 0.1 },
+	};
+	const doiOf = (events: InteractionEvent[], config = DEFAULT_DOI_CONFIG) =>
+		computeDoi(events, T0 + 120_000, config).scores;
+
+	test("默认不设上限：读数与出厂行为完全一致", () => {
+		expect(doiOf(repeatEvents).get("src/heartbeat.ts")?.doi).toBe(
+			computeDoi(repeatEvents, T0 + 120_000).scores.get("src/heartbeat.ts")
+				?.doi,
+		);
+		expect(doiOf(repeatEvents).get("src/heartbeat.ts")?.landmark).toBe(true);
+	});
+
+	test("开了上限：纯重复被显著折减，多样性会话不受影响", () => {
+		const repeatedOn = doiOf(repeatEvents, withCap).get("src/heartbeat.ts")!;
+		const repeatedOff = doiOf(repeatEvents).get("src/heartbeat.ts")!;
+		expect(repeatedOn.doi).toBeLessThan(repeatedOff.doi * 0.5);
+		// 每种手势都没超过 free 的会话：带上限与不带逐字相同（不误杀真信号）
+		expect(doiOf(diverseEvents, withCap).get("src/real.ts")?.doi).toBe(
+			doiOf(diverseEvents).get("src/real.ts")?.doi,
+		);
+	});
+});

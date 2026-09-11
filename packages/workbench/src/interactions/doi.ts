@@ -46,6 +46,19 @@ export interface DoiConfig {
 	/** 成熟端：衰减缩放（>1 快衰减）与父级传播份额（低 = 窄搜索）。 */
 	matureDecayScale: number;
 	matureParentShare: number;
+	/**
+	 * 递减收益上限（TF-0161 候选 B，默认**不设** = 保持出厂行为）。
+	 *
+	 * 问题：越线常常靠同一 handle 上同一种手势的重复计数（实测 25 次同种
+	 * `edit`/`selection` 就能把一个占位文件推过地标线），而它并不代表工作重要性。
+	 *
+	 * 规则：同一 handle 同一种交互的前 `free` 次全额计入，其后每次只按 `after`
+	 * 倍计入（父级传播用同一个已折减的权重，容器不会因此继续膨胀）。
+	 *
+	 * 为什么不直接去重：反复编辑同一文件在 Mylyn 模型里本来就是真实兴趣信号，
+	 * 去重会误杀真信号；折减保留「反复=强」但抑制刷分。
+	 */
+	repeatCap?: { free: number; after: number };
 }
 
 export const DEFAULT_DOI_CONFIG: DoiConfig = {
@@ -192,6 +205,9 @@ export function computeDoi(
 		}
 	}
 
+	// 同一 handle 同一种交互的重复计数：只在设了 repeatCap 时生效，用来抑制
+	// 「同种手势重复几十次」这种把占位文件推过地标线的刷分（TF-0161）。
+	const kindTouches = new Map<string, number>();
 	for (const ev of events) {
 		const at = Date.parse(ev.time);
 		if (!Number.isFinite(at)) {
@@ -212,7 +228,15 @@ export function computeDoi(
 			}
 			continue;
 		}
-		touch(ev.handle, ev.contentType, config.weight[ev.kind] ?? 0, at);
+		let weight = config.weight[ev.kind] ?? 0;
+		const cap = config.repeatCap;
+		if (cap) {
+			const key = `${ev.handle}\u0000${ev.kind}`;
+			const seen = (kindTouches.get(key) ?? 0) + 1;
+			kindTouches.set(key, seen);
+			if (seen > cap.free) weight *= cap.after;
+		}
+		touch(ev.handle, ev.contentType, weight, at);
 	}
 
 	// 收尾：把每个 handle 衰减到 now，并按阈值分类
