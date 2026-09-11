@@ -158,16 +158,30 @@ interface Ndjson {
 	[key: string]: unknown;
 }
 
+/**
+ * 单个回合的上限。60s 只够「读一次」或「写一次」这类单 hop 回合；真实开发回合
+ * （读需求 → 读实现 → 定点修改 → 保存，agent 侧每 hop 上限 50s、最多 6 hop）
+ * 在慢 provider 上会被这个值掐掉。2026-09-11 两次 live-run 都卡在这里：集成
+ * 场景 17 步全绿，开发回合第一轮独立验收 11/12 之后，纠正回合超时。
+ *
+ * 所以把它做成可覆盖的，并调到能容纳一轮真实"读+改+写"的成本；确定性
+ * fake-agent 回合仍是逐 hop 即时返回，放宽上限不会拖慢它们。
+ */
+export const TURN_TIMEOUT_MS = Number(
+	process.env.E2E_TURN_TIMEOUT_MS ?? 300_000,
+);
+
 /** 消费消息流的 NDJSON，直到 done/error——就是 UI 收到的真实事件序列。 */
 export async function sendTurn(
 	server: Server,
 	threadId: string,
 	text: string,
+	timeoutMs = TURN_TIMEOUT_MS,
 ): Promise<Ndjson[]> {
 	const res = await api(server, `/api/chat/threads/${threadId}/messages`, {
 		method: "POST",
 		body: JSON.stringify({ text }),
-		signal: AbortSignal.timeout(60_000),
+		signal: AbortSignal.timeout(timeoutMs),
 	});
 	if (!res.ok || !res.body) {
 		throw new Error(`messages ${res.status}：${await res.text()}`);
@@ -176,7 +190,7 @@ export async function sendTurn(
 	const reader = res.body.getReader();
 	const decoder = new TextDecoder();
 	let buffer = "";
-	const deadline = Date.now() + 60_000;
+	const deadline = Date.now() + timeoutMs;
 	while (Date.now() < deadline) {
 		const { value, done } = await reader.read();
 		if (done) break;
@@ -200,7 +214,10 @@ export async function sendTurn(
 			}
 		}
 	}
-	throw new Error(`消息流 60s 未收尾，已收 ${events.length} 条`);
+	throw new Error(
+		`消息流 ${Math.round(timeoutMs / 1000)}s 未收尾，已收 ${events.length} 条` +
+			`（可用 E2E_TURN_TIMEOUT_MS 调整）`,
+	);
 }
 
 export async function waitFor(

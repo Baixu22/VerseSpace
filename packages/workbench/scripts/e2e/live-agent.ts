@@ -79,9 +79,14 @@ async function main() {
 		const turnGoal: LiveGoal | null = goalFromUserText(input.message.content);
 		const turnSpans = spansFromUserText(input.message.content);
 		try {
-			const signal = AbortSignal.timeout(50_000);
 			let finished = false;
 			for (let hop = 0; hop < 6; hop++) {
+				// 预算必须**每个 hop 各算一次**。此前 signal 建在循环外，50s 变成整轮
+				// 共享：真实开发回合（读需求 → 读实现 → 改 → 写，4+ hop）会在中途
+				// 耗尽，表现成上层「消息流超时」而看不到真正是第几 hop 断的。
+				const signal = AbortSignal.timeout(
+					Number(process.env.E2E_HOP_TIMEOUT_MS ?? 120_000),
+				);
 				const reply = await completeLiveTurn(
 					provider,
 					history,
