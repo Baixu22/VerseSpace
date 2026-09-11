@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	Check,
 	ChevronLeft,
@@ -11,8 +12,7 @@ import {
 	Settings2,
 	ShieldQuestion,
 	X,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { PendingUserInput } from "@/features/conversation/pending-user-input";

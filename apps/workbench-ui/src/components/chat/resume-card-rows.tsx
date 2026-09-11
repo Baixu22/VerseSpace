@@ -1,6 +1,6 @@
-import { ChevronRight, GitBranch } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { ChevronRight, GitBranch } from "@/components/icon";
 import type {
 	ResumeCardFactRow,
 	ResumeCardNarrativeRow,

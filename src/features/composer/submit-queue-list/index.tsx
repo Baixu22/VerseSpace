@@ -1,9 +1,9 @@
 /** Queue overlay that sits above the composer without reserving layout space. */
 
-import { Clock, CornerDownLeft, Pencil, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { ActionRow } from "@/components/action-row";
 import { FileMentionBadge } from "@/components/file-mention-badge";
+import { Clock, CornerDownLeft, Pencil, Trash2 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	isFileMentionPart,

@@ -1,5 +1,5 @@
-import { CircleAlert, RotateCcw, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CircleAlert, RotateCcw, Search } from "@/components/icon";
 import {
 	ContextMenu,
 	ContextMenuContent,

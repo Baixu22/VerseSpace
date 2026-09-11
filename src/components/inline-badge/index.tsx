@@ -1,5 +1,5 @@
-import { X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { X } from "@/components/icon";
 import {
 	Popover,
 	PopoverAnchor,

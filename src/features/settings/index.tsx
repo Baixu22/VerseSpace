@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { memo, useEffect, useState } from "react";
 import {
 	CheckCircle2,
 	ChevronDown,
@@ -6,8 +7,7 @@ import {
 	Info,
 	Settings,
 	Volume2,
-} from "lucide-react";
-import { memo, useEffect, useState } from "react";
+} from "@/components/icon";
 import { ModelIcon } from "@/components/model-icon";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";

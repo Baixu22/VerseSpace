@@ -15,6 +15,7 @@
  * fields preserved on `args`.
  */
 
+import { memo, useState } from "react";
 import {
 	AlertCircle,
 	Bot,
@@ -22,8 +23,7 @@ import {
 	ChevronDown,
 	LoaderCircle,
 	Sparkles,
-} from "lucide-react";
-import { memo, useState } from "react";
+} from "@/components/icon";
 import type { ToolCallPart } from "@/lib/api";
 import { I18nText, useI18n } from "@/lib/i18n";
 import {

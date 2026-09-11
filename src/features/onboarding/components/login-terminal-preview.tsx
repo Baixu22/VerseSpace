@@ -1,6 +1,6 @@
-import { X } from "lucide-react";
 import type { RefObject } from "react";
 import { LoginTerminalPreview as LoginTerminalCore } from "@/components/agent-login/login-terminal";
+import { X } from "@/components/icon";
 import {
 	type TerminalHandle,
 	TerminalOutput,

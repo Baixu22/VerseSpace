@@ -1,11 +1,11 @@
+import { useCallback, useEffect, useState } from "react";
 import {
 	ArrowLeft,
 	ArrowRight,
 	Layers,
 	PackageCheck,
 	Terminal,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	getCliStatus,

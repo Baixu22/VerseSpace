@@ -3,7 +3,7 @@ import {
 	CloudIcon,
 	FileCode2,
 	GitPullRequestArrow,
-} from "lucide-react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { I18nText } from "@/lib/i18n";
 import { mockInspector } from "./data";

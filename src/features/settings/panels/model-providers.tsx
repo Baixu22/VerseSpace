@@ -1,4 +1,4 @@
-import { CheckCircle2, ChevronDown } from "lucide-react";
+import { CheckCircle2, ChevronDown } from "@/components/icon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

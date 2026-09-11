@@ -1,4 +1,6 @@
+import { useCallback, useMemo } from "react";
 import {
+	type AppIcon,
 	ArrowDownAZ,
 	Calendar,
 	Check,
@@ -8,10 +10,8 @@ import {
 	FolderGit2,
 	GripVertical,
 	ListFilter,
-	type LucideIcon,
 	Rows3,
-} from "lucide-react";
-import { useCallback, useMemo } from "react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	CommandEmpty,
@@ -39,7 +39,7 @@ import { WorkspaceAvatar } from "./avatar";
 interface SidebarSortOption {
 	value: SidebarSort;
 	label: string;
-	icon: LucideIcon;
+	icon: AppIcon;
 }
 
 interface SidebarRepoFilterPickerProps {

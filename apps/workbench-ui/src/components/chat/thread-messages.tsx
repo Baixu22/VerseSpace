@@ -1,6 +1,6 @@
 import { AuiIf, MessagePrimitive } from "@assistant-ui/react";
-import { ChevronDown, Command, Loader2, Terminal } from "lucide-react";
 import { useId, useState } from "react";
+import { ChevronDown, Command, Loader2, Terminal } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";

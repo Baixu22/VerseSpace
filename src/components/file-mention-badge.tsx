@@ -4,8 +4,8 @@
  * both surfaces render attachments the same way the composer does.
  */
 
-import { FileText, ImageIcon } from "lucide-react";
 import { useMemo } from "react";
+import { FileText, ImageIcon } from "@/components/icon";
 import {
 	createFilePreviewLoader,
 	InlineBadge,

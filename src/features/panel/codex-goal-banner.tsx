@@ -17,8 +17,8 @@
  *     re-spawned by codex's continuation loop.
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Goal, Play, X } from "lucide-react";
 import { toast } from "sonner";
+import { Goal, Play, X } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { type CodexGoalState, mutateCodexGoal } from "@/lib/api";
 import { I18nText, useI18n } from "@/lib/i18n";

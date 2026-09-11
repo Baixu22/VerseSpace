@@ -31,7 +31,6 @@ import {
 	type LexicalEditor,
 	type TextNode,
 } from "lexical";
-import { FolderOpen } from "lucide-react";
 import {
 	type ReactNode,
 	type RefObject,
@@ -41,6 +40,7 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { FolderOpen } from "@/components/icon";
 import {
 	Command,
 	CommandGroup,

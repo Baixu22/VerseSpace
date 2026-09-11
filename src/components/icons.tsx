@@ -27,8 +27,8 @@ import XiaomiMiMoMono from "@lobehub/icons/es/XiaomiMiMo/components/Mono";
 import ZAIMono from "@lobehub/icons/es/ZAI/components/Mono";
 import ZenMuxMono from "@lobehub/icons/es/ZenMux/components/Mono";
 import ZhipuColor from "@lobehub/icons/es/Zhipu/components/Color";
-import { Box } from "lucide-react";
 import type { SVGProps } from "react";
+import { Box } from "@/components/icon";
 import { cn } from "@/lib/utils";
 
 export function ClaudeIcon(props: SVGProps<SVGSVGElement>) {

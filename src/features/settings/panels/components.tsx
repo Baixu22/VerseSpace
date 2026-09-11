@@ -1,6 +1,6 @@
-import { CheckCircle2, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CheckCircle2, Loader2, RefreshCw, XCircle } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	getHelmorComponentsUpdateCheck,

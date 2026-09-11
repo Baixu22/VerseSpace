@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCcw } from "lucide-react";
 import {
 	useCallback,
 	useEffect,
@@ -8,6 +7,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { RefreshCcw } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {

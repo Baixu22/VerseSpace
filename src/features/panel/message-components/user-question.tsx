@@ -5,7 +5,7 @@ import {
 	MessageSquareMore,
 	PencilLine,
 	X,
-} from "lucide-react";
+} from "@/components/icon";
 import type { UserQuestionItem, UserQuestionPart } from "@/lib/api";
 import { I18nText, useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

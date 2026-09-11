@@ -1,7 +1,8 @@
 // Left workspace sidebar — workspaces list, app-update button, sidebar
 // collapse, and the settings entry button at the bottom.
-import { PanelLeftClose } from "lucide-react";
+
 import { useLayoutEffect, useRef } from "react";
+import { PanelLeftClose } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

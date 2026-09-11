@@ -1,7 +1,13 @@
 import { unstable_useComposerInput } from "@assistant-ui/react";
-import { ArchiveRestore, ChevronDown, Search, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+import {
+	ArchiveRestore,
+	ChevronDown,
+	Search,
+	Trash2,
+	X,
+} from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { STAGGER_CHILD, STAGGER_PARENT, TWEEN_FAST } from "../../lib/motion";
 import { Button } from "../ui/button";

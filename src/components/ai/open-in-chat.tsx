@@ -1,10 +1,11 @@
 // biome-ignore-all lint/a11y/useAnchorContent: shadcn component uses render prop pattern
+
+import { type ComponentProps, createContext, useContext } from "react";
 import {
 	ChevronDownIcon,
 	ExternalLinkIcon,
 	MessageCircleIcon,
-} from "lucide-react";
-import { type ComponentProps, createContext, useContext } from "react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

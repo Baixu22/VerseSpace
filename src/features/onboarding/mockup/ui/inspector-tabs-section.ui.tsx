@@ -1,5 +1,5 @@
-import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
+import { ChevronDown } from "@/components/icon";
 import { cn } from "@/lib/utils";
 import { INSPECTOR_SECTION_HEADER_CLASS } from "./shared";
 

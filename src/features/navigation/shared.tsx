@@ -3,7 +3,7 @@ import {
 	IssueDraftIcon,
 	XCircleFillIcon,
 } from "@primer/octicons-react";
-import { MessageCircle, Pin } from "lucide-react";
+import { MessageCircle, Pin } from "@/components/icon";
 import type {
 	GroupTone,
 	WorkspaceGroup,

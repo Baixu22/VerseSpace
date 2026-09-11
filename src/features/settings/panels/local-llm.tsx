@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	AlertCircle,
 	Check,
@@ -14,8 +15,7 @@ import {
 	Trash2,
 	Undo2,
 	X,
-} from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+} from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

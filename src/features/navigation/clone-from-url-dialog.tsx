@@ -1,6 +1,6 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LoaderCircle } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

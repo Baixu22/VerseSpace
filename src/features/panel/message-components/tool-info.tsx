@@ -13,7 +13,7 @@ import {
 	Search,
 	Sparkles,
 	Terminal,
-} from "lucide-react";
+} from "@/components/icon";
 import { formatSource, translateSource } from "@/lib/i18n";
 import type { FileChangeInfo, ToolInfo } from "./shared";
 import { basename, isObj, str, truncate } from "./shared";

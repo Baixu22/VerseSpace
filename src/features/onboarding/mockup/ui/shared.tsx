@@ -13,8 +13,8 @@ import {
 	IssueDraftIcon,
 	XCircleFillIcon,
 } from "@primer/octicons-react";
-import { Pin } from "lucide-react";
 import helmorLogo from "@/assets/helmor-logo-light.png";
+import { Pin } from "@/components/icon";
 import {
 	Avatar,
 	AvatarBadge,

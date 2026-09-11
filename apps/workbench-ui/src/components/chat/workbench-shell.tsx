@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Command, HardDrive, PanelLeft, Settings2 } from "lucide-react";
 import { useState } from "react";
+import { Command, HardDrive, PanelLeft, Settings2 } from "@/components/icon";
 import { chatConfigQuery } from "../../chat/config";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";

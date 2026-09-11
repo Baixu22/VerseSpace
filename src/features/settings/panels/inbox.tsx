@@ -1,13 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-	CircleDot,
-	GitPullRequest,
-	MessagesSquare,
-	Pickaxe,
-	Plus,
-	Smartphone,
-} from "lucide-react";
-import {
 	type ReactNode,
 	useCallback,
 	useEffect,
@@ -20,6 +12,14 @@ import {
 	LinearBrandIcon,
 	SlackBrandIcon,
 } from "@/components/brand-icon";
+import {
+	CircleDot,
+	GitPullRequest,
+	MessagesSquare,
+	Pickaxe,
+	Plus,
+	Smartphone,
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { SlackConnectState } from "@/features/inbox/slack-connect-button";
 import { useSlackWorkspaces } from "@/features/inbox/use-slack-workspaces";

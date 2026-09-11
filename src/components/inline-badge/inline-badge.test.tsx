@@ -1,7 +1,7 @@
 import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ImageIcon, Tag } from "lucide-react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ImageIcon, Tag } from "@/components/icon";
 import { renderWithProviders } from "@/test/render-with-providers";
 import { InlineBadge } from "./index";
 

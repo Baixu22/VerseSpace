@@ -1,6 +1,6 @@
-import { BookOpenText, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { BookOpenText, ChevronDown } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { STAGGER_CHILD, STAGGER_PARENT, TWEEN_FAST } from "../../lib/motion";
 import { AnimatedDisclosure } from "./animated-disclosure";

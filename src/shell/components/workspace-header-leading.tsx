@@ -1,7 +1,7 @@
 // Left-side header strip used when the workspace sidebar is collapsed.
 // Reserves space for the macOS traffic lights and surfaces the
 // app-update button + an inline "expand sidebar" toggle.
-import { PanelLeftOpen } from "lucide-react";
+import { PanelLeftOpen } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

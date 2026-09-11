@@ -1,4 +1,10 @@
 import { getMaterialFileIcon } from "file-extension-icon-js";
+import { memo, useMemo, useState } from "react";
+import {
+	Reasoning,
+	ReasoningContent,
+	ReasoningTrigger,
+} from "@/components/ai/reasoning";
 import {
 	AlertCircle,
 	Check,
@@ -6,13 +12,7 @@ import {
 	LoaderCircle,
 	Search,
 	Terminal,
-} from "lucide-react";
-import { memo, useMemo, useState } from "react";
-import {
-	Reasoning,
-	ReasoningContent,
-	ReasoningTrigger,
-} from "@/components/ai/reasoning";
+} from "@/components/icon";
 import {
 	type CollapsedGroupPart,
 	type ExtendedMessagePart,

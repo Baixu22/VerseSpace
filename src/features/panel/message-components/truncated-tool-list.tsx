@@ -1,5 +1,5 @@
-import { ChevronDown } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
+import { ChevronDown } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

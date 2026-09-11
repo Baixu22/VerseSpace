@@ -1,5 +1,6 @@
 // One custom-provider card, shared by every family.
 
+import { useEffect, useState } from "react";
 import {
 	ChevronDown,
 	KeyRound,
@@ -8,8 +9,7 @@ import {
 	RefreshCcw,
 	SquareArrowOutUpRight,
 	Trash2,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+} from "@/components/icon";
 import { ProviderBrandIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {

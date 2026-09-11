@@ -4,6 +4,7 @@ import {
 	BranchPickerPrimitive,
 	useAuiState,
 } from "@assistant-ui/react";
+import { useEffect, useState } from "react";
 import {
 	Check,
 	ChevronLeft,
@@ -16,8 +17,7 @@ import {
 	ThumbsDown,
 	ThumbsUp,
 	Volume2,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+} from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";

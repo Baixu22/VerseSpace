@@ -1,6 +1,6 @@
-import { GitFork, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
+import { GitFork, X } from "@/components/icon";
 import { apiFetch } from "../../auth";
 import { useChatStore } from "../../chat/store";
 import { TWEEN_FAST } from "../../lib/motion";

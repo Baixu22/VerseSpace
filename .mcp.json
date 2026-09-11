@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"reicon": {
+			"command": "node",
+			"args": ["scripts/reicon-mcp.mjs"]
+		}
+	}
+}

@@ -1,6 +1,6 @@
-import { Check, Settings2, X } from "lucide-react";
 import { useMemo } from "react";
 import { CodeBlock } from "@/components/ai/code-block";
+import { Check, Settings2, X } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { InteractionFooter, InteractionHeader } from "../interaction";

@@ -1,3 +1,9 @@
+import { useCallback, useEffect, useState } from "react";
+import {
+	BranchPickerPopover,
+	resolveBranchSource,
+} from "@/components/branch-picker";
+import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
 import {
 	ChevronDown,
 	FolderPlus,
@@ -9,13 +15,7 @@ import {
 	Plus,
 	Split,
 	X,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import {
-	BranchPickerPopover,
-	resolveBranchSource,
-} from "@/components/branch-picker";
-import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Command,

@@ -1,13 +1,13 @@
 import { cva } from "class-variance-authority";
+import type { ReactNode } from "react";
+import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
 import {
 	Archive,
 	GitBranch,
 	LoaderCircle,
 	RotateCcw,
 	Trash2,
-} from "lucide-react";
-import type { ReactNode } from "react";
-import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { HyperText } from "@/components/ui/hyper-text";
 import {

@@ -1,5 +1,5 @@
-import { CircleDot, GitPullRequest, MessagesSquare } from "lucide-react";
 import { LinearBrandIcon, SlackBrandIcon } from "@/components/brand-icon";
+import { CircleDot, GitPullRequest, MessagesSquare } from "@/components/icon";
 import type { ContextCardSource } from "@/lib/sources/types";
 
 export function SourceIcon({

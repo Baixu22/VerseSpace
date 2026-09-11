@@ -1,5 +1,5 @@
-import { ListTree } from "lucide-react";
 import type { ComponentType } from "react";
+import { ListTree } from "@/components/icon";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 

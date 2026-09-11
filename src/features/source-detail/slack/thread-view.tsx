@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Clock3, ExternalLink } from "lucide-react";
 import { AppendContextButton } from "@/components/append-context-button";
 import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
+import { Clock3, ExternalLink } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

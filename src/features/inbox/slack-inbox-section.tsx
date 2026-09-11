@@ -1,6 +1,6 @@
 import { useIsMutating } from "@tanstack/react-query";
-import { ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Loader2 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

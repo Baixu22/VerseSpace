@@ -1,13 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-	Check,
-	ChevronLeft,
-	ChevronRight,
-	CircleDot,
-	Workflow,
-	X,
-} from "lucide-react";
-import {
 	Suspense,
 	useEffect,
 	useLayoutEffect,
@@ -15,6 +7,14 @@ import {
 	useRef,
 	useState,
 } from "react";
+import {
+	Check,
+	ChevronLeft,
+	ChevronRight,
+	CircleDot,
+	Workflow,
+	X,
+} from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { formatTokens } from "@/features/composer/context-usage-ring/parse";
 import { formatWorkflowDuration } from "@/features/panel/message-components/content-parts";

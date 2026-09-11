@@ -1,4 +1,3 @@
-import { ExternalLink, SquareTerminal } from "lucide-react";
 import {
 	siAlacritty,
 	siAndroidstudio,
@@ -27,6 +26,7 @@ import {
 	siXcode,
 	siZedindustries,
 } from "simple-icons";
+import { ExternalLink, SquareTerminal } from "@/components/icon";
 
 type SimpleIcon = { path: string };
 

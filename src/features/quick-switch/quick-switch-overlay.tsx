@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { GitBranch, MessageCircle } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
+import { GitBranch, MessageCircle } from "@/components/icon";
 import { WorkspaceAvatar } from "@/features/navigation/avatar";
 import { deriveWorkspaceDisplay } from "@/features/navigation/workspace-display";
 import { extractLiveActivity } from "@/features/navigation/workspace-hover-card";

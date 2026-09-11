@@ -1,3 +1,4 @@
+import type { ComponentType, SVGProps } from "react";
 import {
 	ArrowBigUp,
 	ArrowDown,
@@ -9,8 +10,7 @@ import {
 	Delete,
 	Option,
 	Space,
-} from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
+} from "@/components/icon";
 import { isMac } from "@/lib/platform";
 import { cn } from "@/lib/utils";
 

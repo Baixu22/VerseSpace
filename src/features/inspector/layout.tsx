@@ -1,4 +1,3 @@
-import { ChevronDown, Plus, X, ZoomIn, ZoomOut } from "lucide-react";
 import {
 	createContext,
 	type RefObject,
@@ -7,6 +6,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { ChevronDown, Plus, X, ZoomIn, ZoomOut } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	ContextMenu,

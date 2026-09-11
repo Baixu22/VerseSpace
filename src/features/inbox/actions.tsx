@@ -1,5 +1,5 @@
-import { Search, X } from "lucide-react";
 import { type ChangeEvent, type ComponentProps, forwardRef } from "react";
+import { Search, X } from "@/components/icon";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 

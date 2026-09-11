@@ -1,9 +1,9 @@
-import { AtSign, MessageCircle, MessagesSquare } from "lucide-react";
 import { toast } from "sonner";
 import {
 	AppendContextButton,
 	type AppendContextPayload,
 } from "@/components/append-context-button";
+import { AtSign, MessageCircle, MessagesSquare } from "@/components/icon";
 import {
 	Tooltip,
 	TooltipContent,

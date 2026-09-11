@@ -1,6 +1,6 @@
-import { CircleAlertIcon } from "lucide-react";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { CircleAlertIcon } from "@/components/icon";
 import { useI18n } from "@/lib/i18n";
 import type { WorkspaceToastOptions } from "@/lib/workspace-toast-context";
 

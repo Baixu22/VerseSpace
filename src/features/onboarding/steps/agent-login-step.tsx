@@ -1,5 +1,5 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useCallback, useState } from "react";
+import { ArrowLeft, ArrowRight } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import type { AgentLoginProvider } from "@/lib/api";
 import { I18nText, useI18n } from "@/lib/i18n";

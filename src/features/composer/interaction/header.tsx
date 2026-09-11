@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import type { AppIcon } from "@/components/icon";
 import { useLocalizedNode } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * background container, matching the shadcn CardHeader pattern.
  */
 type InteractionHeaderProps = {
-	icon: LucideIcon;
+	icon: AppIcon;
 	title: ReactNode;
 	description?: ReactNode;
 	/** Right-aligned siblings: badges, chevron nav, etc. */

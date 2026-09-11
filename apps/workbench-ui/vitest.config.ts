@@ -1,3 +1,4 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 // The dashboard's test target lives beside its sources: `vitest run` from
@@ -5,6 +6,12 @@ import { defineConfig } from "vitest/config";
 // so this file is the only entry — keep it dependency-free (no react plugin,
 // esbuild's automatic JSX transform is enough for the component tree).
 export default defineConfig({
+	// Mirrors vite.config.ts so `@/components/icon` resolves under test too.
+	resolve: {
+		alias: {
+			"@": path.resolve(__dirname, "./src"),
+		},
+	},
 	test: {
 		environment: "jsdom",
 		setupFiles: "./src/test/setup.ts",

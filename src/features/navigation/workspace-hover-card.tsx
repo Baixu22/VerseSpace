@@ -1,15 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import {
-	ArrowDown,
-	ArrowUp,
-	FileDiff,
-	GitBranch,
-	GitPullRequest,
-	type LucideIcon,
-	MessageCircle,
-} from "lucide-react";
-import {
 	Suspense,
 	useCallback,
 	useEffect,
@@ -18,6 +9,15 @@ import {
 	useState,
 } from "react";
 import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
+import {
+	type AppIcon,
+	ArrowDown,
+	ArrowUp,
+	FileDiff,
+	GitBranch,
+	GitPullRequest,
+	MessageCircle,
+} from "@/components/icon";
 import {
 	LazyStreamdown,
 	preloadStreamdown,
@@ -67,7 +67,7 @@ function CompactStat({
 	label,
 	tone,
 }: {
-	icon: LucideIcon;
+	icon: AppIcon;
 	value: string;
 	label: string;
 	tone: "warning" | "danger" | "default";

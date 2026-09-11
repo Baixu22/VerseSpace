@@ -1,5 +1,5 @@
-import { ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { ChevronRightIcon } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";

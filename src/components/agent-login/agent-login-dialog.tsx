@@ -1,6 +1,7 @@
 // Centered modal hosting the agent-login PTY (claude / codex / opencode).
-import { X } from "lucide-react";
+
 import { useCallback, useEffect, useState } from "react";
+import { X } from "@/components/icon";
 import {
 	ClaudeColorIcon,
 	KimiIcon,

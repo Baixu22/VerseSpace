@@ -1,5 +1,5 @@
-import { ArrowRight, ChevronDown, GitBranch } from "lucide-react";
 import type { ReactNode } from "react";
+import { ArrowRight, ChevronDown, GitBranch } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { HyperText } from "@/components/ui/hyper-text";
 import { useI18n } from "@/lib/i18n";

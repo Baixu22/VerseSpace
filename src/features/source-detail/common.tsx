@@ -1,8 +1,14 @@
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { Check, Clock3, Copy, ExternalLink, RefreshCw } from "lucide-react";
 import { Suspense, useCallback, useState } from "react";
 import { AppendContextButton } from "@/components/append-context-button";
 import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
+import {
+	Check,
+	Clock3,
+	Copy,
+	ExternalLink,
+	RefreshCw,
+} from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { Button } from "@/components/ui/button";
 import {

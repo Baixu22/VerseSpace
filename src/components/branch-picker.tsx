@@ -1,5 +1,5 @@
-import { GitBranch, LoaderCircle } from "lucide-react";
 import { useState } from "react";
+import { GitBranch, LoaderCircle } from "@/components/icon";
 import {
 	CommandEmpty,
 	CommandInput,

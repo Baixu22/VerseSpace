@@ -1,5 +1,5 @@
-import { Info } from "lucide-react";
 import { useMemo } from "react";
+import { Info } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import type { PendingUserInput } from "@/features/conversation/pending-user-input";
 import { I18nText } from "@/lib/i18n";

@@ -1,5 +1,4 @@
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
-import { BrainIcon, ChevronRightIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import {
 	createContext,
@@ -10,6 +9,7 @@ import {
 	useState,
 } from "react";
 import { StreamingPlainText } from "@/components/ai/streaming-plain-text";
+import { BrainIcon, ChevronRightIcon } from "@/components/icon";
 import {
 	Collapsible,
 	CollapsibleContent,

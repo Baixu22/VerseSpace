@@ -14,7 +14,6 @@
  *   - entering / removing → width-collapse animation
  */
 
-import { Folder, X } from "lucide-react";
 import {
 	type KeyboardEvent as ReactKeyboardEvent,
 	type ReactNode,
@@ -23,6 +22,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { Folder, X } from "@/components/icon";
 import { WorkspaceAvatar } from "@/features/navigation/avatar";
 import { I18nText, useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

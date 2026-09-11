@@ -5,7 +5,7 @@ import {
 	FolderOpen,
 	Loader2,
 	X,
-} from "lucide-react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { I18nText, useI18n } from "@/lib/i18n";
 import type { ImportedRepository, OnboardingStep } from "../types";

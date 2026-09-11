@@ -5,6 +5,7 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import type { LexicalEditor, SerializedEditorState } from "lexical";
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	ArrowUp,
 	Check,
@@ -18,8 +19,7 @@ import {
 	Square,
 	SquareTerminal,
 	Zap,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+} from "@/components/icon";
 import { ModelIcon } from "@/components/model-icon";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";

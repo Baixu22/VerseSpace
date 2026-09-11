@@ -18,10 +18,10 @@
 //! immediate read used to flake against that latency (#350).
 
 import { useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
+import { X } from "@/components/icon";
 import {
 	type TerminalHandle,
 	TerminalOutput,

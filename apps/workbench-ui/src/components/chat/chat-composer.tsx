@@ -1,5 +1,5 @@
 import { AuiIf, ComposerPrimitive, ThreadPrimitive } from "@assistant-ui/react";
-import { ArrowDown, ArrowUp, ListChecks, Square } from "lucide-react";
+import { ArrowDown, ArrowUp, ListChecks, Square } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";

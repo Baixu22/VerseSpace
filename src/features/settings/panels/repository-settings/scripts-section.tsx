@@ -6,6 +6,7 @@
 // the section header's right slot so the list itself stays a clean
 // vertical stack of name+command pairs aligned with setup/archive.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	Check,
 	ChevronDown,
@@ -13,8 +14,7 @@ import {
 	Pencil,
 	Plus,
 	Trash2,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Collapsible,

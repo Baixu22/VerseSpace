@@ -4,6 +4,16 @@ import {
 	getMaterialFolderIcon,
 } from "file-extension-icon-js";
 import {
+	memo,
+	useCallback,
+	useDeferredValue,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { toast } from "sonner";
+import {
 	ChevronRightIcon,
 	CloudIcon,
 	CopyIcon,
@@ -17,17 +27,7 @@ import {
 	MinusIcon,
 	PlusIcon,
 	Undo2Icon,
-} from "lucide-react";
-import {
-	memo,
-	useCallback,
-	useDeferredValue,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import { toast } from "sonner";
+} from "@/components/icon";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -4,9 +4,9 @@
 // the secret goes straight into Keychain without passing through Helmor.
 // Modeled on `forge-connect-dialog` (same Dialog + TerminalOutput shell).
 
-import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { X } from "@/components/icon";
 import {
 	type TerminalHandle,
 	TerminalOutput,

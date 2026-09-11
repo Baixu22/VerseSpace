@@ -1,5 +1,5 @@
-import { LayersPlus, LoaderCircle } from "lucide-react";
 import { useCallback, useState } from "react";
+import { LayersPlus, LoaderCircle } from "@/components/icon";
 import type {
 	ComposerInsertItem,
 	ComposerInsertRequest,

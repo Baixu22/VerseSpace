@@ -1,5 +1,5 @@
-import { CheckIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { CheckIcon } from "@/components/icon";
 import { useI18n, useLocalizedNode } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { ActionStatusKind } from "./shared";

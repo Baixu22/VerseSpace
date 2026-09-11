@@ -1,4 +1,4 @@
-import { Archive, ChevronRight } from "lucide-react";
+import { Archive, ChevronRight } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { GroupIcon, type GroupTone } from "./shared";

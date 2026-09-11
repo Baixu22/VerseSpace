@@ -5,7 +5,7 @@ import {
 	ClipboardList,
 	Wrench,
 	Zap,
-} from "lucide-react";
+} from "@/components/icon";
 import { ClaudeIcon, OpenAIIcon } from "@/components/icons";
 import { I18nText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

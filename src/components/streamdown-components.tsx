@@ -10,7 +10,6 @@
  */
 
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
-import { DownloadIcon } from "lucide-react";
 import {
 	type ComponentType,
 	cloneElement,
@@ -32,6 +31,7 @@ import {
 	CodeBlockCopyButton,
 	CodeBlockStreamingContext,
 } from "@/components/ai/code-block";
+import { DownloadIcon } from "@/components/icon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

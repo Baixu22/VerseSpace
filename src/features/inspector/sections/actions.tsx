@@ -1,4 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import {
+	AppendContextButton,
+	type AppendContextPayloadResult,
+} from "@/components/append-context-button";
+import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
 import {
 	ArrowUpRightIcon,
 	CheckIcon,
@@ -7,14 +14,7 @@ import {
 	EyeIcon,
 	LoaderCircleIcon,
 	TriangleIcon,
-} from "lucide-react";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import {
-	AppendContextButton,
-	type AppendContextPayloadResult,
-} from "@/components/append-context-button";
-import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type {

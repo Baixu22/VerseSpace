@@ -17,8 +17,8 @@ import {
 	type SerializedLexicalNode,
 	type Spread,
 } from "lexical";
-import { ImageIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { ImageIcon } from "@/components/icon";
 import { InlineBadge } from "@/components/inline-badge";
 import { useI18n } from "@/lib/i18n";
 import { basename } from "@/lib/path-util";

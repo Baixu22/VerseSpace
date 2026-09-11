@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Check, Loader2 } from "@/components/icon";
 import { apiFetch } from "../../auth";
 import { type ChatConfig, chatConfigQuery } from "../../chat/config";
 import { Button } from "../ui/button";

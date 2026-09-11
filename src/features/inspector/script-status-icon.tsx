@@ -1,10 +1,10 @@
+import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
 import {
 	CircleCheck,
 	CircleDashed,
 	CircleQuestionMark,
 	CircleX,
-} from "lucide-react";
-import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
+} from "@/components/icon";
 import { cn } from "@/lib/utils";
 import type { ScriptIconState } from "./hooks/use-script-status";
 

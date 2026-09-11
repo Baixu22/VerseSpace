@@ -1,4 +1,4 @@
-import { Folder, FolderPlus, Globe, Plus } from "lucide-react";
+import { Folder, FolderPlus, Globe, Plus } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

@@ -1,4 +1,4 @@
-import { Box } from "lucide-react";
+import { Box } from "@/components/icon";
 import {
 	ClaudeColorIcon,
 	CursorIcon,

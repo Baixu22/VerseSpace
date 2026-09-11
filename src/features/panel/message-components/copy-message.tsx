@@ -1,5 +1,5 @@
-import { Check, Copy } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Check, Copy } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import type {
 	CollapsedGroupPart,

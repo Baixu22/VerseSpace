@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { SlackBrandIcon } from "@/components/brand-icon";
+import { Loader2 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	type SlackImportResult,

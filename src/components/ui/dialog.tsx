@@ -1,6 +1,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { XIcon } from "lucide-react";
 import type * as React from "react";
+import { XIcon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { I18nText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

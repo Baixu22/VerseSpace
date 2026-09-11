@@ -1,6 +1,6 @@
-import { RotateCcw, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+import { RotateCcw, X } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { FADE_IN, STAGGER_PARENT, TWEEN_DISCLOSURE } from "../../lib/motion";
 import { cn } from "../../lib/utils";

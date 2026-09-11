@@ -1,4 +1,12 @@
 import {
+	Suspense,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import {
 	Ban,
 	Bot,
 	CheckCircle2,
@@ -11,15 +19,7 @@ import {
 	Loader2,
 	PauseCircle,
 	XCircle,
-} from "lucide-react";
-import {
-	Suspense,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+} from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { ShimmerText } from "@/components/ui/shimmer-text";
 import { CARD_BAR_CHROME } from "@/features/composer/composer-top-bars";

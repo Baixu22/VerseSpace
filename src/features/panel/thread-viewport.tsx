@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Loader2 } from "lucide-react";
 import {
 	type ComponentType,
 	createElement,
@@ -14,6 +13,7 @@ import {
 } from "react";
 import { useStickToBottom } from "use-stick-to-bottom";
 import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
+import { ArrowDown, ArrowUp, Loader2 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import type { ThreadMessageLike } from "@/lib/api";
 import { HelmorProfiler } from "@/lib/dev-react-profiler";

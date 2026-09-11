@@ -1,13 +1,13 @@
 "use client";
 
+import type { CSSProperties } from "react";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
 import {
 	CircleCheckIcon,
 	InfoIcon,
 	Loader2Icon,
 	TriangleAlertIcon,
-} from "lucide-react";
-import type { CSSProperties } from "react";
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+} from "@/components/icon";
 
 const closeButtonClass = [
 	// Position: top-right, sitting on the same baseline as the title row.

@@ -1,6 +1,5 @@
 import { MarkGithubIcon } from "@primer/octicons-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Loader2, LogIn, Plus, X } from "lucide-react";
 import {
 	useCallback,
 	useEffect,
@@ -16,6 +15,14 @@ import {
 } from "@/components/account-hover-card-content";
 import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
 import { CachedAvatar } from "@/components/cached-avatar";
+import {
+	ArrowLeft,
+	ArrowRight,
+	Loader2,
+	LogIn,
+	Plus,
+	X,
+} from "@/components/icon";
 import type { TerminalHandle } from "@/components/terminal-output";
 import { Button } from "@/components/ui/button";
 import {

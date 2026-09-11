@@ -9,8 +9,8 @@ import {
 	type SerializedLexicalNode,
 	type Spread,
 } from "lexical";
-import { Tag } from "lucide-react";
 import type { ReactNode } from "react";
+import { Tag } from "@/components/icon";
 import { InlineBadge } from "@/components/inline-badge";
 import { SourceIcon } from "@/features/inbox/source-icon";
 import { STATE_TONE_CLASS } from "@/features/inbox/state-tone";

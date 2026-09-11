@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ChangeEvent } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
+import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
 import {
 	ChevronDown,
 	Loader2,
 	Pickaxe,
 	SlidersHorizontal,
 	Smartphone,
-} from "lucide-react";
-import type { ChangeEvent } from "react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
-import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, Eye } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { ChevronDown, Eye } from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { Button } from "@/components/ui/button";
 import {

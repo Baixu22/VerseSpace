@@ -1,16 +1,16 @@
 import {
-	ChevronRightIcon,
-	FileIcon,
-	FolderIcon,
-	FolderOpenIcon,
-} from "lucide-react";
-import {
 	createContext,
 	type HTMLAttributes,
 	type ReactNode,
 	useContext,
 	useState,
 } from "react";
+import {
+	ChevronRightIcon,
+	FileIcon,
+	FolderIcon,
+	FolderOpenIcon,
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Collapsible,

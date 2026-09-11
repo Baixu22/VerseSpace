@@ -1,6 +1,6 @@
-import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Loader2, RefreshCw } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	type AppUpdateStatus,

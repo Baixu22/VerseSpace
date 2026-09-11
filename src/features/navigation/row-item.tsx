@@ -1,5 +1,14 @@
 import { cva } from "class-variance-authority";
 import {
+	memo,
+	type PointerEvent as ReactPointerEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
+import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
+import {
 	Archive,
 	Circle,
 	FolderOpen,
@@ -12,16 +21,7 @@ import {
 	RotateCcw,
 	Split,
 	Trash2,
-} from "lucide-react";
-import {
-	memo,
-	type PointerEvent as ReactPointerEvent,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
-import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	ContextMenu,

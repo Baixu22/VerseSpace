@@ -1,4 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import {
+	AccountHoverCardContent,
+	accountInfoFromForgeAccount,
+} from "@/components/account-hover-card-content";
+import { BranchPickerPopover } from "@/components/branch-picker";
+import { CachedAvatar } from "@/components/cached-avatar";
+import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
+import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
 import {
 	AlertCircle,
 	ArrowRight,
@@ -16,16 +25,7 @@ import {
 	RotateCcw,
 	Trash2,
 	X,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import {
-	AccountHoverCardContent,
-	accountInfoFromForgeAccount,
-} from "@/components/account-hover-card-content";
-import { BranchPickerPopover } from "@/components/branch-picker";
-import { CachedAvatar } from "@/components/cached-avatar";
-import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
-import { HelmorThinkingIndicator } from "@/components/helmor-thinking-indicator";
+} from "@/components/icon";
 import {
 	ClaudeIcon,
 	CursorIcon,

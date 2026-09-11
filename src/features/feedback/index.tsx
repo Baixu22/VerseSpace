@@ -1,4 +1,4 @@
-import { MessageSquareWarning } from "lucide-react";
+import { MessageSquareWarning } from "@/components/icon";
 
 import { Button } from "@/components/ui/button";
 import {

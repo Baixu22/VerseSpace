@@ -32,7 +32,6 @@ import {
 	useBasicTypeaheadTriggerMatch,
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import type { TextNode } from "lexical";
-import { Loader2, RefreshCw } from "lucide-react";
 import {
 	type ReactNode,
 	type RefObject,
@@ -41,6 +40,7 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { Loader2, RefreshCw } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Command,

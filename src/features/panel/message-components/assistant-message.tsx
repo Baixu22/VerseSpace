@@ -1,4 +1,3 @@
-import { AlertCircle, AlertTriangle, Clock3, Info } from "lucide-react";
 import { memo, Suspense } from "react";
 import { CodeBlockStreamingContext } from "@/components/ai/code-block";
 import {
@@ -6,6 +5,7 @@ import {
 	ReasoningContent,
 	ReasoningTrigger,
 } from "@/components/ai/reasoning";
+import { AlertCircle, AlertTriangle, Clock3, Info } from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { useSmoothStreamContent } from "@/features/conversation/hooks/use-smooth-stream-content";
 import {

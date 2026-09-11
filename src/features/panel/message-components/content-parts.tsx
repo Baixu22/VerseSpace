@@ -1,3 +1,6 @@
+import { Suspense, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { toast } from "sonner";
 import {
 	Check,
 	Circle,
@@ -7,10 +10,7 @@ import {
 	FolderOpen,
 	MessageSquareText,
 	Workflow,
-} from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { toast } from "sonner";
+} from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { ShimmerText } from "@/components/ui/shimmer-text";
 import { formatTokens } from "@/features/composer/context-usage-ring/parse";

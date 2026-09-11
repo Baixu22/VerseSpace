@@ -1,7 +1,7 @@
 // The custom-providers editor for one family: a card per provider + an "Add" control.
 
-import { ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 import { useMemo } from "react";
+import { ChevronDown, Plus, SlidersHorizontal } from "@/components/icon";
 import { ProviderBrandIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {

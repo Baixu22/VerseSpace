@@ -2,14 +2,14 @@
  *  expandable; cursor packages spawn+result in one tool call (no child
  *  events to fold like claude `Task` or codex `subagent_*`). */
 
+import { memo, useState } from "react";
 import {
 	AlertCircle,
 	Bot,
 	Check,
 	ChevronDown,
 	LoaderCircle,
-} from "lucide-react";
-import { memo, useState } from "react";
+} from "@/components/icon";
 import type { ToolCallPart } from "@/lib/api";
 import { I18nText, useI18n } from "@/lib/i18n";
 import { getSubagentIdentity } from "@/lib/subagent-identity";

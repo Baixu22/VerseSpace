@@ -1,6 +1,6 @@
-import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Download, Loader2 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

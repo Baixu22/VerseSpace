@@ -1,15 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-	Archive,
-	ChevronRight,
-	Folder,
-	FolderPlus,
-	Globe,
-	LoaderCircle,
-	MessageCircle,
-	Plus,
-} from "lucide-react";
-import {
 	memo,
 	useCallback,
 	useEffect,
@@ -19,6 +9,16 @@ import {
 	useState,
 } from "react";
 import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
+import {
+	Archive,
+	ChevronRight,
+	Folder,
+	FolderPlus,
+	Globe,
+	LoaderCircle,
+	MessageCircle,
+	Plus,
+} from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

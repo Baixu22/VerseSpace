@@ -2,8 +2,14 @@ import {
 	ThreadListItemPrimitive,
 	ThreadListPrimitive,
 } from "@assistant-ui/react";
-import { Archive, GitFork, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+	Archive,
+	GitFork,
+	MessageSquare,
+	Plus,
+	Trash2,
+} from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";

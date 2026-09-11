@@ -1,8 +1,9 @@
 // Repository deletion confirmation. Owns its own confirm dialog + delete
 // loading state; emits `onDeleted` once the backend returns success so the
 // parent can drop the repo out of the sidebar list.
-import { Trash2 } from "lucide-react";
+
 import { useCallback, useState } from "react";
+import { Trash2 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { deleteRepository, type RepositoryCreateOption } from "@/lib/api";

@@ -1,5 +1,5 @@
-import { Check, Circle, CircleDot } from "lucide-react";
 import type { ReactNode } from "react";
+import { Check, Circle, CircleDot } from "@/components/icon";
 import { useLocalizedNode } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 

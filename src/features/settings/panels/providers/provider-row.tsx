@@ -1,6 +1,6 @@
-import { ChevronDown, LogIn } from "lucide-react";
 import { type ReactNode, useCallback, useState } from "react";
 import { AgentLoginDialog } from "@/components/agent-login/agent-login-dialog";
+import { ChevronDown, LogIn } from "@/components/icon";
 import type { ClaudeIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { AgentLoginProvider } from "@/lib/api";

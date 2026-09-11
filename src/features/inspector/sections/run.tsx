@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	CircleStop,
 	ExternalLink,
@@ -5,8 +6,7 @@ import {
 	RotateCcw,
 	Settings2,
 	Square,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+} from "@/components/icon";
 import {
 	type TerminalHandle,
 	TerminalOutput,

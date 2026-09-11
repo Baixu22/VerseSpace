@@ -1,6 +1,6 @@
-import { ChevronsRight, ExternalLink } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
+import { ChevronsRight, ExternalLink } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

@@ -1,15 +1,15 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BranchPickerPopover } from "@/components/branch-picker";
+import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
+import { CachedAvatar } from "@/components/cached-avatar";
+import { ForgeConnectDialog } from "@/components/forge-connect-dialog";
 import {
 	Check,
 	ChevronDown,
 	GitBranch,
 	Laptop,
 	LoaderCircle,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BranchPickerPopover } from "@/components/branch-picker";
-import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
-import { CachedAvatar } from "@/components/cached-avatar";
-import { ForgeConnectDialog } from "@/components/forge-connect-dialog";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Command,

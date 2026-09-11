@@ -21,7 +21,6 @@ import {
 } from "@lexical/react/LexicalTypeaheadMenuPlugin";
 import { useQuery } from "@tanstack/react-query";
 import { $createTextNode, type TextNode } from "lexical";
-import { FileText } from "lucide-react";
 import {
 	type RefObject,
 	useCallback,
@@ -30,6 +29,7 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { FileText } from "@/components/icon";
 import {
 	Command,
 	CommandEmpty,

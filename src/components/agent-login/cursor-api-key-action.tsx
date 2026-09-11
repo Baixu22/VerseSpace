@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { LoaderCircle, SquareArrowOutUpRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { LoaderCircle, SquareArrowOutUpRight } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { pickDefaultCursorModelIds } from "@/features/settings/panels/cursor-models";

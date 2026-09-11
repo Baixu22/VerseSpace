@@ -1,6 +1,6 @@
 // The "Models" + "Custom Providers" config rows for one family, adapter-driven.
 
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CustomProvidersList } from "./custom-providers-list";

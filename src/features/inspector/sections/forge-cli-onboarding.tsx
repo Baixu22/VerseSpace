@@ -1,7 +1,7 @@
-import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
 import { ForgeConnectDialog } from "@/components/forge-connect-dialog";
+import { LoaderCircle } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

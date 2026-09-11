@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from "react";
+import { GithubBrandIcon } from "@/components/brand-icon";
+import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
 import {
 	ChevronDownIcon,
 	ChevronUpIcon,
@@ -7,10 +10,7 @@ import {
 	SquarePenIcon,
 	XIcon,
 	ZapIcon,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { GithubBrandIcon } from "@/components/brand-icon";
-import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	GITHUB_RELEASES_URL,

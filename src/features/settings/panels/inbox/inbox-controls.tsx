@@ -2,10 +2,11 @@
 // multi-select (with a special "all" sentinel), forge-label multi-select
 // (driven by the per-repo labels query), and a generic single-value
 // dropdown. All purely presentational — state lives in the parent panel.
-import { ChevronDown, X } from "lucide-react";
+
 import { useMemo } from "react";
 import { GithubBrandIcon } from "@/components/brand-icon";
 import { CachedAvatar } from "@/components/cached-avatar";
+import { ChevronDown, X } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

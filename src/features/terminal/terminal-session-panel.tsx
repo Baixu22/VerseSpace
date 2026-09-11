@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2 } from "@/components/icon";
 import {
 	type TerminalHandle,
 	TerminalOutput,

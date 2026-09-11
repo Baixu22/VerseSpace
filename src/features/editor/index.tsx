@@ -1,16 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMaterialFileIcon } from "file-extension-icon-js";
 import {
-	Check,
-	ChevronRight,
-	Copy,
-	Eye,
-	FileCode,
-	Plus,
-	Search,
-	X,
-} from "lucide-react";
-import {
 	type MutableRefObject,
 	Suspense,
 	useCallback,
@@ -21,6 +11,16 @@ import {
 	useState,
 } from "react";
 import { TrafficLightSpacer } from "@/components/chrome/traffic-light-spacer";
+import {
+	Check,
+	ChevronRight,
+	Copy,
+	Eye,
+	FileCode,
+	Plus,
+	Search,
+	X,
+} from "@/components/icon";
 import { LazyStreamdown } from "@/components/streamdown-loader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";

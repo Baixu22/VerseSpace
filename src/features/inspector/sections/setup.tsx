@@ -1,6 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, Play, RotateCcw, Settings2, Square } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	CircleCheck,
+	Play,
+	RotateCcw,
+	Settings2,
+	Square,
+} from "@/components/icon";
 import {
 	type TerminalHandle,
 	TerminalOutput,

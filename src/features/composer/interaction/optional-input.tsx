@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { AppIcon } from "@/components/icon";
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n";
  * appears elevated over the panel's card body.
  */
 type InteractionOptionalInputProps = {
-	icon: LucideIcon;
+	icon: AppIcon;
 	placeholder: string;
 	value: string;
 	onChange: (value: string) => void;

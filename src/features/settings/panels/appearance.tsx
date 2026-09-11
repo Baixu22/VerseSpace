@@ -1,5 +1,5 @@
-import { Check, ChevronDown, Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Check, ChevronDown, Monitor, Moon, Sun } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,

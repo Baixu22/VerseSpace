@@ -1,4 +1,4 @@
-import { Pickaxe } from "lucide-react";
+import { Pickaxe } from "@/components/icon";
 import { SourceIcon } from "@/features/inbox/source-icon";
 import { I18nText } from "@/lib/i18n";
 import type { SourceDetailProps } from "./common";

@@ -16,8 +16,8 @@ import {
 	type SerializedLexicalNode,
 	type Spread,
 } from "lexical";
-import { FileText } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
+import { FileText } from "@/components/icon";
 import {
 	createFilePreviewLoader,
 	InlineBadge,

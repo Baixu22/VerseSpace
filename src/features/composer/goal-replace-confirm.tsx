@@ -6,8 +6,8 @@
  * option row / footer primitives as `AskUserQuestionRenderer`.
  */
 
-import { Check, Goal, X } from "lucide-react";
 import { useState } from "react";
+import { Check, Goal, X } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { InteractionFooter } from "./interaction/footer";

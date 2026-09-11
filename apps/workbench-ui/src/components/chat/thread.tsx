@@ -1,5 +1,5 @@
 import { ThreadPrimitive } from "@assistant-ui/react";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare } from "@/components/icon";
 import { ChatComposer } from "./chat-composer";
 import { AssistantMessage, UserMessage } from "./thread-messages";
 import { ForkNotice } from "./thread-notices";

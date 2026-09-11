@@ -1,13 +1,13 @@
+import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
 import {
+	type AppIcon,
 	Archive,
 	Hammer,
 	Lightbulb,
-	type LucideIcon,
 	MessageSquareText,
 	Orbit,
 	Play,
-} from "lucide-react";
-import { HelmorLogoAnimated } from "@/components/helmor-logo-animated";
+} from "@/components/icon";
 import {
 	Empty,
 	EmptyContent,
@@ -28,7 +28,7 @@ import { formatWorkspaceStarProgress } from "@/lib/workspace-star-collection";
 // `title` / `description` are i18n catalog KEYS, resolved at render via t().
 const SCRIPT_ACTION_COPY: Record<
 	WorkspaceScriptType,
-	{ title: string; description: string; icon: LucideIcon }
+	{ title: string; description: string; icon: AppIcon }
 > = {
 	setup: {
 		title: "createSetupScript",

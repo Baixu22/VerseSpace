@@ -1,6 +1,6 @@
-import { ChevronDown, Tag } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { FileMentionBadge } from "@/components/file-mention-badge";
+import { ChevronDown, Tag } from "@/components/icon";
 import { InlineBadge } from "@/components/inline-badge";
 import type { MessagePart } from "@/lib/api";
 import {

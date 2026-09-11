@@ -1,4 +1,4 @@
-import { FileAudio, FileText, Paperclip } from "lucide-react";
+import { FileAudio, FileText, Paperclip } from "@/components/icon";
 import type { SlackFileRef } from "@/lib/api";
 import { openUrl } from "@/lib/platform-bridge";
 import { cn } from "@/lib/utils";

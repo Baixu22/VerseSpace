@@ -1,5 +1,5 @@
-import { Send } from "lucide-react";
 import { useEffect, useMemo } from "react";
+import { Send } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { ExistingHelmorRepo } from "@/lib/api";

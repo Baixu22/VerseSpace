@@ -5,7 +5,7 @@ import {
 	Goal,
 	Info,
 	MessageSquareText,
-} from "lucide-react";
+} from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

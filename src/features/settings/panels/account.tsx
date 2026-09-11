@@ -1,7 +1,7 @@
-import { CircleAlert, Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { GithubBrandIcon, GitlabBrandIcon } from "@/components/brand-icon";
 import { CachedAvatar } from "@/components/cached-avatar";
+import { CircleAlert, Loader2 } from "@/components/icon";
 import {
 	Tooltip,
 	TooltipContent,

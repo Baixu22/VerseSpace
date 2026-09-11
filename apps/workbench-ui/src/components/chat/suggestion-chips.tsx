@@ -1,5 +1,5 @@
-import { Lightbulb } from "lucide-react";
 import { motion } from "motion/react";
+import { Lightbulb } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { FADE_IN, TWEEN_FAST } from "../../lib/motion";
 import { Button } from "../ui/button";

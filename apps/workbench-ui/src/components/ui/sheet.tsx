@@ -1,6 +1,6 @@
-import { X } from "lucide-react";
 import { Dialog } from "radix-ui";
 import type { ComponentProps } from "react";
+import { X } from "@/components/icon";
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
 

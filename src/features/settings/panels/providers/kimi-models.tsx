@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { RefreshCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { RefreshCcw } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,

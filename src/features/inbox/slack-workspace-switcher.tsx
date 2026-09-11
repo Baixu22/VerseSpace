@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { Check, ChevronDown, Download, Loader2, X } from "lucide-react";
 import { useState } from "react";
+import { Check, ChevronDown, Download, Loader2, X } from "@/components/icon";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
