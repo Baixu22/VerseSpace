@@ -7,20 +7,41 @@
  * 能做的只有一件事：把人的成本压到最低——先算清楚有哪些地标、哪些还没复核、
  * 每条长什么样，人只需回答 endorse / reject。
  *
+ * 2026-09-11 迁移（TF-0159 + TF-0161 候选 D）：
+ *   - 队列落在**门后相对口径**（每会话文件级 top-K）。门后阈值口径在四个真实现场
+ *     全部归零，队列会是空的——那正是「切分母」的证据，不是可以把人叫来的东西。
+ *   - 默认按会话抽样 N=5（会话 DOI 总分降序）。全量 83 会话 × 3 = 192 条人评不了，
+ *     读数里明写 `sampledSessions: 5/83`，**绝不把抽样写成全量覆盖**。
+ *   - 旧结论落在新集合之外的只计数（legacy），不删除、不改判。
+ *
  * 用法：
- *   bun scripts/e2e/landmark-review-queue.ts                       # 打印队列
+ *   bun scripts/e2e/landmark-review-queue.ts                       # 打印队列（抽样 5 会话）
+ *   bun scripts/e2e/landmark-review-queue.ts --all-sessions        # 全量（不再抽样）
  *   bun scripts/e2e/landmark-review-queue.ts --out ../../docs/landmark-review-queue.md
- *   bun scripts/e2e/landmark-review-queue.ts --template answers.json   # 生成待填模板
- *   bun scripts/e2e/landmark-review-queue.ts --apply answers.json      # 回填并给出新读数
+ *   bun scripts/e2e/landmark-review-queue.ts --template answers.json
+ *   bun scripts/e2e/landmark-review-queue.ts --apply answers.json
+ *
+ * 回滚开关：`--denominator threshold` 用回旧的那把尺子（DOI>10 的文件级集合），
+ * 不重新发明第二套展示逻辑——尺子只有一把，由 landmark-set.ts 提供。
  *
  * 队列只读：不加 --apply 时它不改黑板。回填走的也是 CLI 同一支手势（human 来源、
- * 只对当前投影有效），所以人回答过的部分才会进 L1 的分母。
+ * 只对候选集合有效），所以人回答过的部分才会进 L1 的分母。
  */
 
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { openBlackboard } from "../../src/blackboard";
-import { collectInterest } from "../../src/interactions/context";
+import {
+	interestFromEvents,
+	sessionFileScores,
+} from "../../src/interactions/context";
+import {
+	DEFAULT_LANDMARK_TOP_K,
+	isRecordingWriter,
+	type LandmarkDenominator,
+	landmarkCandidates,
+	type WriterRef,
+} from "../../src/interactions/landmark-set";
 import {
 	collectLandmarkReviews,
 	type LandmarkReviewSource,
@@ -28,12 +49,17 @@ import {
 	reviewLandmark,
 } from "../../src/interactions/review";
 import { currentLandmarkAcceptance } from "../../src/interactions/review-stats";
+import {
+	INTERACTIONS_SOURCE,
+	INTERACTIONS_TYPE,
+} from "../../src/interactions/types";
 
 const argv = Bun.argv.slice(2);
 const at = (flag: string): string | undefined => {
 	const index = argv.indexOf(flag);
 	return index >= 0 ? (argv[index + 1] as string | undefined) : undefined;
 };
+const has = (flag: string): boolean => argv.includes(flag);
 
 const workspace = at("--workspace");
 const blackboardAt = at("--blackboard")
@@ -46,6 +72,14 @@ if (!blackboardAt) {
 	process.exit(2);
 }
 
+/** 默认口径是**相对口径**：门后阈值口径在四个现场全空，队列会没人可审。 */
+const denominator: LandmarkDenominator =
+	at("--denominator") === "threshold" ? "threshold" : "session-top-k";
+const topK = Number(at("--top-k") ?? String(DEFAULT_LANDMARK_TOP_K));
+/** 默认抽样 5 个会话（tf-0159 §2.3）：全量 192 条人评不了，15 条在十分钟预算内。 */
+const sampleN = Number(at("--sample-n") ?? "5");
+const allSessions = has("--all-sessions");
+
 interface QueueRow {
 	writer: string;
 	handle: string;
@@ -53,13 +87,21 @@ interface QueueRow {
 	current: "endorse" | "reject" | null;
 }
 
+const pairKey = (writer: string, handle: string): string =>
+	`${writer}\u0000${handle}`;
+
 /**
- * 从投影里取这条地标的摘要：折叠进父目录的子条目只出现在父条目的 collapsed
+ * 从投影里取这条候选的摘要：折叠进父目录的子条目只出现在父条目的 collapsed
  * 文本里（`handle（DOI x，编辑 2 次 · …）`），取不到就留空——队列宁可少一句话，
  * 也不自己编一句。
+ *
+ * 投影必须走**会话时钟**：这对摘要也是口径问题。实时上下文显示用「现在」是对的
+ * （几天没碰的文件就该离开上下文），但队列列的是「这段会话干的核心」，用「现在」
+ * 算的话列表里的条目会和投影对不上，于是摘要整列空白——人评的时候看不到东西，
+ * 又不敢自己去猜。
  */
 function summaryFor(
-	interest: Awaited<ReturnType<typeof collectInterest>>,
+	interest: ReturnType<typeof interestFromEvents>,
 	handle: string,
 ): string {
 	const direct = interest.landmarks.find(
@@ -75,72 +117,174 @@ function summaryFor(
 	return "";
 }
 
-async function buildQueue(): Promise<{
+function hasDirectoryTouch(events: unknown[], writer: string): boolean {
+	return events.some((event) => {
+		const record = event as {
+			source?: string;
+			type?: string;
+			payload?: { origin?: string; contentType?: string };
+		};
+		return (
+			record.source === INTERACTIONS_SOURCE &&
+			record.type === INTERACTIONS_TYPE &&
+			record.payload?.origin === writer &&
+			record.payload.contentType === "directory"
+		);
+	});
+}
+
+interface QueueReport {
 	bb: Awaited<ReturnType<typeof openBlackboard>>;
 	rows: QueueRow[];
+	writerRefs: WriterRef[];
+	/** 门后有文件级候选的会话数（全站）——抽样分母。 */
+	candidateSessions: number;
+	/** 本次读数实际覆盖的会话数。 */
+	sampledSessions: number;
+	/** 写者总数（含被门排除的）。 */
+	writersTotal: number;
+	/** 被种类门排除的写者数（git/human）。 */
+	gatedWriters: number;
+	/** 非门写者里排不出任何文件级候选的个数（这一层没触发）。 */
 	starvedWriters: number;
-	containerLandmarks: number;
-	writerIds: string[];
-	judgement: ReturnType<typeof landmarkReviewJudgement> & { byWriter: number };
-}> {
+	/** 上面这些里只碰过目录、一个文件都没碰的个数（标定信号）。 */
+	directoryOnlyWriters: number;
+	/** 门后**阈值口径**还剩几条文件级地标：本轮实测 0，是切口径的依据。 */
+	thresholdFileLandmarks: number;
+	/** 本次读数（只含被抽中的会话）。 */
+	judgement: {
+		total: number;
+		reviewed: number;
+		endorsed: number;
+		rejected: number;
+		endorsedShare: number | null;
+		reviewedCoverage: number | null;
+	};
+	/** 结论连续性：落在新集合外的一律 legacy，保留不改判。 */
+	legacy: {
+		human: number;
+		steward: number;
+		inSetHuman: number;
+		inSetSteward: number;
+	};
+	/** 待复核的条数（本次读数的范围内）。 */
+	pending: number;
+}
+
+async function buildQueue(): Promise<QueueReport> {
 	const bb = openBlackboard(blackboardAt as string);
 	const [writers, events] = await Promise.all([
 		bb.sessions.list(),
 		bb.events.all(),
 	]);
-	const reviews = collectLandmarkReviews(events);
+	const humanReviews = collectLandmarkReviews(events, "human");
+	const stewardReviews = collectLandmarkReviews(events, "steward");
 	const latest = new Map<string, "endorse" | "reject">();
-	for (const review of reviews)
-		latest.set(`${review.writer}\u0000${review.handle}`, review.verdict);
+	for (const review of humanReviews)
+		latest.set(pairKey(review.writer, review.handle), review.verdict);
+
+	// 候选会话（全站，先门后尺）：抽样与 legacy 计数都建立在全量之上，抽样只影响
+	// 「这一轮问多少」，不影响「旧结论算不算落进新集合」。
+	interface Candidate {
+		writer: WriterRef;
+		handles: string[];
+		score: number;
+	}
+	const candidates: Candidate[] = [];
+	let gatedWriters = 0;
+	let starvedWriters = 0;
+	let directoryOnlyWriters = 0;
+	let thresholdFileLandmarks = 0;
+	for (const writer of writers) {
+		const ref: WriterRef = { id: writer.id, kind: writer.kind };
+		// 门：git 监视 / human 编辑器记录的是「文件被动过」，不是「这次干的活是什么」。
+		if (isRecordingWriter(ref)) {
+			gatedWriters += 1;
+			continue;
+		}
+		const handles = landmarkCandidates(events, writer.id, {
+			denominator,
+			topK,
+		});
+		// 标定信号：门后阈值口径还剩几条。本轮四现场实测 = 0，这就是切分母的依据，
+		// 它必须一直看得见——否则「为什么用相对口径」半年后就没人说得清了。
+		thresholdFileLandmarks += landmarkCandidates(events, writer.id, {
+			denominator: "threshold",
+		}).length;
+		if (handles.length === 0) {
+			if (hasDirectoryTouch(events, writer.id)) directoryOnlyWriters += 1;
+			else starvedWriters += 1;
+			continue;
+		}
+		// 抽样依据「会话 DOI 总分降序」（tf-0159 §2.3）：分数要真算，不能拿 handle 数反推。
+		const score = sessionFileScores(events, writer.id).reduce(
+			(sum, row) => sum + row.doi,
+			0,
+		);
+		candidates.push({ writer: ref, handles, score });
+	}
+	candidates.sort(
+		(a, b) => b.score - a.score || a.writer.id.localeCompare(b.writer.id),
+	);
+	const sampled = allSessions
+		? candidates
+		: candidates.slice(0, Math.max(0, sampleN));
 
 	const rows: QueueRow[] = [];
 	let total = 0;
 	let reviewed = 0;
 	let endorsed = 0;
-	let starvedWriters = 0;
-	let containerLandmarks = 0;
-	for (const writer of writers) {
-		const interest = await collectInterest(bb, writer.id);
-		// 只列真地标（DOI>10）里的文件级条目：L1 的分母就是它。没有地标的写者不是
-		// 「没有核心」，而是这一层没触发，单独计数；目录（含项目根）能被推到地标线
-		// 以上、也能被复核，但人没法把它回答成「这次干的活的核心」，所以它不进分母，
-		// 只记个数——「目录占了多少」这件事本身是标定信号，不能看不见。
-		containerLandmarks +=
-			interest.landmarkHandles.length - interest.fileLandmarkHandles.length;
-		if (interest.fileLandmarkHandles.length === 0) {
-			if (interest.visible.length > 0) starvedWriters += 1;
-			continue;
-		}
-		const writerReviews = reviews.filter(
-			(review) => review.writer === writer.id,
+	for (const candidate of sampled) {
+		const own = humanReviews.filter(
+			(review) => review.writer === candidate.writer.id,
 		);
 		const judgement = landmarkReviewJudgement(
-			interest.fileLandmarkHandles.map((handle) => ({ handle })),
-			writerReviews,
+			candidate.handles.map((handle) => ({ handle })),
+			own,
 		);
 		total += judgement.total;
 		reviewed += judgement.reviewed;
 		endorsed += judgement.endorsed;
-		for (const handle of interest.fileLandmarkHandles) {
+		const interest = interestFromEvents(
+			events,
+			candidate.writer.id,
+			Date.now(),
+			{
+				clock: "session",
+			},
+		);
+		for (const handle of candidate.handles) {
 			rows.push({
-				writer: writer.id,
+				writer: candidate.writer.id,
 				handle,
 				summary: summaryFor(interest, handle),
-				current: latest.get(`${writer.id}\u0000${handle}`) ?? null,
+				current: latest.get(pairKey(candidate.writer.id, handle)) ?? null,
 			});
 		}
 	}
+
+	const inSet = new Set<string>();
+	for (const candidate of candidates)
+		for (const handle of candidate.handles)
+			inSet.add(pairKey(candidate.writer.id, handle));
+	let legacyHuman = 0;
+	let legacySteward = 0;
+	let inSetHuman = 0;
+	let inSetSteward = 0;
+	for (const review of humanReviews) {
+		if (inSet.has(pairKey(review.writer, review.handle))) inSetHuman += 1;
+		else legacyHuman += 1;
+	}
+	for (const review of stewardReviews) {
+		if (inSet.has(pairKey(review.writer, review.handle))) inSetSteward += 1;
+		else legacySteward += 1;
+	}
+
 	return {
 		bb,
-		containerLandmarks,
-		rows: rows.sort(
-			(a, b) =>
-				Number(a.current !== null) - Number(b.current !== null) ||
-				a.writer.localeCompare(b.writer) ||
-				a.handle.localeCompare(b.handle),
-		),
-		starvedWriters,
-		writerIds: writers.map((writer) => writer.id),
+		candidateSessions: candidates.length,
+		directoryOnlyWriters,
+		gatedWriters,
 		judgement: {
 			total,
 			reviewed,
@@ -148,19 +292,43 @@ async function buildQueue(): Promise<{
 			rejected: reviewed - endorsed,
 			endorsedShare: total > 0 ? endorsed / total : null,
 			reviewedCoverage: total > 0 ? reviewed / total : null,
-			byWriter: writers.length,
 		},
+		legacy: {
+			human: legacyHuman,
+			steward: legacySteward,
+			inSetHuman,
+			inSetSteward,
+		},
+		pending: rows.filter((row) => row.current === null).length,
+		rows: rows.sort(
+			(a, b) =>
+				Number(a.current !== null) - Number(b.current !== null) ||
+				a.writer.localeCompare(b.writer) ||
+				a.handle.localeCompare(b.handle),
+		),
+		sampledSessions: sampled.length,
+		starvedWriters,
+		thresholdFileLandmarks,
+		writerRefs: writers.map((writer) => ({
+			id: writer.id,
+			kind: writer.kind,
+		})),
+		writersTotal: writers.length,
 	};
 }
 
-const { bb, rows, judgement, starvedWriters, containerLandmarks } =
-	await buildQueue();
+const report = await buildQueue();
+const { bb, rows, judgement } = report;
+const scopeLabel = allSessions
+	? `全量（--all-sessions）`
+	: `抽样 sampledSessions: ${report.sampledSessions}/${report.candidateSessions}`;
+const cn = (value: number | null): string => value?.toFixed(4) ?? "无样本";
 
 const applyPath = at("--apply");
 if (applyPath) {
 	// 来源决定这条结论算进哪条读数：默认 human（用户认可口径）；加 --steward
 	// 则是代理自审——真实数据，但不构成用户认可，也就抬不高 human 口径。
-	const applySource: LandmarkReviewSource = argv.includes("--steward")
+	const applySource: LandmarkReviewSource = has("--steward")
 		? "steward"
 		: "human";
 	const answers = JSON.parse(
@@ -195,29 +363,54 @@ if (applyPath) {
 	for (const line of skipped.slice(0, 10)) console.log(`  跳过：${line}`);
 	const after = await buildQueue();
 	console.log(
-		`L1 读数：认可 ${after.judgement.endorsed} / 全部 ${after.judgement.total} = ${after.judgement.endorsedShare?.toFixed(4) ?? "无样本"}（复核覆盖 ${after.judgement.reviewedCoverage?.toFixed(4) ?? "无样本"}）`,
+		`本次问到的部分（口径 ${denominator} · ${scopeLabel}）：认可 ${after.judgement.endorsed} / 全部候选 ${after.judgement.total} = ${cn(after.judgement.endorsedShare)}（复核覆盖 ${cn(after.judgement.reviewedCoverage)}）`,
+	);
+	// 全站读数与「本次问到的部分」必须分开报：只答了抽样的 5 个会话时，两者的分母
+	// 差着十几倍，并排放才不会被当成指标涨跌。L1 的判据读数取**全站**（账本 TF-0154
+	// 读的也是全站），所以下面这条才是能不能收口 TF-0057 的那一个数。
+	const allEvents = await bb.events.all();
+	const now = Date.now();
+	const siteWide = currentLandmarkAcceptance(
+		allEvents,
+		after.writerRefs,
+		now,
+		applySource,
+		{ denominator: "session-top-k" },
+	);
+	console.log(
+		`全站读数（口径 ${siteWide.denominator} · 全部 ${after.candidateSessions} 个候选会话）：认可 ${siteWide.endorsed} / 全部候选 ${siteWide.total} = ${cn(siteWide.endorsedShare)}（复核覆盖 ${cn(siteWide.reviewedCoverage)}；未复核 ${siteWide.total - siteWide.reviewed} 条）`,
+	);
+	// 双读数并报一个周期：口径换了读数会跳，两条并排才归因得到口径而不是产品。
+	const threshold = currentLandmarkAcceptance(
+		allEvents,
+		after.writerRefs,
+		now,
+		applySource,
+	);
+	console.log(
+		`阈值口径读数（历史可比 · 全站）：认可 ${threshold.endorsed} / 全部 ${threshold.total} = ${cn(threshold.endorsedShare)}${threshold.total === 0 ? "（空集 → 不可计算，正是切口径的依据）" : ""}`,
 	);
 	// 自审口径单独报一行：它是真实数据，但和「用户认可」不是同一件事，绝不并列成一个数
 	if (applySource === "steward") {
-		const stewardRows = await bb.events.query({});
-		const stewardReading = currentLandmarkAcceptance(
-			stewardRows,
-			after.writerIds,
+		const human = currentLandmarkAcceptance(
+			allEvents,
+			after.writerRefs,
 			Date.now(),
-			"steward",
+			"human",
+			{ denominator: "session-top-k" },
 		);
 		console.log(
-			`代理自审读数（不构成用户认可）：认可 ${stewardReading.endorsed} / 全部 ${stewardReading.total} = ${stewardReading.endorsedShare?.toFixed(4) ?? "无样本"}`,
+			`用户认可口径（human · 新口径）：认可 ${human.endorsed} / 全部候选 ${human.total} = ${cn(human.endorsedShare)}`,
 		);
 		console.log(
-			"用户认可口径仍只由 human 来源决定；自审只说明「机制能在无真人的前提下跑通」。",
+			"自审只说明「机制能在无真人的前提下跑通」；用户认可那一格仍然等人本人回答，不会被自审抬起。",
 		);
 	}
-	if (after.judgement.endorsedShare !== null)
+	if (siteWide.endorsedShare !== null)
 		console.log(
-			after.judgement.endorsedShare >= 0.8
-				? "L1 判据（≥ 0.8）已满足，可据此收口 TF-0057 的地标验收。"
-				: "L1 判据（≥ 0.8）未满足：要改的是地标投影让核心真的进集合，不是阈值也不是分母。",
+			siteWide.endorsedShare >= 0.8
+				? "L1 判据（≥ 0.8 · 全站）已满足，可据此收口 TF-0057 的地标验收。"
+				: `L1 判据（≥ 0.8 · 全站）未满足：当前 ${cn(siteWide.endorsedShare)}。若未复核的 ${siteWide.total - siteWide.reviewed} 条里还有没问到的（抽样只覆盖了 ${after.sampledSessions} 个会话），那部分是缺样本而不是候选选错；改善候选本身的路径是种类门 / 文件级 / 相对选择，不是回头调阈值或加权。`,
 		);
 } else if (at("--template")) {
 	// verdict 刻意留空：模板若自带现状，照着点一遍就是一次静默的重新认可，而脚本手势
@@ -227,7 +420,7 @@ if (applyPath) {
 	// 但「哪条已经答过」得让人看得见：不知道现状，人要么把已认可的那条再点一遍，
 	// 要么漏掉真正待办的那条。所以 `current` 只作展示、回填时忽略。
 	// 只答待办那几条：加 `--pending-only`。
-	const source = argv.includes("--pending-only")
+	const source = has("--pending-only")
 		? rows.filter((row) => row.current === null)
 		: rows;
 	const template = source.map((row) => ({
@@ -245,26 +438,33 @@ if (applyPath) {
 	console.log("把 verdict 改成 endorse / reject 后，用 --apply 回填。");
 } else {
 	const out = at("--out");
-	const pending = rows.filter((row) => row.current === null);
-	// 默认列全部地标：脚本手势留下的结论也要被人自己的回答覆盖一次，
-	// 否则「现状」那一列的 endorse 是脚本的，不是人的。
-	const shown = argv.includes("--pending-only") ? pending : rows;
+	const pendingRows = rows.filter((row) => row.current === null);
+	const shown = has("--pending-only") ? pendingRows : rows;
 	const lines: string[] = [];
 	lines.push("# L1 地标复核队列（TF-0057 验收三的数据源）");
 	lines.push("");
-	lines.push(`- 黑板：\`${bb.paths.root}\` · 写者 ${judgement.byWriter} 个`);
 	lines.push(
-		`- 当前读数：认可 ${judgement.endorsed} / 全部地标 ${judgement.total} = ${judgement.endorsedShare?.toFixed(4) ?? "无样本"}；复核覆盖 ${judgement.reviewedCoverage?.toFixed(4) ?? "无样本"}`,
+		`- 黑板：\`${bb.paths.root}\` · 写者 ${report.writersTotal} 个（种类门排除 git/human ${report.gatedWriters} 个）`,
 	);
 	lines.push(
-		`- 待复核 ${pending.length} 条（下表 ${shown.length} 条）。判据：地标集合中 ≥ 80% 是用户认可的「这次干的活的核心」（positioning-v6 §11：地标集合 = DOI>10，本队列只列文件级）。`,
+		`- 分母口径：\`${denominator}\`${denominator === "session-top-k" ? `（每会话文件级 top-${topK}）` : "（DOI>10 的文件级集合）"} · 范围 ${scopeLabel}`,
 	);
 	lines.push(
-		`- 另有 ${starvedWriters} 个写者没有任何文件级地标（只有回退可见表，不是地标集合）：这一层没触发，属标定问题，不计入 L1 分母。`,
+		`- 当前读数（只含本次范围内的 ${report.sampledSessions} 个会话）：认可 ${judgement.endorsed} / 全部候选 ${judgement.total} = ${cn(judgement.endorsedShare)}；复核覆盖 ${cn(judgement.reviewedCoverage)}`,
 	);
-	if (containerLandmarks > 0)
+	lines.push(
+		`- 待复核 ${pendingRows.length} 条（下表 ${shown.length} 条）。判据：地标集合中 ≥ 80% 是用户认可的「这次干的活的核心」。`,
+	);
+	lines.push(
+		`- 结论连续性：已有复核 ${report.legacy.inSetHuman + report.legacy.human + report.legacy.inSetSteward + report.legacy.steward} 条（human ${report.legacy.inSetHuman + report.legacy.human} · steward ${report.legacy.inSetSteward + report.legacy.steward}）→ 落在新集合 ${report.legacy.inSetHuman + report.legacy.inSetSteward} 条 · 变 legacy ${report.legacy.human + report.legacy.steward} 条。legacy 只计数：**不删除、不改判**，它仍然是当时的真实回答。`,
+	);
+	if (report.thresholdFileLandmarks > 0 || denominator === "session-top-k")
 		lines.push(
-			`- 还有 ${containerLandmarks} 条目录地标（\`.\` / \`src\` 这类）被排除在分母外：它们确实过了 DOI>10，但没法被回答成「这次干的活的核心」；这个计数是标定信号，越低越好。`,
+			`- 标定信号：门后**阈值口径**下文件级地标 ${report.thresholdFileLandmarks} 条（本轮四现场均为 0——绝对阈值对分散触碰结构性不适用，这就是切分母的依据，此栏长期保留）；另有 ${report.starvedWriters} 个写者排不出任何文件级候选，其中 ${report.directoryOnlyWriters} 个只碰过目录。`,
+		);
+	if (!allSessions && report.sampledSessions < report.candidateSessions)
+		lines.push(
+			`- ⚠️ 本读数**只覆盖抽样的 ${report.sampledSessions} 个会话**，其余 ${report.candidateSessions - report.sampledSessions} 个候选会话未抽样、不计入本次读数。要全量读数用 \`--all-sessions\`（人评不了，只用于核对）。`,
 		);
 	lines.push("");
 	lines.push(
@@ -282,7 +482,7 @@ if (applyPath) {
 	lines.push("回填方式（任选）：");
 	lines.push("");
 	lines.push("```bash");
-	lines.push("# 逐条（CLI 同支手势，human 来源，只对当前投影有效）");
+	lines.push("# 逐条（CLI 同支手势，human 来源，只对候选集合有效）");
 	lines.push(
 		"bun packages/workbench/src/index.ts context review <handle> --writer <id> --endorse",
 	);
@@ -304,6 +504,6 @@ if (applyPath) {
 		process.stdout.write(text);
 	}
 	console.log(
-		`[landmark-queue] 地标 ${judgement.total} 条，待复核 ${pending.length} 条，无地标写者 ${starvedWriters} 个，当前认可率 ${judgement.endorsedShare?.toFixed(4) ?? "无样本"}`,
+		`[landmark-queue] 口径 ${denominator} · 范围 ${scopeLabel} · 候选 ${judgement.total} 条，待复核 ${pendingRows.length} 条，无文件候选写者 ${report.starvedWriters} 个，当前认可率 ${cn(judgement.endorsedShare)}`,
 	);
 }

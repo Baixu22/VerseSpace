@@ -48,6 +48,49 @@ const snapshotDir = at("--snapshot-dir") ?? join(REPO_ROOT, "docs");
 const seriesPath =
 	at("--series") ?? join(workspace, "runs/monitor-series.jsonl");
 
+/**
+ * 旧样本（TF-0159 之前）没有 `threshold` / `coverage` 两栏，`natural` 也缺口径标签。
+ * 历史读数不能改、也不能删；但渲染要跑得动，所以按当时的真实含义补齐：
+ * 那时的 natural 就是**旧口径**读数，相对覆盖当时根本没在采（按「无数据」处理）。
+ */
+const normalizeSample = (sample: MonitorSample): MonitorSample => {
+	// 类型声明是必填，历史样本里却没有这两栏（TF-0159 之前根本没采）——读盘时按
+	// 可选处理，并按其当时的真实含义补齐：那时的 natural 就是**旧口径**读数，
+	// 相对覆盖当时不在采样里。历史读数不改也不删，只是渲染要跑得动。
+	const raw = sample as unknown as {
+		natural: Partial<MonitorSample["natural"]>;
+		threshold?: MonitorSample["threshold"];
+		coverage?: MonitorSample["coverage"];
+	};
+	const natural = raw.natural;
+	return {
+		...sample,
+		natural: {
+			...sample.natural,
+			denominator: natural.denominator ?? "session-top-k",
+			topK: natural.topK ?? 3,
+			legacyReviews: natural.legacyReviews ?? 0,
+			gatedWriters: natural.gatedWriters ?? 0,
+		},
+		threshold: raw.threshold ?? {
+			denominator: "threshold",
+			total: natural.total ?? 0,
+			reviewed: natural.reviewed ?? 0,
+			endorsed: natural.endorsed ?? 0,
+			endorsedShare: natural.endorsedShare ?? null,
+		},
+		coverage: raw.coverage ?? {
+			k: 3,
+			sessions: 0,
+			withSet: 0,
+			items: 0,
+			distinctHandles: 0,
+			share: null,
+			gatedWriters: 0,
+		},
+	};
+};
+
 const readSeries = async (): Promise<MonitorSample[]> => {
 	const text = await readFile(seriesPath, "utf8").catch(() => "");
 	return text
@@ -57,7 +100,8 @@ const readSeries = async (): Promise<MonitorSample[]> => {
 		.filter(
 			(sample) =>
 				sample.workspace === workspace && sample.evidenceKind === evidenceKind,
-		);
+		)
+		.map(normalizeSample);
 };
 
 const changed = (before: MonitorSample, after: MonitorSample): boolean =>

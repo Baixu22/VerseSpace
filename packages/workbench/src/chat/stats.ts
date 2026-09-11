@@ -1,6 +1,9 @@
 import type { Blackboard } from "../blackboard";
 import { foldLandmarkReviews } from "../interactions/review";
-import { currentLandmarkAcceptance } from "../interactions/review-stats";
+import {
+	currentLandmarkAcceptance,
+	relativeLandmarkCoverage,
+} from "../interactions/review-stats";
 import { foldNoticeOutcomes } from "../runtime/notice-outcome";
 import {
 	foldPremisePasses,
@@ -100,6 +103,13 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		(thread) => thread.resumeNote !== undefined,
 	).length;
 	const observation = observationWindow(threads, messagesByThread, events);
+	// L1 判定路径共用这一份事件序列与写者投影：会话时钟要按写者取，种类门要按
+	// writer.kind 取，两者交给同一次折叠，避免三条读数各折各的、口径悄悄分家。
+	const landmarkEvents = orderedEvents(events);
+	const writerRefs = writers.map((writer) => ({
+		id: writer.id,
+		kind: writer.kind as string,
+	}));
 	const firstActions = restoreFirstActions(events);
 	const alternation = siblingAlternation(threads, events, parents);
 	const switches = events.filter(
@@ -179,18 +189,30 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		noticeOutcomes: foldNoticeOutcomes(events),
 		landmarkReviews: {
 			...foldLandmarkReviews(events),
+			// L1 的主读数走**新口径**（每会话文件级 top-K，TF-0159）：门后阈值口径在
+			// 四个真实现场全部归零，分母空了判据不是 0 分而是不可计算。这一格是 human
+			// 口径，只有真人回答才会动；steward 自审另占一格，绝不并入。
 			current: currentLandmarkAcceptance(
-				orderedEvents(events),
-				writers.map((writer) => writer.id),
+				landmarkEvents,
+				writerRefs,
+				Date.now(),
+				"human",
+				{ denominator: "session-top-k" },
 			),
+			// 旧口径读数（默认 threshold）：口径换了读数会跳，这里并报一个周期，
+			// 「变化」才能归因到口径而不是产品。一个周期后与 §11 的旧定义一起撤。
+			threshold: currentLandmarkAcceptance(landmarkEvents, writerRefs),
 			// 代理自审口径：真实数据，但**不是**用户认可。单独一栏，绝不并入
 			// current——否则没有真人在场时，「用户认可率」会被自审洗成好看的数字。
 			steward: currentLandmarkAcceptance(
-				orderedEvents(events),
-				writers.map((writer) => writer.id),
+				landmarkEvents,
+				writerRefs,
 				Date.now(),
 				"steward",
+				{ denominator: "session-top-k" },
 			),
+			// 相对选择的可计量性：不切口径也要能看见「切了会不会有集合」。
+			coverage: relativeLandmarkCoverage(landmarkEvents, writerRefs),
 		},
 		dataQuality: {
 			insufficientHistory:

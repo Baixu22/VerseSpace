@@ -1,4 +1,7 @@
-import type { LandmarkAcceptance } from "../interactions/review-stats";
+import type {
+	LandmarkAcceptance,
+	RelativeLandmarkCoverage,
+} from "../interactions/review-stats";
 import type { NoticeOutcomeTotals } from "../runtime/notice-outcome";
 import type { PremisePassTotals } from "../runtime/premise-counts";
 import type { SealTotals } from "../runtime/seal-counts";
@@ -87,13 +90,24 @@ export interface ChatStats {
 		endorsed: number;
 		rejected: number;
 		lastAt: string | null;
-		/** Full current sets, separate from the raw feedback-event counts above. */
+		/**
+		 * L1 主读数（TF-0159 新口径）：每会话文件级 top-K，叠加种类门。
+		 * 判据是「集合里 ≥80% 是用户认可的核心」，所以分母是所有候选条目，
+		 * `reviewedCoverage` 单列——只复核两条就说 80% 是在骗自己。
+		 */
 		current: LandmarkAcceptance;
+		/**
+		 * 旧口径读数（阈值口径，历史可比）：双读数期并报一个周期，口径切换带来的
+		 * 跳变因此可归因。字段自带 `denominator`，读数不用靠字段名猜尺子。
+		 */
+		threshold: LandmarkAcceptance;
 		/**
 		 * 代理自审口径（读法同 current，但只收 steward 来源）。**不是用户认可**：
 		 * 没有真人时它让这条链路仍然可读、可监控，human 那格照旧空着。
 		 */
 		steward: LandmarkAcceptance;
+		/** 相对选择的可计量性：有文件级触碰的会话里，多少能排出非空的 top-K。 */
+		coverage: RelativeLandmarkCoverage;
 	};
 	dataQuality: {
 		insufficientHistory: boolean;

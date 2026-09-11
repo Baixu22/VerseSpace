@@ -46,9 +46,12 @@ export default defineConfig(async () => ({
 			"react/jsx-runtime",
 			"react/jsx-dev-runtime",
 			"@tanstack/react-query",
-			// Pre-bundle lucide-react so Vite does not have to crawl the
+			// Pre-bundle the icon libraries so Vite does not have to crawl their
 			// per-icon ESM modules on every cold dev start. Production builds
 			// already tree-shake to only the icons we actually use.
+			// reicon-react is the primary set; lucide-react only backs the
+			// compatibility gaps in src/components/icon/compat.ts.
+			"reicon-react",
 			"lucide-react",
 		],
 		// Lexical's package graph produces many transient dev-only chunks.

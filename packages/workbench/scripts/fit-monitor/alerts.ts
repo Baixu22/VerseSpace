@@ -268,22 +268,31 @@ export function evaluateAlerts(
 			severity: "info",
 			title: "L1 认可率在等自然使用（不可由脚本生成）",
 			detail:
-				"脚本与模型安排的手势只会把读数收敛到脚本常数，不构成用户认可；把待复核地标排成队列，人过了就是自然证据。",
-			evidence: `当前 ${fmt(current.natural.endorsedShare)}（认可 ${current.natural.endorsed} / 全部 ${current.natural.total}），待复核 ${current.natural.pending}`,
+				"脚本与模型安排的手势只会把读数收敛到脚本常数，不构成用户认可；把待复核条目排成队列，人过了就是自然证据。",
+			evidence: `口径 ${current.natural.denominator}：当前 ${fmt(current.natural.endorsedShare)}（认可 ${current.natural.endorsed} / 候选 ${current.natural.total}），待复核 ${current.natural.pending}；旧口径并报 ${fmt(current.threshold.endorsedShare)}（${current.threshold.endorsed}/${current.threshold.total}），legacy ${current.natural.legacyReviews} 条`,
 		});
 
 	// 地标集合为空不是「还没轮到」，是标定本身没打中：2026-09-11 跨四个真实现场
 	// 实测，三个现场在出厂参数下一条地标都出不来（把 floor 降到 4 仍然是 0），
 	// 第四个现场 5 条里 2 条是目录。分母为空的现场，L1 无从计算，判据也就无从
 	// 被满足——这条必须显式报出来，不能让它静静地躲在「等自然使用」后面。
-	if (current.natural.total === 0 && current.writers > 0)
+	//
+	// TF-0159 之后**分母语义换了**：要盯的是**相对口径**的空集。相对口径只在
+	// 「一个会话一个文件都没碰」时才空，所以它不再是阈值标定问题，而是采集问题；
+	// 旧阈值口径的空集在四现场是常态（100% 的阈值地标来自 git/human 记录型写者），
+	// 继续按它告警会变成一条永远响的假警报——这正是「分母变了，告警分母也要跟着变」。
+	if (
+		current.writers > 0 &&
+		current.coverage.sessions === 0 &&
+		current.writers - current.coverage.gatedWriters > 0
+	)
 		push({
 			id: "landmark-set-empty",
 			severity: "warn",
-			title: "地标集合为空：L1 在该现场无法计算",
+			title: "候选集合为空：没有任何会话碰过文件，L1 在该现场无法计算",
 			detail:
-				"零地标说明没有写者在衰减窗口内把单个 handle 推过地标线；这是参数标定问题（不是样本不够），先按 TF-0156 调粒度与选择规则，再谈认可率。",
-			evidence: `写者 ${current.writers} 个，地标集合 0 条，待复核 0 条`,
+				"相对口径（每会话文件级 top-K）只在「一个文件都没碰」时才空，所以这不是阈值调参问题——先看采集层：watcher / 终端钩子有没有把文件级交互上报进来。旧阈值口径的空集**不**触发这条：那是口径问题，已由种类门与分母切换处理。",
+			evidence: `写者 ${current.writers} 个（种类门排除 git/human ${current.coverage.gatedWriters} 个），有文件级触碰的会话 0 个，候选集合 0 条（旧阈值口径 ${current.threshold.total} 条）`,
 		});
 
 	if (current.days < 14)

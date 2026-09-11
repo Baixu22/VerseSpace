@@ -56,6 +56,11 @@ test-results-*/
 # Local browser/debug evidence and nested live-run copies; curated root evidence
 # is added explicitly when it belongs in a stage-D commit.
 /.agent-contexts/*-e2e-*/
+# Live-model E2E evidence sites (2026-09-11): the .workbench blackboard, temp
+# git repo and agent transcripts inside are local machine state — they are for
+# human review, not for version control. The curated readings from a site live
+# in docs/ reports and the task-forest node evidence, not in the raw dump.
+packages/workbench/.evidence-sites/
 # session scratch dirs (proposal drafts + evidence builders already landed in
 # task-forest/proposals/ and docs/); kept local only
 /.agent-contexts/empty-retry/

@@ -1,6 +1,7 @@
 import type { Blackboard } from "../blackboard";
 import type { WorkbenchEvent } from "../types/event";
 import { interestFromEvents } from "./context";
+import { isRecordingWriter, landmarkCandidates } from "./landmark-set";
 import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
 
 export const LANDMARK_REVIEW_TYPE = "landmark.reviewed" as const;
@@ -55,19 +56,34 @@ export async function reviewLandmark(
 	// 2026-09-11 彩排实测：这里原先用 `collectInterest`（默认「现在」时钟 + 投影表，
 	// 含目录与回退项），而队列与 L1 的分母是「会话时钟下的文件级地标」——两段口径
 	// 一分家，界面上三条待办全部被拒（"不在当前地标集合中"），复核通道整体失效。
+	// 所以现在不在这里重写规则：候选集合统一由 `landmarkCandidates` 给，与本函数
+	// 之外的所有读者共用一份实现。
+	const session = await bb.sessions.get(writer);
+	if (!session) throw new Error(`写者未注册：${writer}`);
+	// 门在尺子前面：git 监视 / human 编辑器记录的是「文件被动过」，不是「这段会话
+	// 干的是什么」，它们的条目本就不是 L1 候选，给它点赞只是把噪声洗成证据。
+	if (isRecordingWriter(session))
+		throw new Error(
+			`记录型写者（${session.kind}）不进 L1 候选，不能复核：${writer}`,
+		);
 	const records = await bb.events.query({
 		source: INTERACTIONS_SOURCE,
 		type: INTERACTIONS_TYPE,
 	});
-	const reading = interestFromEvents(records, writer, Date.now(), {
+	const now = Date.now();
+	const reading = interestFromEvents(records, writer, now, {
 		clock: "session",
 	});
-	// 用会话时钟下的**地标集合 ∪ 投影表**：集合是真地标（DOI>10，文件与目录都在内），
-	// 投影表是「系统当下展示给人看的东西」。两者都算「系统展示过的内容」，而不是
-	// 「给没展示的东西点赞」；唯一必须对齐的是**参考时刻**与读取侧一致（都走会话
-	// 时钟），否则界面列得出来、回填却被拒。
+	// 接受集合 = 阈值口径候选 ∪ 相对口径候选 ∪ 投影表。
+	// 前两条是双读数期的两把尺子（账本并报一个周期），两条都得能回填，否则切换
+	// 口径的那一刻通道会断；投影表是「系统当下展示给人看的东西」，给没展示过的
+	// 东西点赞是噪音而不是复核。三者的**参考时刻必须一致**（都走会话时钟）。
 	const acceptable = new Set([
-		...reading.landmarkHandles,
+		...landmarkCandidates(records, writer, { now }),
+		...landmarkCandidates(records, writer, {
+			now,
+			denominator: "session-top-k",
+		}),
 		...reading.landmarks.map((row) => row.handle),
 	]);
 	if (!acceptable.has(handle)) {

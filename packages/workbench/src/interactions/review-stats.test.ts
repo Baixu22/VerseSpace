@@ -49,6 +49,12 @@ async function appendEdits(
 	}
 }
 
+/**
+ * 写者投影：L1 的种类门按 `kind` 判定。线程夹具一律是 agent——门要清的正是
+ * git 监视与 human 编辑器这两类「记录型」写者。
+ */
+const agentRef = (id: string) => ({ id, kind: "agent" });
+
 test("TF-0057：代理自审（steward）是真实数据，但绝不能抬升「用户认可」口径", async () => {
 	const ws = await makeTempWorkbench();
 	try {
@@ -71,10 +77,12 @@ test("TF-0057：代理自审（steward）是真实数据，但绝不能抬升「
 			"自审：需求就是改这个文件",
 			{ source: "steward" },
 		);
-		const human = currentLandmarkAcceptance(await rows(), [worker.id]);
+		const human = currentLandmarkAcceptance(await rows(), [
+			agentRef(worker.id),
+		]);
 		const steward = currentLandmarkAcceptance(
 			await rows(),
-			[worker.id],
+			[agentRef(worker.id)],
 			Date.now(),
 			"steward",
 		);
@@ -94,10 +102,12 @@ test("TF-0057：代理自审（steward）是真实数据，但绝不能抬升「
 			"reject",
 			"我当时真正改的是别处",
 		);
-		const human2 = currentLandmarkAcceptance(await rows(), [worker.id]);
+		const human2 = currentLandmarkAcceptance(await rows(), [
+			agentRef(worker.id),
+		]);
 		const steward2 = currentLandmarkAcceptance(
 			await rows(),
-			[worker.id],
+			[agentRef(worker.id)],
 			Date.now(),
 			"steward",
 		);
@@ -159,7 +169,11 @@ test("TF-0156 验收三：绝对阈值空集时，相对选择的 top-K 仍然�
 			"c.ts",
 			"d.ts",
 		]);
-		const coverage = relativeLandmarkCoverage(rows, [worker.id, idle.id], 3);
+		const coverage = relativeLandmarkCoverage(
+			rows,
+			[agentRef(worker.id), agentRef(idle.id)],
+			3,
+		);
 		// 分母是「有文件级触碰的会话」：没碰过文件的会话不算进去，不然覆盖率会被
 		// 拉高成假象
 		expect(coverage).toMatchObject({
@@ -175,7 +189,7 @@ test("TF-0156 验收三：绝对阈值空集时，相对选择的 top-K 仍然�
 	}
 });
 
-test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认可与同名条目不串台", async () => {
+test("L1 分母是地标集合（两把尺子并报），不是回退显示表；重复认可与同名条目不串台", async () => {
 	const ws = await makeTempWorkbench();
 	try {
 		const chat = new ChatThreads(ws.bb);
@@ -203,9 +217,6 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 		await reviewLandmark(ws.bb, b.id, "a.ts", "reject");
 		const stats = await collectChatStats(ws.bb);
 		expect(stats.landmarkReviews.endorsed).toBe(3);
-		const current = stats.landmarkReviews.current;
-		const writerA = current.byWriter.find((row) => row.writer === a.id)!;
-		const writerB = current.byWriter.find((row) => row.writer === b.id)!;
 		// 分母来自 DOI>10 的 handle：被编辑 6 次的 a.ts 进集合，只被触碰一次的
 		// b.ts..e.ts / z.ts 不进——「被显示过」不等于「是地标」。
 		const interestA = await collectInterest(ws.bb, a.id);
@@ -220,23 +231,59 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 		expect(handlesA).toContain("src");
 		expect(interestA.fileLandmarkHandles).not.toContain("src");
 		expect(interestA.fileLandmarkHandles).toContain("a.ts");
-		expect(writerA.total).toBe(interestA.fileLandmarkHandles.length);
-		expect(writerA.total).toBeLessThan(handlesA.length);
-		expect(writerA).toMatchObject({
+
+		// 旧口径（阈值 DOI>10）的契约照旧成立，双读数期它逐条报出：口径切换会让
+		// 认可率跳，但跳的是分母，不是人的回答——所以旧读数必须同时可见。
+		const threshold = stats.landmarkReviews.threshold;
+		expect(threshold.denominator).toBe("threshold");
+		const thresholdA = threshold.byWriter.find((row) => row.writer === a.id)!;
+		const thresholdB = threshold.byWriter.find((row) => row.writer === b.id)!;
+		expect(thresholdA.total).toBe(interestA.fileLandmarkHandles.length);
+		expect(thresholdA.total).toBeLessThan(handlesA.length);
+		expect(thresholdA).toMatchObject({
 			reviewed: 1,
 			endorsed: 1,
 			rejected: 0,
-			endorsedShare: 1 / writerA.total,
+			endorsedShare: 1,
 		});
-		expect(writerB).toMatchObject({
+		expect(thresholdB).toMatchObject({
 			reviewed: 1,
 			endorsed: 0,
 			rejected: 1,
 			endorsedShare: 0,
 		});
-		expect(current.total).toBe(writerA.total + writerB.total);
-		expect(current.endorsedShare).toBe(1 / current.total);
-		expect(current.reviewedCoverage).toBe(2 / current.total);
+		expect(threshold.total).toBe(thresholdA.total + thresholdB.total);
+		expect(threshold.endorsedShare).toBe(1 / threshold.total);
+
+		// 新口径（TF-0159：每会话文件级 top-3）：同一个现场，分母从 2 条涨到 5 条
+		// （A 的 a.ts + b.ts/c.ts、B 的 a.ts + z.ts）。认可仍是那 1 条，所以认可率
+		// 会掉——这一跳是尺子造成的，账本并报两条就是为了让人看得出这件事。
+		const current = stats.landmarkReviews.current;
+		expect(current.denominator).toBe("session-top-k");
+		expect(current.topK).toBe(3);
+		expect(current.gatedWriters).toBe(0);
+		const currentA = current.byWriter.find((row) => row.writer === a.id)!;
+		const currentB = current.byWriter.find((row) => row.writer === b.id)!;
+		expect(currentA.total).toBe(3);
+		expect(currentB.total).toBe(2);
+		expect(current.total).toBe(5);
+		expect({ endorsed: current.endorsed, reviewed: current.reviewed }).toEqual({
+			endorsed: 1,
+			reviewed: 2,
+		});
+		expect(current.endorsedShare).toBe(1 / 5);
+		expect(current.reviewedCoverage).toBe(2 / 5);
+		// 三条结论都落在新集合里：没有 legacy，没有数据丢失。
+		expect(current.legacyReviews).toBe(0);
+		// 相对口径的覆盖：两个写者都有文件级触碰，都排得出非空 top-K。
+		expect(stats.landmarkReviews.coverage).toMatchObject({
+			k: 3,
+			sessions: 2,
+			withSet: 2,
+			items: 5,
+			distinctHandles: 4,
+			gatedWriters: 0,
+		});
 		const ctx = {
 			stats,
 			events: await ws.bb.events.all(),
@@ -249,17 +296,17 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 			{ id: "TF-0154", title: "地标认可", kind: "task", status: "done" },
 		];
 		const row = buildRows(scope, ctx, "natural")[0]!;
-		expect(row.value).toBe(1 / current.total);
-		expect(row.samples).toBe(2);
-		// 两个写者各一个文件级地标，认可 1 / 共 2 = 0.5，正好压在 partial 边界
-		// （≥0.8 aligned / ≥0.5 partial / 否则 weak）。
-		expect(row.fit).toBe("partial");
+		// 账本行读的是**新口径**：判据要能被「人回答门后 top-3」填上，就必须跟分母
+		// 一起换。留在阈值口径上，门后分母为 0 的现场会永远 unknown——人答了也不动。
+		expect(row.value).toBe(current.endorsedShare);
+		expect(row.samples).toBe(current.reviewed);
+		expect(row.fit).toBe("weak");
 		// The same reviews under a scripted or model-run source measure the
 		// script, not a user: value stays visible, fit does not move.
 		for (const kind of ["unknown", "scripted", "live-model"] as const) {
 			const gated = buildRows(scope, ctx, kind)[0]!;
-			expect(gated.value).toBe(1 / current.total);
-			expect(gated.samples).toBe(2);
+			expect(gated.value).toBe(current.endorsedShare);
+			expect(gated.samples).toBe(current.reviewed);
 			expect(gated.fit).toBe("unknown");
 			expect(gated.why).toContain("不构成用户认可");
 		}
@@ -272,7 +319,7 @@ test("L1 分母是地标集合（DOI>10），不是回退显示表；重复认�
 	}
 });
 
-test("没有地标就没有 L1 样本：回退显示表不是地标集合，历史点赞也不救场", async () => {
+test("回退显示表不是候选集合：阈值口径空集仍不可计算，新口径只收真触碰过的文件", async () => {
 	const ws = await makeTempWorkbench();
 	try {
 		const chat = new ChatThreads(ws.bb);
@@ -289,7 +336,7 @@ test("没有地标就没有 L1 样本：回退显示表不是地标集合，历�
 			type: "landmark.reviewed",
 			payload: { writer: thread.id, handle: "old.ts", verdict: "endorse" },
 		});
-		// 投影仍非空（列表永不为空），但那是回退可见表，不是地标集合。
+		// 投影仍非空（列表永不为空），但那是回退可见表，不是候选集合。
 		expect(
 			(await collectInterest(ws.bb, thread.id)).landmarks.length,
 		).toBeGreaterThan(0);
@@ -297,11 +344,25 @@ test("没有地标就没有 L1 样本：回退显示表不是地标集合，历�
 			(await collectInterest(ws.bb, thread.id)).landmarkHandles,
 		).toHaveLength(0);
 		const stats = await collectChatStats(ws.bb);
-		expect(stats.landmarkReviews.current).toMatchObject({
+		// 旧口径：一次触碰离地标线（10 分）差得远，分母为 0 → 判据不可计算，不是 0 分。
+		expect(stats.landmarkReviews.threshold).toMatchObject({
+			denominator: "threshold",
 			total: 0,
 			reviewed: 0,
 			endorsed: 0,
 			endorsedShare: null,
+		});
+		// 新口径：a.ts 真的被碰过一次，于是进 top-K——这是「尺子换了」而不是
+		// 「历史点赞被凑进分母」。历史那条 old.ts 的结论落在集合外，只记 legacy，
+		// 不删也不改判（它对旧口径成立，对新口径不成立，两件事都要留着）。
+		expect(stats.landmarkReviews.current).toMatchObject({
+			denominator: "session-top-k",
+			total: 1,
+			reviewed: 0,
+			endorsed: 0,
+			reviewedCoverage: 0,
+			legacyReviews: 1,
+			gatedWriters: 0,
 		});
 		const row = buildRows(
 			[{ id: "TF-0154", title: "地标认可", kind: "task", status: "done" }],
@@ -312,6 +373,7 @@ test("没有地标就没有 L1 样本：回退显示表不是地标集合，历�
 			},
 			"natural",
 		)[0]!;
+		// 候选非空但一条都没被复核 → 仍然没有样本，fit 停在 unknown。
 		expect(row.fit).toBe("unknown");
 		expect(row.samples).toBe(0);
 	} finally {

@@ -284,9 +284,9 @@ export const PROBES: Record<string, Probe> = {
 	"TF-0154": {
 		kind: "component",
 		metric:
-			"L1 认可率：已认可地标 / 全部当前地标，按写者隔离并取最新复核；≥0.8 为 aligned",
+			"L1 认可率（新口径 session-top-k）：已认可候选 / 全部当前候选，按写者隔离并取最新复核；≥0.8 为 aligned",
 		source:
-			"stats.landmarkReviews.current.endorsedShare（完整集合；reviewedCoverage 单列）",
+			"stats.landmarkReviews.current.endorsedShare（每会话文件级 top-K + 种类门；reviewedCoverage 与 legacyReviews 单列；旧口径 .threshold 并报一个周期）",
 		requires: "natural",
 		read: (ctx) => {
 			const current = ctx.stats.landmarkReviews.current;
@@ -294,6 +294,24 @@ export const PROBES: Record<string, Probe> = {
 				value: current.endorsedShare,
 				samples: current.reviewed,
 			};
+		},
+		judge: (value) =>
+			value >= 0.8 ? "aligned" : value >= 0.5 ? "partial" : "weak",
+	},
+	/**
+	 * TF-0159 是**口径变更**本身，所以它的读数不是认可率而是「这把尺子量不量得出东西」：
+	 * 有文件级触碰的会话里，多少能排出非空的 top-K。旧口径在四个现场全部归零——这条
+	 * 读数是「为什么换尺子」的常驻证据，不切口径也不会消失。
+	 */
+	"TF-0159": {
+		kind: "component",
+		metric:
+			"相对选择的可计量性：有文件级触碰的会话中 top-K 非空的比例（旧阈值口径在四现场为 0 → 判据不可计算）",
+		source:
+			"stats.landmarkReviews.coverage.share（withSet / sessions）；四现场实测门后 83/83、30/30、13/13、10/10",
+		read: (ctx) => {
+			const coverage = ctx.stats.landmarkReviews.coverage;
+			return { value: coverage.share, samples: coverage.sessions };
 		},
 		judge: (value) =>
 			value >= 0.8 ? "aligned" : value >= 0.5 ? "partial" : "weak",

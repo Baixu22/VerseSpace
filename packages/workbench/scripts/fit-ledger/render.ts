@@ -17,7 +17,12 @@ export interface Report {
 	observation: ChatStats["observation"];
 	dataQuality: ChatStats["dataQuality"];
 	restoreToMessage: ChatStats["lifecycle"]["restoreToMessage"];
-	landmarkAcceptance: ChatStats["landmarkReviews"]["current"];
+	/**
+	 * L1 的整个读数块：`current`（新口径）与 `threshold`（旧口径，历史可比）
+	 * 必须并报一个周期——口径切换最容易被误读成「指标突然变好/变差」，
+	 * 两条并排，变化才归因得到口径而不是产品。
+	 */
+	landmarkReviews: ChatStats["landmarkReviews"];
 	/** TF-0141 的 t0 判据实测：有真实线程，且注册过写者。 */
 	t0: { started: boolean; threads: number; writers: number };
 	/** TF-0141 样本窗口（2026-09-06 重设计）：裁决看样本量，不看日历。 */
@@ -161,17 +166,30 @@ export function renderMarkdown(report: Report): string {
 		}
 		lines.push("");
 	}
-	const landmarks = report.landmarkAcceptance;
+	const {
+		current: landmarks,
+		threshold,
+		steward,
+		coverage,
+	} = report.landmarkReviews;
+	const pct = (value: number | null): string =>
+		value === null
+			? "无样本（分母为空 → 不可计算）"
+			: `${(value * 100).toFixed(1)}%`;
 	lines.push(
 		"## 地标集合认可（L1）",
 		"",
-		`当前地标 ${landmarks.total} 个，已复核 ${landmarks.reviewed} 个，认可 ${landmarks.endorsed} 个，不认可 ${landmarks.rejected} 个。`,
+		`- **新口径 \`${landmarks.denominator}\`**（每会话文件级 top-${landmarks.topK}，叠加种类门）：当前候选 ${landmarks.total} 个，已复核 ${landmarks.reviewed} 个，认可 ${landmarks.endorsed} 个，不认可 ${landmarks.rejected} 个。`,
+		`  - 完整集合认可率 ${pct(landmarks.endorsedShare)}；复核覆盖率 ${pct(landmarks.reviewedCoverage)}。`,
+		`- **旧口径 \`${threshold.denominator}\`**（DOI>10 的文件级集合，历史可比）：当前地标 ${threshold.total} 个，已复核 ${threshold.reviewed} 个，认可 ${threshold.endorsed} 个 → 认可率 ${pct(threshold.endorsedShare)}，复核覆盖 ${pct(threshold.reviewedCoverage)}。`,
+		`- 相对选择的可计量性：有文件级触碰的会话 ${coverage.sessions} 个，其中排得出非空 top-${coverage.k} 的 ${coverage.withSet} 个（覆盖 ${pct(coverage.share)}，条目 ${coverage.items} 条，去重 handle ${coverage.distinctHandles} 个）。`,
+		`- 种类门排除 git/human 写者 ${landmarks.gatedWriters} 个（记录的是「文件被动过」，不是「这次干的活是什么」）。`,
+		`- 代理自审口径（真实数据，但**不构成用户认可**）：候选 ${steward.total} 个，已复核 ${steward.reviewed} 个，认可率 ${pct(steward.endorsedShare)}。`,
+		`- 结论连续性：落在当前集合之外的旧结论 ${landmarks.legacyReviews} 条记为 legacy——**保留、不改判**；口径漂移不是数据丢失。`,
 		"",
-		landmarks.reviewed === 0
-			? "**认可率 unknown**：暂无当前集合的复核样本。"
-			: `完整集合认可率 ${((landmarks.endorsedShare ?? 0) * 100).toFixed(1)}%；复核覆盖率 ${((landmarks.reviewedCoverage ?? 0) * 100).toFixed(1)}%。`,
+		"**为什么有两把尺子**：旧口径要求「同一条 handle 在衰减窗口内被推过 10 分」，而真实形状是很多文件各被碰一两次（权重 1–2），跨四个现场实测门后有**三个直接是空集**——分母空了，判据不是 0 分而是**不可计算**。新口径是**换定义**，不是修 bug；双读数期两条并排，满一个周期后再撤旧的那条。",
 		"",
-		"来源：`stats.landmarkReviews.current`。分母包含未复核地标；每个写者的每个条目只取最新结论，重复反馈不累加成认可率。",
+		"来源：`stats.landmarkReviews.current`（新）/ `.threshold`（旧）/ `.coverage`。分母包含未复核条目；每个写者的每个条目只取最新结论，重复反馈不累加成认可率。",
 		"",
 	);
 	if (report.evidenceKind !== "natural" && landmarks.reviewed > 0) {

@@ -211,6 +211,8 @@ export async function buildSample(options: {
 		histogram,
 		unknown,
 		natural: {
+			denominator: landmark.denominator,
+			topK: landmark.topK,
 			total: landmark.total,
 			reviewed: landmark.reviewed,
 			endorsed: landmark.endorsed,
@@ -218,6 +220,26 @@ export async function buildSample(options: {
 			endorsedShare: landmark.endorsedShare,
 			reviewedCoverage: landmark.reviewedCoverage,
 			pending: Math.max(0, landmark.total - landmark.reviewed),
+			legacyReviews: landmark.legacyReviews,
+			gatedWriters: landmark.gatedWriters,
+		},
+		// 旧口径（DOI>10）：双读数期并报一个周期。它不是「另一条产品读数」，而是
+		// 同一批人回答在另一把尺子下的高度——两条并排，口径切换才不会被误读成涨跌。
+		threshold: {
+			denominator: stats.landmarkReviews.threshold.denominator,
+			total: stats.landmarkReviews.threshold.total,
+			reviewed: stats.landmarkReviews.threshold.reviewed,
+			endorsed: stats.landmarkReviews.threshold.endorsed,
+			endorsedShare: stats.landmarkReviews.threshold.endorsedShare,
+		},
+		coverage: {
+			k: stats.landmarkReviews.coverage.k,
+			sessions: stats.landmarkReviews.coverage.sessions,
+			withSet: stats.landmarkReviews.coverage.withSet,
+			items: stats.landmarkReviews.coverage.items,
+			distinctHandles: stats.landmarkReviews.coverage.distinctHandles,
+			share: stats.landmarkReviews.coverage.share,
+			gatedWriters: stats.landmarkReviews.coverage.gatedWriters,
 		},
 		// 代理自审读数：没有真人时这条链路仍然可监控；它低 = 地标投影选错了东西，
 		// 不是「人没来」。与 natural（human 口径）分开存，读数不会互相污染。

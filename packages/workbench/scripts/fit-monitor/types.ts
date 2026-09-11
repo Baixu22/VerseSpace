@@ -6,6 +6,7 @@
  * 告警是两次快照之间的差分判断，两者都不写黑板——监控是观察者，不是写者。
  */
 
+import type { LandmarkDenominator } from "../../src/interactions/landmark-set";
 import type { MoatNumber, SampleWindow } from "../fit-ledger/ledger";
 import type { EvidenceKind, Fit } from "../fit-ledger/metrics";
 import type { VerdictStatus } from "../fit-ledger/verdicts";
@@ -39,6 +40,9 @@ export interface MonitorSample {
 		ids: string[];
 	};
 	natural: {
+		/** 这份读数用的分母口径（TF-0159 之后是 `session-top-k`）。 */
+		denominator: LandmarkDenominator;
+		topK: number;
 		total: number;
 		reviewed: number;
 		endorsed: number;
@@ -46,6 +50,35 @@ export interface MonitorSample {
 		endorsedShare: number | null;
 		reviewedCoverage: number | null;
 		pending: number;
+		/** 落在当前集合之外的旧结论条数（保留、不改判，口径漂移不是数据丢失）。 */
+		legacyReviews: number;
+		/** 被种类门排除的写者数（git/human）——它们不进分母也不进分子。 */
+		gatedWriters: number;
+	};
+	/**
+	 * 旧口径读数（DOI>10 的文件级集合）：双读数期并报一个周期。**分母为空的现场
+	 * 它不是「0 分」而是「不可计算」**，所以判据/告警都改用 natural 那条新口径，
+	 * 这一栏留着只是为了让口径切换带来的跳变可归因。
+	 */
+	threshold: {
+		denominator: LandmarkDenominator;
+		total: number;
+		reviewed: number;
+		endorsed: number;
+		endorsedShare: number | null;
+	};
+	/**
+	 * 相对选择的可计量性：有文件级触碰的会话中 top-K 非空的比例。分母为空的含义
+	 * 因此从「还没轮到」变成「标定没打中」——`landmark-set-empty` 这条告警随之改判。
+	 */
+	coverage: {
+		k: number;
+		sessions: number;
+		withSet: number;
+		items: number;
+		distinctHandles: number;
+		share: number | null;
+		gatedWriters: number;
 	};
 	/** 代理自审口径（不构成用户认可）：低 = 地标投影选错，不是「人没来」。 */
 	steward: {

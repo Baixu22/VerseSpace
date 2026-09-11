@@ -1,5 +1,12 @@
 # 地标投影修复提案（TF-0161）
 
+> **状态（2026-09-11）：候选 D·种类门已落库**，与 TF-0159 的分母切换一起做（顺序纪律
+> 先门后尺）。落点在 `packages/workbench/src/interactions/landmark-set.ts`：门与尺子
+> 是同一份实现，`reviewLandmark`（回填校验）与 `currentLandmarkAcceptance`（L1 读数）
+> 共用它，回归门见 `src/interactions/landmark-set.test.ts`。**候选 B 保留为默认关闭的
+> `repeatCap` 诊断项，不作为修复**（见 §2b；另见 `positioning-v6.md` §11 的负结论清单）。
+> 本文件以下内容是提案与实测的原始记录，**不删不改**——它记录了为什么 B/C 被否掉。
+>
 > 触发证据（2026-09-12）：自审在唯一有地标的现场把 3 条**全部驳回**；另外三个现场
 > **一条文件级地标都出不来**（阈值口径），自审无从累积。
 

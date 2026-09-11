@@ -80,21 +80,33 @@ function sessionClock(events: InteractionEvent[], fallback: number): number {
  *
  * 排序用**会话时钟**下的 DOI：会话内事件相隔秒级，衰减几乎均匀，所以次序反映的是
  * 触碰权重（编辑 vs 选中）而不是「谁离现在近」。同分按 handle 字典序，保证可复现。
+ *
+ * 分两步导出：只取 handle 的 `sessionFileTopK`，与带分数的 `sessionFileScores`
+ * （复核队列的抽样依据「会话 DOI 总分降序」要用分数，不能拿 handle 反推）。
  */
-export function sessionFileTopK(
+export function sessionFileScores(
 	records: WorkbenchEvent[],
 	writer: string,
-	k: number,
 	now = Date.now(),
-): string[] {
+): Array<{ handle: string; doi: number }> {
 	const scoped = writerInteractionEvents(records, writer);
 	const events = scoped.map((event) => event.payload as InteractionEvent);
 	const result = computeDoi(events, sessionClock(events, now));
 	return [...result.scores.entries()]
 		.filter(([, score]) => score.contentType === "file")
 		.sort((a, b) => b[1].doi - a[1].doi || a[0].localeCompare(b[0]))
+		.map(([handle, score]) => ({ handle, doi: score.doi }));
+}
+
+export function sessionFileTopK(
+	records: WorkbenchEvent[],
+	writer: string,
+	k: number,
+	now = Date.now(),
+): string[] {
+	return sessionFileScores(records, writer, now)
 		.slice(0, k)
-		.map(([handle]) => handle);
+		.map((row) => row.handle);
 }
 
 /** Shared read-only projection for CLI context and stats from one log snapshot. */

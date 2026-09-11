@@ -89,7 +89,7 @@ async function main(): Promise<void> {
 		sampleWindow: window,
 		premisesRecent: stats.premisesRecent,
 		restoreToMessage: stats.lifecycle.restoreToMessage,
-		landmarkAcceptance: stats.landmarkReviews.current,
+		landmarkReviews: stats.landmarkReviews,
 		histogram,
 		moat,
 		gate,

@@ -91,6 +91,22 @@ export function renderMonitorReport(options: {
 	);
 	lines.push("");
 
+	lines.push("## 地标候选（L1 · 两把尺子并报一个周期）");
+	lines.push("");
+	lines.push(
+		`- 新口径 \`${current.natural.denominator}\`（每会话文件级 top-${current.natural.topK}）：候选 ${current.natural.total} 条，已复核 ${current.natural.reviewed} 条，认可率 ${fmt(current.natural.endorsedShare, 4)}，复核覆盖 ${fmt(current.natural.reviewedCoverage, 4)}，待复核 ${current.natural.pending}，legacy ${current.natural.legacyReviews} 条（保留、不改判），种类门排除 git/human 写者 ${current.natural.gatedWriters} 个。`,
+	);
+	lines.push(
+		`- 旧口径 \`${current.threshold.denominator}\`（DOI>10 的文件级集合，历史可比）：地标 ${current.threshold.total} 条，已复核 ${current.threshold.reviewed} 条，认可率 ${fmt(current.threshold.endorsedShare, 4)}${current.threshold.total === 0 ? "（空集 → 不可计算，不是 0 分）" : ""}。`,
+	);
+	lines.push(
+		`- 相对选择的可计量性：有文件级触碰的会话 ${current.coverage.sessions} 个，其中 top-${current.coverage.k} 非空 ${current.coverage.withSet} 个（覆盖 ${fmt(current.coverage.share, 4)}，条目 ${current.coverage.items} 条，去重 handle ${current.coverage.distinctHandles} 个）。`,
+	);
+	lines.push(
+		"- 两条并排是纪律：口径换了读数会跳，只有并报一个周期，变化才归因得到尺子而不是产品。",
+	);
+	lines.push("");
+
 	lines.push("## 四项判决");
 	lines.push("");
 	lines.push("| 判决 | 状态 |");
@@ -125,10 +141,10 @@ export function renderMonitorReport(options: {
 	lines.push("## 趋势");
 	lines.push("");
 	lines.push(
-		"| 采样时间 | 线程 | 写者 | 恢复 | 通知 | 封印 | 闸门 | 判决 1/2/3 | unknown | L1 认可率 | 调用/尝试 |",
+		"| 采样时间 | 线程 | 写者 | 恢复 | 通知 | 封印 | 闸门 | 判决 1/2/3 | unknown | L1 认可率（新口径） | L1 认可率（旧口径） | 调用/尝试 |",
 	);
 	lines.push(
-		"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+		"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
 	);
 	for (const sample of samples.slice(-12)) {
 		const statuses = sample.verdicts
@@ -142,7 +158,7 @@ export function renderMonitorReport(options: {
 			)
 			.join("/");
 		lines.push(
-			`| ${sample.at.slice(0, 19).replace("T", " ")} | ${sample.threads} | ${sample.writers} | ${sample.sampleWindow.restores} | ${sample.sampleWindow.noticeOutcomes} | ${sample.sampleWindow.sealDecisions} | ${sample.gate.open ? "开" : "关"} | ${statuses} | ${sample.histogram.unknown} | ${fmt(sample.natural.endorsedShare, 3)} | ${sample.model.calls}/${sample.model.attempts} |`,
+			`| ${sample.at.slice(0, 19).replace("T", " ")} | ${sample.threads} | ${sample.writers} | ${sample.sampleWindow.restores} | ${sample.sampleWindow.noticeOutcomes} | ${sample.sampleWindow.sealDecisions} | ${sample.gate.open ? "开" : "关"} | ${statuses} | ${sample.histogram.unknown} | ${fmt(sample.natural.endorsedShare, 3)} | ${fmt(sample.threshold.endorsedShare, 3)} | ${sample.model.calls}/${sample.model.attempts} |`,
 		);
 	}
 	lines.push("");

@@ -84,13 +84,35 @@ function sample(overrides: Partial<MonitorSample> = {}): MonitorSample {
 			ids: [],
 		},
 		natural: {
-			total: 84,
+			denominator: "session-top-k",
+			topK: 3,
+			total: 216,
 			reviewed: 11,
 			endorsed: 10,
 			rejected: 1,
-			endorsedShare: 0.119,
-			reviewedCoverage: 0.13,
-			pending: 73,
+			endorsedShare: 10 / 216,
+			reviewedCoverage: 11 / 216,
+			pending: 205,
+			legacyReviews: 145,
+			gatedWriters: 3,
+		},
+		// 旧口径（DOI>10）在门后四现场全部归零：它是「不可计算」，不是「0 分」。
+		// 默认夹具刻意保持这个形状，好让「旧口径空集不再误报」成为常态断言。
+		threshold: {
+			denominator: "threshold",
+			total: 0,
+			reviewed: 0,
+			endorsed: 0,
+			endorsedShare: null,
+		},
+		coverage: {
+			k: 3,
+			sessions: 72,
+			withSet: 72,
+			items: 216,
+			distinctHandles: 41,
+			share: 1,
+			gatedWriters: 3,
 		},
 		// 自审口径：默认给一个「已复核但样本不足 3 条」的形状，这样既有的用例
 		// 不会被新告警打乱；要测新告警的用例自己覆盖这三行。
@@ -201,9 +223,11 @@ describe("fit 监控告警规则", () => {
 		expect(severityOf(thin, "steward-landmark-rejected")).toBeUndefined();
 	});
 
-	it("地标集合为空是 warn：零地标是标定问题，不是「还没轮到」", () => {
+	it("候选集合为空是 warn：相对口径都空了，说明采集层没接上", () => {
 		const empty = withAlerts({
 			natural: {
+				denominator: "session-top-k",
+				topK: 3,
 				total: 0,
 				reviewed: 0,
 				endorsed: 0,
@@ -211,6 +235,8 @@ describe("fit 监控告警规则", () => {
 				endorsedShare: null,
 				reviewedCoverage: null,
 				pending: 0,
+				legacyReviews: 0,
+				gatedWriters: 3,
 			},
 			steward: {
 				total: 0,
@@ -220,13 +246,46 @@ describe("fit 监控告警规则", () => {
 				endorsedShare: null,
 				reviewedCoverage: null,
 			},
+			coverage: {
+				k: 3,
+				sessions: 0,
+				withSet: 0,
+				items: 0,
+				distinctHandles: 0,
+				share: null,
+				gatedWriters: 3,
+			},
 		});
 		expect(severityOf(empty, "landmark-set-empty")).toBe("warn");
 		expect(
 			empty.find((alert) => alert.id === "landmark-set-empty")?.evidence,
-		).toContain("地标集合 0 条");
+		).toContain("有文件级触碰的会话 0 个");
 		// 分母为空时不再报「等自然使用」：那是两件不同的事。
 		expect(ids(empty)).not.toContain("natural-pending");
+	});
+
+	it("旧阈值口径空集不再误报：门后它常态为 0，按它告警会一直响", () => {
+		// 默认夹具就是「旧口径 0 条、相对口径 72 个会话非空」——这正是四个现场的
+		// 形状。告警分母必须跟着分母换，否则切换后每个现场都挂着一条假 warn。
+		const alerts = withAlerts();
+		expect(ids(alerts)).not.toContain("landmark-set-empty");
+		expect(alerts.find((a) => a.id === "landmark-set-empty")).toBeUndefined();
+	});
+
+	it("现场只有记录型写者时不报空集：那是口径问题，不是采集问题", () => {
+		const recordingOnly = withAlerts({
+			writers: 5,
+			coverage: {
+				k: 3,
+				sessions: 0,
+				withSet: 0,
+				items: 0,
+				distinctHandles: 0,
+				share: null,
+				gatedWriters: 5,
+			},
+		});
+		expect(ids(recordingOnly)).not.toContain("landmark-set-empty");
 	});
 
 	it("L1 待复核是 info 而不是故障：脚本不能替人回答", () => {

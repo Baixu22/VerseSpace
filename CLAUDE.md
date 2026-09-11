@@ -121,7 +121,8 @@ When a snapshot drifts: look at the diff first. Only accept after confirming the
 
 - **Path alias**: `@/` maps to `src/`
 - **Styling**: Tailwind CSS v4 with oklch semantic color tokens (`bg-app-base`, `text-app-foreground`, etc.)
-- **UI**: shadcn/ui (base-nova), `lucide-react` icons. **No `@assistant-ui/react` or `react-virtuoso`** -- removed, do not re-introduce.
+- **UI**: shadcn/ui (base-nova). Icons come from the unified icon layer — see below. **No `@assistant-ui/react` or `react-virtuoso`** -- removed, do not re-introduce.
+- **Icons**: Import every icon from `@/components/icon` — never `reicon-react` or `lucide-react` directly. Reicon is the primary set; `compat.ts` holds the 30 glyphs Reicon does not ship (git branch/PR/merge/fork, panel-collapse, keyboard keys) and stays on lucide. Both apps get the layer generated from one mapping table — edit `scripts/gen-icon-layer.mjs` and run `node scripts/gen-icon-layer.mjs`. See `docs/reicon-icons.md` for the Reicon MCP setup.
 - **Cursor**: Every clickable element MUST have `cursor-pointer`. This is already baked into base UI components (`Button`, `SidebarMenuButton`, `CommandItem`, `DropdownMenuItem`, `ContextMenuItem`, etc.). When adding custom clickable elements (e.g. `<div onClick>`), always include `cursor-pointer`.
 - **Chat rendering**: `streamdown` + `use-stick-to-bottom`. Markdown overrides in `src/components/streamdown-components.tsx`.
 - **Rich text input**: Lexical in `src/features/composer/editor/`.
