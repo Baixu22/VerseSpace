@@ -2734,13 +2734,16 @@
       ],
       "incoming": [
         "TFE-0230",
-        "TFE-0235"
+        "TFE-0235",
+        "TFE-0237"
       ],
       "outgoing": [
         "TFE-0226",
         "TFE-0227"
       ],
-      "tree_child_edges": [],
+      "tree_child_edges": [
+        "TFE-0237"
+      ],
       "tree_parent_edge": "TFE-0226"
     },
     "TF-0155": {
@@ -2816,7 +2819,9 @@
       "tree_parent_edge": null
     },
     "TF-0160": {
-      "blocking_edges": [],
+      "blocking_edges": [
+        "TFE-0237"
+      ],
       "cross_edges": [
         "TFE-0235",
         "TFE-0236"
@@ -2825,10 +2830,11 @@
         "TFE-0236"
       ],
       "outgoing": [
-        "TFE-0235"
+        "TFE-0235",
+        "TFE-0237"
       ],
       "tree_child_edges": [],
-      "tree_parent_edge": null
+      "tree_parent_edge": "TFE-0237"
     },
     "TF-0161": {
       "blocking_edges": [],
@@ -2844,7 +2850,7 @@
     }
   },
   "edge_type_counts": {
-    "child_of": 154,
+    "child_of": 155,
     "clarifies": 1,
     "contributes_to": 2,
     "depends_on": 65,
@@ -5659,10 +5665,22 @@
       "to": "TF-0160",
       "type": "derived_from",
       "updated_at": "2026-09-11T02:57:03.331395Z"
+    },
+    "TFE-0237": {
+      "blocking": true,
+      "confidence": 0.6,
+      "created_at": "2026-09-11T03:09:21.974079Z",
+      "created_from_session": null,
+      "from": "TF-0160",
+      "id": "TFE-0237",
+      "reason": "",
+      "to": "TF-0154",
+      "type": "child_of",
+      "updated_at": "2026-09-11T03:09:21.974079Z"
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-11T03:06:43.863208Z",
+  "generated_at": "2026-09-11T03:09:28.981845Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -14844,7 +14862,9 @@
       "alignment_records": [],
       "assumptions": [],
       "blocked_by": [],
-      "children": [],
+      "children": [
+        "TF-0160"
+      ],
       "confidence": 0.85,
       "context_tags": [
         "landmark",
@@ -15247,7 +15267,7 @@
       "kind": "task",
       "next_action": "按自审证据修地标投影：同一 handle 的连续同类手势去重（或按 touched-handle 多样性排序），修完重跑四现场标定并复跑自审看读数是否抬起来。",
       "non_goals": [],
-      "primary_parent": null,
+      "primary_parent": "TF-0154",
       "priority": 2,
       "progress": 100.0,
       "progress_source": "manual",
@@ -15324,7 +15344,6 @@
     "TF-0152",
     "TF-0158",
     "TF-0159",
-    "TF-0160",
     "TF-0161"
   ],
   "schema_version": 1,
@@ -15531,7 +15550,7 @@
   "summary": {
     "blocked_count": 0,
     "done_count": 152,
-    "edge_count": 233,
+    "edge_count": 234,
     "node_count": 161,
     "open_count": 3,
     "review_needed_count": 0
@@ -15690,7 +15709,8 @@
     "TFE-0226",
     "TFE-0228",
     "TFE-0229",
-    "TFE-0231"
+    "TFE-0231",
+    "TFE-0237"
   ],
   "workspace_path": "D:\\helmor-main"
 }

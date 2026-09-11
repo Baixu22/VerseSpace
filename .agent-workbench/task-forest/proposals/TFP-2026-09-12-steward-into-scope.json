@@ -1,0 +1,31 @@
+{
+  "applied_at": "2026-09-11T03:09:22.018347Z",
+  "base_graph_hash": "42c514cae4d9f15c0b14eed0440a5de18aa5ddc5a7fba4f22ad3b792d556ad9d",
+  "base_summary": {
+    "edge_count": 233,
+    "node_count": 161,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_edge",
+      "from": "TF-0160",
+      "to": "TF-0154",
+      "type": "child_of"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-09-11T03:09:21.846031Z",
+        "id": "TFD-9312cfb44c",
+        "related_task_ids": []
+      },
+      "note": "账本的 scope 是 TF-0120 子树（child_of），不是全森林：新节点只加 derived_from 不会进账本表，必须挂进目标树才可读。已把 TF-0160 挂到 TF-0154 之下并重跑账本核对。"
+    }
+  ],
+  "created_at": "2026-09-11T03:09:21.837084Z",
+  "proposal_id": "TFP-2026-09-12-steward-into-scope",
+  "rationale": "账本的行集不是全部节点，而是 TF-0120 子树（loadScope 默认 root=TF-0120，只走 child_of 边）。TF-0160 之前只有一条 derived_from 边，所以不进表——账本这一端读不到 steward 读数，问题不在指标而在**树形**。把 TF-0160 作为 TF-0154（L1 认可反馈的事件通道）的子节点挂进去：它确实是这条通道的来源扩展（human 之外增加 steward），挂进去之后账本才会为它渲染一行。",
+  "session_id": null,
+  "status": "applied"
+}
