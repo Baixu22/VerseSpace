@@ -40,6 +40,33 @@
     "context_tags": [],
     "desired_outcomes": [],
     "difficulty": "unknown",
+    "id": "TF-0163",
+    "kind": "task",
+    "next_action": "① 累积入口明确且可复现：`bun scripts/e2e/run.ts --live --rounds N --workspace <持久目录>`，每轮产出的 noticeOutcomes 行数落在 runs/history.jsonl，A 读数由 fit-ledger 直接给出，不手算。",
+    "priority": 3,
+    "progress": 0.0,
+    "purpose": "把「闸门缺 A」从一句长期告警变成可执行的累积计划：明确样本源（多轮持久租户 `run.ts --rounds N --live --workspace <dir>`）、明确不许做假的红线（不得伪造经过的日期、不得把脚本手势计为真人认可、不得为凑行数放宽校准判据）、明确每轮的验收读数（A 行数单调上升 + 四路读数一致）。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "把护城河 A（校准表 ≥ 50 行）当作长期样本累积项推进，而非单轮冲刺"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
     "id": "TF-0159",
     "kind": "task",
     "next_action": "（部分满足）① 切换后 L1 在四个现场都能算（分母非空）＋账本双口径对照＋旧结论映射规则写清楚：映射规则与双口径形态已成文并给到可执行参数名，**代码尚未切换**（默认口径仍是 threshold）。",
@@ -79,5 +106,32 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
+    "id": "TF-0162",
+    "kind": "task",
+    "next_action": "① interaction 通道在真实现场首次非空：interactions 23 条 + footprint 21 条（此前仓库自身与四个旧现场均为 0 条）。已满足。",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "证明 L1 的输入不是「攒得不够」而是「从未产生」，并在真实现场对相对口径与种类门做一次独立复核；为 TF-0159 的口径切换与 TF-0161 的种类门提供活证据。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "真实模型会话首次产出文件级交互沉淀，并用它验收 L1 口径与种类门"
   }
 ]

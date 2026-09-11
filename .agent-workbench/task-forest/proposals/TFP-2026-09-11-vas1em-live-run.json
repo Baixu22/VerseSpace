@@ -1,0 +1,92 @@
+{
+  "applied_at": "2026-09-11T09:16:18.282375Z",
+  "base_graph_hash": "b113f3c7cef5e4306d984e9a684843e8205402f737af3f9d2688a6e521ec4725",
+  "base_summary": {
+    "edge_count": 234,
+    "node_count": 161,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 2400
+      },
+      "id": "TF-0156"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 300
+      },
+      "id": "TF-0158"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 400
+      },
+      "id": "TF-0159"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "display_order": 500
+      },
+      "id": "TF-0161"
+    },
+    {
+      "action": "add_node",
+      "id": "TF-0162",
+      "node": {
+        "acceptance_criteria": [
+          "① interaction 通道在真实现场首次非空：interactions 23 条 + footprint 21 条（此前仓库自身与四个旧现场均为 0 条）。已满足。",
+          "② 相对口径在真实现场能排出非空集合：有文件级触碰的会话 5 个、top-3 非空 5 个（share = 1.0）、条目 10 条、去重 handle 5 个。已满足。",
+          "③ 种类门在真实现场生效且不误杀：门后 5 写者 / 10 条，精确排除仅由记录型写者触碰的 src/beta.ts；回归门 A/B 均通过。已满足。",
+          "④ 旧口径同现场读数并报：threshold.total = 0、endorsedShare = null（不可计算，不是 0 分）。已满足。",
+          "⑤ 未满足·真人认可：本轮所有 review 均为脚本手势或缺失，L1 认可率为 0/10，脚本不构成用户认可，这一格只能由人回答。"
+        ],
+        "display_order": 600,
+        "evidence": [
+          "现场：`packages/workbench/.evidence-sites/live-run-2026-09-11-VAS1EM`（2026-09-11 16:57–16:58，TEMP 会被清理，读数须落档引用）。跑法：`E2E_LLM_KEY=*** E2E_LLM_MODEL=senseaudio-s2-flash E2E_LLM_BASE_URL=https://api.senseaudio.cn/v1 bun scripts/e2e/live-run.ts`。集成场景 17 个步骤全绿（seed → S11 账本），真实开发回合由模型自主完成 endpoint 兼容修复，独立验收先打回 1 项、模型定点改正后通过。",
+          "四路监控读数（同一现场，互相一致）：账本「有文件级触碰的会话 5 个」；监控 coverage.sessions = 5；CLI stats threads.withFootprints = 5 / footprintCoverage = 0.8333（6 线程中 5 个有足迹）；队列「抽样 sampledSessions: 5/5」。",
+          "种类门扫描（五现场跑法，本次输出）：新现场表二相对口径 top-3 + 门 = 5 写者 / 10 条 / 5 handle；表三回归门 A「agent 门前后一致 ✓」、B「git 门前 2 条 → 门后 0 条 ✓」、C 分散形状读数「阈值口径 0 条；相对口径 top-3 = src/auth.ts(8.0), src/session.ts(6.0), src/utils.ts(4.0)」。四个旧现场黑板已不存在，脚本如实报「缺现场，不冒充完整」。",
+          "残余噪声（如实记录）：模型侧 HTTP 500 4 次，有界重试兜住（28 次尝试 / 24 次调用，重试率 16.67%）；live-run 末段在分叉复核回合被 provider 500 中断（报告 runs/live-report.json 落盘，模型响应 24 次）。本节点不以「跑完全绿」为判据，判据是交互沉淀与口径读数。",
+          "（现场已持久化）为避免重演「四个 TEMP 现场被系统清理」的教训，本现场已复制到 `packages/workbench/.evidence-sites/live-run-2026-09-11-VAS1EM`，并在副本上复跑 CLI stats，读数与 TEMP 原件逐字段一致（threads.withFootprints 5 · current.total 10 · current.legacyReviews 1 · threshold.endorsedShare null · coverage.sessions 5）。`dataQuality.insufficientHistory = false`——这是该字段首次不再自报证据不足。四路监控报告落档于现场 `evidence/` 目录。"
+        ],
+        "kind": "task",
+        "next_action": "现场已从 TEMP 迁到持久目录 packages/workbench/.evidence-sites/live-run-2026-09-11-VAS1EM（含 evidence/ACCEPTANCE-REPORT.md 与三份监控报告），可长期复核。剩余唯一待办：由人回答 L1 的 10 条候选（脚本手势不构成认可）。",
+        "priority": 2,
+        "purpose": "证明 L1 的输入不是「攒得不够」而是「从未产生」，并在真实现场对相对口径与种类门做一次独立复核；为 TF-0159 的口径切换与 TF-0161 的种类门提供活证据。",
+        "status": "proposed",
+        "summary": "用真实模型（senseaudio-s2-flash）跑通 live-run 集成场景，把此前一直为空的 interaction 输入链路走通，得到 L1 口径与种类门在真实现场的第一组可复核读数。此前的四个现场是脚本驱动，记录的是「文件被动过」；本轮是模型自主开发会话（reader/writer 双线程 + 独立验收打回重改），记录的是「这次干的活是什么」。",
+        "title": "真实模型会话首次产出文件级交互沉淀，并用它验收 L1 口径与种类门"
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "TF-0162",
+      "to": "TF-0156",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "from": "TF-0162",
+      "to": "TF-0161",
+      "type": "contributes_to"
+    },
+    {
+      "action": "add_edge",
+      "from": "TF-0162",
+      "to": "TF-0159",
+      "type": "contributes_to"
+    }
+  ],
+  "created_at": "2026-09-11T09:06:17.905887Z",
+  "proposal_id": "TFP-2026-09-11-vas1em-live-run",
+  "rationale": "前轮结论是「L1 在现场是 0 候选，不是样本不够而是输入从未产生」。本轮用真实模型会话把这条输入链路走通，得到可对照的实测数字：阈值口径仍为 0（换定义的依据被再次验证），相对口径门后 5 写者 / 10 条 / 5 个真任务文件，git 与 human 记录型写者贡献的地标数均为 0（TF-0161 验收 ④ 的正面读数）。四个旧 TEMP 现场已被系统清理，不能再用；新现场是当前唯一可复核的现场。",
+  "session": "2026-09-11-live-run-real-data-soak",
+  "session_id": null,
+  "status": "applied",
+  "summary": "以真实模型（senseaudio-s2-flash）跑通 live-run 集成场景，首次在真实现场产出文件级交互沉淀（interactions 23 条 / footprint 21 条，此前仓库自身为 0），并用这唯一的新增现场对 TF-0159 与 TF-0161 的验收判据做逐条实测；新建节点记录本轮现场与读数。不改任何节点状态，状态翻正留给用户。"
+}
