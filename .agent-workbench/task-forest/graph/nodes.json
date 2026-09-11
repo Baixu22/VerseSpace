@@ -8933,5 +8933,55 @@
     "summary": "没有真人参与时，L1 这条链路不能靠伪造用户认可来跑通。做法是新增一条**明确标注来源**的复核通道：复核事件分 human / steward，steward 由 agent 按黑板证据逐条判断，写入 steward 来源、绝不冒充 human；读数在 chat stats、账本、监控、队列四处都能读出来，两口径分开报。",
     "title": "代理自审（steward）口径：无人环境下的地标复核来源与读数链路",
     "updated_at": "2026-09-11T02:55:02.014347Z"
+  },
+  "TF-0161": {
+    "acceptance_criteria": [
+      "① 不再空集：四个现场里至少三个能产出非空的**文件级**地标集合（现在 1/4）。",
+      "② 不再打偏：租户复跑自审，认可率从 0/3 抬到 ≥2/3；被驳回的三条心跳地标必须移出集合或显著降权，且可逐条核对。",
+      "③ 不误杀真信号：构造「真实重复编辑 + 有声明产物」的会话仍产出地标（回归门）。",
+      "④ 文档与读数同步：§11、账本口径、监控告警文案一致；被否的候选与其负结论留在文档里。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "created_at": "2026-09-11T02:57:03.331395Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "estimated_total_minutes": null,
+    "evidence": [
+      "空集实测（2026-09-12）：`landmark-review-queue.ts --workspace <site>` 对 node-verified / LHA3I4 / VAKSgQ 三者都输出「地标 0 条，待复核 0 条，当前认可率 无样本」；相对选择（每会话 top-K）在同批现场是 100% 覆盖（TF-0156 已测：84/84、32/32、15/15、12/12）。",
+      "打偏实测（2026-09-12）：唯一有地标的租户上自审 3 条全部驳回，证据取自黑板——git-main 在 src/alpha.ts、src/beta.ts 上各 25 次同种 edit，editor-1 在 src/beta.ts 上 25 次 selection，三者会话 0 声明产物、无活动记录、其它 handle 零触碰。",
+      "监控已能自动报出这条缺陷：`[warn] steward-landmark-rejected — 自审 0（认可 0 / 全部 3，已复核 3），human 口径另计 0.3333`。",
+      "方案与取舍：docs/tf-0161-landmark-projection-fix.md（含三个候选的打中面与风险、推荐组合、验收顺序、复现入口）。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0161",
+    "kind": "task",
+    "next_action": "先把递减收益上限做成可配置参数并用四现场标定扫描比读数（改前/改后各一次），再决定是否叠加极端形状的来源门；实现后复跑自审看认可率是否 ≥2/3。",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "proposed",
+    "success_metrics": [],
+    "summary": "阈值口径的地标集合在四个现场里三个为空，唯一有地标的现场 3 条全被自审驳回；证据指向同一个病——越线靠的是同一手势的重复计数（25 次同种 edit/selection），而会话 0 声明产物。方案（docs/tf-0161-landmark-projection-fix.md）：递减收益上限为主（同 handle 同 kind 的第 n 次贡献按 log 或封顶，保留「反复编辑=强信号」但抑制刷分），来源门（零声明产物）只在「单一 handle + 单一种类」的极端形状上否决；明确不采用「同种手势去重」（会误杀真实信号）。",
+    "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑",
+    "updated_at": "2026-09-11T02:57:03.331395Z"
   }
 }

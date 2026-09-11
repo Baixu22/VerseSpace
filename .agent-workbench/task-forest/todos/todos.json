@@ -52,5 +52,32 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
+    "id": "TF-0161",
+    "kind": "task",
+    "next_action": "① 不再空集：四个现场里至少三个能产出非空的**文件级**地标集合（现在 1/4）。",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑"
   }
 ]
