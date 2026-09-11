@@ -23,9 +23,11 @@ import { openBlackboard } from "../../src/blackboard";
 import { collectInterest } from "../../src/interactions/context";
 import {
 	collectLandmarkReviews,
+	type LandmarkReviewSource,
 	landmarkReviewJudgement,
 	reviewLandmark,
 } from "../../src/interactions/review";
+import { currentLandmarkAcceptance } from "../../src/interactions/review-stats";
 
 const argv = Bun.argv.slice(2);
 const at = (flag: string): string | undefined => {
@@ -78,6 +80,7 @@ async function buildQueue(): Promise<{
 	rows: QueueRow[];
 	starvedWriters: number;
 	containerLandmarks: number;
+	writerIds: string[];
 	judgement: ReturnType<typeof landmarkReviewJudgement> & { byWriter: number };
 }> {
 	const bb = openBlackboard(blackboardAt as string);
@@ -137,6 +140,7 @@ async function buildQueue(): Promise<{
 				a.handle.localeCompare(b.handle),
 		),
 		starvedWriters,
+		writerIds: writers.map((writer) => writer.id),
 		judgement: {
 			total,
 			reviewed,
@@ -154,6 +158,11 @@ const { bb, rows, judgement, starvedWriters, containerLandmarks } =
 
 const applyPath = at("--apply");
 if (applyPath) {
+	// 来源决定这条结论算进哪条读数：默认 human（用户认可口径）；加 --steward
+	// 则是代理自审——真实数据，但不构成用户认可，也就抬不高 human 口径。
+	const applySource: LandmarkReviewSource = argv.includes("--steward")
+		? "steward"
+		: "human";
 	const answers = JSON.parse(
 		await readFile(resolve(applyPath), "utf8"),
 	) as Array<{
@@ -173,18 +182,37 @@ if (applyPath) {
 				answer.handle,
 				answer.verdict,
 				answer.reason,
+				{ source: applySource },
 			);
 			applied += 1;
 		} catch (error) {
 			skipped.push(`${answer.writer}/${answer.handle}: ${String(error)}`);
 		}
 	}
-	console.log(`已回填地标复核 ${applied} 条；跳过 ${skipped.length} 条`);
+	console.log(
+		`已回填地标复核 ${applied} 条（来源 ${applySource}）；跳过 ${skipped.length} 条`,
+	);
 	for (const line of skipped.slice(0, 10)) console.log(`  跳过：${line}`);
 	const after = await buildQueue();
 	console.log(
 		`L1 读数：认可 ${after.judgement.endorsed} / 全部 ${after.judgement.total} = ${after.judgement.endorsedShare?.toFixed(4) ?? "无样本"}（复核覆盖 ${after.judgement.reviewedCoverage?.toFixed(4) ?? "无样本"}）`,
 	);
+	// 自审口径单独报一行：它是真实数据，但和「用户认可」不是同一件事，绝不并列成一个数
+	if (applySource === "steward") {
+		const stewardRows = await bb.events.query({});
+		const stewardReading = currentLandmarkAcceptance(
+			stewardRows,
+			after.writerIds,
+			Date.now(),
+			"steward",
+		);
+		console.log(
+			`代理自审读数（不构成用户认可）：认可 ${stewardReading.endorsed} / 全部 ${stewardReading.total} = ${stewardReading.endorsedShare?.toFixed(4) ?? "无样本"}`,
+		);
+		console.log(
+			"用户认可口径仍只由 human 来源决定；自审只说明「机制能在无真人的前提下跑通」。",
+		);
+	}
 	if (after.judgement.endorsedShare !== null)
 		console.log(
 			after.judgement.endorsedShare >= 0.8

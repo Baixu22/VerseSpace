@@ -7,6 +7,20 @@ export const LANDMARK_REVIEW_TYPE = "landmark.reviewed" as const;
 
 export type LandmarkVerdict = "endorse" | "reject";
 
+/**
+ * 复核来源。分两类，**读数必须分开算**：
+ *
+ * - `human`：用户本人回答的。L1 的「用户认可率」只认这一种。
+ * - `steward`：代理自审（没有真人可问时由 agent 按证据回答）。它是**真实数据**
+ *   但不是**用户认可**，所以既不冒充 human，也不能让 human 口径凭空变好——两
+ *   条读数在账本里各占一行、各带来源标签。
+ *
+ * 这样做的意义：机制能在无人的前提下跑通并持续沉淀，同时「用户认可」那一格
+ * 仍然诚实地空着（fit 停在 unknown），不会把自审洗成人类证据。
+ */
+export const LANDMARK_REVIEW_SOURCES = ["human", "steward"] as const;
+export type LandmarkReviewSource = (typeof LANDMARK_REVIEW_SOURCES)[number];
+
 export interface LandmarkReview {
 	reviewEventId: string;
 	writer: string;
@@ -28,7 +42,12 @@ export async function reviewLandmark(
 	handle: string,
 	verdict: LandmarkVerdict,
 	reason?: string,
+	options: { source?: LandmarkReviewSource } = {},
 ): Promise<WorkbenchEvent> {
+	const source = options.source ?? "human";
+	if (!(LANDMARK_REVIEW_SOURCES as readonly string[]).includes(source)) {
+		throw new Error(`未知的复核来源：${source}`);
+	}
 	if (verdict !== "endorse" && verdict !== "reject") {
 		throw new Error("verdict 必须是 endorse 或 reject");
 	}
@@ -57,7 +76,7 @@ export async function reviewLandmark(
 	const trimmed = reason?.trim();
 	return bb.events.append({
 		timestamp: new Date().toISOString(),
-		source: "human",
+		source,
 		type: LANDMARK_REVIEW_TYPE,
 		payload: {
 			writer,
@@ -74,13 +93,17 @@ function payloadOf(event: WorkbenchEvent): Partial<LandmarkReview> | null {
 		: null;
 }
 
-/** 折叠全部复核事件为行集：只认 human 来源与合法 verdict，坏 payload 跳过。 */
+/**
+ * 折叠全部复核事件为行集：只认指定来源与合法 verdict，坏 payload 跳过。
+ * 默认只收 `human`——L1 的「用户认可率」不能被自审或脚本手势抬高。
+ */
 export function collectLandmarkReviews(
 	events: WorkbenchEvent[],
+	source: LandmarkReviewSource = "human",
 ): LandmarkReview[] {
 	const rows: LandmarkReview[] = [];
 	for (const event of events) {
-		if (event.type !== LANDMARK_REVIEW_TYPE || event.source !== "human") {
+		if (event.type !== LANDMARK_REVIEW_TYPE || event.source !== source) {
 			continue;
 		}
 		if (!event.id) {

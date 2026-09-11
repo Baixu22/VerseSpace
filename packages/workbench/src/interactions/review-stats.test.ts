@@ -11,7 +11,10 @@ import {
 } from "./context";
 import { contentTypeOf } from "./derive";
 import { reviewLandmark } from "./review";
-import { relativeLandmarkCoverage } from "./review-stats";
+import {
+	currentLandmarkAcceptance,
+	relativeLandmarkCoverage,
+} from "./review-stats";
 import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
 
 /**
@@ -45,6 +48,77 @@ async function appendEdits(
 		});
 	}
 }
+
+test("TF-0057：代理自审（steward）是真实数据，但绝不能抬升「用户认可」口径", async () => {
+	const ws = await makeTempWorkbench();
+	try {
+		const chat = new ChatThreads(ws.bb);
+		const worker = await chat.create("W");
+		await ws.bb.sessions.recordActivity(worker.id, {
+			activity: "work",
+			agent: worker.id,
+			used: [],
+			generated: [],
+		});
+		await appendEdits(ws.bb, worker.id, "a.ts", 6); // 过地标线
+		const rows = () => ws.bb.events.query({});
+		// 先只写自审：两条读数必须一条动、一条不动
+		await reviewLandmark(
+			ws.bb,
+			worker.id,
+			"a.ts",
+			"endorse",
+			"自审：需求就是改这个文件",
+			{ source: "steward" },
+		);
+		const human = currentLandmarkAcceptance(await rows(), [worker.id]);
+		const steward = currentLandmarkAcceptance(
+			await rows(),
+			[worker.id],
+			Date.now(),
+			"steward",
+		);
+		expect({ total: human.total, endorsed: human.endorsed }).toEqual({
+			total: 1,
+			endorsed: 0,
+		});
+		expect({ total: steward.total, endorsed: steward.endorsed }).toEqual({
+			total: 1,
+			endorsed: 1,
+		});
+		// 再补人类回答：两条各自独立累积，互不覆盖
+		await reviewLandmark(
+			ws.bb,
+			worker.id,
+			"a.ts",
+			"reject",
+			"我当时真正改的是别处",
+		);
+		const human2 = currentLandmarkAcceptance(await rows(), [worker.id]);
+		const steward2 = currentLandmarkAcceptance(
+			await rows(),
+			[worker.id],
+			Date.now(),
+			"steward",
+		);
+		expect({ endorsed: human2.endorsed, rejected: human2.rejected }).toEqual({
+			endorsed: 0,
+			rejected: 1,
+		});
+		expect({
+			endorsed: steward2.endorsed,
+			rejected: steward2.rejected,
+		}).toEqual({ endorsed: 1, rejected: 0 });
+		// 来源不合法要立刻报错，不能悄悄落成 human
+		await expect(
+			reviewLandmark(ws.bb, worker.id, "a.ts", "endorse", "", {
+				source: "model" as never,
+			}),
+		).rejects.toThrow("未知的复核来源");
+	} finally {
+		await ws.cleanup();
+	}
+});
 
 test("TF-0156 验收三：绝对阈值空集时，相对选择的 top-K 仍然列得出来", async () => {
 	const ws = await makeTempWorkbench();

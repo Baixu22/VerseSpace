@@ -3,6 +3,7 @@ import { interestFromEvents, sessionFileTopK } from "./context";
 import {
 	collectLandmarkReviews,
 	type LandmarkReview,
+	type LandmarkReviewSource,
 	landmarkReviewJudgement,
 } from "./review";
 import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
@@ -85,6 +86,7 @@ export function currentLandmarkAcceptance(
 	events: WorkbenchEvent[],
 	writerIds: string[],
 	now = Date.now(),
+	source: LandmarkReviewSource = "human",
 ): LandmarkAcceptance {
 	const records = new Map(
 		writerIds.map((writer) => [writer, [] as WorkbenchEvent[]]),
@@ -99,7 +101,7 @@ export function currentLandmarkAcceptance(
 		if (writer) records.get(writer)?.push(event);
 	}
 	const reviews = new Map<string, LandmarkReview[]>();
-	for (const review of collectLandmarkReviews(events)) {
+	for (const review of collectLandmarkReviews(events, source)) {
 		const bucket = reviews.get(review.writer) ?? [];
 		bucket.push(review);
 		reviews.set(review.writer, bucket);

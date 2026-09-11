@@ -52,45 +52,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做"
-  },
-  {
-    "alignment": {
-      "fit": "aligned",
-      "fit_confidence": 0.75,
-      "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
-      "validation_plan": [
-        "t0+14d：TF-0136 四条判据",
-        "t0+30d：护城河四个数字存在且非零",
-        "任一数字缺失则先补它，不扩树"
-      ],
-      "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
-      "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "versespace",
-      "v5",
-      "v6",
-      "定调"
-    ],
-    "desired_outcomes": [
-      "多写者并存时，runtime 能指出谁基于已过时的前提在工作",
-      "裁决项速率可持续在约 1 条/10 分钟以内",
-      "用户从不画图，也从不为『随口的任务』付前置成本"
-    ],
-    "difficulty": "very_high",
-    "id": "TF-0057",
-    "kind": "global_task",
-    "next_action": "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
-    "priority": 1,
-    "progress": 100.0,
-    "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）"
   }
 ]

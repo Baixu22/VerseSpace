@@ -2659,7 +2659,7 @@
       "Verifier 加 LLM 裁判"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "derived",
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "remaining_minutes_max": null,
@@ -2671,11 +2671,11 @@
       "线性对话不动；结构发生在它之上或之下，从不发生在它里面"
     ],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
     "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-    "updated_at": "2026-09-10T20:26:03.084819Z"
+    "updated_at": "2026-09-11T02:47:30.083405Z"
   },
   "TF-0058": {
     "acceptance_criteria": [
