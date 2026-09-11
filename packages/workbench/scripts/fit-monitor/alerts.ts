@@ -246,6 +246,22 @@ export function evaluateAlerts(
 			evidence: `${prose.file} 声称 aligned ${prose.claimed[0]} · partial ${prose.claimed[1]} · unknown ${prose.claimed[2]}，实测 aligned ${current.histogram.aligned} · partial ${current.histogram.partial} · unknown ${current.histogram.unknown}`,
 		});
 
+	// 代理自审读数低 = 地标投影选错了东西，而不是「人还没来」。这条是无人环境下
+	// 唯一能自动发现「投影没打中」的信号：自审逐条看了证据，驳回就该指向投影。
+	// 注意它**不**替 human 口径说话，两条告警可以同时存在。
+	if (
+		current.steward.reviewed >= 3 &&
+		(current.steward.endorsedShare ?? 1) < 0.5
+	)
+		push({
+			id: "steward-landmark-rejected",
+			severity: "warn",
+			title: "代理自审否掉了多数地标：地标投影没打中「这次干活的核心」",
+			detail:
+				"自审按黑板证据逐条判断（不是盖章）。成片驳回通常意味着越线靠的是重复次数而非工作重要性——例如同一 handle 被同种手势重复几十次。先修投影（同类重复去重 / 按 handle 多样性排序），再谈阈值与分母；human 口径不受此影响。",
+			evidence: `自审 ${fmt(current.steward.endorsedShare)}（认可 ${current.steward.endorsed} / 全部 ${current.steward.total}，已复核 ${current.steward.reviewed}），human 口径另计 ${fmt(current.natural.endorsedShare)}`,
+		});
+
 	if (current.natural.pending > 0)
 		push({
 			id: "natural-pending",

@@ -47,6 +47,15 @@ export interface MonitorSample {
 		reviewedCoverage: number | null;
 		pending: number;
 	};
+	/** 代理自审口径（不构成用户认可）：低 = 地标投影选错，不是「人没来」。 */
+	steward: {
+		total: number;
+		reviewed: number;
+		endorsed: number;
+		rejected: number;
+		endorsedShare: number | null;
+		reviewedCoverage: number | null;
+	};
 	restoreToMessage: {
 		samples: number;
 		medianChangeRatio: number | null;

@@ -89,6 +89,11 @@ export interface ChatStats {
 		lastAt: string | null;
 		/** Full current sets, separate from the raw feedback-event counts above. */
 		current: LandmarkAcceptance;
+		/**
+		 * 代理自审口径（读法同 current，但只收 steward 来源）。**不是用户认可**：
+		 * 没有真人时它让这条链路仍然可读、可监控，human 那格照旧空着。
+		 */
+		steward: LandmarkAcceptance;
 	};
 	dataQuality: {
 		insufficientHistory: boolean;

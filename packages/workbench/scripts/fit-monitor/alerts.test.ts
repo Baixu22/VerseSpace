@@ -92,6 +92,16 @@ function sample(overrides: Partial<MonitorSample> = {}): MonitorSample {
 			reviewedCoverage: 0.13,
 			pending: 73,
 		},
+		// 自审口径：默认给一个「已复核但样本不足 3 条」的形状，这样既有的用例
+		// 不会被新告警打乱；要测新告警的用例自己覆盖这三行。
+		steward: {
+			total: 84,
+			reviewed: 1,
+			endorsed: 1,
+			rejected: 0,
+			endorsedShare: 1,
+			reviewedCoverage: 0.01,
+		},
 		restoreToMessage: {
 			samples: 19,
 			medianChangeRatio: 317,
@@ -165,6 +175,32 @@ describe("fit 监控告警规则", () => {
 		expect(severityOf(natural, "restore-latency")).toBe("warn");
 	});
 
+	it("自审成片驳回是 warn：投影没打中是工程问题，且不替 human 口径说话", () => {
+		const rejected = withAlerts({
+			steward: {
+				total: 3,
+				reviewed: 3,
+				endorsed: 0,
+				rejected: 3,
+				endorsedShare: 0,
+				reviewedCoverage: 1,
+			},
+		});
+		expect(severityOf(rejected, "steward-landmark-rejected")).toBe("warn");
+		// 样本不足不下结论：两条自审也只能是「还没看出来」
+		const thin = withAlerts({
+			steward: {
+				total: 3,
+				reviewed: 2,
+				endorsed: 0,
+				rejected: 2,
+				endorsedShare: 0,
+				reviewedCoverage: 0.67,
+			},
+		});
+		expect(severityOf(thin, "steward-landmark-rejected")).toBeUndefined();
+	});
+
 	it("地标集合为空是 warn：零地标是标定问题，不是「还没轮到」", () => {
 		const empty = withAlerts({
 			natural: {
@@ -175,6 +211,14 @@ describe("fit 监控告警规则", () => {
 				endorsedShare: null,
 				reviewedCoverage: null,
 				pending: 0,
+			},
+			steward: {
+				total: 0,
+				reviewed: 0,
+				endorsed: 0,
+				rejected: 0,
+				endorsedShare: null,
+				reviewedCoverage: null,
 			},
 		});
 		expect(severityOf(empty, "landmark-set-empty")).toBe("warn");

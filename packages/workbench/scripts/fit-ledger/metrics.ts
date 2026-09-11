@@ -305,4 +305,17 @@ export const PROBES: Record<string, Probe> = {
 		trace:
 			"docs/report-2026-09-07-live-model.md；docs/live-model-evidence-2026-09-07.json",
 	},
+	"TF-0160": {
+		kind: "component",
+		metric:
+			"代理自审认可率（steward）：无真人时由 agent 按证据复核地标，≥0.8 表示「投影选出来的核心」与证据一致",
+		source:
+			"stats.landmarkReviews.steward.endorsedShare；与 TF-0154 的 human 口径**分开报**，不构成用户认可",
+		read: (ctx) => {
+			const steward = ctx.stats.landmarkReviews.steward;
+			return { value: steward.endorsedShare, samples: steward.reviewed };
+		},
+		judge: (value) =>
+			value >= 0.8 ? "aligned" : value >= 0.5 ? "partial" : "weak",
+	},
 };

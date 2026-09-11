@@ -183,6 +183,14 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 				orderedEvents(events),
 				writers.map((writer) => writer.id),
 			),
+			// 代理自审口径：真实数据，但**不是**用户认可。单独一栏，绝不并入
+			// current——否则没有真人在场时，「用户认可率」会被自审洗成好看的数字。
+			steward: currentLandmarkAcceptance(
+				orderedEvents(events),
+				writers.map((writer) => writer.id),
+				Date.now(),
+				"steward",
+			),
 		},
 		dataQuality: {
 			insufficientHistory:

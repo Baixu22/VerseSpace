@@ -1,0 +1,59 @@
+{
+  "applied_at": "2026-09-11T02:55:02.058043Z",
+  "base_graph_hash": "ad444f5db21acae2ed10a0557b26c1705c7a3a026a70597e73912e2e7c734cd2",
+  "base_summary": {
+    "edge_count": 231,
+    "node_count": 159,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "代理自审口径",
+      "node": {
+        "acceptance_criteria": [
+          "① 来源分离且不可绕过：复核事件分 human / steward，取数按来源过滤，默认只收 human；非法来源立刻抛错。",
+          "② 两口径互不污染：只写 steward 时 human 读数不变；human 与 steward 对同一条目可各持结论，互不覆盖。",
+          "③ 整条链路可读：chat stats 有 steward 栏、账本有对应指标（TF-0160）、监控采样与告警规则能读、队列 --steward 可回填并打印自审读数。",
+          "④ 自审结论必须有证据：每条 verdict 的 reason 引用黑板事实（触碰次数/种类、声明产物、其它 handle 情况），不是盖章。",
+          "⑤ 无人环境能自动发现投影问题：自审成片驳回时监控报 warn 并指向投影修复方向，human 口径的 natural-pending 告警同时保留。"
+        ],
+        "evidence": [
+          "来源分离：`LANDMARK_REVIEW_SOURCES = [\"human\", \"steward\"]`；`reviewLandmark(..., { source })` 默认 human；`collectLandmarkReviews(events, source = \"human\")`、`currentLandmarkAcceptance(..., source = \"human\")` 按来源取数；非法来源抛「未知的复核来源」。回归用例：只写 steward → human 0/1、steward 1/1；human reject 与 steward endorse 并存互不覆盖。src/interactions 42 pass / 0 fail。",
+          "链路接入：`stats.landmarkReviews.steward`（src/chat/stats.ts + stats-types.ts）、账本指标 TF-0160（scripts/fit-ledger/metrics.ts）、监控采样 `steward` 栏（scripts/fit-monitor/sample.ts + types.ts）、新告警规则 `steward-landmark-rejected`（alerts.ts）、队列 `--apply ... --steward`（landmark-review-queue.ts）。tsc 0；src + fit-ledger + fit-monitor 613 pass / 0 fail。",
+          "实测（live-tenant）：回填 3 条 steward、跳过 0 条 → human 读数 1/3 = 0.3333（与回填前一致）、自审读数 0/3 = 0.0000；监控随后报出 `[warn] steward-landmark-rejected — 自审 0（认可 0 / 全部 3，已复核 3），human 口径另计 0.3333`，样本数 6 → 7（继续累积）。",
+          "自审驳回的证据（取自黑板，可复现）：git-main 只在 src/alpha.ts、src/beta.ts 上各有 25 次同种 edit；editor-1 只在 src/beta.ts 上 25 次 selection；三者会话 0 声明产物、无活动记录、其它 handle 零触碰。结论：越线来自重复次数而非工作重要性。",
+          "口径边界：steward 读数**不构成用户认可**，不参与 human 口径、不改 fit 的 unknown 判定；human 栏由真人随时用 `--template ... --pending-only` + `--apply`（不带 --steward）覆盖。"
+        ],
+        "id": "TF-0160",
+        "kind": "task",
+        "next_action": "按自审证据修地标投影：同一 handle 的连续同类手势去重（或按 touched-handle 多样性排序），修完重跑四现场标定并复跑自审看读数是否抬起来。",
+        "priority": 2,
+        "progress": 100,
+        "status": "done",
+        "summary": "没有真人参与时，L1 这条链路不能靠伪造用户认可来跑通。做法是新增一条**明确标注来源**的复核通道：复核事件分 human / steward，steward 由 agent 按黑板证据逐条判断，写入 steward 来源、绝不冒充 human；读数在 chat stats、账本、监控、队列四处都能读出来，两口径分开报。",
+        "title": "代理自审（steward）口径：无人环境下的地标复核来源与读数链路"
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "TF-0160",
+      "to": "TF-0154",
+      "type": "derived_from"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "created_at": "2026-09-11T02:55:01.891211Z",
+        "id": "TFD-87bb847a4f",
+        "related_task_ids": []
+      },
+      "note": "账本指标键一度写成 TF-0157（既有节点：本机套件两类红），已改为本节点 TF-0160——指标挂错节点会让 fit 表把读数算到无关结论上。"
+    }
+  ],
+  "created_at": "2026-09-11T02:55:01.882905Z",
+  "proposal_id": "TFP-2026-09-12-steward-loop",
+  "rationale": "上一轮把 steward 通道做出来了，这一轮把它接进整条读数链路：chat stats（steward 栏）、账本指标（TF-0160）、监控采样与告警规则（steward-landmark-rejected）。结果是无人环境下闭环真的成立——监控自己把「地标投影没打中」这条工程缺陷报了出来，而 human 口径一行没动。注意：账本指标一开始被我错误地挂到 TF-0157（那是别的节点），已改为本节点 TF-0160。",
+  "session_id": null,
+  "status": "applied"
+}

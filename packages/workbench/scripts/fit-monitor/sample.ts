@@ -219,6 +219,16 @@ export async function buildSample(options: {
 			reviewedCoverage: landmark.reviewedCoverage,
 			pending: Math.max(0, landmark.total - landmark.reviewed),
 		},
+		// 代理自审读数：没有真人时这条链路仍然可监控；它低 = 地标投影选错了东西，
+		// 不是「人没来」。与 natural（human 口径）分开存，读数不会互相污染。
+		steward: {
+			total: stats.landmarkReviews.steward.total,
+			reviewed: stats.landmarkReviews.steward.reviewed,
+			endorsed: stats.landmarkReviews.steward.endorsed,
+			rejected: stats.landmarkReviews.steward.rejected,
+			endorsedShare: stats.landmarkReviews.steward.endorsedShare,
+			reviewedCoverage: stats.landmarkReviews.steward.reviewedCoverage,
+		},
 		restoreToMessage: {
 			samples: stats.lifecycle.restoreToMessage.withCard.samples,
 			medianChangeRatio: stats.lifecycle.restoreToMessage.medianChangeRatio,

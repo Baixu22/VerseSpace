@@ -8881,5 +8881,57 @@
     "summary": "TF-0156 把相对选择做成了可计量的一条读数（relativeLandmarkCoverage），但 L1 现在的分母仍是绝对阈值口径（DOI>10 的文件级集合）。切换会改变待人回答的队列规模：租户从 3 条变成 188 条，因此要在「队列迁移」这件事里一起处理（保留阈值口径读数、逐步切换、复核结论如何映射），不能只改分母。",
     "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做",
     "updated_at": "2026-09-10T20:26:50.923045Z"
+  },
+  "TF-0160": {
+    "acceptance_criteria": [
+      "① 来源分离且不可绕过：复核事件分 human / steward，取数按来源过滤，默认只收 human；非法来源立刻抛错。",
+      "② 两口径互不污染：只写 steward 时 human 读数不变；human 与 steward 对同一条目可各持结论，互不覆盖。",
+      "③ 整条链路可读：chat stats 有 steward 栏、账本有对应指标（TF-0160）、监控采样与告警规则能读、队列 --steward 可回填并打印自审读数。",
+      "④ 自审结论必须有证据：每条 verdict 的 reason 引用黑板事实（触碰次数/种类、声明产物、其它 handle 情况），不是盖章。",
+      "⑤ 无人环境能自动发现投影问题：自审成片驳回时监控报 warn 并指向投影修复方向，human 口径的 natural-pending 告警同时保留。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "created_at": "2026-09-11T02:55:02.014347Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "estimated_total_minutes": null,
+    "evidence": [
+      "来源分离：`LANDMARK_REVIEW_SOURCES = [\"human\", \"steward\"]`；`reviewLandmark(..., { source })` 默认 human；`collectLandmarkReviews(events, source = \"human\")`、`currentLandmarkAcceptance(..., source = \"human\")` 按来源取数；非法来源抛「未知的复核来源」。回归用例：只写 steward → human 0/1、steward 1/1；human reject 与 steward endorse 并存互不覆盖。src/interactions 42 pass / 0 fail。",
+      "链路接入：`stats.landmarkReviews.steward`（src/chat/stats.ts + stats-types.ts）、账本指标 TF-0160（scripts/fit-ledger/metrics.ts）、监控采样 `steward` 栏（scripts/fit-monitor/sample.ts + types.ts）、新告警规则 `steward-landmark-rejected`（alerts.ts）、队列 `--apply ... --steward`（landmark-review-queue.ts）。tsc 0；src + fit-ledger + fit-monitor 613 pass / 0 fail。",
+      "实测（live-tenant）：回填 3 条 steward、跳过 0 条 → human 读数 1/3 = 0.3333（与回填前一致）、自审读数 0/3 = 0.0000；监控随后报出 `[warn] steward-landmark-rejected — 自审 0（认可 0 / 全部 3，已复核 3），human 口径另计 0.3333`，样本数 6 → 7（继续累积）。",
+      "自审驳回的证据（取自黑板，可复现）：git-main 只在 src/alpha.ts、src/beta.ts 上各有 25 次同种 edit；editor-1 只在 src/beta.ts 上 25 次 selection；三者会话 0 声明产物、无活动记录、其它 handle 零触碰。结论：越线来自重复次数而非工作重要性。",
+      "口径边界：steward 读数**不构成用户认可**，不参与 human 口径、不改 fit 的 unknown 判定；human 栏由真人随时用 `--template ... --pending-only` + `--apply`（不带 --steward）覆盖。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0160",
+    "kind": "task",
+    "next_action": "按自审证据修地标投影：同一 handle 的连续同类手势去重（或按 touched-handle 多样性排序），修完重跑四现场标定并复跑自审看读数是否抬起来。",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "没有真人参与时，L1 这条链路不能靠伪造用户认可来跑通。做法是新增一条**明确标注来源**的复核通道：复核事件分 human / steward，steward 由 agent 按黑板证据逐条判断，写入 steward 来源、绝不冒充 human；读数在 chat stats、账本、监控、队列四处都能读出来，两口径分开报。",
+    "title": "代理自审（steward）口径：无人环境下的地标复核来源与读数链路",
+    "updated_at": "2026-09-11T02:55:02.014347Z"
   }
 }
