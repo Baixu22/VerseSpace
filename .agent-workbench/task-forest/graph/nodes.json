@@ -9209,17 +9209,20 @@
     "difficulty": "medium",
     "estimated_total_minutes": null,
     "evidence": [
-      "（事件体积）`events/events.jsonl` = 86,650,327 字节 / 209 行；超过 100 KB 的行 165 条，合计 86.5 MB，占全文件 99.8%。体积最大的 8 行按序是第 209、208、207、206、205、204、203、202 行，约 900–920 KB。",
-      "（形态分界）第 197-199 行（时间 2026-09-11T03:04 至 03:09）只有 before_snapshot / after_snapshot / changed_node_ids / changed_edge_ids 四个键，约 588–598 字节；第 200 行起（2026-09-11T09:16）变成 before / after 两个键装载全图，约 900 KB。第 200 行对应的提案是 vas1em-live-run，也就是副本切换之后的第一批写入。",
-      "（两份副本）`~/.claude/skills/task-forest/scripts/task_forest.py` 3332 行、160203 字节，含 `before_snapshot`（第 725 行）与 13 个子命令；`~/.workbuddy/skills/task-forest/scripts/task_forest.py` 2250 行、84507 字节，只有 before/after 全图写法、12 个子命令，且带 `task_forest_ordering.py`。两者 diff 行数 2134。导出校验器也不对等：`validate_task_forest_export.py` 在 .claude 是 313 行、在 .workbuddy 是 1152 行。",
-      "（与已结项声明的冲突）TF-0152 的证据写的是「record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表」，落点指向 `C:/Users/27933/.claude/skills/...`。该声明对那份副本成立（事件 197-199 就是它的产物），但对当前生效的 .workbuddy 副本不成立——这正是「两处都真的，合起来是假的」那类漂移。"
+      "（载荷修复·实测）在一次性工作区里跑 proposal-apply，新事件为 631 字节，键恰好是 before_snapshot / after_snapshot / changed_node_ids / changed_edge_ids / graph_hash_before / graph_hash_after；同一路径在真实森林里此前产生的是约 900 KB 的全图事件（209 行里 165 行超过 100 KB）。改法：record_event 增加 config 参数并把两张快照的写盘收进自身（改前状态若与上一张快照哈希不符则补写一张），5 个调用点各自去掉紧随其后的 write_snapshot——各调用点的 event_type 与快照 reason 本来是同一个串，所以行为等价；write_snapshot 的返回值从 None 改为引用字符串，原有的 rebuild 调用方忽略返回值不受影响。",
+      "（另一份副本的独有能力·已合并）功能性差异实测只有 recover-snapshots 一个子命令（derived_progress 排除 deprecated/archived 两份本来都有），已从 ~/.claude 那份移植 62 行并在一次性工作区里端到端验证：制造快照漂移（0002 内容与 Git 版本不一致）→ 预览输出 1 条计划（preserved → snapshots/0003.json）→ --yes：0002 被 Git 版本恢复、漂移内容落到 0003、追加 snapshot_references_preserved（503 字节）与 snapshot_history_recovered（885 字节）两条事件、validate 通过。移植需补一个 import subprocess。移植后两边子命令数都是 13。",
+      "（权威副本·处置）用户 2026-09-12 定 ~/.workbuddy/skills/task-forest 为唯一权威副本。另一份只**新增**了 SUPERSEDED.md 说明文件（未改、未删它任何既有内容），写明已被取代的原因、已搬走的能力、以及「不要再在这里改」的处理建议。同时把 recover-snapshots 写进权威副本的 SKILL.md 命令段与并发章节指引，避免合并成果不可见。",
+      "（空偏差守卫·实测）record_deviation 现在要求 summary 或 reason 至少有一个非空，否则抛错。实测空偏差提案在 proposal-save 的预校验阶段就被拒绝（报错原文：record_deviation 必须提供 summary 或 reason），deviations/ 保持为空文件。修复前实测存在两条只剩 id 与时间戳的空记录（TFD-87bb847a4f、TFD-9312cfb44c），来源已定位到 TFD 提案中的 deviation 只写了 id 与 related_task_ids。",
+      "（历史体积·处置口径）86.5 MB 的全图历史事件保持原样、不改写：它们已经被提交进 Git，改写既不减少 clone 体积（历史已在对象库里），也破坏「审计只追加」的语义。止损靠新形态——修复后写下的每条事件都是几百字节，体积不再随 apply 次数线性增长。",
+      "（导出体积·归因）timeline.json 的结构是「每条一个 build_export 全量图」的快照数组，212 张快照 × 约 500 KB ≈ 99 MB，与 export 出的 108 MB 吻合；HTML 18.1 MB 同理。也就是说**导出的大是设计性的**（TF-0147 裁决保留 snapshots 供历史回放），与本次修掉的事件载荷缺陷无关——此前把两者当成同一条因果链是错的，这次查清了。"
     ],
     "execution_hints": [],
     "id": "TF-0165",
     "kind": "task",
+    "next_action": "已结项（2026-09-12）。五条验收全部落地，见证据栏。两个后续不在本节点范围内，各自需要单独决定：(1) 导出体积——timeline 108 MB / HTML 18.1 MB 来自 212 张快照的内嵌全量图，是 TF-0147 裁决「保留 snapshots 供回放」的直接后果，要缩小就得改回放策略（例如只内嵌增量或按需分片），那是一个新的设计决策而不是缺陷修复；(2) 另一份副本（~/.claude/skills/task-forest）已加 SUPERSEDED.md 标记但目录仍在，确认无需回溯后可整体删除。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "把 TF-0147 定下的载荷纪律真正落到生效副本上：canonical 只留 graph/ + config + events.jsonl，历史留引用、不留快照体；同时终结「同一 skill 两份副本各自演化」的状态，避免出现第三次分叉。",
     "remaining_minutes_max": null,
@@ -9230,10 +9233,10 @@
       "回归读数用「事件行体积」（超过 100 KB 即红），而不是只检查代码里有没有出现某个字段名——这一轮的教训正是一条只看代码的验收在副本切换后失效了"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "机器上有两份 task-forest skill 副本，已经分叉，而且各有对方没有的东西：~/.claude/skills 那份 3332 行、含精简事件载荷（以 before_snapshot/after_snapshot + 变更 id 列表代替全图）与 13 个子命令，但导出校验器只有 313 行；~/.workbuddy/skills 那份 2250 行、只有全图内嵌写法与 12 个子命令，但带有 ordering 模块与 1152 行的导出校验器。两文件差异 2134 行。当前会话加载的是 .workbuddy 那份，于是 TF-0152 当年在 .claude 那份上修掉的载荷纪律在这里不存在：events.jsonl 已涨到 86.7 MB，209 行里有 165 行超过 100 KB，其中 8 行最大的就是今天与昨天写下的（约 900 KB/行）。事件形态的分界点很清楚——第 197-199 行（截至 09-11T03:09）是约 590 字节的引用式，第 200-209 行（09-11T09:16 起）回到约 900 KB 的全图式，时间点正好是副本切换生效的时刻。",
     "title": "把「事件不内嵌全图」的载荷修复补到当前生效的 skill 副本上，并定下唯一权威副本",
-    "updated_at": "2026-09-12T07:27:34.807926Z"
+    "updated_at": "2026-09-12T07:45:11.595161Z"
   }
 }
