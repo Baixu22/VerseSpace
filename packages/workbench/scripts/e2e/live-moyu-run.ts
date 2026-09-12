@@ -17,7 +17,7 @@
  */
 
 import { spawn } from "node:child_process";
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
 	api,
@@ -111,11 +111,20 @@ function siteDir(label: string): string {
 async function buildWorkspace(label: string): Promise<E2EWorkspace> {
 	const projectDir = siteDir(label);
 	await mkdir(projectDir, { recursive: true });
-	// 整树递归复制，排除 .git（源仓库的历史不属于现场；现场自己 git init）。
-	await cp(MOYU_SRC, projectDir, {
-		recursive: true,
-		filter: (source) => !source.endsWith(".git"),
-	});
+	// 累积跑要复用现场：已经初始化过的现场不再覆盖源码树。
+	// 原因是护城河 A 的读数来自**单一黑板**，多轮必须接着往同一块写；刷新源码会把
+	// 上一轮的黑板与轮次记录一起搅乱（2026-09-12 实测：跨现场行数不会相加）。
+	const initialized = await stat(join(projectDir, ".workbench")).then(
+		(info) => info.isDirectory(),
+		() => false,
+	);
+	if (!initialized) {
+		// 整树递归复制，排除 .git（源仓库的历史不属于现场；现场自己 git init）。
+		await cp(MOYU_SRC, projectDir, {
+			recursive: true,
+			filter: (source) => !source.endsWith(".git"),
+		});
+	}
 	await writeFile(
 		join(projectDir, ".live-e2e-authorized"),
 		"isolated-live-model-fixture\n",
@@ -129,27 +138,27 @@ async function buildWorkspace(label: string): Promise<E2EWorkspace> {
 }
 
 async function gitSeed(ws: E2EWorkspace): Promise<void> {
-	const git = (args: string[]) =>
-		new Promise<void>((done, fail) => {
+	const gitCode = (args: string[]) =>
+		new Promise<number>((done, fail) => {
 			const proc = spawn("git", args, { cwd: ws.projectDir });
-			proc.on("exit", (code) =>
-				code === 0
-					? done()
-					: fail(new Error(`git ${args.join(" ")} -> ${code}`)),
-			);
+			proc.on("exit", (code) => done(code ?? -1));
 			proc.on("error", fail);
 		});
-	await git(["init"]);
-	await git(["-c", "user.email=e2e@local", "-c", "user.name=e2e", "add", "."]);
-	await git([
-		"-c",
-		"user.email=e2e@local",
-		"-c",
-		"user.name=e2e",
-		"commit",
-		"-m",
-		"seed: moyu snapshot",
-	]);
+	const identity = ["-c", "user.email=e2e@local", "-c", "user.name=e2e"];
+	await gitCode(["init"]);
+	await gitCode([...identity, "add", "."]);
+	// 复用现场时通常没有新改动：`git diff --cached --quiet` 返回 0 表示无需提交，
+	// 直接返回即可——不要把它当失败（累积跑的每一轮都会走到这里）。
+	const staged = await gitCode([...identity, "diff", "--cached", "--quiet"]);
+	if (staged !== 0) {
+		const committed = await gitCode([
+			...identity,
+			"commit",
+			"-m",
+			"seed: moyu snapshot",
+		]);
+		if (committed !== 0) throw new Error(`git commit -> ${committed}`);
+	}
 }
 
 interface Validation {
@@ -429,7 +438,11 @@ async function collectCalls(projectDir: string) {
 	};
 }
 
-const label = `2026-09-11-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+// 累积跑（TF-0163）：用 E2E_MOYU_LABEL 固定现场名，让多轮落进同一块黑板。
+// 不给就用「一次一个新现场」的旧行为（新现场之间行数不相加）。
+const label =
+	process.env.E2E_MOYU_LABEL ??
+	`${new Date().toISOString().slice(0, 10)}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 const ws = await buildWorkspace(label);
 console.log(`[moyu-live] 现场：${ws.projectDir}（源 ${MOYU_SRC}）`);
 await gitSeed(ws);
@@ -464,8 +477,12 @@ const report = {
 	limitations:
 		"模型回复与工具是真实执行；恢复手势、human/git 写者和线程编排由测试脚本驱动，不代表人工偏好或自然用户体验。L1 复核仍留给真人。",
 };
-const reportPath = join(ws.projectDir, "runs/live-moyu-report.json");
-await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+const round = Number(process.env.E2E_MOYU_ROUND ?? "1");
+const reportText = `${JSON.stringify({ round, ...report }, null, 2)}\n`;
+const reportPath = join(ws.projectDir, `runs/live-moyu-report-r${round}.json`);
+await writeFile(reportPath, reportText);
+// 同时写一份固定文件名，兼容既有报告引用。
+await writeFile(join(ws.projectDir, "runs/live-moyu-report.json"), reportText);
 console.log(
 	`[moyu-live] ${ok ? "通过" : "失败"}；模型响应 ${calls.length} 次；请求尝试 ${attempts.length} 次；报告 ${reportPath}`,
 );
