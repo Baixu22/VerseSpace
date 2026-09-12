@@ -16,8 +16,7 @@ export const liveTools = [
 		type: "function",
 		function: {
 			name: "Read",
-			description:
-				"读取隔离工作区 src/ 下的文本文件，可选 1-based offset/limit。",
+			description: "读取隔离工作区内的文本文件，可选 1-based offset/limit。",
 			parameters: {
 				type: "object",
 				properties: {
@@ -34,7 +33,7 @@ export const liveTools = [
 		type: "function",
 		function: {
 			name: "Write",
-			description: "将完整文本写入隔离工作区 src/ 下的文件。",
+			description: "将完整文本写入隔离工作区内的文件。",
 			parameters: {
 				type: "object",
 				properties: {
@@ -59,12 +58,15 @@ export async function executeLiveTool(
 	const args = argsSchema.parse(raw);
 	const path = args.file_path.replace(/\\/g, "/");
 	const segments = path.split("/");
+	// 隔离边界是**工作区根**而不是 src/：真实项目（如 moyu）的代码不在 src/ 下。
+	// 仍然守住：点文件/点目录被首字符正则挡掉（含 .workbench），控制器的 runs/
+	// 不对模型开放，逐段 lstat 挡符号链接。
 	if (
-		segments[0] !== "src" ||
-		segments.length < 2 ||
+		segments.length < 1 ||
+		segments[0] === "runs" ||
 		segments.some((part) => !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*$/.test(part))
 	) {
-		throw new Error("只允许 src/ 下的普通相对路径");
+		throw new Error("只允许工作区内的普通相对路径");
 	}
 	if (name === "Write" && readOnly) throw new Error("plan 模式不允许写文件");
 	for (let i = 1; i <= segments.length; i++) {

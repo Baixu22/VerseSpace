@@ -80,7 +80,11 @@ async function main() {
 		const turnSpans = spansFromUserText(input.message.content);
 		try {
 			let finished = false;
-			for (let hop = 0; hop < 6; hop++) {
+			for (
+				let hop = 0;
+				hop < Number(process.env.E2E_LLM_MAX_HOPS ?? 6);
+				hop++
+			) {
 				// 预算必须**每个 hop 各算一次**。此前 signal 建在循环外，50s 变成整轮
 				// 共享：真实开发回合（读需求 → 读实现 → 改 → 写，4+ hop）会在中途
 				// 耗尽，表现成上层「消息流超时」而看不到真正是第几 hop 断的。
@@ -179,7 +183,10 @@ async function main() {
 				}
 				if (finished) break;
 			}
-			if (!finished) throw new Error("真实模型达到 6 次工具循环上限");
+			if (!finished)
+				throw new Error(
+					`真实模型达到 ${process.env.E2E_LLM_MAX_HOPS ?? 6} 次工具循环上限`,
+				);
 			await writeFileAtomic(
 				join(dir, `${sessionId}.json`),
 				JSON.stringify(history),
