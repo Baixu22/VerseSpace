@@ -73,13 +73,20 @@ export async function statsCommand(command: Command): Promise<void> {
 	const landmarks = stats.landmarkReviews.current;
 	const threshold = stats.landmarkReviews.threshold;
 	console.log(
-		`地标认可（口径 ${landmarks.denominator}）：${landmarks.endorsed}/${landmarks.total} 个当前候选；已复核 ${landmarks.reviewed}/${landmarks.total}` +
+		`地标认可（口径 ${landmarks.denominator} · requireEdits ${landmarks.requireEdits}）：${landmarks.endorsed}/${landmarks.total} 个当前候选；已复核 ${landmarks.reviewed}/${landmarks.total}` +
 			`（${landmarks.reviewed === 0 ? "无复核样本" : `认可率 ${((landmarks.endorsedShare ?? 0) * 100).toFixed(1)}%`}，按写者隔离、最新复核计数；legacy ${landmarks.legacyReviews} 条）`,
 	);
 	// 双读数并报一个周期：口径换了读数会跳，两条并排，变化才归因得到尺子而不是产品。
 	console.log(
 		`  旧口径对照 ${threshold.denominator}：${threshold.endorsed}/${threshold.total}` +
 			`（${threshold.total === 0 ? "空集 → 不可计算" : `认可率 ${((threshold.endorsedShare ?? 0) * 100).toFixed(1)}%`}）；种类门排除 git/human 写者 ${landmarks.gatedWriters} 个`,
+	);
+	// 翻默认前的未过滤对照（requireEdits: false）：与主读数的差距即被过滤的纯浏览噪声。
+	// 双口径并报一个周期后撤。
+	const unfiltered = stats.landmarkReviews.unfiltered;
+	console.log(
+		`  未过滤对照 requireEdits: false：${unfiltered.endorsed}/${unfiltered.total}` +
+			`（${unfiltered.total === 0 ? "空集" : `认可率 ${((unfiltered.endorsedShare ?? 0) * 100).toFixed(1)}%`}；主读数已含「只认可落笔」过滤，2026-09-11 翻默认，对照并报一个周期）`,
 	);
 	if (!stats.siblingAlternation.available) {
 		console.log(`兄弟交替：暂不可测（${stats.siblingAlternation.reason}）`);

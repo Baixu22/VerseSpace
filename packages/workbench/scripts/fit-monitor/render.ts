@@ -103,6 +103,11 @@ export function renderMonitorReport(options: {
 		`- 相对选择的可计量性：有文件级触碰的会话 ${current.coverage.sessions} 个，其中 top-${current.coverage.k} 非空 ${current.coverage.withSet} 个（覆盖 ${fmt(current.coverage.share, 4)}，条目 ${current.coverage.items} 条，去重 handle ${current.coverage.distinctHandles} 个）。`,
 	);
 	lines.push(
+		current.unfiltered
+			? `- 未过滤对照 \`requireEdits: false\`（翻默认前的旧定义，2026-09-11 已把「只认可落笔」翻为默认）：候选 ${current.unfiltered.total} 条，已复核 ${current.unfiltered.reviewed} 条，认可率 ${fmt(current.unfiltered.endorsedShare, 4)}。与第一条的差距即被过滤的纯浏览噪声。`
+			: "- 未过滤对照：本样本未采（翻默认之前的历史样本里 natural 就是未过滤读数）。",
+	);
+	lines.push(
 		"- 两条并排是纪律：口径换了读数会跳，只有并报一个周期，变化才归因得到尺子而不是产品。",
 	);
 	lines.push("");
@@ -141,10 +146,10 @@ export function renderMonitorReport(options: {
 	lines.push("## 趋势");
 	lines.push("");
 	lines.push(
-		"| 采样时间 | 线程 | 写者 | 恢复 | 通知 | 封印 | 闸门 | 判决 1/2/3 | unknown | L1 认可率（新口径） | L1 认可率（旧口径） | 调用/尝试 |",
+		"| 采样时间 | 线程 | 写者 | 恢复 | 通知 | 封印 | 闸门 | 判决 1/2/3 | unknown | L1 认可率（新口径） | L1 认可率（旧口径） | L1 认可率（未过滤对照） | 调用/尝试 |",
 	);
 	lines.push(
-		"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+		"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
 	);
 	for (const sample of samples.slice(-12)) {
 		const statuses = sample.verdicts
@@ -158,7 +163,7 @@ export function renderMonitorReport(options: {
 			)
 			.join("/");
 		lines.push(
-			`| ${sample.at.slice(0, 19).replace("T", " ")} | ${sample.threads} | ${sample.writers} | ${sample.sampleWindow.restores} | ${sample.sampleWindow.noticeOutcomes} | ${sample.sampleWindow.sealDecisions} | ${sample.gate.open ? "开" : "关"} | ${statuses} | ${sample.histogram.unknown} | ${fmt(sample.natural.endorsedShare, 3)} | ${fmt(sample.threshold.endorsedShare, 3)} | ${sample.model.calls}/${sample.model.attempts} |`,
+			`| ${sample.at.slice(0, 19).replace("T", " ")} | ${sample.threads} | ${sample.writers} | ${sample.sampleWindow.restores} | ${sample.sampleWindow.noticeOutcomes} | ${sample.sampleWindow.sealDecisions} | ${sample.gate.open ? "开" : "关"} | ${statuses} | ${sample.histogram.unknown} | ${fmt(sample.natural.endorsedShare, 3)} | ${fmt(sample.threshold.endorsedShare, 3)} | ${sample.unfiltered ? fmt(sample.unfiltered.endorsedShare, 3) : "未采"} | ${sample.model.calls}/${sample.model.attempts} |`,
 		);
 	}
 	lines.push("");

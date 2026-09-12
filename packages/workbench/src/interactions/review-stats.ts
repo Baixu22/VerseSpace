@@ -2,6 +2,7 @@ import type { WorkbenchEvent } from "../types/event";
 import { sessionFileTopK } from "./context";
 import {
 	DEFAULT_LANDMARK_TOP_K,
+	DEFAULT_REQUIRE_EDITS,
 	isRecordingWriter,
 	type LandmarkCandidateOptions,
 	type LandmarkDenominator,
@@ -19,6 +20,7 @@ import { INTERACTIONS_SOURCE, INTERACTIONS_TYPE } from "./types";
 // 让既有调用点继续从 review-stats 取——两个入口，一份实现。
 export {
 	DEFAULT_LANDMARK_TOP_K,
+	DEFAULT_REQUIRE_EDITS,
 	isRecordingWriter,
 	type LandmarkCandidateOptions,
 	type LandmarkDenominator,
@@ -111,6 +113,8 @@ export type LandmarkAcceptance = Judgement & {
 	/** 这份读数是哪把尺子量出来的：读数自带口径，两次快照才归因得到变化。 */
 	denominator: LandmarkDenominator;
 	topK: number;
+	/** 是否只认可有落笔（edit）的候选：读数自带，口径变了数字会跳，必须能归因。 */
+	requireEdits: boolean;
 	/** 被种类门排除的写者数（git/human）：既不进分母也不进分子。 */
 	gatedWriters: number;
 	/**
@@ -143,6 +147,7 @@ export function currentLandmarkAcceptance(
 ): LandmarkAcceptance {
 	const denominator = options.denominator ?? "threshold";
 	const topK = options.topK ?? DEFAULT_LANDMARK_TOP_K;
+	const requireEdits = options.requireEdits ?? DEFAULT_REQUIRE_EDITS;
 	// 只认「有过交互事件的写者」：注册了但一条都没动过的写者不该出现在 byWriter 里，
 	// 否则「这个写者没有地标」会被记成一条 0 分母的行，与「根本没人干活」混在一起。
 	const active = new Set<string>();
@@ -171,7 +176,12 @@ export function currentLandmarkAcceptance(
 		if (!active.has(writer.id)) continue;
 		candidatesByWriter.set(
 			writer.id,
-			landmarkCandidates(events, writer.id, { denominator, topK, now }),
+			landmarkCandidates(events, writer.id, {
+				denominator,
+				topK,
+				now,
+				requireEdits,
+			}),
 		);
 	}
 	const inSet = new Set<string>();
@@ -203,6 +213,7 @@ export function currentLandmarkAcceptance(
 		...totals,
 		denominator,
 		topK,
+		requireEdits,
 		gatedWriters,
 		legacyReviews,
 		endorsedShare: totals.total > 0 ? totals.endorsed / totals.total : null,

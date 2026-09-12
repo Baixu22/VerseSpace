@@ -11,6 +11,11 @@
 
 import type { WorkbenchEvent } from "../types/event";
 import { interestFromEvents, sessionFileTopK } from "./context";
+import {
+	INTERACTIONS_SOURCE,
+	INTERACTIONS_TYPE,
+	type InteractionEvent,
+} from "./types";
 
 /** 写者身份的最小投影：L1 只需 id 与 kind。门一旦依赖更多信息就不再是「最窄的门」。 */
 export interface WriterRef {
@@ -52,11 +57,52 @@ export type LandmarkDenominator = "threshold" | "session-top-k";
 /** 相对口径的默认 K：与 positioning-v6 §11「每会话 3–5 条」的下沿一致。 */
 export const DEFAULT_LANDMARK_TOP_K = 3;
 
+/**
+ * 「只有触碰、没有落笔」的候选是否算地标。**默认 true（只认可产出）**。
+ *
+ * 依据是 2026-09-11 两轮真人复核（VAS1EM + 1OioVM，共 22 条真实候选）：
+ * 用户判据是「是否承载该会话的主要分析或实际改动」，据此驳回的 10 条里
+ * **全部**都是「只有 selection、没有 edit」（纯浏览），而认可的 12 条里
+ * **11 条有 edit**。「有没有落笔」在两轮里命中 21/22 = 95.5%；加上**只读会话
+ * 豁免**（整段会话零落笔时过滤退位）后 22/22。
+ *
+ * **翻默认记录（2026-09-11，用户决策）**：翻默认的三条前置全部完成后显式切换——
+ * ① 新口径集合重跑真人复核：VAS1EM 6/6、1OioVM 9/9（含 3 条全新人答）= 1.0000，
+ *   均 ≥ 0.8（TF-0057 判据满足）；② 只读会话豁免落库（n=1 诚实声明在案）；
+ * ③ 双口径并报基础设施落库（stats/CLI/账本/监控/队列五处）。旧口径（不过滤）
+ * 在同一批真人回答下是 VAS1EM 0.6000、1OioVM 0.5000——差距就是被过滤的纯浏览噪声。
+ * 证据与过程：`docs/tf-0161-require-edits-measurement.md`。**回滚 = 显式传
+ * `requireEdits: false`**（队列的回滚开关是 `--unfiltered`），对照读数保留一个周期。
+ */
+export const DEFAULT_REQUIRE_EDITS = true;
+
 export interface LandmarkCandidateOptions {
 	denominator?: LandmarkDenominator;
 	topK?: number;
 	/** 判定路径的参考时刻默认取会话时钟，这里只作为它对不齐时的回退值。 */
 	now?: number;
+	/**
+	 * 只保留**至少有一次落笔（edit）**的候选（默认 `DEFAULT_REQUIRE_EDITS`，
+	 * 2026-09-11 已翻默认为开）。
+	 *
+	 * 为什么这是「清噪声」而不是「误杀真信号」：两轮真实现场实测，被驳回的
+	 * 纯浏览候选（`src/notes.md`、分叉里只 selection 的 `src/family.ts`、
+	 * 被复核的 `src/base-url.ts`）与认可候选的区别不在「碰得多不多」，而在
+	 * **有没有留下改动**。它按 `kind` 判，不看内容、不看频率，和种类门同一个
+	 * 设计原则——**门只看最窄的那个信号**。
+	 *
+	 * **只读会话豁免**：整段会话一次 edit 都没有时，过滤退位、原样返回。
+	 * 依据是 22 条真人标注上的规则对比（`landmark-readonly-session-sweep.ts`）：
+	 * 条目级过滤命中 21/22，唯一错判就是「专门去复核某个文件」的会话
+	 * （VAS1EM `21273cbd`，只读是它的工作本身）；加上豁免后 22/22，且豁免
+	 * 只多留零落笔会话的候选、不恢复任何有落笔会话里的纯浏览项（1OioVM
+	 * 集合不变，VAS1EM 5 → 6，多出的恰是被认可的那条）。豁免按会话级判，
+	 * 仍只看「有没有 edit」这一个信号。
+	 *
+	 * **回滚**：传 `requireEdits: false` 得到翻默认前的未过滤集合（对照读数
+	 * 与回滚开关都用它，保留一个周期）。
+	 */
+	requireEdits?: boolean;
 }
 
 /**
@@ -72,16 +118,41 @@ export function landmarkCandidates(
 	options: LandmarkCandidateOptions = {},
 ): string[] {
 	const now = options.now ?? Date.now();
-	if ((options.denominator ?? "threshold") === "session-top-k") {
-		return sessionFileTopK(
-			events,
-			writer,
-			options.topK ?? DEFAULT_LANDMARK_TOP_K,
-			now,
-		);
-	}
-	// 阈值口径：DOI > landmarkFloor 且为文件级。2026-09-11 实测目录占 33%–75%，
-	// 且阈值越低占比越高——「调低阈值提高覆盖」会把分母越调越脏。
-	return interestFromEvents(events, writer, now, { clock: "session" })
-		.fileLandmarkHandles;
+	const raw =
+		(options.denominator ?? "threshold") === "session-top-k"
+			? sessionFileTopK(
+					events,
+					writer,
+					options.topK ?? DEFAULT_LANDMARK_TOP_K,
+					now,
+				)
+			: // 阈值口径：DOI > landmarkFloor 且为文件级。2026-09-11 实测目录占 33%–75%，
+				// 且阈值越低占比越高——「调低阈值提高覆盖」会把分母越调越脏。
+				interestFromEvents(events, writer, now, { clock: "session" })
+					.fileLandmarkHandles;
+	if (!(options.requireEdits ?? DEFAULT_REQUIRE_EDITS)) return raw;
+	// 只保留有过落笔的候选。**先尺后门**在这里不成立：这条过滤必须作用在
+	// 「已经被尺子选出来的集合」上，替换掉纯浏览项，而不是在排序前过滤——
+	// 否则 top-K 的 K 会被过滤前后的一致性问题搅乱（K 是「问人几条」的预算，
+	// 不是「过滤后还剩几条」）。所以按原顺序筛，保住集合的确定性。
+	const edited = new Set(
+		events
+			.filter((event) => {
+				if (
+					event.source !== INTERACTIONS_SOURCE ||
+					event.type !== INTERACTIONS_TYPE
+				)
+					return false;
+				const item = event.payload as Partial<InteractionEvent> | null;
+				if (!item || item.origin !== writer) return false;
+				return item.kind === "edit";
+			})
+			.map((event) => (event.payload as InteractionEvent).handle),
+	);
+	// 只读会话豁免：整段会话一次落笔都没有时，「读」就是它的工作（复核、审计、
+	// 纯阅读会话），条目级过滤会把它的全部候选清成空集——那不是清噪声，是把
+	// 唯一能填 human 那格的路径堵死（VAS1EM `21273cbd` 实测误杀）。豁免按
+	// 会话级判：只看该写者有没有 edit 事件，不看频率、不看内容。
+	if (edited.size === 0) return raw;
+	return raw.filter((handle) => edited.has(handle));
 }

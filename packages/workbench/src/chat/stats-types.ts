@@ -106,6 +106,13 @@ export interface ChatStats {
 		 * 没有真人时它让这条链路仍然可读、可监控，human 那格照旧空着。
 		 */
 		steward: LandmarkAcceptance;
+		/**
+		 * **未过滤对照**（`requireEdits: false` 显式回滚，翻默认前的旧定义）：
+		 * 2026-09-11 已把「只认可落笔（含只读会话豁免）」翻成默认——`current`
+		 * 从此就是过滤后的读数，这一栏留作对照，与 current 的差距即被过滤的
+		 * 纯浏览噪声。并报一个周期后撤。
+		 */
+		unfiltered: LandmarkAcceptance;
 		/** 相对选择的可计量性：有文件级触碰的会话里，多少能排出非空的 top-K。 */
 		coverage: RelativeLandmarkCoverage;
 	};

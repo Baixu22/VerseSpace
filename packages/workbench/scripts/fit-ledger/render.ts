@@ -171,6 +171,7 @@ export function renderMarkdown(report: Report): string {
 		threshold,
 		steward,
 		coverage,
+		unfiltered,
 	} = report.landmarkReviews;
 	const pct = (value: number | null): string =>
 		value === null
@@ -179,9 +180,10 @@ export function renderMarkdown(report: Report): string {
 	lines.push(
 		"## 地标集合认可（L1）",
 		"",
-		`- **新口径 \`${landmarks.denominator}\`**（每会话文件级 top-${landmarks.topK}，叠加种类门）：当前候选 ${landmarks.total} 个，已复核 ${landmarks.reviewed} 个，认可 ${landmarks.endorsed} 个，不认可 ${landmarks.rejected} 个。`,
+		`- **新口径 \`${landmarks.denominator}\`**（每会话文件级 top-${landmarks.topK}，叠加种类门 + 「只认可落笔」过滤，requireEdits ${landmarks.requireEdits}）：当前候选 ${landmarks.total} 个，已复核 ${landmarks.reviewed} 个，认可 ${landmarks.endorsed} 个，不认可 ${landmarks.rejected} 个。`,
 		`  - 完整集合认可率 ${pct(landmarks.endorsedShare)}；复核覆盖率 ${pct(landmarks.reviewedCoverage)}。`,
 		`- **旧口径 \`${threshold.denominator}\`**（DOI>10 的文件级集合，历史可比）：当前地标 ${threshold.total} 个，已复核 ${threshold.reviewed} 个，认可 ${threshold.endorsed} 个 → 认可率 ${pct(threshold.endorsedShare)}，复核覆盖 ${pct(threshold.reviewedCoverage)}。`,
+		`- **未过滤对照 \`requireEdits: false\`**（翻默认前的旧定义）：当前候选 ${unfiltered.total} 个，已复核 ${unfiltered.reviewed} 个，认可 ${unfiltered.endorsed} 个 → 认可率 ${pct(unfiltered.endorsedShare)}。与第一条的差距即被过滤的纯浏览噪声（2026-09-11 翻默认，对照并报一个周期）。`,
 		`- 相对选择的可计量性：有文件级触碰的会话 ${coverage.sessions} 个，其中排得出非空 top-${coverage.k} 的 ${coverage.withSet} 个（覆盖 ${pct(coverage.share)}，条目 ${coverage.items} 条，去重 handle ${coverage.distinctHandles} 个）。`,
 		`- 种类门排除 git/human 写者 ${landmarks.gatedWriters} 个（记录的是「文件被动过」，不是「这次干的活是什么」）。`,
 		`- 代理自审口径（真实数据，但**不构成用户认可**）：候选 ${steward.total} 个，已复核 ${steward.reviewed} 个，认可率 ${pct(steward.endorsedShare)}。`,
@@ -189,7 +191,7 @@ export function renderMarkdown(report: Report): string {
 		"",
 		"**为什么有两把尺子**：旧口径要求「同一条 handle 在衰减窗口内被推过 10 分」，而真实形状是很多文件各被碰一两次（权重 1–2），跨四个现场实测门后有**三个直接是空集**——分母空了，判据不是 0 分而是**不可计算**。新口径是**换定义**，不是修 bug；双读数期两条并排，满一个周期后再撤旧的那条。",
 		"",
-		"来源：`stats.landmarkReviews.current`（新）/ `.threshold`（旧）/ `.coverage`。分母包含未复核条目；每个写者的每个条目只取最新结论，重复反馈不累加成认可率。",
+		"来源：`stats.landmarkReviews.current`（新，含只认可落笔过滤）/ `.threshold`（旧阈值）/ `.unfiltered`（未过滤对照）/ `.coverage`。分母包含未复核条目；每个写者的每个条目只取最新结论，重复反馈不累加成认可率。",
 		"",
 	);
 	if (report.evidenceKind !== "natural" && landmarks.reviewed > 0) {

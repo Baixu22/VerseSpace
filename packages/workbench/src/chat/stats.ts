@@ -189,9 +189,10 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 		noticeOutcomes: foldNoticeOutcomes(events),
 		landmarkReviews: {
 			...foldLandmarkReviews(events),
-			// L1 的主读数走**新口径**（每会话文件级 top-K，TF-0159）：门后阈值口径在
-			// 四个真实现场全部归零，分母空了判据不是 0 分而是不可计算。这一格是 human
-			// 口径，只有真人回答才会动；steward 自审另占一格，绝不并入。
+			// L1 的主读数走**新口径**（每会话文件级 top-K + 种类门 + 只认可落笔过滤，
+			// TF-0159 + TF-0161 后续）：门后阈值口径在四个真实现场全部归零，分母空了
+			// 判据不是 0 分而是不可计算。这一格是 human 口径，只有真人回答才会动；
+			// steward 自审另占一格，绝不并入。
 			current: currentLandmarkAcceptance(
 				landmarkEvents,
 				writerRefs,
@@ -210,6 +211,16 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 				Date.now(),
 				"steward",
 				{ denominator: "session-top-k" },
+			),
+			// 翻默认前的**未过滤对照**（requireEdits: false 显式回滚，2026-09-11
+			// 翻默认）：与 current 的差距就是被过滤的纯浏览噪声（两现场实测
+			// 0.6000/0.5000 → 1.0000）。并报一个周期后撤。
+			unfiltered: currentLandmarkAcceptance(
+				landmarkEvents,
+				writerRefs,
+				Date.now(),
+				"human",
+				{ denominator: "session-top-k", requireEdits: false },
 			),
 			// 相对选择的可计量性：不切口径也要能看见「切了会不会有集合」。
 			coverage: relativeLandmarkCoverage(landmarkEvents, writerRefs),

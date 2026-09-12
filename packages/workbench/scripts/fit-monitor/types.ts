@@ -89,6 +89,18 @@ export interface MonitorSample {
 		endorsedShare: number | null;
 		reviewedCoverage: number | null;
 	};
+	/**
+	 * **未过滤对照**（`requireEdits: false` 显式回滚）：2026-09-11 已把
+	 * 「只认可落笔（含只读会话豁免）」翻成默认，`natural` 从此就是过滤后的
+	 * 读数；这一栏与 natural 的差距即被过滤的纯浏览噪声。**可选**：翻默认之前的
+	 * 历史样本没采过这一口径（当时 natural 就是未过滤读数），渲染报「未采」。
+	 */
+	unfiltered?: {
+		total: number;
+		reviewed: number;
+		endorsed: number;
+		endorsedShare: number | null;
+	};
 	restoreToMessage: {
 		samples: number;
 		medianChangeRatio: number | null;

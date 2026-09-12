@@ -251,6 +251,14 @@ export async function buildSample(options: {
 			endorsedShare: stats.landmarkReviews.steward.endorsedShare,
 			reviewedCoverage: stats.landmarkReviews.steward.reviewedCoverage,
 		},
+		// 未过滤对照（requireEdits: false）：2026-09-11 翻默认后，natural 已含
+		// 「只认可落笔」过滤；这一栏与 natural 的差距即被过滤的纯浏览噪声。
+		unfiltered: {
+			total: stats.landmarkReviews.unfiltered.total,
+			reviewed: stats.landmarkReviews.unfiltered.reviewed,
+			endorsed: stats.landmarkReviews.unfiltered.endorsed,
+			endorsedShare: stats.landmarkReviews.unfiltered.endorsedShare,
+		},
 		restoreToMessage: {
 			samples: stats.lifecycle.restoreToMessage.withCard.samples,
 			medianChangeRatio: stats.lifecycle.restoreToMessage.medianChangeRatio,

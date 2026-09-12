@@ -62,6 +62,31 @@ async function register(bb: Blackboard, id: string, kind: string) {
 	});
 }
 
+/** 只有浏览、没有落笔：两轮真人复核里被驳回 10 条的共同形状。 */
+async function appendSelections(
+	bb: Blackboard,
+	origin: string,
+	handle: string,
+	times: number,
+): Promise<void> {
+	for (let index = 0; index < times; index += 1) {
+		const time = new Date().toISOString();
+		await bb.events.append({
+			timestamp: time,
+			source: INTERACTIONS_SOURCE,
+			type: INTERACTIONS_TYPE,
+			payload: {
+				time,
+				kind: "selection",
+				origin,
+				contentType: contentTypeOf(handle),
+				handle,
+				delta: 0,
+			},
+		});
+	}
+}
+
 describe("种类门（TF-0161 候选 D）", () => {
 	test("记录型种类不进候选：git/human 既不进分母，也不能被复核", async () => {
 		const ws = await makeTempWorkbench();
@@ -287,6 +312,149 @@ describe("结论连续性（TF-0159 §2.2）", () => {
 				"src/hot.ts",
 				"src/warm.ts",
 			]);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+});
+
+/**
+ * 「只认可落笔（requireEdits）」的候选过滤（TF-0161 后续）。
+ *
+ * 证据是 2026-09-11 两轮真人复核（VAS1EM + 1OioVM，22 条文件级真实候选）：
+ * 被驳回的 10 条**全部**是「只有 selection、没有 edit」的纯浏览项，条目级规则
+ * 命中 21/22 = 95.5%；加上**只读会话豁免**（整段会话零落笔时过滤退位）后
+ * 22/22（`landmark-readonly-session-sweep.ts`）。**2026-09-11 已翻默认**
+ * （前置 ①②③ 完成后用户决策，记录在 tf-0161 文档）。用例锁住五件事：
+ * ① 默认**开**——纯浏览项默认出局；② 显式 `requireEdits: false` 是回滚开关；
+ * ③ 开了以后只清纯浏览、不动有落笔的候选；④ 零落笔会话被豁免、不被清零；
+ * ⑤ 豁免只救零落笔会话——有落笔会话里的纯浏览项照清（豁免不成为噪声的后门）。
+ */
+describe("候选过滤：只认可落笔（requireEdits）", () => {
+	test("默认开（2026-09-11 翻默认）：不传 requireEdits 时纯浏览项被过滤；显式 false 是回滚开关", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const agent = await chat.create("A");
+			// 一个只浏览的文件（selection）与一个真落笔的文件（edit）。
+			await appendSelections(ws.bb, agent.id, "src/read-only.ts", 2);
+			await appendEdits(ws.bb, agent.id, "src/real-work.ts", 1);
+			const events = await ws.bb.events.all();
+			// 翻默认后的行为：纯浏览项默认出局，落笔项留下。
+			const byDefault = landmarkCandidates(events, agent.id, {
+				denominator: "session-top-k",
+			});
+			expect(byDefault).toEqual(["src/real-work.ts"]);
+			// 回滚开关：显式 false 回到翻默认前的未过滤集合（对照读数用）。
+			const rollback = landmarkCandidates(events, agent.id, {
+				denominator: "session-top-k",
+				requireEdits: false,
+			});
+			expect(rollback).toContain("src/read-only.ts");
+			expect(rollback).toContain("src/real-work.ts");
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("开启后只清纯浏览：有落笔的候选一条不少（不误杀真信号）", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const agent = await chat.create("A");
+			// read-only 只被反复查看却从不落笔（两轮实测的驳回形状）。
+			await appendSelections(ws.bb, agent.id, "src/read-only.ts", 20);
+			// real-work 有落笔：即便触碰次数远少于前者，也必须留下。
+			await appendEdits(ws.bb, agent.id, "src/real-work.ts", 1);
+			const events = await ws.bb.events.all();
+
+			const filtered = landmarkCandidates(events, agent.id, {
+				denominator: "session-top-k",
+				requireEdits: true,
+			});
+			expect(filtered).toEqual(["src/real-work.ts"]);
+			// 过滤按 kind 判，不看频率：刷 20 次 selection 也进不来，
+			// 而 1 次 edit 足以留下——这才是「不误杀真信号」的含义。
+			expect(filtered).not.toContain("src/read-only.ts");
+
+			// 读数自带口径：账本与复核队列据此归因，不靠字段名猜。
+			const reading = currentLandmarkAcceptance(
+				events,
+				[{ id: agent.id, kind: "agent" }],
+				Date.now(),
+				"human",
+				{ denominator: "session-top-k", requireEdits: true },
+			);
+			expect(reading.requireEdits).toBe(true);
+			expect(reading.total).toBe(1);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("阈值口径下同样生效：有落笔会话里的纯浏览地标默认被清掉", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const agent = await chat.create("A");
+			// noisy 被反复查看推过阈值线（selection 权重 1 × 12 > floor 10），
+			// edited 有真实落笔（6 × 2 = 12 > 10）。会话有落笔，豁免不适用，
+			// 过滤照常工作：noisy 出局、edited 留下——翻默认后这已是默认行为。
+			await appendSelections(ws.bb, agent.id, "src/noisy.ts", 12);
+			await appendEdits(ws.bb, agent.id, "src/edited.ts", 6);
+			const events = await ws.bb.events.all();
+			// 默认（阈值口径 + 过滤开）：noisy 不再是地标候选。
+			expect(
+				landmarkCandidates(events, agent.id, { denominator: "threshold" }),
+			).toEqual(["src/edited.ts"]);
+			// 回滚（显式 false）：未过滤集合里 noisy 还在——对照读数用。
+			expect(
+				landmarkCandidates(events, agent.id, {
+					denominator: "threshold",
+					requireEdits: false,
+				}),
+			).toContain("src/noisy.ts");
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("只读会话豁免：整段会话零落笔时，浏览型候选原样保留（不清零）", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const reviewer = await chat.create("review");
+			// 复核型会话的形状（VAS1EM 21273cbd）：只读不写。它唯一的工作就是
+			// 去读那个文件——条目级过滤对这种会话退位，否则读数被整体清零。
+			await appendSelections(ws.bb, reviewer.id, "src/base-url.ts", 1);
+			const events = await ws.bb.events.all();
+			expect(
+				landmarkCandidates(events, reviewer.id, {
+					denominator: "session-top-k",
+					requireEdits: true,
+				}),
+			).toEqual(["src/base-url.ts"]);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("只读会话豁免在阈值口径下同样成立：纯浏览地标不被清成空集", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const reviewer = await chat.create("review");
+			await appendSelections(ws.bb, reviewer.id, "src/reviewed.ts", 12);
+			const events = await ws.bb.events.all();
+			expect(
+				landmarkCandidates(events, reviewer.id, { denominator: "threshold" }),
+			).toContain("src/reviewed.ts");
+			expect(
+				landmarkCandidates(events, reviewer.id, {
+					denominator: "threshold",
+					requireEdits: true,
+				}),
+			).toContain("src/reviewed.ts");
 		} finally {
 			await ws.cleanup();
 		}

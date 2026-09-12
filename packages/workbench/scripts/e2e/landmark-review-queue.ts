@@ -17,6 +17,7 @@
  * 用法：
  *   bun scripts/e2e/landmark-review-queue.ts                       # 打印队列（抽样 5 会话）
  *   bun scripts/e2e/landmark-review-queue.ts --all-sessions        # 全量（不再抽样）
+ *   bun scripts/e2e/landmark-review-queue.ts --unfiltered          # 回滚：未过滤集合出题
  *   bun scripts/e2e/landmark-review-queue.ts --out ../../docs/landmark-review-queue.md
  *   bun scripts/e2e/landmark-review-queue.ts --template answers.json
  *   bun scripts/e2e/landmark-review-queue.ts --apply answers.json
@@ -76,6 +77,15 @@ if (!blackboardAt) {
 const denominator: LandmarkDenominator =
 	at("--denominator") === "threshold" ? "threshold" : "session-top-k";
 const topK = Number(at("--top-k") ?? String(DEFAULT_LANDMARK_TOP_K));
+/**
+ * 「只认可落笔」口径（TF-0161 后续）：**2026-09-11 已翻默认**——队列默认按
+ * 过滤后的集合出题（条目级过滤 + 只读会话豁免，`DEFAULT_REQUIRE_EDITS = true`）。
+ * 回滚开关 `--unfiltered` 用翻默认前的未过滤集合出题（对照用）。
+ * 过滤后的集合是未过滤集合的子集，所以两种口径出的每一条都回填得进去
+ * （reviewLandmark 的接受集是两口径候选 ∪ 投影表）。
+ */
+const unfiltered = has("--unfiltered");
+const requireEdits = !unfiltered;
 /** 默认抽样 5 个会话（tf-0159 §2.3）：全量 192 条人评不了，15 条在十分钟预算内。 */
 const sampleN = Number(at("--sample-n") ?? "5");
 const allSessions = has("--all-sessions");
@@ -205,6 +215,7 @@ async function buildQueue(): Promise<QueueReport> {
 		const handles = landmarkCandidates(events, writer.id, {
 			denominator,
 			topK,
+			requireEdits,
 		});
 		// 标定信号：门后阈值口径还剩几条。本轮四现场实测 = 0，这就是切分母的依据，
 		// 它必须一直看得见——否则「为什么用相对口径」半年后就没人说得清了。
@@ -368,6 +379,7 @@ if (applyPath) {
 	// 全站读数与「本次问到的部分」必须分开报：只答了抽样的 5 个会话时，两者的分母
 	// 差着十几倍，并排放才不会被当成指标涨跌。L1 的判据读数取**全站**（账本 TF-0154
 	// 读的也是全站），所以下面这条才是能不能收口 TF-0057 的那一个数。
+	// 全站读数跟**出题口径**走（含 requireEdits）：人答的是哪个集合，读数就算哪个集合。
 	const allEvents = await bb.events.all();
 	const now = Date.now();
 	const siteWide = currentLandmarkAcceptance(
@@ -375,10 +387,10 @@ if (applyPath) {
 		after.writerRefs,
 		now,
 		applySource,
-		{ denominator: "session-top-k" },
+		{ denominator: "session-top-k", requireEdits },
 	);
 	console.log(
-		`全站读数（口径 ${siteWide.denominator} · 全部 ${after.candidateSessions} 个候选会话）：认可 ${siteWide.endorsed} / 全部候选 ${siteWide.total} = ${cn(siteWide.endorsedShare)}（复核覆盖 ${cn(siteWide.reviewedCoverage)}；未复核 ${siteWide.total - siteWide.reviewed} 条）`,
+		`全站读数（口径 ${siteWide.denominator} · requireEdits ${siteWide.requireEdits} · 全部 ${after.candidateSessions} 个候选会话）：认可 ${siteWide.endorsed} / 全部候选 ${siteWide.total} = ${cn(siteWide.endorsedShare)}（复核覆盖 ${cn(siteWide.reviewedCoverage)}；未复核 ${siteWide.total - siteWide.reviewed} 条）`,
 	);
 	// 双读数并报一个周期：口径换了读数会跳，两条并排才归因得到口径而不是产品。
 	const threshold = currentLandmarkAcceptance(
@@ -389,6 +401,17 @@ if (applyPath) {
 	);
 	console.log(
 		`阈值口径读数（历史可比 · 全站）：认可 ${threshold.endorsed} / 全部 ${threshold.total} = ${cn(threshold.endorsedShare)}${threshold.total === 0 ? "（空集 → 不可计算，正是切口径的依据）" : ""}`,
+	);
+	// 「未过滤」对照（翻默认前的旧定义）：与主读数的差距即被过滤的纯浏览噪声。
+	const counterpart = currentLandmarkAcceptance(
+		allEvents,
+		after.writerRefs,
+		now,
+		applySource,
+		{ denominator: "session-top-k", requireEdits: !requireEdits },
+	);
+	console.log(
+		`未过滤对照（requireEdits: ${!requireEdits} · 全站）：认可 ${counterpart.endorsed} / 全部候选 ${counterpart.total} = ${cn(counterpart.endorsedShare)}${requireEdits ? "（主读数已含过滤，2026-09-11 翻默认）" : ""}`,
 	);
 	// 自审口径单独报一行：它是真实数据，但和「用户认可」不是同一件事，绝不并列成一个数
 	if (applySource === "steward") {
@@ -447,7 +470,7 @@ if (applyPath) {
 		`- 黑板：\`${bb.paths.root}\` · 写者 ${report.writersTotal} 个（种类门排除 git/human ${report.gatedWriters} 个）`,
 	);
 	lines.push(
-		`- 分母口径：\`${denominator}\`${denominator === "session-top-k" ? `（每会话文件级 top-${topK}）` : "（DOI>10 的文件级集合）"} · 范围 ${scopeLabel}`,
+		`- 分母口径：\`${denominator}\`${denominator === "session-top-k" ? `（每会话文件级 top-${topK}）` : "（DOI>10 的文件级集合）"} · 候选过滤 \`requireEdits: ${requireEdits}\`${requireEdits ? "（只认可落笔 + 只读会话豁免，2026-09-11 翻默认）" : "（--unfiltered 回滚对照）"} · 范围 ${scopeLabel}`,
 	);
 	lines.push(
 		`- 当前读数（只含本次范围内的 ${report.sampledSessions} 个会话）：认可 ${judgement.endorsed} / 全部候选 ${judgement.total} = ${cn(judgement.endorsedShare)}；复核覆盖 ${cn(judgement.reviewedCoverage)}`,
@@ -504,6 +527,6 @@ if (applyPath) {
 		process.stdout.write(text);
 	}
 	console.log(
-		`[landmark-queue] 口径 ${denominator} · 范围 ${scopeLabel} · 候选 ${judgement.total} 条，待复核 ${pendingRows.length} 条，无文件候选写者 ${report.starvedWriters} 个，当前认可率 ${cn(judgement.endorsedShare)}`,
+		`[landmark-queue] 口径 ${denominator} · requireEdits ${requireEdits} · 范围 ${scopeLabel} · 候选 ${judgement.total} 条，待复核 ${pendingRows.length} 条，无文件候选写者 ${report.starvedWriters} 个，当前认可率 ${cn(judgement.endorsedShare)}`,
 	);
 }
