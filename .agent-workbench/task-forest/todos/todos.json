@@ -9,21 +9,25 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "workbench",
+      "benchmark-gate",
+      "fit-ledger"
+    ],
     "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0163",
+    "difficulty": "medium",
+    "id": "TF-0167",
     "kind": "task",
-    "next_action": "① 累积入口明确且可复现：`bun scripts/e2e/run.ts --live --rounds N --workspace <持久目录>`，每轮产出的 noticeOutcomes 行数落在 runs/history.jsonl，A 读数由 fit-ledger 直接给出，不手算。",
-    "priority": 3,
+    "next_action": "① B：在真实现场产生 ≥1 条「推定写者是 git 或人」的失效通知。做法应是让一次受控的**真实 git 提交**（或人写）在读者持有前提时使前提失效，并在节点里写清这与脚本手势的区别——脚本手势不能冒充写者身份。",
+    "priority": 2,
     "progress": 0.0,
-    "purpose": "把「闸门缺 A」从一句长期告警变成可执行的累积计划：明确样本源（多轮持久租户 `run.ts --rounds N --live --workspace <dir>`）、明确不许做假的红线（不得伪造经过的日期、不得把脚本手势计为真人认可、不得为凑行数放宽校准判据）、明确每轮的验收读数（A 行数单调上升 + 四路读数一致）。",
+    "purpose": "把「stale-premise benchmark 可以对外写」这件事收敛成明确的三个前置，并且每个前置都知道该由谁做、怎么算做完。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "proposed",
     "success_metrics": [],
-    "title": "把护城河 A（校准表 ≥ 50 行）当作长期样本累积项推进，而非单轮冲刺"
+    "title": "补齐 benchmark 闸门剩下的三项：B 的 git/human 写者、C 的人工封印复核、D 的比值带"
   }
 ]

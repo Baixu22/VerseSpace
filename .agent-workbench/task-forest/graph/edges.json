@@ -2974,5 +2974,17 @@
     "to": "TF-0147",
     "type": "child_of",
     "updated_at": "2026-09-12T09:33:18.063288Z"
+  },
+  "TFE-0252": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T12:09:41.715473Z",
+    "created_from_session": null,
+    "from": "TF-0167",
+    "id": "TFE-0252",
+    "reason": "四数字是「前提守护者」这个全局目标对外的 benchmark 前置，闸门补齐服务于同一目标",
+    "to": "TF-0057",
+    "type": "child_of",
+    "updated_at": "2026-09-12T12:09:41.715479Z"
   }
 }
