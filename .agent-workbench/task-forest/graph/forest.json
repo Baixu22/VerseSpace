@@ -5834,7 +5834,7 @@
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-12T07:17:13.330716Z",
+  "generated_at": "2026-09-12T07:20:31.058840Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -15653,7 +15653,7 @@
       ],
       "created_at": "2026-09-12T07:17:00.412083Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "low",
@@ -15661,15 +15661,19 @@
       "estimated_total_minutes": null,
       "evidence": [
         "（开工读数 2026-09-12）git status：19 个已跟踪文件被修改、15 项未跟踪（其中 5 个新脚本在 packages/workbench 下、8 个是 task-forest 提案、1 个是 docs 实测记录）。最后一次提交是 2211f24「feat(workbench): L1 口径收敛到 landmark-set 单一实现 + 本机 git ref 修复器」。",
-        "（改动规模）docs + packages 共 14 个文件、365 行插入 / 34 行删除；核心是地标候选的「只认可落笔」翻默认（+95 行）与 168 行回归用例，其余是五处读数面同步增加 requireEdits 字段。"
+        "（改动规模）docs + packages 共 14 个文件、365 行插入 / 34 行删除；核心是地标候选的「只认可落笔」翻默认（+95 行）与 168 行回归用例，其余是五处读数面同步增加 requireEdits 字段。",
+        "（落库结果）四笔提交落在分支 feat/premise-evidence-base：e1285a4「地标候选只认可落笔翻默认 + 五处读数面并报」13 文件 +883/-26；267e715「live 现场驱动支持非 src/ 的真实项目，工具循环上限可配」4 文件 +604/-8；00be0f3「实测记录 + positioning-v6 §11 第 6 条」2 文件 +135；dcc6c4f「森林状态与提交闸门节点」22 文件 +864/-211。整段 2211f24 → dcc6c4f 合计 41 文件 +2486/-245。只做本地提交：没有 push、没有 force、没有改写历史。",
+        "（验绿）`bunx tsc --noEmit` 干净；workbench 全量 **654 pass / 2 fail**——两个失败分别是 src/chat/credentials.test.ts 与 src/ui/server.test.ts，属 HEAD 既有失败（与项目 memory 记录一致，不是本轮引入，两个文件都不在本次改动集里）；改动核心区 `src/interactions/` 54 pass / 0 fail、scripts/fit-ledger 23/0、scripts/fit-monitor 18/0、src/chat/stats.test.ts 4/0。",
+        "（收尾对账）每次 git add 与 git commit 之后各跑一次 scripts/git-ref-repair.sh，全程重钉成功、没有出现 refs 清空；`git ls-files` 2482 → 2502（+5 = 2 个标定脚本 + 2 个 moyu 驱动 + 1 个实测文档，+15 = 新提案）；收尾 `git status --porcelain` = 0；本次建的临时脚本目录 .workbuddy/tmp/ 已删除（该目录未被 gitignore，不删会污染工作区）。"
       ],
       "execution_hints": [],
       "id": "TF-0164",
       "kind": "task",
+      "next_action": "已结项（2026-09-12）。四条验收全部满足：① 工作区 `git status --porcelain` = 0，四笔提交的主题各自说清了改了什么（口径与读数面 / 现场驱动 / 实测文档 / 森林状态）；② 验绿读数见证据栏，含两个 HEAD 既有失败的点名，且改动核心区全绿；③ 每次 git 写操作之后重钉 refs，全程没有出现 refs 清空，跟踪文件数 2482 → 2502 可逐项解释；④ 森林权威文件（nodes / forest / edges / events / todos / deviations 与 15 份提案）连同 TF-0164 本身一起落在 dcc6c4f，HTML 由 apply 之后的状态导出。真正的收口不是这一次提交，而是把「结项前先看工作区是否干净」当成惯例——已写进本节点的要求与项目 memory；导出体积（HTML 17.8 MB / timeline 108 MB）仍是未立节点的遗留项。",
       "non_goals": [],
       "primary_parent": "TF-0156",
       "priority": 1,
-      "progress": 0.0,
+      "progress": 1.0,
       "progress_source": "manual",
       "purpose": "消除「森林说完成、仓库里查不到」的漂移。阶段 A 已经立过一次同样的闸门（7 个提交），本轮是同一动作在 L1 线上的第二次；本机 git 有宿主钩子清空 refs 的毛病，所以每次写操作之后都要跑一次 ref 修复器。",
       "remaining_minutes_max": null,
@@ -15679,11 +15683,11 @@
         "森林的「完成」以代码入库为准；节点结项前先看工作区是否干净"
       ],
       "source_sessions": [],
-      "status": "in_progress",
+      "status": "done",
       "success_metrics": [],
       "summary": "上一轮把 L1 的「只认可落笔」翻成默认、把真实项目现场驱动补齐、把五处读数面统一之后，森林里三条节点都标了完成——但这些代码到 2026-09-12 还停在工作区里没有入库：19 个已跟踪文件被改动、5 个新脚本未跟踪。结果是「L1 = 1.0000、复核覆盖 100%」这个结论换一台机器就复现不出来。本节点把这一轮改动按主题分次提交落库，并把森林自身（节点图、事件、待办）与之一并入库，使森林里的完成状态能指向具体提交。",
       "title": "提交闸门（L1 线）：把地标口径翻默认这一轮的改动落库，让森林的「完成」有代码可指",
-      "updated_at": "2026-09-12T07:17:00.412132Z"
+      "updated_at": "2026-09-12T07:20:30.558507Z"
     }
   },
   "reason": "rebuild",
@@ -15708,8 +15712,7 @@
   },
   "status_queues": {
     "actionable_todos": [
-      "TF-0163",
-      "TF-0164"
+      "TF-0163"
     ],
     "blocked": [],
     "by_status": {
@@ -15879,11 +15882,10 @@
         "TF-0159",
         "TF-0160",
         "TF-0161",
-        "TF-0162"
-      ],
-      "in_progress": [
+        "TF-0162",
         "TF-0164"
       ],
+      "in_progress": [],
       "proposed": [
         "TF-0163"
       ],
@@ -15892,18 +15894,17 @@
     },
     "evergreen_open_goals": [],
     "open": [
-      "TF-0163",
-      "TF-0164"
+      "TF-0163"
     ],
     "ready": [],
     "review_needed": []
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 156,
+    "done_count": 157,
     "edge_count": 241,
     "node_count": 164,
-    "open_count": 2,
+    "open_count": 1,
     "review_needed_count": 0
   },
   "tree_edges": [

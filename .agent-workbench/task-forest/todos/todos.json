@@ -25,37 +25,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "把护城河 A（校准表 ≥ 50 行）当作长期样本累积项推进，而非单轮冲刺"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [
-      "workbench",
-      "l1",
-      "commit-gate",
-      "git"
-    ],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0164",
-    "kind": "task",
-    "next_action": "① 工作区干净：除临时目录外不再有未跟踪或未提交的改动，且每个提交在 git log 里的主题说清了「改了什么、为什么」。",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "消除「森林说完成、仓库里查不到」的漂移。阶段 A 已经立过一次同样的闸门（7 个提交），本轮是同一动作在 L1 线上的第二次；本机 git 有宿主钩子清空 refs 的毛病，所以每次写操作之后都要跑一次 ref 修复器。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "提交闸门（L1 线）：把地标口径翻默认这一轮的改动落库，让森林的「完成」有代码可指"
   }
 ]
