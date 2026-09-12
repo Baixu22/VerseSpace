@@ -1,0 +1,87 @@
+{
+  "applied_at": "2026-09-12T16:21:03.798987Z",
+  "base_graph_hash": "fb6b00c326e398089e447d7a8d1ef5afe3ba9ba2539d694be24bc9303cca8ace",
+  "base_summary": {
+    "edge_count": 249,
+    "node_count": 167,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "visible-boundary",
+      "node": {
+        "acceptance_criteria": [
+          "树的可见集合不变：仍只有 done/in_progress 及必要 child_of 祖先；validator 的「沟通 HTML 泄露未交付状态」断言原样保留并通过",
+          "导出校验器 validate_task_forest_export.py 固化新断言：hiddenOpenCount 与导出图对账、逐可见父节点 hiddenChildCount 对账、声明文案存在、存在未纳入项时至少一个父节点被标注",
+          "真森林导出实测：HTML 含 hiddenOpenCount 与「未完成项未纳入本页」；TF-0167 标题与内容仍不进页面"
+        ],
+        "confidence": 0.95,
+        "evidence": [
+          "（实测·改的文件）权威副本 ~/.workbuddy/skills/task-forest/ 四个文件：scripts/task_forest_html.py（HIDDEN_OPEN_STATUSES + 两处计数）、assets/task-forest-overview.html（概览条 metric 与 cardHtml 分支标注 + 两段 CSS）、references/html-visualization-contract.md（投影边界条款 + 验收条目）、SKILL.md（核心规则 6）。",
+          "（实测·单元 10/10）定向验证：proposed/deprecated 不进树、可见集合恒等于 done+in_progress+祖先、hiddenOpenCount==1、root.hiddenChildCount==1、done 叶子计数==0、概览条与卡片声明文案注入、未启动任务标题与 deprecated 标题均不泄露。首版「另有 1 项」断言写错（静态 HTML 里数字是运行时插入），修正为验证模板逻辑已注入后全过。",
+          "（实测·回归）validate_task_forest_export.py exit=0，且新断言已进 validate_exports：hiddenOpenCount 对账、逐父节点 hiddenChildCount 对账、文案存在、any_branch_flagged 检查。中途踩坑一次：old_string 匹配把 for node in visible_nodes: 循环体拆开报 IndentationError，已修复。",
+          "（实测·真森林）重导出 D:/helmor-main 后 grep：hiddenOpenCount 3 处、「未完成项未纳入本页」1 处、TF-0167 仍 0 匹配；git status --porcelain 干净（forest.json 出仓效果顺带复验）。",
+          "（未验证·诚实标注）浏览器端 JS 执行未点过——校验器是静态/JSON 级检查；新增模板字符串与既有 622 行同构，风险低但非零。"
+        ],
+        "kind": "task",
+        "non_goals": [
+          "不把 proposed/pending/blocked 节点放进投影树（那是改契约的另一个决定）",
+          "不改 events/快照/导出体量口径（TF-0147 已裁决：大是设计性的）"
+        ],
+        "progress": 1.0,
+        "progress_source": "manual",
+        "purpose": "让交付物在守住「不展示未开工内容」的同时，不再对读者隐瞒「还有多少未完成的活、挂在哪条分支上」——否则闭环讨论的答案在唯一交付面里不可见。",
+        "status": "done",
+        "summary": "task-forest.html 此前只渲染 done/in_progress 节点，概览也只给 doneCount/inProgressCount 两个数——唯一开口 TF-0167（proposed）在导出物里完全不存在，第一阅读者会把森林误读成全部完工。本次守住树的投影口径不变（契约「不展示未开始任务」依旧成立），把「隐瞒」改成「声明边界」：summary 增加 hiddenOpenCount（proposed/ready/blocked/review_needed 的未纳入总数），每个可见节点增加 hiddenChildCount（直接子节点中未纳入的未完成数，deprecated 不计）；概览条在 hiddenOpenCount>0 时显示「未完成项未纳入本页 N」，卡片显示「另有 N 项未完成未纳入本页」——开口既报总数也定位到分支。契约与 SKILL.md 同步加「投影边界必须声明：不展示 ≠ 隐瞒」。",
+        "title": "导出 HTML 声明投影边界：未纳入的未完成项不再被隐瞒"
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "visible-boundary",
+      "to": "TF-0147",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "landing-check",
+      "node": {
+        "acceptance_criteria": [
+          "非 git 仓库：跳过并说明，退出 0",
+          "git 仓库有 done 节点未提交：退出 1 并点名节点；提交后退出 0；提交后又标 done 的节点再次触发退出 1（TF-0164 场景重演）",
+          "--json 输出 suspect_count/head_sha/dirty_paths 可机读；真森林实测退出 0（dirty=0、suspects=0）"
+        ],
+        "confidence": 0.95,
+        "evidence": [
+          "（实测·端到端 16/16）临时工作区四场景：非 git → 退出 0 且说明；git 仓库未提交 → 退出 1 且列出「写了代码但没提交」节点、--json suspect_count>=1 且 head_sha 为空（无提交兜底）；git add -A + commit 后 → 退出 0 且疑似清零；提交后新建 done 节点 → 再次退出 1 并点名「提交之后又标完成的节点」。",
+          "（实测·真森林）D:/helmor-main：exit=0、dirty_count=0、suspect_count=0、HEAD=5295b664dccb——与「森林状态已随 TF-0164/0163 结项提交落库」一致。",
+          "（设计取舍）不按 kind 过滤疑似节点：决策/风险类节点本来不带代码，过滤会把「该判断的事」藏进工具；改为全列出并在输出里注明需人工判断。",
+          "（诚实标注）--grace 容忍时钟偏差的参数未加：当前两台写入方同机时钟，无需求；出现跨机写入再补。"
+        ],
+        "kind": "task",
+        "non_goals": [
+          "不做自动裁决或自动提交——只报告读数，符合「产品永不指挥」",
+          "不校验提案目录健康（那是缺口②提案分诊的事，待用户逐项确认）"
+        ],
+        "progress": 1.0,
+        "progress_source": "manual",
+        "purpose": "让「森林的 done 在仓库里查不到」这类漂移从两次踩坑后的口头纪律，变成结项流程里必跑且退出码可判的一步。",
+        "status": "done",
+        "summary": "TF-0144/TF-0164 两次踩到「验收通过、代码停在工作区」，处置至今只是记忆里「结项前先看 git status」一句话，没有任何可运行的检查。本次在 task_forest.py 新增 check-landing 子命令：对 workspace 定位 git 根，取 HEAD 提交时间与 porcelain 改动，列出 status=done 且 updated_at 晚于 HEAD 的节点（含仓库无提交时全部 done 兜底）。设计为只报告读数、不做裁决（符合产品「只观测与通知、永不指挥」判据）：疑似节点可能是纯森林/文档操作，也可能是代码未落库，处置由人判断。退出码 0/1 可直接当闸门，支持 --json。SKILL.md 命令表与 session-close-workflow.md 第 6 步同步。",
+        "title": "check-landing 子命令：把「done ≠ 已落库」的人肉纪律变成可跑的对账"
+      }
+    },
+    {
+      "action": "add_edge",
+      "from": "landing-check",
+      "to": "TF-0144",
+      "type": "child_of"
+    }
+  ],
+  "created_at": "2026-09-12T14:33:11.446380Z",
+  "proposal_id": "tf-closure-hardening-20260912",
+  "rationale": "闭环诊断（2026-09-12 夜）发现三处缺口：①交付面 HTML 只渲染 done/in_progress，唯一开口 TF-0167 在导出物里零匹配，读者会把「全部完工」误读成事实；②提案层 17 项悬空；③落库对账两次踩坑（TF-0144/TF-0164）但只有人肉纪律。用户选定先修①，并指示直接修复③。本提案把两项已完成并验证的修复记入森林：均改在 skill 权威副本 ~/.workbuddy/skills/task-forest/，不在仓库内，无落库负担。契约同步：html-visualization-contract.md 加「投影边界必须声明：不展示 ≠ 隐瞒」，SKILL.md 规则 6 与命令表、session-close-workflow.md 第 6 步同步更新。",
+  "session_id": "tf-closure-20260912",
+  "status": "applied"
+}
