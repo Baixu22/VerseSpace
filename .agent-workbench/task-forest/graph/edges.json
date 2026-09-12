@@ -2890,5 +2890,77 @@
     "to": "TF-0057",
     "type": "contributes_to",
     "updated_at": "2026-09-12T07:17:00.412817Z"
+  },
+  "TFE-0245": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:27:34.804904Z",
+    "created_from_session": null,
+    "from": "TF-0147",
+    "id": "TFE-0245",
+    "reason": "该裁决澄清的是 TF-0144 这个提交闸门的产物口径（clarifies 边已存在），归属阶段 A 的证据与架构地基，而不是悬在根层",
+    "to": "TF-0121",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:27:34.804911Z"
+  },
+  "TFE-0246": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:27:34.805473Z",
+    "created_from_session": null,
+    "from": "TF-0152",
+    "id": "TFE-0246",
+    "reason": "该任务是 TF-0147 裁决里「events.jsonl 冗余属引擎缺陷」那一条的承载节点",
+    "to": "TF-0147",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:27:34.805477Z"
+  },
+  "TFE-0247": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:27:34.805956Z",
+    "created_from_session": null,
+    "from": "TF-0158",
+    "id": "TFE-0247",
+    "reason": "本机套件挂起是 TF-0157 那类红的同一现场，原先只有 derived_from 关系、没有树位置",
+    "to": "TF-0157",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:27:34.805961Z"
+  },
+  "TFE-0248": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:27:34.806389Z",
+    "created_from_session": null,
+    "from": "TF-0159",
+    "id": "TFE-0248",
+    "reason": "分母切换是地标集合粒度与覆盖这条线的一部分；保留其 display_order 400，与同组 600/700/800 不冲突",
+    "to": "TF-0156",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:27:34.806394Z"
+  },
+  "TFE-0249": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:27:34.807197Z",
+    "created_from_session": null,
+    "from": "TF-0161",
+    "id": "TFE-0249",
+    "reason": "投影修复承接自审口径那条线，原先只有 derived_from 关系、没有树位置",
+    "to": "TF-0160",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:27:34.807204Z"
+  },
+  "TFE-0250": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:27:34.807938Z",
+    "created_from_session": null,
+    "from": "TF-0165",
+    "id": "TFE-0250",
+    "reason": "本节点是把 TF-0147 的载荷裁决落到生效副本上的执行项",
+    "to": "TF-0147",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:27:34.807944Z"
   }
 }

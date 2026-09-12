@@ -8141,9 +8141,11 @@
     "created_at": "2026-09-04T05:30:36.810614Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-7aad6753b3"
+    ],
     "difficulty": "low",
-    "display_order": 100,
+    "display_order": null,
     "estimated_total_minutes": 60,
     "evidence": [
       "实测 2026-09-05：events 67MB / snapshots 61MB / exports 109MB，canonical graph/ 仅 864KB",
@@ -8184,7 +8186,7 @@
     ],
     "summary": "裁决：exports/ 与 snapshots/ 出仓（gitignore），canonical 只保留 graph/ + config + events.jsonl；events.jsonl 的 before/after 全图冗余属 task-forest 引擎缺陷，交 TF-0152 承载。对森林自身执行与 TF-0145 相同的载荷纪律：历史留引用，不留快照体。",
     "title": "裁决：task-forest 历史与派生产物的体量口径（events / snapshots / exports）",
-    "updated_at": "2026-09-10T15:18:13.276557Z"
+    "updated_at": "2026-09-12T07:27:34.804889Z"
   },
   "TF-0148": {
     "acceptance_criteria": [
@@ -8433,9 +8435,11 @@
     "created_at": "2026-09-05T09:00:49.329665Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-7aad6753b3"
+    ],
     "difficulty": "medium",
-    "display_order": 200,
+    "display_order": null,
     "estimated_total_minutes": null,
     "evidence": [
       "实测：proposal_applied 单行 515KB（before 257KB + after 258KB），142 行累计 66.5MB",
@@ -8460,7 +8464,7 @@
     "success_metrics": [],
     "summary": "两处修正，都在 skill 侧（C:/Users/27933/.claude/skills/task-forest/scripts/task_forest.py），不在本仓库：(1) record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表，历史留引用不留快照体；(2) derived_progress 的子节点分母排除 deprecated / archived——当前 deprecate 一个子节点会把父里程碑的进度按 0 算进平均，砍东西反而让进度下降。",
     "title": "task-forest 引擎侧修正：历史载荷与派生分母",
-    "updated_at": "2026-09-10T15:18:13.276557Z"
+    "updated_at": "2026-09-12T07:27:34.805464Z"
   },
   "TF-0153": {
     "acceptance_criteria": [
@@ -8805,7 +8809,7 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "unknown",
-    "display_order": 300,
+    "display_order": null,
     "estimated_total_minutes": null,
     "evidence": [
       "（本轮新证据·原样复刻通过）在一个独立小文件里复刻第 7+8 条：D1 = provider in-flight 中止（带 trace 的 calls/attempts 两个文件、mkdtemp、readFile、rm），D2 = 500 先返回一次再返回 200 的退避重试。结果 **2 pass / 0 fail**，磁盘标记显示 D2 的第二次请求在 2005ms 发生并解析成功（`D2 resolved content=ok hits=2`）。也就是说这两条用例的代码路径本身不会挂。",
@@ -8835,7 +8839,7 @@
     "success_metrics": [],
     "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
     "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
-    "updated_at": "2026-09-11T17:01:39.970876Z"
+    "updated_at": "2026-09-12T07:27:34.805950Z"
   },
   "TF-0159": {
     "acceptance_criteria": [
@@ -8973,7 +8977,7 @@
       "TFD-714791bbdf"
     ],
     "difficulty": "unknown",
-    "display_order": 500,
+    "display_order": null,
     "estimated_total_minutes": null,
     "evidence": [
       "（本轮·实现位置）过滤落在 `packages/workbench/src/interactions/landmark-set.ts`：`DEFAULT_REQUIRE_EDITS = false`（默认不切）+ `landmarkCandidates(..., { requireEdits })`。**先尺后门在这里不成立**——过滤作用在「已被尺子选出的集合」上，按原顺序筛，避免过滤前后 K 的一致性问题（K 是问人几条的预算，不是过滤后剩几条）。选项经 `review-stats.ts` 的 `currentLandmarkAcceptance` 透出，读数对象增 `requireEdits` 字段，口径自带不靠字段名猜。",
@@ -9002,7 +9006,7 @@
     "success_metrics": [],
     "summary": "阈值口径的地标集合在四个现场里三个为空，唯一有地标的现场 3 条全被自审驳回；证据指向同一个病——越线靠的是同一手势的重复计数（25 次同种 edit/selection），而会话 0 声明产物。方案（docs/tf-0161-landmark-projection-fix.md）：递减收益上限为主（同 handle 同 kind 的第 n 次贡献按 log 或封顶，保留「反复编辑=强信号」但抑制刷分），来源门（零声明产物）只在「单一 handle + 单一种类」的极端形状上否决；明确不采用「同种手势去重」（会误杀真实信号）。",
     "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑",
-    "updated_at": "2026-09-11T17:03:46.105587Z"
+    "updated_at": "2026-09-12T07:27:34.807184Z"
   },
   "TF-0162": {
     "acceptance_criteria": [
@@ -9138,7 +9142,9 @@
     "created_at": "2026-09-12T07:17:00.412083Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-7aad6753b3"
+    ],
     "difficulty": "low",
     "display_order": 800,
     "estimated_total_minutes": null,
@@ -9170,5 +9176,64 @@
     "summary": "上一轮把 L1 的「只认可落笔」翻成默认、把真实项目现场驱动补齐、把五处读数面统一之后，森林里三条节点都标了完成——但这些代码到 2026-09-12 还停在工作区里没有入库：19 个已跟踪文件被改动、5 个新脚本未跟踪。结果是「L1 = 1.0000、复核覆盖 100%」这个结论换一台机器就复现不出来。本节点把这一轮改动按主题分次提交落库，并把森林自身（节点图、事件、待办）与之一并入库，使森林里的完成状态能指向具体提交。",
     "title": "提交闸门（L1 线）：把地标口径翻默认这一轮的改动落库，让森林的「完成」有代码可指",
     "updated_at": "2026-09-12T07:20:30.558507Z"
+  },
+  "TF-0165": {
+    "acceptance_criteria": [
+      "① 生效副本产出的事件不再内嵌全图：复跑一次提案 apply，新事件的行体积回到几百字节量级（对照今天实测的约 900 KB/行）。",
+      "② 定下唯一权威副本并处置另一份：要么把缺的功能合并，要么把另一份标记废弃并写清保留了什么。差异规模要作为数字复查一次（当前 2134 行差异、13 vs 12 个子命令）。",
+      "③ 历史 86.5 MB 的处置口径写明：审计记录不重写，压缩 / 归档 / 保持现状三选一并写出理由。",
+      "④ 导出体积给出归因：当前 timeline 108 MB、HTML 17.8 MB 与 snapshots 99 MB 的关系写清——快照按 TF-0147 的裁决保留用于回放，属于设计而不是缺陷；要区分「设计上的大」与「缺陷造成的大」。",
+      "⑤ 顺带补上守卫缺口：record_deviation 现在接受没有任何内容的偏差并照样写出无信息的审计记录（TFD-87bb847a4f 与 TFD-9312cfb44c 就是两个只剩 id 与时间戳的空记录），要么加必填校验，要么明确接受并写进文档。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "task-forest",
+      "skill",
+      "payload",
+      "copy-divergence"
+    ],
+    "created_at": "2026-09-12T07:27:34.807908Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "medium",
+    "estimated_total_minutes": null,
+    "evidence": [
+      "（事件体积）`events/events.jsonl` = 86,650,327 字节 / 209 行；超过 100 KB 的行 165 条，合计 86.5 MB，占全文件 99.8%。体积最大的 8 行按序是第 209、208、207、206、205、204、203、202 行，约 900–920 KB。",
+      "（形态分界）第 197-199 行（时间 2026-09-11T03:04 至 03:09）只有 before_snapshot / after_snapshot / changed_node_ids / changed_edge_ids 四个键，约 588–598 字节；第 200 行起（2026-09-11T09:16）变成 before / after 两个键装载全图，约 900 KB。第 200 行对应的提案是 vas1em-live-run，也就是副本切换之后的第一批写入。",
+      "（两份副本）`~/.claude/skills/task-forest/scripts/task_forest.py` 3332 行、160203 字节，含 `before_snapshot`（第 725 行）与 13 个子命令；`~/.workbuddy/skills/task-forest/scripts/task_forest.py` 2250 行、84507 字节，只有 before/after 全图写法、12 个子命令，且带 `task_forest_ordering.py`。两者 diff 行数 2134。导出校验器也不对等：`validate_task_forest_export.py` 在 .claude 是 313 行、在 .workbuddy 是 1152 行。",
+      "（与已结项声明的冲突）TF-0152 的证据写的是「record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表」，落点指向 `C:/Users/27933/.claude/skills/...`。该声明对那份副本成立（事件 197-199 就是它的产物），但对当前生效的 .workbuddy 副本不成立——这正是「两处都真的，合起来是假的」那类漂移。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0165",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "把 TF-0147 定下的载荷纪律真正落到生效副本上：canonical 只留 graph/ + config + events.jsonl，历史留引用、不留快照体；同时终结「同一 skill 两份副本各自演化」的状态，避免出现第三次分叉。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [
+      "不改写历史事件（审计日志不可回溯修改）",
+      "不为了让体积数字好看而牺牲快照回放能力",
+      "回归读数用「事件行体积」（超过 100 KB 即红），而不是只检查代码里有没有出现某个字段名——这一轮的教训正是一条只看代码的验收在副本切换后失效了"
+    ],
+    "source_sessions": [],
+    "status": "proposed",
+    "success_metrics": [],
+    "summary": "机器上有两份 task-forest skill 副本，已经分叉，而且各有对方没有的东西：~/.claude/skills 那份 3332 行、含精简事件载荷（以 before_snapshot/after_snapshot + 变更 id 列表代替全图）与 13 个子命令，但导出校验器只有 313 行；~/.workbuddy/skills 那份 2250 行、只有全图内嵌写法与 12 个子命令，但带有 ordering 模块与 1152 行的导出校验器。两文件差异 2134 行。当前会话加载的是 .workbuddy 那份，于是 TF-0152 当年在 .claude 那份上修掉的载荷纪律在这里不存在：events.jsonl 已涨到 86.7 MB，209 行里有 165 行超过 100 KB，其中 8 行最大的就是今天与昨天写下的（约 900 KB/行）。事件形态的分界点很清楚——第 197-199 行（截至 09-11T03:09）是约 590 字节的引用式，第 200-209 行（09-11T09:16 起）回到约 900 KB 的全图式，时间点正好是副本切换生效的时刻。",
+    "title": "把「事件不内嵌全图」的载荷修复补到当前生效的 skill 副本上，并定下唯一权威副本",
+    "updated_at": "2026-09-12T07:27:34.807926Z"
   }
 }

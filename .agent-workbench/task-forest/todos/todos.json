@@ -25,5 +25,37 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "把护城河 A（校准表 ≥ 50 行）当作长期样本累积项推进，而非单轮冲刺"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.85,
+    "context_tags": [
+      "task-forest",
+      "skill",
+      "payload",
+      "copy-divergence"
+    ],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0165",
+    "kind": "task",
+    "next_action": "① 生效副本产出的事件不再内嵌全图：复跑一次提案 apply，新事件的行体积回到几百字节量级（对照今天实测的约 900 KB/行）。",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "把 TF-0147 定下的载荷纪律真正落到生效副本上：canonical 只留 graph/ + config + events.jsonl，历史留引用、不留快照体；同时终结「同一 skill 两份副本各自演化」的状态，避免出现第三次分叉。",
+    "ready": true,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "把「事件不内嵌全图」的载荷修复补到当前生效的 skill 副本上，并定下唯一权威副本"
   }
 ]
