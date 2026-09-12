@@ -93,15 +93,21 @@ packages/workbench/.evidence-sites/
 /.agent-workbench/tmp/
 /.tf-tmp/
 # task-forest derived products stay out of history (TF-0147).
-# canonical state is graph/ + config.json + events/events.jsonl; exports are
-# rebuildable via `task_forest.py export`. Keep or back up local snapshots for
-# history playback: compact audit events reference them rather than embed them.
+# canonical state is graph/nodes.json + graph/edges.json + config.json +
+# events/events.jsonl; exports are rebuildable via `task_forest.py export`.
+# Keep or back up local snapshots for history playback: compact audit events
+# reference them rather than embed them.
 # A fresh checkout can rebuild current state, not missing historical snapshots.
 # Measured 2026-09-05: exports
 # 109MB, snapshots 61MB against 864KB of canonical graph — GitHub was already
 # returning GH001 large-file warnings on every push.
 /.agent-workbench/task-forest/exports/
 /.agent-workbench/task-forest/snapshots/
+# graph/forest.json 是 build_export 的全量派生视图，与 exports/task-forest.graph.json
+# 逐字节相同（649,420 B），且 skill 侧只写不读（仅 rebuild_generated 写出，无任何读取方）。
+# 它曾被跟踪，于是每次 export/apply 都因 generated_at 弄脏工作区——按 TF-0147 的
+# 「派生产物不进历史」补漏出仓。权威来源仍是 graph/nodes.json + graph/edges.json。
+/.agent-workbench/task-forest/graph/forest.json
 # local session work log — personal workspace memory, not repo history
 /.workbuddy/memory/
 # agent-kernel runtime state (session checkpoints, message blobs)
