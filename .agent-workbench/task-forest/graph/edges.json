@@ -2962,5 +2962,17 @@
     "to": "TF-0147",
     "type": "child_of",
     "updated_at": "2026-09-12T07:27:34.807944Z"
+  },
+  "TFE-0251": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T09:33:18.063281Z",
+    "created_from_session": null,
+    "from": "TF-0166",
+    "id": "TFE-0251",
+    "reason": "本项是 TF-0147「派生产物不进历史」这条裁决落地时的漏网补漏",
+    "to": "TF-0147",
+    "type": "child_of",
+    "updated_at": "2026-09-12T09:33:18.063288Z"
   }
 }

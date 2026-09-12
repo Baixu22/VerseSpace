@@ -1,0 +1,61 @@
+{
+  "applied_at": "2026-09-12T09:33:18.238119Z",
+  "base_graph_hash": "702e55edb028ded1b57b3da45d382e3ecb280491c96cf82767e1abeaba399fce",
+  "base_summary": {
+    "edge_count": 247,
+    "node_count": 165,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "forest-json-out",
+      "node": {
+        "acceptance_criteria": [
+          "① graph/forest.json 不再被跟踪，但文件仍在磁盘上（外部消费方照旧可读）。",
+          "② 出仓后跑一次 export，git status 不再出现该文件。",
+          "③ 文档口径同步：skill 的 schema.md 与 .gitignore 注释都不再把 graph/ 整体当作权威来源。"
+        ],
+        "confidence": 0.95,
+        "context_tags": [
+          "task-forest",
+          "repo-hygiene",
+          "gitignore"
+        ],
+        "difficulty": "low",
+        "evidence": [
+          "（同一份派生视图存了两遍）graph/forest.json 与 exports/task-forest.graph.json 内容完全相同：同为 649420 字节、键集合无差异、除 generated_at 外零字段差异（连 generated_at 都是同一个值 2026-09-12T07:49:10Z）。",
+          "（只写不读）skill 侧对它的引用只有两处：Store 里 forest_path 的定义（task_forest.py 第 616 行）与 rebuild_generated 里的一次 write_json_atomic（第 795 行）；没有任何读取方。真正给下游工具读的是 exports/task-forest.graph.json（integration-contract 指向的是它）。",
+          "（churn 实测）TF-0165 收尾时跑 export，工作区立刻多出该文件的一行改动（generated_at 从 07:45:12 变为 07:49:10），需要额外一次提交才回到 porcelain = 0。这就是它该出仓的直接证据。",
+          "（处置与验证）加入 .gitignore（写明理由）、git rm --cached 保留磁盘文件；出仓后再跑一次 export，git status 不再出现该文件（porcelain = 0）。提交 7793c2a，从跟踪中移除 16267 行派生 JSON。",
+          "（文档同步）skill 的 references/schema.md 把 graph/forest.json 的说法改为派生视图（说明「不要当权威来源读、也别纳入版本控制」）；.gitignore 里 TF-0147 的注释从「canonical state is graph/」收窄为 graph/nodes.json + graph/edges.json + config.json + events/events.jsonl。"
+        ],
+        "kind": "subtask",
+        "priority": 3,
+        "progress": 1.0,
+        "purpose": "让「跑完 export 后工作区仍然干净」这件事不再需要额外提交来收尾，并把 TF-0147 的口径从「整个 graph/ 目录」收窄到真正权威的那几个文件。",
+        "requirements": [
+          "不删磁盘上的文件——出仓不等于销毁",
+          "再往 graph/ 下放新的派生产物时照同一条判：带 generated_at、只写不读的一律出仓"
+        ],
+        "status": "done",
+        "summary": "2026-09-05 那次出仓把 exports/ 与 snapshots/ 移出了版本控制，但漏掉了 graph/forest.json——只因为它躺在 graph/ 下，而当时 .gitignore 的注释把「canonical state」写成整个 graph/ 目录。它的性质与那两份完全相同：是 build_export 的全量派生视图，与 exports/task-forest.graph.json 逐字节相同（同为 649420 字节），带 generated_at，且 skill 侧只写不读。被跟踪的代价是每次 export 或 apply 都会在工作区留下一行时间戳改动，收尾时要额外提交一次才能回到干净。",
+        "title": "把 graph/forest.json 出仓：它是只写不读的派生副本，跟踪它让每次导出都弄脏工作区"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "本项是 TF-0147「派生产物不进历史」这条裁决落地时的漏网补漏"
+      },
+      "from": "forest-json-out",
+      "to": "TF-0147",
+      "type": "child_of"
+    }
+  ],
+  "created_at": "2026-09-12T09:32:10.906442Z",
+  "proposal_id": "forest-json-out-of-repo",
+  "rationale": "TF-0165 收尾时跑 export 发现工作区被弄脏（graph/forest.json 的 generated_at 每次都变），查下去发现它是「只写不读的派生副本 + 与已出仓的那份逐字节相同」，属于 TF-0147 那次出仓的漏网。处置已完成并验证，故立一个 subtask 记在 TF-0147 下。",
+  "session_id": "l1-commit-gate-20260912",
+  "status": "applied"
+}
