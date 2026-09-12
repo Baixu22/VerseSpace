@@ -1,6 +1,17 @@
+# SUPERSEDED (2026-09-12): use `live-credentials.ts` instead.
+#
+# Why: this function can only run on a host that can decrypt DPAPI *and* start
+# native processes, which coupled "read the credential" to "which shell you are in".
+# Measured 2026-09-12: the embedded PowerShell tool on this machine starts no native
+# processes at all, so the only way to get the key from there was to paste it into a
+# command line — the plaintext leaked into the transcript. `live-credentials.ts` calls
+# crypt32!CryptUnprotectData through bun:ffi, so the whole live chain runs on bun alone
+# from any shell. Nothing references this file any more; it is kept only as a
+# reference for PS-native callers and can be deleted once none remain.
+#
 # Live-model credential loading (DPAPI) and default model / endpoint.
 #
-# Shared by run-live.ps1 and monitor.ps1. The key only ever lives in the current
+# The key only ever lives in the current
 # process environment: it is never written to disk, never printed, and never
 # copied into a report. Default model is SenseAudio S2 Flash (wired 2026-09-10,
 # see docs/report-2026-09-10-senseaudio-first-live.md).
