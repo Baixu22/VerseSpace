@@ -1,0 +1,40 @@
+{
+  "applied_at": "2026-09-11T12:30:31.990920Z",
+  "base_graph_hash": "3f3ccfd444a7fafd6314ff312548ab02bdc3a460bbfb14c6c6246c7c3047cdc8",
+  "base_summary": {
+    "edge_count": 239,
+    "node_count": 163,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "① 不再空集：四个现场里至少三个能产出非空的**文件级**地标集合。已在两轮真实现场达成（VAS1EM 5/5 会话非空、1OioVM 8/8 会话非空，share 均为 1.0），由种类门（候选 D）+ 相对口径共同达成——已实测权重调整（B）与产物声明门（C）都做不到。已满足。",
+          "② 不再打偏：集合里必须出现真任务文件。两轮现场均已出现（src/base-url.ts、src/family.ts、src/alpha.ts——模型真实修改与复核的目标）。已满足。",
+          "③ 不误杀真信号：构造「真实重复编辑 + 有声明产物」的会话仍产出地标；回归门 A/B 均通过。已满足。",
+          "④ 记录型会话必须被排除或单列：加门后 git/human 的地标数实测为 0（两轮现场各自复现，门后精确清掉只由记录型写者触碰的 src/beta.ts）。已满足。",
+          "⑤ 新增·真人认可判据的量化收敛（2026-09-11，22 条真实候选）：驳回形状全部是「有 selection、无 edit」的纯浏览项（10/10），认可项里 11/12 有落笔；规则「有 edit 即认可」命中 21/22 = 95.5%。唯一错判是专门去复核某个文件的只读会话（21273cbd），它「只读就是工作本身」。已满足。",
+          "⑥ 新增·候选过滤实现落库且默认关闭：`requireEdits` 进 LandmarkCandidateOptions，`DEFAULT_REQUIRE_EDITS = false`，读数对象自带 `requireEdits` 字段并报。默认口径下的现行行为未被改变（VAS1EM 读数仍是 6/10 = 0.6000、候选 10 条、requireEdits false 实测确认）。已满足。",
+          "⑦ 未满足·投影修复未翻默认：过滤开启会把候选 22 → 12、误杀 1 条只读型会话。翻默认属**口径变更**，前置条件是①重跑真人复核（不得拿旧结论套新集合）、②处理只读型会话的豁免、③两口径并报一个周期。三条都未做。"
+        ],
+        "evidence": [
+          "（本轮·实现位置）过滤落在 `packages/workbench/src/interactions/landmark-set.ts`：`DEFAULT_REQUIRE_EDITS = false`（默认不切）+ `landmarkCandidates(..., { requireEdits })`。**先尺后门在这里不成立**——过滤作用在「已被尺子选出的集合」上，按原顺序筛，避免过滤前后 K 的一致性问题（K 是问人几条的预算，不是过滤后剩几条）。选项经 `review-stats.ts` 的 `currentLandmarkAcceptance` 透出，读数对象增 `requireEdits` 字段，口径自带不靠字段名猜。",
+          "（本轮·实测命中率）测量脚本 `bun scripts/e2e/landmark-require-edits-sweep.ts`（只量投影、**不写任何 review 事件**）。表一：规则「有 edit 即认可、无 edit 即驳回」命中 **21 / 22 = 95.5%**；唯一错判 VAS1EM `21273cbd / src/base-url.ts`（会话标题「真实模型：旧前提与恢复复核」，只读是它的工作）。表二：过滤开/关 → VAS1EM 10 → 5（少掉 5，其中 1 条被认可过＝误杀）、1OioVM 18 → 9（少掉 9，误杀 0）。被过滤的 14 条里 13 条是已被真人驳回的。",
+          "（本轮·明确不宣称提升）若按 22 条标注重算，开启后候选 22 → 12、认可 12 → 11、认可率 0.545 → 0.917。**这是「在同一批标注上重算」，不是一次新的复核**：集合变了，旧结论会大量变 legacy，两个数字不可直接比。已写进 `docs/tf-0161-require-edits-measurement.md` 并标注为假想值。",
+          "（本轮·回归门）`src/interactions/landmark-set.test.ts` 新增 describe「候选过滤：只认可落笔（requireEdits）」三条用例：① 默认不开——不传 requireEdits 时纯浏览候选照旧留在集合里（锁住现行行为不被悄悄改掉）；② 开启后只清纯浏览——刷 20 次 selection 也进不来、1 次 edit 足以留下（按 kind 判不看频率，这才是不误杀的含义）；③ 阈值口径下同样生效——门与尺子分开不互相覆盖。整目录 `bun run test src/interactions/ --timeout 60000` = **52 pass / 0 fail**；`bunx tsc --noEmit` 与 `bunx biome check` 均干净。",
+          "（本轮·默认口径未被改动的实测确认）VAS1EM 现场根跑 CLI stats：`current.total 10 / endorsed 6 / endorsedShare 0.6 / requireEdits false / denominator session-top-k`——与改动前逐字一致。这就是「默认不开」的现场证据，不是靠读代码推断。"
+        ],
+        "next_action": "投影修复本身已落地但**不翻默认**。剩余三条前置，按顺序：① 在新的候选集合上重跑真人复核（两个现场都能跑，不得拿旧 22 条套新集合）；② 决定只读型会话怎么处理——要么给「本次会话的目的就是复核/阅读」一个显式豁免（样本里 21273cbd 属这一类），要么接受它被清零并写进文档；③ 双口径并报一个周期后再翻 `DEFAULT_REQUIRE_EDITS`。**不要**回头调阈值/权重/floor（B 实验与 C 判据已双重证伪）。"
+      },
+      "id": "TF-0161"
+    }
+  ],
+  "created_at": "2026-09-11T12:30:26.026955Z",
+  "proposal_id": "TFP-89e73c0c74",
+  "rationale": "两轮真人复核（22 条真实候选）显示驳回形状高度收敛——10 条被驳回的全部是「只有 selection、没有 edit」的纯浏览项，而 12 条认可的里 11 条有落笔。这条信号命中 21/22 = 95.5%，且它按 kind 判、不看内容不看频率，与 TF-0161 的种类门同一设计原则（门只看最窄的信号）。按 TF-0159 立下的口径纪律：先量后定、默认不开、读数自带口径、翻默认前必须重跑真人复核。",
+  "session_id": null,
+  "status": "applied",
+  "summary": "落地「只认可落笔（requireEdits）」候选过滤：默认关闭、读数并报口径，附两轮真人标注的 95.5% 命中率实测与先量后定记录。"
+}

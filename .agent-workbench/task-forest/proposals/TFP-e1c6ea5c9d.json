@@ -1,0 +1,43 @@
+{
+  "applied_at": "2026-09-11T17:03:46.123716Z",
+  "base_graph_hash": "13552c1909269bd9d5ff6fe7bb3ff7f82a26fc2fb133ed45987cf1c1cba08bed",
+  "base_summary": {
+    "edge_count": 239,
+    "node_count": 163,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "已结项（2026-09-12）。三条验收全部落实：① 分母切换已在全部读数面生效——stats/账本/队列/监控的主读数都是 session-top-k（显式声明口径），threshold 降为对照并报；L1 在全部落盘现场（VAS1EM/1OioVM/moyu）均可计算（覆盖 100%），函数级默认保留 threshold 正是「切换必须显式」原则的体现而非未切换。② K=3 与 §11「每会话 3–5 条」已对表（positioning-v6 §11 现行文本即 K=3）。③ 迁移不丢数据已实测两轮：分母迁移（VAS1EM legacy 5、1OioVM legacy 7，集合内旧结论照常计数）与翻默认迁移（moyu legacy 0、对照读数逐条归因），legacy 只计数不删不改判的契约在四处读数面可见。",
+        "progress": 1.0,
+        "status": "done"
+      },
+      "id": "TF-0159"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "已结项（2026-09-12）。验收①-⑥ 此前已满足；⑦「投影修复未翻默认」的三条前置于 2026-09-11 深夜全部完成并已翻默认：① 新集合重跑真人复核（VAS1EM 6/6、1OioVM 9/9 含 3 条全新人答，均 1.0000）；② 只读会话豁免落库（整段零落笔时过滤退位，n=1 诚实声明在案）；③ 两口径并报落库（stats/CLI/账本/监控/队列五处）。2026-09-12 第三现场 moyu 复核 5/5 = 1.0000，过滤把未过滤对照的 0.4545 拉到 1.0000——翻默认的价值在真实项目上被真人数据背书。完整记录：docs/tf-0161-require-edits-measurement.md。",
+        "progress": 1.0,
+        "status": "done"
+      },
+      "id": "TF-0161"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "已结项（2026-09-12）。验收①-⑦ 已满足；⑤⑥ 记录的「未达标」读数（0.6000/0.5000）是驱动投影修复的诚实中间态，不是未完成工作——修复后的终局读数：VAS1EM 6/6、1OioVM 9/9、moyu 5/5（2026-09-12 第三现场，模板 answers 按 (writer,handle) 键绑定、reason 为用户原文），三现场 L1 判据 ≥0.8 全部满足且复核覆盖 100%。interaction 沉淀通道在真实模型会话中持续非空（moyu 现场 19 次调用/21 尝试全生命周期执行）。后续 L1 读数随新现场自然累积，归属 TF-0163 的长期样本项。",
+        "progress": 1.0,
+        "status": "done"
+      },
+      "id": "TF-0162"
+    }
+  ],
+  "created_at": "2026-09-11T17:03:30.925001Z",
+  "proposal_id": "TFP-e1c6ea5c9d",
+  "session_id": "l1-close-20260912",
+  "status": "applied",
+  "summary": "TF-0159/0161/0162 结项：三项口径工作的验收标准已全部由实测满足（2026-09-11 口径终局 + 2026-09-12 moyu 第三现场），状态同步"
+}

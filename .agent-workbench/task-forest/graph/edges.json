@@ -2866,5 +2866,29 @@
     "to": "TF-0156",
     "type": "child_of",
     "updated_at": "2026-09-11T09:31:22.858756Z"
+  },
+  "TFE-0243": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:17:00.412148Z",
+    "created_from_session": null,
+    "from": "TF-0164",
+    "id": "TFE-0243",
+    "reason": "本次落库的主体是地标集合粒度与覆盖这一条线产出的改动",
+    "to": "TF-0156",
+    "type": "child_of",
+    "updated_at": "2026-09-12T07:17:00.412156Z"
+  },
+  "TFE-0244": {
+    "blocking": false,
+    "confidence": 0.6,
+    "created_at": "2026-09-12T07:17:00.412805Z",
+    "created_from_session": null,
+    "from": "TF-0164",
+    "id": "TFE-0244",
+    "reason": "把 L1 的读数链路落进仓库，服务于「前提守护者」这个全局目标的可复现性",
+    "to": "TF-0057",
+    "type": "contributes_to",
+    "updated_at": "2026-09-12T07:17:00.412817Z"
   }
 }

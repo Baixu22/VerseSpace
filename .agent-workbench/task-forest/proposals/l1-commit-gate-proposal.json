@@ -1,0 +1,86 @@
+{
+  "applied_at": "2026-09-12T07:17:00.495532Z",
+  "base_graph_hash": "d270f141f1e1f9ae0ee91a2ade86310297608538f98986291616e8c2e34692fe",
+  "base_summary": {
+    "edge_count": 239,
+    "node_count": 163,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "l1-commit-gate",
+      "node": {
+        "acceptance_criteria": [
+          "① 工作区干净：除临时目录外不再有未跟踪或未提交的改动，且每个提交在 git log 里的主题说清了「改了什么、为什么」。",
+          "② 不引入红基线：提交前 packages/workbench 的类型检查与测试套件跑绿；用手工裸跑（不带项目自己的 --timeout）得到的红绿不算数。",
+          "③ refs 存活：每次 git 写操作之后跑 scripts/git-ref-repair.sh，收尾时 git ls-files 的条目数与开工时一致。",
+          "④ 森林与仓库同期对齐：task-forest 的权威文件（节点图、事件、待办）与本次节点变更一起入库，导出的 HTML 是最后一次提交之后的产物。"
+        ],
+        "confidence": 0.9,
+        "context_tags": [
+          "workbench",
+          "l1",
+          "commit-gate",
+          "git"
+        ],
+        "difficulty": "low",
+        "display_order": 800,
+        "evidence": [
+          "（开工读数 2026-09-12）git status：19 个已跟踪文件被修改、15 项未跟踪（其中 5 个新脚本在 packages/workbench 下、8 个是 task-forest 提案、1 个是 docs 实测记录）。最后一次提交是 2211f24「feat(workbench): L1 口径收敛到 landmark-set 单一实现 + 本机 git ref 修复器」。",
+          "（改动规模）docs + packages 共 14 个文件、365 行插入 / 34 行删除；核心是地标候选的「只认可落笔」翻默认（+95 行）与 168 行回归用例，其余是五处读数面同步增加 requireEdits 字段。"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "purpose": "消除「森林说完成、仓库里查不到」的漂移。阶段 A 已经立过一次同样的闸门（7 个提交），本轮是同一动作在 L1 线上的第二次；本机 git 有宿主钩子清空 refs 的毛病，所以每次写操作之后都要跑一次 ref 修复器。",
+        "requirements": [
+          "只做本地提交：不 push、不 force、不改写历史",
+          "森林的「完成」以代码入库为准；节点结项前先看工作区是否干净"
+        ],
+        "status": "in_progress",
+        "summary": "上一轮把 L1 的「只认可落笔」翻成默认、把真实项目现场驱动补齐、把五处读数面统一之后，森林里三条节点都标了完成——但这些代码到 2026-09-12 还停在工作区里没有入库：19 个已跟踪文件被改动、5 个新脚本未跟踪。结果是「L1 = 1.0000、复核覆盖 100%」这个结论换一台机器就复现不出来。本节点把这一轮改动按主题分次提交落库，并把森林自身（节点图、事件、待办）与之一并入库，使森林里的完成状态能指向具体提交。",
+        "title": "提交闸门（L1 线）：把地标口径翻默认这一轮的改动落库，让森林的「完成」有代码可指"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "本次落库的主体是地标集合粒度与覆盖这一条线产出的改动"
+      },
+      "from": "l1-commit-gate",
+      "to": "TF-0156",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "把 L1 的读数链路落进仓库，服务于「前提守护者」这个全局目标的可复现性"
+      },
+      "from": "l1-commit-gate",
+      "to": "TF-0057",
+      "type": "contributes_to"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "correction": "本轮补一次提交闸门（把改动按主题分次落库，并把森林权威文件一并入库）；同时把「节点结项前先看工作区是否干净」写进该节点的要求，后续新节点沿用。",
+        "created_at": "2026-09-12T06:41:35.690184Z",
+        "id": "TFD-714791bbdf",
+        "kind": "landing_gap",
+        "reason": "TF-0159/0161/0162 的验收与证据全部基于工作区实测（类型检查、测试套件、现场读数），这些结论本身属实，但没有任何一条验收要求代码入库；同时 TF-0144 的提交闸门是在更早的提交上关闭的，两条线之间就出现空档：森林显示这一阶段全部完成，仓库里却查不到这一轮改动。漂移的代价是结论不可复现——换机器、换一次 clone 都看不到那些读数是怎样算出来的。",
+        "related_task_ids": [
+          "TF-0159",
+          "TF-0161",
+          "TF-0162",
+          "TF-0144"
+        ],
+        "summary": "森林把 L1 线的三条节点标成 done，但对应代码当时并未入库——「验收通过」被当成了「已落库」"
+      }
+    }
+  ],
+  "created_at": "2026-09-12T06:41:35.681407Z",
+  "proposal_id": "l1-commit-gate-proposal",
+  "rationale": "上一轮（2026-09-12 凌晨）把 L1 的「只认可落笔」翻成默认、补齐真实项目（moyu）现场驱动、统一五处读数面之后，森林里 TF-0159/0161/0162 三条节点都标了 done，但这些代码仍停在工作区里没有入库。用户本轮选择「收口未落库改动」，故新增一个提交闸门节点承接这次落库，并记一条偏差说明「验收通过 ≠ 已落库」的空档。",
+  "session_id": "l1-commit-gate-20260912",
+  "status": "applied"
+}

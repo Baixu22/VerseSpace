@@ -81,7 +81,8 @@
     "TFE-0236",
     "TFE-0239",
     "TFE-0240",
-    "TFE-0241"
+    "TFE-0241",
+    "TFE-0244"
   ],
   "edge_index": {
     "TF-0001": {
@@ -972,7 +973,9 @@
       "blocking_edges": [
         "TFE-0137"
       ],
-      "cross_edges": [],
+      "cross_edges": [
+        "TFE-0244"
+      ],
       "incoming": [
         "TFE-0070",
         "TFE-0071",
@@ -996,7 +999,8 @@
         "TFE-0138",
         "TFE-0139",
         "TFE-0145",
-        "TFE-0229"
+        "TFE-0229",
+        "TFE-0244"
       ],
       "outgoing": [
         "TFE-0137"
@@ -2772,7 +2776,8 @@
       "incoming": [
         "TFE-0234",
         "TFE-0238",
-        "TFE-0242"
+        "TFE-0242",
+        "TFE-0243"
       ],
       "outgoing": [
         "TFE-0229",
@@ -2780,7 +2785,8 @@
       ],
       "tree_child_edges": [
         "TFE-0238",
-        "TFE-0242"
+        "TFE-0242",
+        "TFE-0243"
       ],
       "tree_parent_edge": "TFE-0229"
     },
@@ -2896,12 +2902,27 @@
       ],
       "tree_child_edges": [],
       "tree_parent_edge": "TFE-0242"
+    },
+    "TF-0164": {
+      "blocking_edges": [
+        "TFE-0243"
+      ],
+      "cross_edges": [
+        "TFE-0244"
+      ],
+      "incoming": [],
+      "outgoing": [
+        "TFE-0243",
+        "TFE-0244"
+      ],
+      "tree_child_edges": [],
+      "tree_parent_edge": "TFE-0243"
     }
   },
   "edge_type_counts": {
-    "child_of": 157,
+    "child_of": 158,
     "clarifies": 1,
-    "contributes_to": 4,
+    "contributes_to": 5,
     "depends_on": 65,
     "derived_from": 8,
     "duplicates": 0,
@@ -5786,10 +5807,34 @@
       "to": "TF-0156",
       "type": "child_of",
       "updated_at": "2026-09-11T09:31:22.858756Z"
+    },
+    "TFE-0243": {
+      "blocking": true,
+      "confidence": 0.6,
+      "created_at": "2026-09-12T07:17:00.412148Z",
+      "created_from_session": null,
+      "from": "TF-0164",
+      "id": "TFE-0243",
+      "reason": "本次落库的主体是地标集合粒度与覆盖这一条线产出的改动",
+      "to": "TF-0156",
+      "type": "child_of",
+      "updated_at": "2026-09-12T07:17:00.412156Z"
+    },
+    "TFE-0244": {
+      "blocking": false,
+      "confidence": 0.6,
+      "created_at": "2026-09-12T07:17:00.412805Z",
+      "created_from_session": null,
+      "from": "TF-0164",
+      "id": "TFE-0244",
+      "reason": "把 L1 的读数链路落进仓库，服务于「前提守护者」这个全局目标的可复现性",
+      "to": "TF-0057",
+      "type": "contributes_to",
+      "updated_at": "2026-09-12T07:17:00.412817Z"
     }
   },
   "event_id": null,
-  "generated_at": "2026-09-11T09:31:41.166003Z",
+  "generated_at": "2026-09-12T07:17:13.330716Z",
   "nodes": {
     "TF-0001": {
       "acceptance_criteria": [
@@ -14332,7 +14377,9 @@
       "deprecated_at": null,
       "derived_progress": 100.0,
       "desired_outcomes": [],
-      "deviations": [],
+      "deviations": [
+        "TFD-714791bbdf"
+      ],
       "difficulty": "medium",
       "estimated_total_minutes": 120,
       "evidence": [
@@ -15120,7 +15167,8 @@
       "assumptions": [],
       "children": [
         "TF-0162",
-        "TF-0163"
+        "TF-0163",
+        "TF-0164"
       ],
       "confidence": 0.6,
       "context_tags": [],
@@ -15252,7 +15300,7 @@
       "context_tags": [],
       "created_at": "2026-09-10T19:21:42.560264Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
       "deviations": [],
       "difficulty": "unknown",
@@ -15271,23 +15319,23 @@
       ],
       "id": "TF-0158",
       "kind": "task",
-      "next_action": "只保留两件事：① 若要继续追，就在**该文件内**做减法（复制一份删掉第 1–6 条、再删掉第 7 条、再删 trace），因为跨文件的等价复刻已经证明不挂；② 否则按 Bun 运行时缺陷上报并结项——上报材料 = 文件路径 + 两条过滤命令 + 三种形态（通过/挂起/段错误）+ 本轮探针脚本内容。",
+      "next_action": "已结项（2026-09-12）。复现实验给出决定性证据：① 原问题文件 live-provider.test.ts 当日复跑全绿——过滤组合 in-flight|transient 2/2（2.26s, exit 0）、全文件 11/11（7.39s, exit 0），原挂起不可复现；② 同一时段 suite-total 两次采样，「无总账挂起」先落在 merge-guard.test.ts（单跑 9/9, 15.76s）、再落在 ui/server.test.ts（memory 已知 HEAD 假失败文件）——**挂起文件逐轮迁移**；③ 三个文件单跑全绿。结论：病灶在 Bun 运行时/并发/本机环境，不在任何测试文件的代码；与验收②「不可归因于仓库代码」一致，维持处置=按文件隔离计量（suite-total 退出码点名）+ 按 Bun 运行时缺陷上报（材料沿用本节点原清单：文件路径 + 两条过滤命令 + 三形态 + 探针脚本，新增『挂起文件逐轮迁移』这一关键观察）。",
       "non_goals": [],
       "parent_id": "TF-0114",
       "primary_parent": null,
       "priority": 3,
-      "progress": 0.0,
+      "progress": 1.0,
       "progress_source": "manual",
       "purpose": "",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
       "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
-      "updated_at": "2026-09-11T09:16:18.226986Z"
+      "updated_at": "2026-09-11T17:01:39.970876Z"
     },
     "TF-0159": {
       "acceptance_criteria": [
@@ -15310,9 +15358,11 @@
       "context_tags": [],
       "created_at": "2026-09-10T20:16:45.363686Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
-      "deviations": [],
+      "deviations": [
+        "TFD-714791bbdf"
+      ],
       "difficulty": "unknown",
       "display_order": 400,
       "estimated_total_minutes": null,
@@ -15328,22 +15378,22 @@
       "execution_hints": [],
       "id": "TF-0159",
       "kind": "task",
-      "next_action": "① 实现双口径并报（账本 + 队列各加一行，带口径标签），这一步不改变默认行为、可以先做；② 核对 §11 表述与实现；③ 等 TF-0057 两条回答到位后再翻默认口径，翻完立刻跑四现场对照。",
+      "next_action": "已结项（2026-09-12）。三条验收全部落实：① 分母切换已在全部读数面生效——stats/账本/队列/监控的主读数都是 session-top-k（显式声明口径），threshold 降为对照并报；L1 在全部落盘现场（VAS1EM/1OioVM/moyu）均可计算（覆盖 100%），函数级默认保留 threshold 正是「切换必须显式」原则的体现而非未切换。② K=3 与 §11「每会话 3–5 条」已对表（positioning-v6 §11 现行文本即 K=3）。③ 迁移不丢数据已实测两轮：分母迁移（VAS1EM legacy 5、1OioVM legacy 7，集合内旧结论照常计数）与翻默认迁移（moyu legacy 0、对照读数逐条归因），legacy 只计数不删不改判的契约在四处读数面可见。",
       "non_goals": [],
       "primary_parent": null,
       "priority": 2,
-      "progress": 0.0,
+      "progress": 1.0,
       "progress_source": "manual",
       "purpose": "",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "TF-0156 把相对选择做成了可计量的一条读数（relativeLandmarkCoverage），但 L1 现在的分母仍是绝对阈值口径（DOI>10 的文件级集合）。切换会改变待人回答的队列规模：租户从 3 条变成 188 条，因此要在「队列迁移」这件事里一起处理（保留阈值口径读数、逐步切换、复核结论如何映射），不能只改分母。",
       "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做",
-      "updated_at": "2026-09-11T09:31:22.858178Z"
+      "updated_at": "2026-09-11T17:03:46.105524Z"
     },
     "TF-0160": {
       "acceptance_criteria": [
@@ -15402,10 +15452,13 @@
     },
     "TF-0161": {
       "acceptance_criteria": [
-        "① 不再空集：四个现场里至少三个能产出非空的**文件级**地标集合（现在 1/4）。已实测：权重调整（B）与产物声明门（C）都做不到；应当由种类门（D）+ 真会话的候选规则来达成。",
-        "② 不再打偏：租户复跑自审，认可率从 0/3 抬到 ≥2/3；且集合里必须出现真任务文件（如 src/base-url.ts），不再出现 git/编辑器会话带来的心跳地标。",
-        "③ 不误杀真信号：构造「真实重复编辑 + 有声明产物」的会话仍产出地标（回归门）；B 的多样性用例已覆盖其中一层。",
-        "④ 记录型会话必须被排除或单列：git 监视与 human 编辑器会话产出的触碰不得进入地标候选集合（可用四现场表逐条核对：加门后 git/human 的地标数应为 0）。"
+        "① 不再空集：四个现场里至少三个能产出非空的**文件级**地标集合。已在两轮真实现场达成（VAS1EM 5/5 会话非空、1OioVM 8/8 会话非空，share 均为 1.0），由种类门（候选 D）+ 相对口径共同达成——已实测权重调整（B）与产物声明门（C）都做不到。已满足。",
+        "② 不再打偏：集合里必须出现真任务文件。两轮现场均已出现（src/base-url.ts、src/family.ts、src/alpha.ts——模型真实修改与复核的目标）。已满足。",
+        "③ 不误杀真信号：构造「真实重复编辑 + 有声明产物」的会话仍产出地标；回归门 A/B 均通过。已满足。",
+        "④ 记录型会话必须被排除或单列：加门后 git/human 的地标数实测为 0（两轮现场各自复现，门后精确清掉只由记录型写者触碰的 src/beta.ts）。已满足。",
+        "⑤ 新增·真人认可判据的量化收敛（2026-09-11，22 条真实候选）：驳回形状全部是「有 selection、无 edit」的纯浏览项（10/10），认可项里 11/12 有落笔；规则「有 edit 即认可」命中 21/22 = 95.5%。唯一错判是专门去复核某个文件的只读会话（21273cbd），它「只读就是工作本身」。已满足。",
+        "⑥ 新增·候选过滤实现落库且默认关闭：`requireEdits` 进 LandmarkCandidateOptions，`DEFAULT_REQUIRE_EDITS = false`，读数对象自带 `requireEdits` 字段并报。默认口径下的现行行为未被改变（VAS1EM 读数仍是 6/10 = 0.6000、候选 10 条、requireEdits false 实测确认）。已满足。",
+        "⑦ 未满足·投影修复未翻默认：过滤开启会把候选 22 → 12、误杀 1 条只读型会话。翻默认属**口径变更**，前置条件是①重跑真人复核（不得拿旧结论套新集合）、②处理只读型会话的豁免、③两口径并报一个周期。三条都未做。"
       ],
       "alignment": {
         "fit": "unknown",
@@ -15422,18 +15475,20 @@
       "context_tags": [],
       "created_at": "2026-09-11T02:57:03.331395Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
-      "deviations": [],
+      "deviations": [
+        "TFD-714791bbdf"
+      ],
       "difficulty": "unknown",
       "display_order": 500,
       "estimated_total_minutes": null,
       "evidence": [
-        "（本轮·种类分组实测，四现场一致）live-tenant：agent 83 会话 / 415 次触碰 → 阈值文件级地标 0 条；git 1 会话 / 50 次 → 2 文件 + 2 容器；human 5 会话 / 41 次 → 1 文件。node-verified：agent 30 / 140 → 0；git 1 / 20 → 2 + 2；human 1 / 10 → 0。LHA3I4：agent 13 / 40 → 0；git 1 / 2 → 0；human 1 / 1 → 0。VAKSgQ：agent 10 / 38 → 0；git 1 / 2 → 0；human 1 / 1 → 0。结论：**每个文件级地标都来自 git 监视会话**（tenant 3/3、node-verified 2/2），干活的 agent 会话一条都出不来。",
-        "（本轮·机理）DOI 按会话计算：git 监视会话在 2 个文件上落笔 50 次 × 编辑权重 2，轻松过 10 分线；agent 会话的触碰分散在多文件、每种手势几次，永远过不了线。所以阈值口径量的是「谁把某个文件夯得最狠」，而夯得最狠的恰恰是不干活的记录者。",
-        "（本轮·否掉候选 C 的判据）来源门的「零声明产物」条款不可用：四个现场里**没有任何会话声明过产物**（tenant 84/84 都是 0；其余现场同样），判据没有区分度。仅按「≤1 个文件」也会漏掉 git-main（它碰 2 个文件），实测加门后 tenant 阈值地标只从 3 降到 2。",
-        "（本轮·会话记录字段）会话形状为 {id, kind, label, status, startedAt, lastActiveAt}；噪声会话的 kind 是 `git`（label git-main）与 `human`（label 编辑器），真实工作会话是 `kind: \"agent\"`（label「E2E 集成线程」）。种类是现成可用的判据。",
-        "（文档同步）docs/tf-0161-landmark-projection-fix.md 新增 §2c，含四现场种类分组表、机理、以及修订后的推荐优先级（D 种类门必做 → B 降级为诊断 → 之后才是阈值/分母）。"
+        "（本轮·实现位置）过滤落在 `packages/workbench/src/interactions/landmark-set.ts`：`DEFAULT_REQUIRE_EDITS = false`（默认不切）+ `landmarkCandidates(..., { requireEdits })`。**先尺后门在这里不成立**——过滤作用在「已被尺子选出的集合」上，按原顺序筛，避免过滤前后 K 的一致性问题（K 是问人几条的预算，不是过滤后剩几条）。选项经 `review-stats.ts` 的 `currentLandmarkAcceptance` 透出，读数对象增 `requireEdits` 字段，口径自带不靠字段名猜。",
+        "（本轮·实测命中率）测量脚本 `bun scripts/e2e/landmark-require-edits-sweep.ts`（只量投影、**不写任何 review 事件**）。表一：规则「有 edit 即认可、无 edit 即驳回」命中 **21 / 22 = 95.5%**；唯一错判 VAS1EM `21273cbd / src/base-url.ts`（会话标题「真实模型：旧前提与恢复复核」，只读是它的工作）。表二：过滤开/关 → VAS1EM 10 → 5（少掉 5，其中 1 条被认可过＝误杀）、1OioVM 18 → 9（少掉 9，误杀 0）。被过滤的 14 条里 13 条是已被真人驳回的。",
+        "（本轮·明确不宣称提升）若按 22 条标注重算，开启后候选 22 → 12、认可 12 → 11、认可率 0.545 → 0.917。**这是「在同一批标注上重算」，不是一次新的复核**：集合变了，旧结论会大量变 legacy，两个数字不可直接比。已写进 `docs/tf-0161-require-edits-measurement.md` 并标注为假想值。",
+        "（本轮·回归门）`src/interactions/landmark-set.test.ts` 新增 describe「候选过滤：只认可落笔（requireEdits）」三条用例：① 默认不开——不传 requireEdits 时纯浏览候选照旧留在集合里（锁住现行行为不被悄悄改掉）；② 开启后只清纯浏览——刷 20 次 selection 也进不来、1 次 edit 足以留下（按 kind 判不看频率，这才是不误杀的含义）；③ 阈值口径下同样生效——门与尺子分开不互相覆盖。整目录 `bun run test src/interactions/ --timeout 60000` = **52 pass / 0 fail**；`bunx tsc --noEmit` 与 `bunx biome check` 均干净。",
+        "（本轮·默认口径未被改动的实测确认）VAS1EM 现场根跑 CLI stats：`current.total 10 / endorsed 6 / endorsedShare 0.6 / requireEdits false / denominator session-top-k`——与改动前逐字一致。这就是「默认不开」的现场证据，不是靠读代码推断。"
       ],
       "evidence_add": [
         "第二轮种类门复核（更密现场 1OioVM，写者 11 · interaction 35 条）：相对口径无门 10 写者/21 条/10 handle → 加门 8 写者/18 条/9 handle，精确清掉记录型写者 git ×1 / human ×1；表三回归门 A「agent 门前后一致 ✓」、B「git 门前 2 条 → 门后 0 条 ✓」。两个 live-run 现场（VAS1EM / 1OioVM）阈值口径文件级地标均为 0，再次确认换分母（TF-0159）的必要性。"
@@ -15441,22 +15496,22 @@
       "execution_hints": [],
       "id": "TF-0161",
       "kind": "task",
-      "next_action": "实现候选 D 的**测量**：给 collectInterest/computeDoi 的调用侧加「只统计指定会话种类」的过滤（先只在测量脚本里做），量加门后四现场的非空集合数、集合里是否出现真任务文件、以及自审认可率是否 ≥2/3；确认有效后再进 src（默认关闭的参数，先量后定）。",
+      "next_action": "已结项（2026-09-12）。验收①-⑥ 此前已满足；⑦「投影修复未翻默认」的三条前置于 2026-09-11 深夜全部完成并已翻默认：① 新集合重跑真人复核（VAS1EM 6/6、1OioVM 9/9 含 3 条全新人答，均 1.0000）；② 只读会话豁免落库（整段零落笔时过滤退位，n=1 诚实声明在案）；③ 两口径并报落库（stats/CLI/账本/监控/队列五处）。2026-09-12 第三现场 moyu 复核 5/5 = 1.0000，过滤把未过滤对照的 0.4545 拉到 1.0000——翻默认的价值在真实项目上被真人数据背书。完整记录：docs/tf-0161-require-edits-measurement.md。",
       "non_goals": [],
       "primary_parent": null,
       "priority": 2,
-      "progress": 0.0,
+      "progress": 1.0,
       "progress_source": "manual",
       "purpose": "",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "阈值口径的地标集合在四个现场里三个为空，唯一有地标的现场 3 条全被自审驳回；证据指向同一个病——越线靠的是同一手势的重复计数（25 次同种 edit/selection），而会话 0 声明产物。方案（docs/tf-0161-landmark-projection-fix.md）：递减收益上限为主（同 handle 同 kind 的第 n 次贡献按 log 或封顶，保留「反复编辑=强信号」但抑制刷分），来源门（零声明产物）只在「单一 handle + 单一种类」的极端形状上否决；明确不采用「同种手势去重」（会误杀真实信号）。",
       "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑",
-      "updated_at": "2026-09-11T09:31:22.858217Z"
+      "updated_at": "2026-09-11T17:03:46.105587Z"
     },
     "TF-0162": {
       "acceptance_criteria": [
@@ -15464,8 +15519,9 @@
         "② 相对口径在真实现场能排出非空集合：有文件级触碰的会话 5 个、top-3 非空 5 个（share = 1.0）、条目 10 条、去重 handle 5 个。已满足。",
         "③ 种类门在真实现场生效且不误杀：门后 5 写者 / 10 条，精确排除仅由记录型写者触碰的 src/beta.ts；回归门 A/B 均通过。已满足。",
         "④ 旧口径同现场读数并报：threshold.total = 0、endorsedShare = null（不可计算，不是 0 分）。已满足。",
-        "⑤ 未满足·真人认可：本轮所有 review 均为脚本手势或缺失，L1 认可率为 0/10，脚本不构成用户认可，这一格只能由人回答。",
-        "⑥ 第二轮（1OioVM，2026-09-11 17:22–17:26）复核：修掉两处超时预算 bug 后整轮首次通过，样本窗口三格全齐；本节点主张的「相对口径有信息量、阈值口径结构性不适用」在同现场被再次验证。已满足。"
+        "⑤ 真人认可·第一组（VAS1EM，2026-09-11 20:14，human 来源）：10 条候选全部复核，认可 6 / 10 = 0.6000，复核覆盖 1.0000。判据 ≥0.8 **未达标**。驳回 4 条：src/base-url.requirements.txt（需求前提而非工作核心）、src/notes.md（被会话主动降权 interest-reduced）、f95b7768/src/family.ts（只有一次 selection）、1fb4071a/src/alpha.ts（只有继承上下文中的浏览）。已满足。",
+        "⑥ 真人认可·第二组（1OioVM，2026-09-11 20:22，human 来源）：抽样范围内 12 条候选全部复核，认可 6 / 12 = 0.5000，复核覆盖（抽样范围）1.0000。全站口径为 **认可 6 / 全部 18 = 0.3333、复核覆盖 0.6667（8 个候选会话中 3 个未抽样）**——这一半覆盖必须显式声明，不得写成全量。判据 ≥0.8 **未达标**。驳回 6 条：6afc21b2/src/notes.md（仅 selection + 被降权）、1263b3c2/src/family.ts（仅一次 selection）、eafe0374/src/alpha.ts（selection ×2 无 edit）、340d21cb 与 422dc24d 的 src/base-url.requirements.txt（各仅一次 selection）、422dc24d/src/base-url.ts（被复核的源文件，不等于该会话产出）。已满足。",
+        "⑦ 第二轮（1OioVM，2026-09-11 17:22–17:26）复核：修掉两处超时预算 bug 后整轮首次通过，样本窗口三格全齐；本节点主张的「相对口径有信息量、阈值口径结构性不适用」在同现场被再次验证。已满足。"
       ],
       "alignment": {
         "fit": "unknown",
@@ -15482,43 +15538,40 @@
       "context_tags": [],
       "created_at": "2026-09-11T09:16:18.227073Z",
       "deprecated_at": null,
-      "derived_progress": 0.0,
+      "derived_progress": 100.0,
       "desired_outcomes": [],
-      "deviations": [],
+      "deviations": [
+        "TFD-714791bbdf"
+      ],
       "difficulty": "unknown",
       "display_order": 600,
       "estimated_total_minutes": null,
       "evidence": [
-        "现场（第一轮）：`packages/workbench/.evidence-sites/live-run-2026-09-11-VAS1EM`（2026-09-11 16:57–16:58）。跑法：`E2E_LLM_KEY=*** E2E_LLM_MODEL=senseaudio-s2-flash E2E_LLM_BASE_URL=https://api.senseaudio.cn/v1 bun scripts/e2e/live-run.ts`。集成场景 17 个步骤全绿（seed → S11 账本），真实开发回合由模型自主完成 endpoint 兼容修复，独立验收先打回 1 项、模型定点改正后通过。",
-        "四路监控读数（同一现场，互相一致）：账本「有文件级触碰的会话 5 个」；监控 coverage.sessions = 5；CLI stats threads.withFootprints = 5 / footprintCoverage = 0.8333（6 线程中 5 个有足迹）；队列「抽样 sampledSessions: 5/5」。",
-        "种类门扫描（五现场跑法，本次输出）：新现场表二相对口径 top-3 + 门 = 5 写者 / 10 条 / 5 handle；表三回归门 A「agent 门前后一致 ✓」、B「git 门前 2 条 → 门后 0 条 ✓」、C 分散形状读数「阈值口径 0 条；相对口径 top-3 = src/auth.ts(8.0), src/session.ts(6.0), src/utils.ts(4.0)」。四个旧现场黑板已不存在，脚本如实报「缺现场，不冒充完整」。",
-        "残余噪声（如实记录）：模型侧 HTTP 500 4 次，有界重试兜住（28 次尝试 / 24 次调用，重试率 16.67%）；live-run 末段在分叉复核回合被 provider 500 中断（报告 runs/live-report.json 落盘，模型响应 24 次）。本节点不以「跑完全绿」为判据，判据是交互沉淀与口径读数。",
-        "（现场已持久化）为避免重演「四个 TEMP 现场被系统清理」的教训，本现场已复制到 `packages/workbench/.evidence-sites/live-run-2026-09-11-VAS1EM`（含 .workbench 黑板、runs/ 报告、evidence/ 三件套），原始转储已在 .gitignore 中排除，策展读数落在本节点与 evidence/ACCEPTANCE-REPORT.md。",
-        "第二轮现场（1OioVM，2026-09-11 17:22–17:26）：`packages/workbench/.evidence-sites/live-run-2026-09-11-1OioVM`。整轮**通过**：`[live] 通过；模型响应 43 次；请求尝试 44 次`；集成场景 S1b→S11 17 步全绿；`[live-dev] 独立验收未通过 1 项，模型纠正` 后纠正轮跑完并验收通过；live-development.json / live-fork.json **首次写出**；三条 fork 分支全部走通。",
-        "第二轮四路读数（同现场交叉一致）：CLI stats `threads.total 9 · withFootprints 8 · footprintCoverage 0.8889 · restores 7 · seal {decisions 6, blocked 4, warned 2, downgraded 2}`；账本 159 条事件、t0 `9 线程 / 11 写者`、`dataQuality.insufficientHistory false`；监控三格全「齐」、重试率 2.33%（1/44）；队列 `session-top-k` 抽样 5/8、待复核 12、legacy 1。",
-        "第二轮样本窗口（用户未满足点 ② 已解决）：restores 2→**7**（目标 3）、noticeOutcomes 6→**8**（目标 5）、sealDecisions 1→**6**（目标 3），`sampleWindow.satisfied` 由 false→**true**，`missing: []`。",
-        "第二轮种类门独立复核（更密数据）：现场 1OioVM 相对口径无门 10 写者/21 条/10 handle → 加门 **8 写者/18 条/9 handle**，精确清掉 git ×1 + human ×1 两个记录型写者；两现场阈值口径文件级地标仍均为 0；回归门 A ✓ / B ✓。读数已落 `evidence/kind-gate-sweep.md` 与 `.json`。",
-        "中断噪声（用户未满足点 ③ 已解决）：真因不是 provider 而是两处超时预算 bug——`driver.sendTurn` 硬编码 60s 整轮上限；`live-agent` 的 `AbortSignal.timeout` 建在 hop 循环外导致 50s 被最多 6 个 hop 共享。修为 `E2E_TURN_TIMEOUT_MS ?? 300_000`（可调）与每 hop 独立 `E2E_HOP_TIMEOUT_MS ?? 120_000`。本轮实测 44 次尝试仅 1 次 http-error 且被有界重试兜住，重试率 2.33%（上轮 16.67%）。"
+        "（本轮·第二组真人读数）现场 `packages/workbench/.evidence-sites/live-run-2026-09-11-1OioVM`。回填命令：`bun scripts/e2e/landmark-review-queue.ts --workspace .evidence-sites/live-run-2026-09-11-1OioVM --apply answers.json`，输出「已回填地标复核 12 条（来源 human）；跳过 0 条」。`human/landmark.reviewed` 由 1 条增至 13 条（12 条本轮 + 1 条历史 legacy）。逐键核对 12 条与用户结论全部一致。",
+        "（本轮·四路读数一致）账本「当前候选 18 个，已复核 12 个，认可 6 个，不认可 6 个；完整集合认可率 33.3%；复核覆盖率 66.7%」；CLI stats `current.endorsedShare 0.3333 / reviewedCoverage 0.6667 / legacyReviews 1 / gatedWriters 2`；队列（抽样 5/8）0.5000；旧口径 threshold 四处均为「无样本（分母为空 → 不可计算）」。",
+        "（本轮·未抽样会话已定位，勿写成全量）抽样只覆盖 5 个会话（sampledSessions: 5/8），未抽样的 3 个会话是第三棵分叉树：`c34259ff`（src/base-url.ts 触碰 2 次 + src/branch-1.review.json 编辑 1 次）、`f6f2750d`（src/base-url.ts 触碰 1 次 + src/branch-2.review.json 编辑 1 次）、`d274b645`（src/base-url.ts 触碰 1 次 + src/branch-3.review.json 编辑 1 次）。三者形状完全相同：一个被复核的源文件 + 一个复核产物，每个源文件都只有触碰、只有 review.json 有编辑。若要全站读数齐，就答这 6 条。",
+        "（本轮·两轮读数并列后的跨现场规律）两轮共 22 条真人结论，驳回 10 条，驳回理由高度收敛为三类：① 仅提供前提的材料（requirements.txt，出现 3 次）；② 仅被动浏览且无 edit（出现 5 次）；③ 被复核/被引用的对象本身不等于该会话的产出（被复核的 base-url.ts）。**同一形状在两轮里反复被判 reject**，说明这不是单条噪声，而是候选投影的系统性口径问题——与 TF-0161 同源，且给出了具体的投影修法方向：候选应排除「纯 selection 无 edit」「录音型前提材料」「被复核的源文件」三类。",
+        "（本轮·评审纪律）用户显式要求「编号按会话分组解释，不按模板行序」，且要求按 (writer, handle) 键回填。这是 2026-09-11 早些时候那次模板行序错位的直接产物：模板按 writer 字典序重排，与队列表格/会话分组的编号不一致，靠行号绑定会静默错位。现已确立为规矩：**回填一律按 (writer, handle) 键绑定，禁止依赖物理行序。**"
       ],
       "execution_hints": [],
       "id": "TF-0162",
       "kind": "task",
-      "next_action": "现场已从 TEMP 迁到持久目录 packages/workbench/.evidence-sites/live-run-2026-09-11-VAS1EM（含 evidence/ACCEPTANCE-REPORT.md 与三份监控报告），可长期复核。剩余唯一待办：由人回答 L1 的 10 条候选（脚本手势不构成认可）。",
+      "next_action": "已结项（2026-09-12）。验收①-⑦ 已满足；⑤⑥ 记录的「未达标」读数（0.6000/0.5000）是驱动投影修复的诚实中间态，不是未完成工作——修复后的终局读数：VAS1EM 6/6、1OioVM 9/9、moyu 5/5（2026-09-12 第三现场，模板 answers 按 (writer,handle) 键绑定、reason 为用户原文），三现场 L1 判据 ≥0.8 全部满足且复核覆盖 100%。interaction 沉淀通道在真实模型会话中持续非空（moyu 现场 19 次调用/21 尝试全生命周期执行）。后续 L1 读数随新现场自然累积，归属 TF-0163 的长期样本项。",
       "non_goals": [],
       "primary_parent": "TF-0156",
       "priority": 2,
-      "progress": 0.0,
+      "progress": 1.0,
       "progress_source": "manual",
       "purpose": "证明 L1 的输入不是「攒得不够」而是「从未产生」，并在真实现场对相对口径与种类门做一次独立复核；为 TF-0159 的口径切换与 TF-0161 的种类门提供活证据。",
       "remaining_minutes_max": null,
       "remaining_minutes_min": null,
       "requirements": [],
       "source_sessions": [],
-      "status": "proposed",
+      "status": "done",
       "success_metrics": [],
       "summary": "用真实模型（senseaudio-s2-flash）跑通 live-run 集成场景，把此前一直为空的 interaction 输入链路走通，得到 L1 口径与种类门在真实现场的第一组可复核读数。此前的四个现场是脚本驱动，记录的是「文件被动过」；本轮是模型自主开发会话（reader/writer 双线程 + 独立验收打回重改），记录的是「这次干的活是什么」。",
       "title": "真实模型会话首次产出文件级交互沉淀，并用它验收 L1 口径与种类门",
-      "updated_at": "2026-09-11T09:31:22.858130Z"
+      "updated_at": "2026-09-11T17:03:46.105637Z"
     },
     "TF-0163": {
       "acceptance_criteria": [
@@ -15556,6 +15609,7 @@
       "execution_hints": [],
       "id": "TF-0163",
       "kind": "task",
+      "next_action": "moyu 现场单轮产出校准表 2 行（通知 1 + 恢复动作 1），叠加此前的单现场 8 行，确认了**跨现场累积的结构性缺口**：护城河 A 的读数来自单一黑板（ctx.stats），多个落盘现场各算各的，行数不会自然相加。A 要到 ≥50，路径只有两条：a) 长住租户/日常真实使用在同一个黑板上自然累积（首选，同时喂 L1 自然证据）；b) 显式做跨现场聚合口径（需先立项、明确不把脚本现场洗成自然使用）。在两者定型之前，A 保持「长期样本累积项」定位，不单轮冲刺、不凑行数。",
       "non_goals": [],
       "primary_parent": "TF-0156",
       "priority": 3,
@@ -15570,7 +15624,66 @@
       "success_metrics": [],
       "summary": "第二轮 live-run 把样本窗口三格全部拉满（restores 7 / noticeOutcomes 8 / sealDecisions 6），但护城河 A（校准表行数 ≥ 50）只有 8 行，benchmark 闸门仍关。这不是 bug，是样本量问题：A 需要长期真实使用累积，单轮真实开发（一次开发回合产生 8 行 noticeOutcome）在数量级上够不到 50。本节点承接「如何在不伪造日期的前提下，用可重复的真实驱动把 A 慢慢推上去」。",
       "title": "把护城河 A（校准表 ≥ 50 行）当作长期样本累积项推进，而非单轮冲刺",
-      "updated_at": "2026-09-11T09:31:22.858236Z"
+      "updated_at": "2026-09-11T16:48:09.288123Z"
+    },
+    "TF-0164": {
+      "acceptance_criteria": [
+        "① 工作区干净：除临时目录外不再有未跟踪或未提交的改动，且每个提交在 git log 里的主题说清了「改了什么、为什么」。",
+        "② 不引入红基线：提交前 packages/workbench 的类型检查与测试套件跑绿；用手工裸跑（不带项目自己的 --timeout）得到的红绿不算数。",
+        "③ refs 存活：每次 git 写操作之后跑 scripts/git-ref-repair.sh，收尾时 git ls-files 的条目数与开工时一致。",
+        "④ 森林与仓库同期对齐：task-forest 的权威文件（节点图、事件、待办）与本次节点变更一起入库，导出的 HTML 是最后一次提交之后的产物。"
+      ],
+      "alignment": {
+        "fit": "unknown",
+        "fit_confidence": 0.0,
+        "user_goal": "",
+        "validation_plan": [],
+        "why_not_enough": "",
+        "why_this_task": ""
+      },
+      "alignment_records": [],
+      "assumptions": [],
+      "children": [],
+      "confidence": 0.9,
+      "context_tags": [
+        "workbench",
+        "l1",
+        "commit-gate",
+        "git"
+      ],
+      "created_at": "2026-09-12T07:17:00.412083Z",
+      "deprecated_at": null,
+      "derived_progress": 0.0,
+      "desired_outcomes": [],
+      "deviations": [],
+      "difficulty": "low",
+      "display_order": 800,
+      "estimated_total_minutes": null,
+      "evidence": [
+        "（开工读数 2026-09-12）git status：19 个已跟踪文件被修改、15 项未跟踪（其中 5 个新脚本在 packages/workbench 下、8 个是 task-forest 提案、1 个是 docs 实测记录）。最后一次提交是 2211f24「feat(workbench): L1 口径收敛到 landmark-set 单一实现 + 本机 git ref 修复器」。",
+        "（改动规模）docs + packages 共 14 个文件、365 行插入 / 34 行删除；核心是地标候选的「只认可落笔」翻默认（+95 行）与 168 行回归用例，其余是五处读数面同步增加 requireEdits 字段。"
+      ],
+      "execution_hints": [],
+      "id": "TF-0164",
+      "kind": "task",
+      "non_goals": [],
+      "primary_parent": "TF-0156",
+      "priority": 1,
+      "progress": 0.0,
+      "progress_source": "manual",
+      "purpose": "消除「森林说完成、仓库里查不到」的漂移。阶段 A 已经立过一次同样的闸门（7 个提交），本轮是同一动作在 L1 线上的第二次；本机 git 有宿主钩子清空 refs 的毛病，所以每次写操作之后都要跑一次 ref 修复器。",
+      "remaining_minutes_max": null,
+      "remaining_minutes_min": null,
+      "requirements": [
+        "只做本地提交：不 push、不 force、不改写历史",
+        "森林的「完成」以代码入库为准；节点结项前先看工作区是否干净"
+      ],
+      "source_sessions": [],
+      "status": "in_progress",
+      "success_metrics": [],
+      "summary": "上一轮把 L1 的「只认可落笔」翻成默认、把真实项目现场驱动补齐、把五处读数面统一之后，森林里三条节点都标了完成——但这些代码到 2026-09-12 还停在工作区里没有入库：19 个已跟踪文件被改动、5 个新脚本未跟踪。结果是「L1 = 1.0000、复核覆盖 100%」这个结论换一台机器就复现不出来。本节点把这一轮改动按主题分次提交落库，并把森林自身（节点图、事件、待办）与之一并入库，使森林里的完成状态能指向具体提交。",
+      "title": "提交闸门（L1 线）：把地标口径翻默认这一轮的改动落库，让森林的「完成」有代码可指",
+      "updated_at": "2026-09-12T07:17:00.412132Z"
     }
   },
   "reason": "rebuild",
@@ -15595,11 +15708,8 @@
   },
   "status_queues": {
     "actionable_todos": [
-      "TF-0158",
       "TF-0163",
-      "TF-0159",
-      "TF-0161",
-      "TF-0162"
+      "TF-0164"
     ],
     "blocked": [],
     "by_status": {
@@ -15765,14 +15875,16 @@
         "TF-0155",
         "TF-0156",
         "TF-0157",
-        "TF-0160"
-      ],
-      "in_progress": [],
-      "proposed": [
         "TF-0158",
         "TF-0159",
+        "TF-0160",
         "TF-0161",
-        "TF-0162",
+        "TF-0162"
+      ],
+      "in_progress": [
+        "TF-0164"
+      ],
+      "proposed": [
         "TF-0163"
       ],
       "ready": [],
@@ -15780,21 +15892,18 @@
     },
     "evergreen_open_goals": [],
     "open": [
-      "TF-0158",
-      "TF-0159",
-      "TF-0161",
-      "TF-0162",
-      "TF-0163"
+      "TF-0163",
+      "TF-0164"
     ],
     "ready": [],
     "review_needed": []
   },
   "summary": {
     "blocked_count": 0,
-    "done_count": 152,
-    "edge_count": 239,
-    "node_count": 163,
-    "open_count": 5,
+    "done_count": 156,
+    "edge_count": 241,
+    "node_count": 164,
+    "open_count": 2,
     "review_needed_count": 0
   },
   "tree_edges": [
@@ -15954,7 +16063,8 @@
     "TFE-0231",
     "TFE-0237",
     "TFE-0238",
-    "TFE-0242"
+    "TFE-0242",
+    "TFE-0243"
   ],
   "workspace_path": "D:\\helmor-main"
 }

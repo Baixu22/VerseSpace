@@ -1,0 +1,25 @@
+{
+  "applied_at": "2026-09-11T17:01:40.031324Z",
+  "base_graph_hash": "5260f9cf26d7e0a39ed237a6c48c11d4e66f5641ba1f4ba72f48019e4b6fbc67",
+  "base_summary": {
+    "edge_count": 239,
+    "node_count": 163,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "next_action": "已结项（2026-09-12）。复现实验给出决定性证据：① 原问题文件 live-provider.test.ts 当日复跑全绿——过滤组合 in-flight|transient 2/2（2.26s, exit 0）、全文件 11/11（7.39s, exit 0），原挂起不可复现；② 同一时段 suite-total 两次采样，「无总账挂起」先落在 merge-guard.test.ts（单跑 9/9, 15.76s）、再落在 ui/server.test.ts（memory 已知 HEAD 假失败文件）——**挂起文件逐轮迁移**；③ 三个文件单跑全绿。结论：病灶在 Bun 运行时/并发/本机环境，不在任何测试文件的代码；与验收②「不可归因于仓库代码」一致，维持处置=按文件隔离计量（suite-total 退出码点名）+ 按 Bun 运行时缺陷上报（材料沿用本节点原清单：文件路径 + 两条过滤命令 + 三形态 + 探针脚本，新增『挂起文件逐轮迁移』这一关键观察）。",
+        "progress": 1.0,
+        "status": "done"
+      },
+      "id": "TF-0158"
+    }
+  ],
+  "created_at": "2026-09-11T17:01:30.433471Z",
+  "proposal_id": "TFP-2471e3b27f",
+  "session_id": "tf0158-close-20260912",
+  "status": "applied",
+  "summary": "TF-0158 结项：挂起不可归因于仓库代码，且实测会跨文件迁移（live-provider→merge-guard→ui/server）"
+}
