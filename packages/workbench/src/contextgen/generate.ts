@@ -87,7 +87,11 @@ export async function generateContext(
 	return { workspotId, ok: true, path: target };
 }
 
-/** Refresh every workspot; unresolvable ones are reported, never fatal. */
+/**
+ * Refresh every workspot; unresolvable ones are reported, never fatal.
+ * 预留导出（仅测试消费，2026-09-13 审计 §4.2）：TF-0036 的「全工位刷新」
+ * 入口，生产路径按需单工位生成，不走全量。
+ */
 export async function generateAllContexts(
 	bb: Blackboard,
 ): Promise<GenerateResult[]> {

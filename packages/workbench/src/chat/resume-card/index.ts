@@ -269,6 +269,10 @@ export function buildResumeCard(input: {
 	};
 }
 
+/**
+ * 预留导出（仅测试消费，2026-09-13 审计 §4.2）：UI 侧直接读 card.inject，
+ * 本函数暂无生产调用方——保留为注入判定的契约面。
+ */
 export function shouldInjectResumeCard(card: ResumeCardView | null): boolean {
 	return Boolean(card?.inject);
 }

@@ -862,7 +862,10 @@ export class ChatThreads {
 						},
 					});
 					return true;
-				} catch {
+				} catch (err) {
+					// at-least-once 语义保住了（下一轮重投），但失败必须可见，
+					// 否则通知通道断裂表现为「再也没有送达信号」（2026-09-13 收尾 4.5）。
+					console.error("[chat] premise notice ack failed:", err);
 					return false;
 				}
 			};
@@ -981,9 +984,11 @@ export class ChatThreads {
 				return;
 			}
 			turn.emit({ type: "notice_delivered", count: turn.noticeCount });
-		})().catch(() => {
+		})().catch((err) => {
 			// The provider already accepted the turn; a logging failure must not
 			// strand the chat turn. The durable notice ack itself is best effort.
+			// 失败仍要可见（2026-09-13 收尾 4.5）。
+			console.error("[chat] notice ack bookkeeping failed:", err);
 		});
 	}
 
@@ -1267,9 +1272,11 @@ export class ChatThreads {
 								id,
 								session.forkPlan,
 							);
-						} catch {
+						} catch (err) {
 							// Provider context may still be inherited even when the local
 							// footprint mirror is unavailable; record that distinction.
+							// （fit 账本要数的继承观测证据，写失败不能无声——2026-09-13 收尾 4.5）
+							console.error("[chat] fork footprint mirror failed:", err);
 						}
 					}
 					await this.observeForkInheritance(id, "claude", {
@@ -1280,7 +1287,11 @@ export class ChatThreads {
 						mode: session.agentContextMode,
 						refs: inherited.refs,
 					});
-				})().catch(() => {});
+				})().catch((err) => {
+					// 继承观测（thread.inheritance_observed）写失败无声 =
+					// fit 账本样本静默缺失（2026-09-13 收尾 4.5）。
+					console.error("[chat] fork inheritance observation failed:", err);
+				});
 			}
 			if (event.type === "stream_event") {
 				const inner = event.event as

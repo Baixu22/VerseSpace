@@ -178,7 +178,10 @@ export async function startAgent(
 			return;
 		}
 		dirty = false;
-		await bb.metrics.save(workspot.id, laneMetrics).catch(() => {});
+		await bb.metrics.save(workspot.id, laneMetrics).catch((err) => {
+			// lane metrics 落盘失败无声 = 成本读数静默漂移（2026-09-13 收尾 4.5）
+			console.error("[runner] lane metrics flush failed:", err);
+		});
 	};
 
 	const capture = (raw: string) => {
@@ -200,7 +203,11 @@ export async function startAgent(
 			if (distress.length > 0) {
 				fpQueue = fpQueue.then(async () => {
 					for (const item of distress) {
-						await bb.tribunal.submit(item.envelope).catch(() => {});
+						await bb.tribunal.submit(item.envelope).catch((err) => {
+							// distress 升级到裁决队列失败无声 = 高压信号丢失
+							// （2026-09-13 收尾 4.5）
+							console.error("[runner] lane distress submit failed:", err);
+						});
 					}
 				});
 			}

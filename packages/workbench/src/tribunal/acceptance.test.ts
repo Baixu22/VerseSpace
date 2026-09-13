@@ -88,7 +88,9 @@ describe("R3 measured acceptance (TF-0080 / 81 / 82)", () => {
 				offer(envelopes.metricCacheMiss("ws-a", 0.18), 16),
 				offer(envelopes.metricCacheMiss("ws-b", 0.22), 15),
 				{
-					kind: "premise_invalidated",
+					// 历史样例曾用 premise_invalidated——该 kind 已删（2026-09-13：
+					// 零生产者死基线），换用真实生产的 metric_tool_bloat。
+					kind: "metric_tool_bloat",
 					subject: "ws-a",
 					causeKey: "premise:ws-a:src/lib/api.ts",
 					action: {

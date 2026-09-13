@@ -35,7 +35,6 @@ export const KIND_PROFILES: Record<TribunalKind, KindProfile> = {
 	no_idle_workspot: { severity: 0.42, urgencyMinutes: 180 },
 	concurrency_cap: { severity: 0.15, urgencyMinutes: 240 },
 	dispatch_suggestion: { severity: 0.1, urgencyMinutes: 480 },
-	premise_invalidated: { severity: 0.5, urgencyMinutes: 45 },
 	metric_tool_bloat: { severity: 0.45, urgencyMinutes: 180 },
 	metric_cache_miss: { severity: 0.55, urgencyMinutes: 45 },
 	metric_suspend: { severity: 0.75, urgencyMinutes: 30 },

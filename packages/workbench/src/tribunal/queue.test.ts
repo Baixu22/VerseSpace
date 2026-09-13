@@ -155,7 +155,9 @@ describe("priority is consequence × deadline, not a hand-tuned label", () => {
 describe("NEWS2 single-parameter escalation", () => {
 	function escalates(evidence: TribunalCandidate["evidence"]): void {
 		const verdict = rationalize(
-			candidate({ kind: "premise_invalidated", causeKey: "k1", evidence }),
+			// 历史样例曾用 premise_invalidated——该 kind 已删（2026-09-13：
+			// 零生产者死基线），换用真实生产的 metric_suspend。
+			candidate({ kind: "metric_suspend", causeKey: "k1", evidence }),
 		);
 		expect(verdict.admit).toBe(true);
 		if (verdict.admit) {

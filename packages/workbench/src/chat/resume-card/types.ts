@@ -1,3 +1,7 @@
+/**
+ * 恢复卡事实条目数。⚠ UI 侧 apps/workbench-ui/src/components/chat/resume-card.tsx
+ * 有同值重声明（=3）——两端构建独立，无法共享 import；改动时必须同步（2026-09-13 收尾 4.2）。
+ */
 export const FACTS_PREVIEW_COUNT = 3;
 
 export type ConflictRule =

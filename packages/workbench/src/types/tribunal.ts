@@ -39,7 +39,6 @@ export const TRIBUNAL_KINDS = [
 	"no_idle_workspot",
 	"concurrency_cap",
 	"dispatch_suggestion",
-	"premise_invalidated",
 	/** R3 / TF-0084: per-lane metrics crossed a distress line. */
 	"metric_tool_bloat",
 	"metric_cache_miss",

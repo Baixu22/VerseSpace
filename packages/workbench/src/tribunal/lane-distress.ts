@@ -78,6 +78,10 @@ export function assessLane(
 	return out;
 }
 
+/**
+ * 预留导出（仅测试消费，2026-09-13 审计 §4.2）：fold+assess 的组合步，
+ * 生产路径在 agents/runner.ts 内联同一组合。
+ */
 export function foldAndAssess(
 	lane: LaneMetrics,
 	sample: UsageSample,
@@ -92,6 +96,9 @@ export function foldAndAssess(
  * the body named so the agent can re-read the file instead of remembering
  * it. This is the only context cut TF-0084 allows — not a summary of a
  * summary, not a mid-window trim.
+ *
+ * ⚠ 预留导出（仅测试消费，2026-09-13 审计 §4.2）：TF-0084 允许的唯一
+ * 上下文裁切，目前**无生产调用方执行该裁切**——接线或删除待拍板。
  */
 export function evictToolResultContent(content: unknown): {
 	evicted: true;

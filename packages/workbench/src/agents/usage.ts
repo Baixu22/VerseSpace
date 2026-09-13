@@ -154,21 +154,3 @@ export function extractUsage(
 
 	return null;
 }
-
-/** Add one sample into a running total, in place. */
-export function accumulate(
-	total: UsageSample,
-	sample: UsageSample,
-): UsageSample {
-	return {
-		inputTokens: total.inputTokens + sample.inputTokens,
-		outputTokens: total.outputTokens + sample.outputTokens,
-		cacheCreationTokens: total.cacheCreationTokens + sample.cacheCreationTokens,
-		cacheReadTokens: total.cacheReadTokens + sample.cacheReadTokens,
-		toolCalls: total.toolCalls + sample.toolCalls,
-		toolResultBytes: total.toolResultBytes + sample.toolResultBytes,
-		assistantTextBytes: total.assistantTextBytes + sample.assistantTextBytes,
-		compaction: total.compaction || sample.compaction,
-		failed: sample.failed,
-	};
-}

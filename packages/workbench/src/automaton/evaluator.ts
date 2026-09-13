@@ -22,5 +22,3 @@ export function evaluate(snapshot: WorldSnapshot): Transition[] {
 		...evaluateWorkspots(snapshot),
 	];
 }
-
-export const automaton = { evaluate };

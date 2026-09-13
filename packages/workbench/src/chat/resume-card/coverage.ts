@@ -8,6 +8,8 @@ import type { CoverageRow } from "./types";
  * "safe" are conclusions it is not entitled to draw: the read set may have
  * covered nothing at all, and a writer who is told "safe" once and burned once
  * will not read the card again.
+ *
+ * 预留导出（仅测试消费，2026-09-13 审计 §4.2）：TF-0129 的契约禁词表。
  */
 export const FORBIDDEN_CARD_PHRASES = [
 	"无变化",
