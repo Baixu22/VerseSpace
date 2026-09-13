@@ -9328,7 +9328,7 @@
       "fit-ledger"
     ],
     "created_at": "2026-09-12T12:09:41.715452Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-13T06:30:00.000000Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "medium",
@@ -9337,11 +9337,16 @@
     "evidence": [
       "（闸门四条件的实际实现）`scripts/fit-ledger/ledger.ts` 的 `moatNumbers`：A `stats.noticeOutcomes.rows ≥ 50`；B `gitOrHumanNotices ≥ 1`；C `stats.seal.blocked ≥ 1 && stats.seal.reviews.correct ≥ 1`；D `notifiedRatio ∈ [0.1, 0.3]`。`benchmarkGate` 是四者 AND，缺一个就关。",
       "（实测读数·2026-09-12 现场 live-moyu-moyu-soak）A=57（达标）、B=0、C=162 但 `seal.reviews.correct`=0 → present=false、D=0.315（超上限）→ 闸门关，缺 B/C/D。",
-      "（D 的漂移区间）同一现场 57 轮里 D 的取值在 0.296–0.395 之间，跨过 0.30 上限两侧 → 它是采样相关的比值，不是单调累积量。"
+      "（D 的漂移区间）同一现场 57 轮里 D 的取值在 0.296–0.395 之间，跨过 0.30 上限两侧 → 它是采样相关的比值，不是单调累积量。",
+      "2026-09-13 复测：A=59（达标，单调）；B=0、C blocked=165/correct=0、D=0.3149 复核与 ledger 0.315 一致。",
+      "F2 结构缺口：premise_stale 唯一追加点 premises.ts:410；reconcile 跳过 git/ci（premises.ts:327）；payload.writer=前提持有者而非失效制造者；human 读集无产品生产路径（watcher used 恒空）。",
+      "F4 D 判定：80 pass 全在 09-12 09:50-12:32 批次；轨迹 1.0 → 稳态 0.30-0.33（第 21 轮起，曾触带内 0.2978）；恒等式 9766=6691+3075 精确闭合；判定=负载形状，band 不动。",
+      "F5 受控实验路线被否：AI 编排读活动记为 kind=human 即冒充写者身份（验收①自设红线），且结论不靠补数据得出。判决书 docs/tf0167-moat-gate-verdict.md。"
     ],
     "execution_hints": [],
     "id": "TF-0167",
     "kind": "task",
+    "next_action": "已按判决收尾（deprecated，非缺陷）：重启条件三者同时满足才新开节点——① human 读集有产品级生产路径；② 真实使用者参与封印复核；③ 真实使用窗口的 premise_pass 积累。判据与阈值一律不动。",
     "non_goals": [],
     "priority": 2,
     "progress": 0.0,
@@ -9355,11 +9360,11 @@
       "D 只作口径带，不通过调参把比值「凑」进带内"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "deprecated",
     "success_metrics": [],
-    "summary": "护城河 A 已在真实累积跑里达标（57 行，单调可复现）。闸门仍然关着，缺的三项各自需要不同的东西，而且都不是靠「多跑几轮」能补的：B 需要至少 1 条「推定写者是 git 或人」的失效通知——累积跑的写者全是模型线程，产不出这一条；C 需要 `seal.blocked ≥1` **且** 人工复核 `seal.reviewed` 判为正确——后半句是人的动作，红线明确禁止脚本或模型代答；D 需要 `notifiedRatio` 落在 10–30%，实测在 0.296–0.395 之间漂移，它是口径带而不是可累积量（不是越接近某端越好）。",
+    "summary": "判决（docs/tf0167-moat-gate-verdict.md）：benchmark 闸门保持「有据的关闭」，对外的 stale-premise benchmark 不得写。三项前置在当前现场结构性不可达——B：premise_stale 全仓唯一生产者是 reconcile（premises.ts:410），payload.writer 是前提持有者，而 human 写者的读集在产品里没有生产路径（watcher 只记写集，watcher/index.ts:100-107 used 恒空），232 个写者全是 agent，B=0 是结构性结果；C：seal.reviewed 强制 source=human（seal-review.ts:20），现场 165 条 block 全来自脚本编排的模型线程，缺真实使用者，复核 CLI 已就绪但无人可答；D：80 pass 全在 09-12 当天 2.7h soak 批次，聚合 0.3149，轨迹自第 21 轮稳态于 0.30-0.33，恒等式精确闭合（9766=6691 dedup+3075 notified），判定为负载形状（soak 每轮全新 writer/path/version，dedup 抑制不了新组合），非噪声非口径错误，与租户下侧漂移 0.16-0.058 同机制。purpose 已达成：每个前置该由谁做已收敛——B 等 human 读集的产品路径（编辑器集成），C 等真实使用者，D 等真实使用窗口。判据与 band 一律不动。重启时新开节点，不复活本节点。受控实验路线被否：AI 读记为 human 即冒充写者身份，且对工程无增益。",
     "title": "补齐 benchmark 闸门剩下的三项：B 的 git/human 写者、C 的人工封印复核、D 的比值带",
-    "updated_at": "2026-09-12T12:09:41.715462Z"
+    "updated_at": "2026-09-13T06:32:56.958396Z"
   },
   "TF-0168": {
     "acceptance_criteria": [
