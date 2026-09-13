@@ -121,6 +121,27 @@ function escapeRegExp(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * 指引文件里的「外部工具名」不是本仓库的符号：Tauri MCP bridge 的工具
+ * （webview_* / ipc_* / driver_session / manage_window / read_logs）由
+ * 仅 debug 构建下的 MCP server 提供，永远不会出现在本检出里。
+ * 「语料 0 次出现」对它们是无效证据——判 unverified，不判 stale。
+ * （2026-09-13：helmor 现场 28 条 symbol 失效里有 20 条是这类误报。）
+ */
+const EXTERNAL_TOOL_PREFIXES = ["webview_", "ipc_"];
+const EXTERNAL_TOOL_NAMES = new Set([
+	"driver_session",
+	"manage_window",
+	"read_logs",
+]);
+
+export function isExternalToolName(symbol: string): boolean {
+	return (
+		EXTERNAL_TOOL_NAMES.has(symbol) ||
+		EXTERNAL_TOOL_PREFIXES.some((prefix) => symbol.startsWith(prefix))
+	);
+}
+
 /** 全词匹配正则。点号按字面处理；`_` 与 `$` 属于词字符。 */
 function symbolRegex(symbol: string): RegExp {
 	return new RegExp(`(?<![\\w$])${escapeRegExp(symbol)}(?![\\w$])`);
@@ -208,6 +229,9 @@ export function verifyRef(
 	}
 
 	// 单个符号验证：全库全词搜索（批量场景请用 verifySymbols）
+	if (isExternalToolName(ref.text)) {
+		return { status: "unverified" };
+	}
 	const needle = symbolRegex(ref.text);
 	for (const file of corpus.sourceFiles) {
 		const content = readText(file);
@@ -226,11 +250,15 @@ export async function verifySymbols(
 	refs: CodeRef[],
 	corpus: Corpus,
 ): Promise<VerifyResult[]> {
-	const results: VerifyResult[] = refs.map(() => ({
-		status: "stale",
-		reason: "全库 0 次出现",
-	}));
-	const pending: number[] = refs.map((_, i) => i);
+	const results: VerifyResult[] = refs.map((ref) =>
+		isExternalToolName(ref.text)
+			? { status: "unverified" }
+			: { status: "stale", reason: "全库 0 次出现" },
+	);
+	// 外部工具名不进待搜集合——它们永远搜不到，留在 pending 里只会白扫语料
+	const pending: number[] = refs
+		.map((ref, index) => (isExternalToolName(ref.text) ? -1 : index))
+		.filter((index) => index >= 0);
 	if (pending.length === 0) return results;
 
 	const CHUNK = 128;
