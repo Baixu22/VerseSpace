@@ -3743,7 +3743,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3766,7 +3766,9 @@
     "display_order": 400,
     "estimate": 300,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-13 回写：现行投递通道为 stdin stream-json——chat/threads.ts:944-956（活跃轮次 streaming input）与 runtime/delivery.ts:183；socket 方案（CLAUDE_CODE_MESSAGING_SOCKET）在代码中无任何实现残留。通道转向的决策记录在 TF-0066/TF-0109 与 ADR-0010，本节点标题中的「socket」为历史方案名。"
+    ],
     "execution_hints": [
       "packages/workbench/src/types/transitions.ts 已有 notify_human，照它的形状加 notify_session",
       "KV 缓存红线：只追加合法；禁止编辑/删除中段消息、重排序、中途改系统提示、中途增删工具",
@@ -3777,7 +3779,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3790,9 +3792,9 @@
     "source_sessions": [],
     "status": "done",
     "success_metrics": [],
-    "summary": "通过 CLAUDE_CODE_MESSAGING_SOCKET 在活跃轮次的工具调用之间投递，只追加，落在 KV 缓存安全的一侧。automaton 保持纯函数，runtime 负责投递。",
+    "summary": "通过 CLAUDE_CODE_MESSAGING_SOCKET 在活跃轮次的工具调用之间投递，只追加，落在 KV 缓存安全的一侧。automaton 保持纯函数，runtime 负责投递。\n\n2026-09-13 回写：标题与原方案中的 socket 通道（CLAUDE_CODE_MESSAGING_SOCKET）已废弃——转向记录见 TF-0066/TF-0109/ADR-0010；现行投递通道是 stdin stream-json（chat/threads.ts 的 streaming input，runtime/delivery.ts:183），代码中无任何 socket 实现。",
     "title": "失效通知投递（socket，工具调用边界）",
-    "updated_at": "2026-08-30T15:27:05.983763Z"
+    "updated_at": "2026-09-13T13:02:20.475289Z"
   },
   "TF-0078": {
     "acceptance_criteria": [
@@ -3851,7 +3853,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3866,7 +3868,9 @@
     "created_at": "2026-08-30T06:29:39.148025Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-c1b2f26f45"
+    ],
     "difficulty": "medium",
     "display_order": 600,
     "estimate": 360,
@@ -3874,7 +3878,8 @@
     "evidence": [
       "本仓库实测：git merge-tree --write-tree --name-only 单对约 320ms，十对并发 421ms；shell 里顺序跑十对约 3.2 秒、并发约 1.8 秒——shell 自身的开销把读数抬高了一个量级",
       "merge-tree 输出格式：干净时只有 tree oid 且退出码 0；冲突时 oid 之后到空行之间是冲突路径，退出码 1（是答案不是失败）",
-      "退出码非 0/1 才是 git 真的出错，需要单独区分"
+      "退出码非 0/1 才是 git 真的出错，需要单独区分",
+      "2026-09-13 收尾审计：runtime/merge-guard.ts（245 行）零非测试调用方——scheduler/runtime/CLI/UI 均不接入，grep runMergeGuard/predictConflicts 仅命中自身与 merge-guard.test.ts。AC「N=5 一轮预测 1 秒内」在单测环境成立，生产链路未受益（偏差记录 TFD-c1b2f26f45；ADR-0010:77,138 的「在用」表述已同步修正）。done 状态保留：交付物与单测读数是真的，漂移在「已接入」的暗示而非交付本身；接入 dispatch 前置或降级由后续拍板。"
     ],
     "execution_hints": [
       "本仓库实测：git merge-tree 热态 33ms／冷态约 41ms（2053 文件，git 2.51，Windows）",
@@ -3888,7 +3893,7 @@
       "不做 Cassandra 式约束调度"
     ],
     "priority": 3,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3903,7 +3908,7 @@
     "success_metrics": [],
     "summary": "合并层只投入便宜的安全网。真正的力气花在上游把变更切小——那是调度问题不是合并问题。",
     "title": "便宜的合并安全网（ConE 式写集重叠 + git merge-tree）",
-    "updated_at": "2026-08-30T15:27:05.983994Z"
+    "updated_at": "2026-09-13T13:02:20.475358Z"
   },
   "TF-0080": {
     "acceptance_criteria": [
@@ -6419,7 +6424,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "threads 事件带 status/verdict 时抛错的单测",
@@ -6447,7 +6452,8 @@
       "premises.test.ts 新增世界 fold 测试：5 条 thread.* 事件在场时 reconcile 仍只报 src/big.ts，delivery pending 逐字不变，fold 未发出任何线程事件",
       "wip.test.ts 新增调度侧 fold 测试：6 条 thread.* 事件前后 observeFlow() toEqual 相等——λ×W 只读 goal_dispatched/goal_status，不读会话拓扑",
       "events.test.ts：thread.merged_back（from/into/level/facts refs）可写入，未知类型 thread.merged_back_v2 仍抛『未知线程生命周期事件』",
-      "contextgen 侧过滤与 render 测试已在 8b960ff 落地；至此 premises/delivery/wip/contextgen 四个世界消费者全部有 fold 证明；397 pass / 0 fail（--timeout 60000），tsc 与 biome 零错误"
+      "contextgen 侧过滤与 render 测试已在 8b960ff 落地；至此 premises/delivery/wip/contextgen 四个世界消费者全部有 fold 证明；397 pass / 0 fail（--timeout 60000），tsc 与 biome 零错误",
+      "2026-09-13 回写：thread.merged_back 已随收尾死代码清理（5ac9da2，issue #4）从 types/event.ts 白名单删除，events.test.ts 改为断言拒绝该类型。本节点「白名单扩 thread.merged_back 并有接受/拒绝单测」描述当时状态（TF-0132 前置）；白名单收缩后方向性不变量由拒绝分支维持，fold 测试覆盖不变。"
     ],
     "execution_hints": [
       "新增事件类型与 schema 校验",
@@ -6462,7 +6468,7 @@
       "不让调度器读树拓扑"
     ],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 fork/leave/restore/merge-back 变成一等会话事件，同时守住世界投影不读会话拓扑的边界。",
     "remaining_minutes_max": 120,
@@ -6481,7 +6487,7 @@
     ],
     "summary": "生命周期事件的方向性不变量用 fold 测试钉死：premises reconcile、delivery 队列、wip 观测在同一条日志含完整 thread.* 家族（含新入白名单的 thread.merged_back）时输出不变，fold 自身零线程事件；白名单扩 thread.merged_back（TF-0132 前置）并有接受/拒绝单测。",
     "title": "会话生命周期事件与投影边界",
-    "updated_at": "2026-09-05T06:13:45.830218Z"
+    "updated_at": "2026-09-13T13:02:20.475213Z"
   },
   "TF-0125": {
     "acceptance_criteria": [
@@ -7410,7 +7416,8 @@
     "estimated_total_minutes": 180,
     "evidence": [
       "2026-09-10：SenseAudio 17 轮累积后护城河四数字齐备且非零：A 校准表行数 95（≥50）、B git/human 失效通知 1（≥1）、C 真实会话 seal block 18（≥1 且正确）、D notified/overlaps 0.149（10-30%）；benchmark 闸门 open。fit 账本分布 aligned 3 / partial 15 / unknown 9（分母 32 行含 5 条里程碑，直方图只统计 27 行；partial 均为已 done 节点有数据未设 judge 的保守展示）。原证据文本里的『partial 16 / unknown 6』写错，以快照 docs/fit-ledger-2026-09-10-senseaudio-17rounds.md 的行为准，本次更正。",
-      "2026-09-11 22 轮批次复核：A 127 · B 1 · C 23 · D 0.159（in-band），闸门仍开；unknown 9 条全部可解释（7 条 record 类按纪律不可判定 + 1 条 TF-0142 待样本 + 1 条 TF-0154 待人认可），早期现场『unspecified/unknown 20』不再出现。'第 30 天回看四个数字存在且非零'按 TF-0141 判例改以样本量门为准（样本窗口 48/127/25 全满足），日历观察窗口单独记偏差。"
+      "2026-09-11 22 轮批次复核：A 127 · B 1 · C 23 · D 0.159（in-band），闸门仍开；unknown 9 条全部可解释（7 条 record 类按纪律不可判定 + 1 条 TF-0142 待样本 + 1 条 TF-0154 待人认可），早期现场『unspecified/unknown 20』不再出现。'第 30 天回看四个数字存在且非零'按 TF-0141 判例改以样本量门为准（样本窗口 48/127/25 全满足），日历观察窗口单独记偏差。",
+      "2026-09-13 收尾审计重算（现场 live-moyu-moyu-soak）：C 项口径已变——scripts/fit-ledger/ledger.ts:258-263 现要求 seal.reviews.correct ≥ 1（该处注释自承旧实现「只数了前半句」）。现行读数 A=59 ✓ / B=0 / C blocked=165 但 correct=0 / D=0.315 → gate.open=false。上列「闸门 open（09-10/09-11）」是旧口径下的历史读数，按现行实现不可复现；闸门现状与 TF-0167 判决书（docs/tf0167-moat-gate-verdict.md）一致。"
     ],
     "execution_hints": [
       "SenseAudio S2 Flash 为默认 live 模型（2026-09-10 接入）：run-live.ps1 默认读 %LOCALAPPDATA%/HelmorWorkbench/credentials/openrouter.dpapi；E2E_LLM_MODEL=senseaudio-s2-flash、E2E_LLM_BASE_URL=https://api.senseaudio.cn/v1。首轮 run.ts --live --rounds 1 25 步全绿，租户 57 线程/63 写者/1.9 天，闸门开，判决 1/2/3 supported。",
@@ -7442,7 +7449,7 @@
     ],
     "summary": "建立 fit 账本，记录使用次数、展开率、dismiss 率与恢复改善；所有状态必须来自真实事件，不允许用测试通过替代。",
     "title": "fit 账本与砍留决策",
-    "updated_at": "2026-09-10T18:01:43.417131Z"
+    "updated_at": "2026-09-13T13:02:20.475083Z"
   },
   "TF-0138": {
     "acceptance_criteria": [
@@ -8362,7 +8369,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8389,7 +8396,8 @@
       "阶段 A 已完成代码复核与提交，R10 的本地开发前置解除。",
       "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
       "R10 的五项验收已覆盖：空分支、可解析引用、dismiss 跨轮、无伪 Verifier、两个 R10 命名空间的代码注释。相关实现为 chat/resume-card/branches.ts、chat/evidence.ts 与 UI evidence-refs.tsx。",
-      "工程样本内 resume_branch_opened=10，现由 fit 账本作为 component 指标读取，其他恢复动作不计作分支消费。"
+      "工程样本内 resume_branch_opened=10，现由 fit 账本作为 component 指标读取，其他恢复动作不计作分支消费。",
+      "2026-09-13 回写：首条证据「thread.merged_back 已落入白名单」所指条目已随 5ac9da2（issue #4 死代码清理）删除——该类型在代码中零生产者，保留白名单条目只会维持假阳性面。R10 恢复卡本体（chat/resume-card/branches.ts）不受影响，其数据源不依赖该事件类型。"
     ],
     "execution_hints": [],
     "id": "TF-0151",
@@ -8397,7 +8405,7 @@
     "next_action": "已完成工程实现与验收；使用效果由阶段 B 与全局目标继续判定。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 TF-0132 里唯一值钱的部分（分支留下的执行事实回到主线）保留为恢复卡的一条规则，而不是一个里程碑级的指针语义工程。",
     "remaining_minutes_max": 0,
@@ -8408,7 +8416,7 @@
     "success_metrics": [],
     "summary": "恢复卡 R10 已落地：以有证据的分支写入与当前失效前提生成摘要；空分支零痕迹、dismiss 控制注入，查看分支先记源线程动作；引用可点击查看原始记录。",
     "title": "恢复卡规则 R10：兄弟分支在你离开后改了什么",
-    "updated_at": "2026-09-07T07:35:14.316089Z"
+    "updated_at": "2026-09-13T13:02:20.475251Z"
   },
   "TF-0152": {
     "acceptance_criteria": [
@@ -8757,7 +8765,8 @@
       "与本次改动无关：git diff 另存为 patch 后 checkout 掉 context.ts / review-stats.ts / review-stats.test.ts，再跑 src/chat/fork-inheritance.test.ts → 1 pass / 4 fail（与带改动时完全一致），随后已恢复改动（tsc=0、interactions 39 用例全绿）。",
       "沙箱因素已排除：在测试进程内 spawnSync('bun',['--version']) 与 spawnSync('bun --version',{shell:true}) 均 status 0、输出 1.4.2。",
       "失败样例：fork-inheritance.test.ts:131 expect(footprint(source.id).length).toBeGreaterThan(0) 收到 0；:176 expect(agentContextPlan?.mode).toBe('fork-session') 收到 undefined；:220 读集行数收到 0（期望 ≥2）。",
-      "对照：src/chat 里不依赖假 claude 的用例（如『HTTP provider：上下文靠历史重发算继承』）仍然 pass，说明失败集中在 spawn 假 claude 的那条路径上。"
+      "对照：src/chat 里不依赖假 claude 的用例（如『HTTP provider：上下文靠历史重发算继承』）仍然 pass，说明失败集中在 spawn 假 claude 的那条路径上。",
+      "2026-09-13 回写（补 AC④「结论写回节点」）：两类红的根因是 supervisor 给假 claude 的 shim 在 Windows 需要 .cmd 包装——真修复在提交 ac106bf（supervisor/index.ts），完整分诊见 docs/report-2026-09-11-monitoring.md:131,166。修复后两类失败消失；上方 10 fail 记录的是修复前的失败现场。"
     ],
     "execution_hints": [
       "复现：cd packages/workbench && bun test src/chat/fork-inheritance.test.ts --timeout 60000",
@@ -8784,7 +8793,7 @@
     "success_metrics": [],
     "summary": "packages/workbench 子集跑 `bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor`（68 秒）得到 204 pass / 10 fail：分支读集继承（TF-0131）4 例、ChatThreads 追溯式分叉（TF-0093）1 例、通知通道语义（TF-0142）5 例（其中一例 60 秒超时）。失败形态一致：假 claude 的 tool_use 没有变成足迹（footprint 为 0）、fork 的 agentContextPlan?.mode 读到 undefined。已知：与 2026-09-11 的 L1 改动无关（revert 后同样失败）；与沙箱无关（测试进程内 spawnSync 带管道 / shell 两种方式都成功）。2026-09-07 报告里的『全量 569 pass / 0 fail』说明这中间有回归或环境漂移，需要归因。全量 bun test 会停留：CPU 20 分钟不增长、无输出，只能中断。",
     "title": "本机套件两类红：fork 继承 / 通知通道 10 例失败，全量跑停留",
-    "updated_at": "2026-09-10T19:21:42.560264Z"
+    "updated_at": "2026-09-13T13:02:20.475324Z"
   },
   "TF-0158": {
     "acceptance_criteria": [
@@ -8873,7 +8882,8 @@
       "（本轮）迁移方案成文：`docs/tf-0159-l1-denominator-migration.md`。三个决定都给了可执行形态——① 同周期并报 `endorsedShare`（阈值口径）与 `relativeLandmarkCoverage`（相对口径），让读数变化能归因到口径而不是产品；② 结论以 (writer, handle) 为键全量保留，落在新集合外的标 `legacy`（不删不改判），认可率同时给 `endorsedInSet / setSize` 与 `endorsedAll / allReviewed` 两个分子，避免无故跳变；③ 默认队列按会话抽样 N=5 并把 `sampledSessions: 5/84` 写进读数，全量入口必须标注「未抽样的会话不计入」，绝不用抽样冒充全量覆盖。",
       "（本轮）规模有实测支撑：租户 84 个会话 × top-3 = 188 条，人评不了，这正是必须抽样而不是全量问的理由；四个现场用落库函数量的覆盖是 100%（有文件级触碰的会话口径）。",
       "（本轮）回滚路径写明：口径做成 `LandmarkDenominator = \"threshold\" | \"session-top-k\"`，默认仍是 threshold，一个参数回旧口径；切换前先跑一轮双口径对照。",
-      "（顺序约束）与 TF-0057 的关系写进文档第 5 节：先答完那两条复核再切分母——现在缺的正是「旧口径下的一份完整人工答案」作为对照基线。"
+      "（顺序约束）与 TF-0057 的关系写进文档第 5 节：先答完那两条复核再切分母——现在缺的正是「旧口径下的一份完整人工答案」作为对照基线。",
+      "2026-09-13 回写：「默认仍是 threshold、一个参数回旧口径」的回滚设计已由 TF-0164 于 2026-09-12 兑现前半——现行默认是 session-top-k，threshold 降为对照口径保留（一个参数仍可回旧口径）。迁移方案文档不变。"
     ],
     "evidence_add": [
       "第二轮同现场（1OioVM）口径复核：新口径 `session-top-k` total 18 / reviewed 0 / coverageshare 1.0（sessions 8, withSet 8, items 18, distinctHandles 9）；旧口径 `threshold` total 0 / `endorsedShare` null（空集不可计算，不是 0 分）；legacy 1 条（不删不改判）。两口径并排出现在账本、监控、CLI stats、队列四处。现场：`packages/workbench/.evidence-sites/live-run-2026-09-11-1OioVM`。"
@@ -8895,7 +8905,7 @@
     "success_metrics": [],
     "summary": "TF-0156 把相对选择做成了可计量的一条读数（relativeLandmarkCoverage），但 L1 现在的分母仍是绝对阈值口径（DOI>10 的文件级集合）。切换会改变待人回答的队列规模：租户从 3 条变成 188 条，因此要在「队列迁移」这件事里一起处理（保留阈值口径读数、逐步切换、复核结论如何映射），不能只改分母。",
     "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做",
-    "updated_at": "2026-09-11T17:03:46.105524Z"
+    "updated_at": "2026-09-13T13:02:20.475172Z"
   },
   "TF-0160": {
     "acceptance_criteria": [
@@ -8985,7 +8995,8 @@
       "（本轮·实测命中率）测量脚本 `bun scripts/e2e/landmark-require-edits-sweep.ts`（只量投影、**不写任何 review 事件**）。表一：规则「有 edit 即认可、无 edit 即驳回」命中 **21 / 22 = 95.5%**；唯一错判 VAS1EM `21273cbd / src/base-url.ts`（会话标题「真实模型：旧前提与恢复复核」，只读是它的工作）。表二：过滤开/关 → VAS1EM 10 → 5（少掉 5，其中 1 条被认可过＝误杀）、1OioVM 18 → 9（少掉 9，误杀 0）。被过滤的 14 条里 13 条是已被真人驳回的。",
       "（本轮·明确不宣称提升）若按 22 条标注重算，开启后候选 22 → 12、认可 12 → 11、认可率 0.545 → 0.917。**这是「在同一批标注上重算」，不是一次新的复核**：集合变了，旧结论会大量变 legacy，两个数字不可直接比。已写进 `docs/tf-0161-require-edits-measurement.md` 并标注为假想值。",
       "（本轮·回归门）`src/interactions/landmark-set.test.ts` 新增 describe「候选过滤：只认可落笔（requireEdits）」三条用例：① 默认不开——不传 requireEdits 时纯浏览候选照旧留在集合里（锁住现行行为不被悄悄改掉）；② 开启后只清纯浏览——刷 20 次 selection 也进不来、1 次 edit 足以留下（按 kind 判不看频率，这才是不误杀的含义）；③ 阈值口径下同样生效——门与尺子分开不互相覆盖。整目录 `bun run test src/interactions/ --timeout 60000` = **52 pass / 0 fail**；`bunx tsc --noEmit` 与 `bunx biome check` 均干净。",
-      "（本轮·默认口径未被改动的实测确认）VAS1EM 现场根跑 CLI stats：`current.total 10 / endorsed 6 / endorsedShare 0.6 / requireEdits false / denominator session-top-k`——与改动前逐字一致。这就是「默认不开」的现场证据，不是靠读代码推断。"
+      "（本轮·默认口径未被改动的实测确认）VAS1EM 现场根跑 CLI stats：`current.total 10 / endorsed 6 / endorsedShare 0.6 / requireEdits false / denominator session-top-k`——与改动前逐字一致。这就是「默认不开」的现场证据，不是靠读代码推断。",
+      "2026-09-13 回写：TF-0164 已于 2026-09-12 翻默认——landmark-set.ts:77 现为 DEFAULT_REQUIRE_EDITS = true；stats.ts 的 current 读数已用 session-top-k 分母。本节点「DEFAULT_REQUIRE_EDITS = false（默认不切）」「默认口径未被改动的实测确认」两条描述的是翻默认前的状态，作为历史证据保留；现行默认口径以 TF-0164 为准。"
     ],
     "evidence_add": [
       "第二轮种类门复核（更密现场 1OioVM，写者 11 · interaction 35 条）：相对口径无门 10 写者/21 条/10 handle → 加门 8 写者/18 条/9 handle，精确清掉记录型写者 git ×1 / human ×1；表三回归门 A「agent 门前后一致 ✓」、B「git 门前 2 条 → 门后 0 条 ✓」。两个 live-run 现场（VAS1EM / 1OioVM）阈值口径文件级地标均为 0，再次确认换分母（TF-0159）的必要性。"
@@ -9007,7 +9018,7 @@
     "success_metrics": [],
     "summary": "阈值口径的地标集合在四个现场里三个为空，唯一有地标的现场 3 条全被自审驳回；证据指向同一个病——越线靠的是同一手势的重复计数（25 次同种 edit/selection），而会话 0 声明产物。方案（docs/tf-0161-landmark-projection-fix.md）：递减收益上限为主（同 handle 同 kind 的第 n 次贡献按 log 或封顶，保留「反复编辑=强信号」但抑制刷分），来源门（零声明产物）只在「单一 handle + 单一种类」的极端形状上否决；明确不采用「同种手势去重」（会误杀真实信号）。",
     "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑",
-    "updated_at": "2026-09-12T07:27:34.807184Z"
+    "updated_at": "2026-09-13T13:02:20.475132Z"
   },
   "TF-0162": {
     "acceptance_criteria": [
