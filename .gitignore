@@ -108,8 +108,13 @@ packages/workbench/.evidence-sites/
 # 它曾被跟踪，于是每次 export/apply 都因 generated_at 弄脏工作区——按 TF-0147 的
 # 「派生产物不进历史」补漏出仓。权威来源仍是 graph/nodes.json + graph/edges.json。
 /.agent-workbench/task-forest/graph/forest.json
-# local session work log — personal workspace memory, not repo history
-/.workbuddy/memory/
+# local session work log + scratch scripts (tf-* probes, tmp-* exit codes,
+# repin.py, scan reports) — personal workspace state, not repo history
+/.workbuddy/
+# closeout scan rounds (integrity reports + test logs); curated findings are
+# transcribed into docs/ reports and task-forest node evidence
+/.agent-contexts/closeout-*/
+/.agent-contexts/closeout-*.log
 # agent-kernel runtime state (session checkpoints, message blobs)
 /.agent-kernel/
 # WorkBuddy AI project data (session memory, logs)
