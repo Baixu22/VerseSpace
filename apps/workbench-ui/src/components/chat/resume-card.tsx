@@ -9,6 +9,8 @@ import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";
 import { ResumeFactRow, ResumeNarrativeRow } from "./resume-card-rows";
 
+// 与服务端 packages/workbench/src/chat/resume-card/types.ts 的同值常量保持同步
+// （两端构建独立无法共享 import；漂移会让事实条目数不一致——2026-09-13 收尾 4.2）
 const FACTS_PREVIEW_COUNT = 3;
 
 /** Dual-channel restore card: facts first, narrative second (TF-0128). */

@@ -424,6 +424,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		set((s) => {
 			// TF-0097：返回时检测『你不在时变了什么』——对比离开签名与当前消息数。
 			// 纯呈现层，不写回 meta（笔记在离开时生成，不在返回时索取）。
+			// 与服务端 chat/resume.ts 的 resumeDelta() 同一算式（两端构建独立
+			// 无法共享 import），改动口径必须同步（2026-09-13 收尾 4.2）。
 			const delta =
 				data.resumeNote &&
 				data.messages.length > data.resumeNote.leaveSignature.messageCount
@@ -946,6 +948,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 						text?: string;
 						message?: StoredMessage;
 						part?: MessagePart;
+						count?: number;
 					};
 					if (event.type === "user" && event.message) {
 						// 服务器确认了用户消息（真实持久化 id）——换掉本地占位
@@ -980,6 +983,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
 								),
 							},
 						}));
+					} else if (event.type === "tool_result" && event.part) {
+						// 工具结果即时回填：此前客户端只分支 user/delta/tool/done/error，
+						// 结果要等 done 整条替换才可见（2026-09-13 收尾 4.3）。
+						const part = event.part;
+						set((s) => ({
+							messages: {
+								...s.messages,
+								[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
+									m.id === assistantId
+										? {
+												...m,
+												parts: (m.parts ?? []).map((p) =>
+													p.type === "tool-call" &&
+													part.type === "tool-call" &&
+													p.toolCallId === part.toolCallId
+														? part
+														: p,
+												),
+											}
+										: m,
+								),
+							},
+						}));
+					} else if (event.type === "notice_delivered") {
+						// TF-0142 前提通知送达信号：当前无 UI 消费面，显式跳过
+						// （2026-09-13 收尾 4.3——从静默丢弃改为知情跳过；UI 形态待产品拍板）
 					} else if (event.type === "done" && event.message) {
 						patchAssistant({
 							id: event.message.id,
