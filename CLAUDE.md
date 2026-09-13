@@ -78,14 +78,14 @@ Feature-based layout. Each feature folder follows: `index.tsx` (main) + `contain
 | `service.rs` | Service layer. |
 | `sidecar.rs` | Sidecar process manager (spawn, stdio, graceful SIGTERM). |
 | `schema.rs` | DB schema + idempotent migrations. |
-| `mcp.rs` | MCP bridge integration. |
+| `mcp/` | MCP bridge integration (`mod.rs`, `catalog.rs`, `response.rs`, `tools/`). |
 | `logging.rs` | Structured logging setup. |
 | `data_dir.rs` | Data dir resolution. `HELMOR_DATA_DIR` env override. |
 | `error.rs` | `CommandError` -- bridges `anyhow::Error` to Tauri IPC. |
 
 ### Sidecar structure (`sidecar/src/`)
 
-`index.ts` (entry, stdin/stdout JSON) | `session-manager.ts` (base lifecycle) | `claude-session-manager.ts` | `codex-session-manager.ts` | `codex-skill-scanner.ts` | `request-parser.ts` | `emitter.ts` | `abort.ts` | `images.ts` | `title.ts` | `logger.ts`
+`index.ts` (entry, stdin/stdout JSON) | `session-manager.ts` (base lifecycle) | per-provider lanes under `claude/`, `codex/`, `cursor/`, `kimi/` — `claude/session-manager.ts`, `codex/app-server-manager.ts`, `cursor/skill-scanner.ts` | `request-parser.ts` | `emitter.ts` | `abort.ts` | `images.ts` | `title.ts` | `logger.ts`
 
 ### Message data flow
 
