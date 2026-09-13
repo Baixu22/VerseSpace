@@ -283,16 +283,13 @@ describe("世界投影边界（TF-0124：thread.* 不进入前提与投递）", 
 				"utf8",
 			);
 
-			// 会话拓扑事件先塞进同一条日志：fork/leave/restore/merge-back 全家福
+			// 会话拓扑事件先塞进同一条日志：fork/leave/restore/resume 全家福
 			const lifecycle: Array<[string, Record<string, unknown>]> = [
 				["thread.created", { threadId: "t-1", title: "会话" }],
 				["thread.forked", { threadId: "t-2", from: "t-1", atMessageId: "m-1" }],
 				["thread.left", { threadId: "t-1" }],
 				["thread.restored", { threadId: "t-1" }],
-				[
-					"thread.merged_back",
-					{ threadId: "t-2", from: "t-2", into: "t-1", level: "summary" },
-				],
+				["thread.resume_action", { threadId: "t-1", action: "reload" }],
 			];
 			for (const [type, payload] of lifecycle) {
 				await ws.bb.events.append({

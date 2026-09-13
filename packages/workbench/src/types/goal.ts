@@ -30,6 +30,7 @@ export const acceptanceCriteriaSchema = z.object({
 	assertion: z.string().min(1),
 	verification: verificationStrategySchema.optional(),
 });
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type AcceptanceCriteria = z.infer<typeof acceptanceCriteriaSchema>;
 
 export const goalSchema = z.object({

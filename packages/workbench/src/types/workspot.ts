@@ -2,6 +2,7 @@ import { z } from "zod";
 import { normalizeBranchName } from "../git/refname";
 
 export const WORKSPOT_BINDINGS = ["primary", "borrowed", "idle"] as const;
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type WorkspotBinding = (typeof WORKSPOT_BINDINGS)[number];
 
 export const WORKSPOT_STATUSES = [
@@ -24,6 +25,7 @@ export const contextNeedsSchema = z
 			.optional(),
 	})
 	.default({ decisions: [], interfaces: [] });
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type ContextNeeds = z.infer<typeof contextNeedsSchema>;
 
 export const workspotSchema = z.object({

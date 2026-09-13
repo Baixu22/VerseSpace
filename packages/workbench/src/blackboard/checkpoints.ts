@@ -2,23 +2,12 @@ import { join } from "node:path";
 import { BlackboardDataError } from "../errors";
 import { pathExists, safeReaddir } from "../fs/atomic";
 import type { WorkbenchPaths } from "../paths";
-import {
-	type Checkpoint,
-	type CheckpointLifecycle,
-	checkpointSchema,
-} from "../types/checkpoint";
+import { type Checkpoint, checkpointSchema } from "../types/checkpoint";
 import type { ZoneCheckpoints } from "../types/snapshot";
 import { readYamlFile, writeYamlFile } from "../yamlio";
 
 export const CHECKPOINT_ZONES = ["staging", "verified", "failed"] as const;
 export type Zone = (typeof CHECKPOINT_ZONES)[number];
-
-/** Which lifecycle values legitimately live in which zone. */
-export const ZONE_LIFECYCLES: Record<Zone, CheckpointLifecycle[]> = {
-	staging: ["draft", "pending", "awaiting_review"],
-	verified: ["verified", "applied"],
-	failed: ["failed", "rejected"],
-};
 
 /** Zone moves are world facts, so they go through the shared append lock. */
 export interface CheckpointEvents {

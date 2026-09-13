@@ -198,7 +198,7 @@ describe("WIP derivation and admission (TF-0083)", () => {
 				["thread.left", { threadId: "t-1" }],
 				["thread.restored", { threadId: "t-1" }],
 				["thread.switch", { threadId: "t-2" }],
-				["thread.merged_back", { threadId: "t-2", into: "t-1" }],
+				["thread.resume_action", { threadId: "t-1", action: "reload" }],
 			];
 			for (const [type, payload] of lifecycle) {
 				await bb.events.append({

@@ -16,6 +16,7 @@ export const artifactSchema = z.object({
 	path: z.string().min(1),
 	hash: z.string().min(1),
 });
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type Artifact = z.infer<typeof artifactSchema>;
 
 export const blackboardEffectsSchema = z
@@ -34,11 +35,13 @@ export const blackboardEffectsSchema = z
 			.default([]),
 	})
 	.default({ publish: [], update: [] });
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type BlackboardEffects = z.infer<typeof blackboardEffectsSchema>;
 
 export const unblockEntrySchema = z.object({
 	goal: z.string().min(1),
 });
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type UnblockEntry = z.infer<typeof unblockEntrySchema>;
 
 /**

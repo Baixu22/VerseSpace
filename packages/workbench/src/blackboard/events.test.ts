@@ -271,24 +271,25 @@ describe("events blackboard API", () => {
 		}
 	});
 
-	test("thread.merged_back joins the whitelist; unknown thread types still throw", async () => {
+	test("deprecated thread.merged_back is rejected; unknown thread types still throw", async () => {
 		const { bb, cleanup } = await makeTempWorkbench();
 		try {
-			await bb.events.append({
-				timestamp: new Date().toISOString(),
-				source: "threads",
-				type: "thread.merged_back",
-				payload: {
-					threadId: "thread-parent",
-					from: "thread-child",
-					into: "thread-parent",
-					level: "summary",
-					facts: { ledgerDiffRefs: ["e-1"] },
-				},
-			});
-			expect((await bb.events.all()).map((e) => e.type)).toEqual([
-				"thread.merged_back",
-			]);
+			// TF-0132 deprecated merge-back and issue #4 removed it from the
+			// whitelist: production has no writer, so the type must refuse.
+			await expect(
+				bb.events.append({
+					timestamp: new Date().toISOString(),
+					source: "threads",
+					type: "thread.merged_back",
+					payload: {
+						threadId: "thread-parent",
+						from: "thread-child",
+						into: "thread-parent",
+						level: "summary",
+						facts: { ledgerDiffRefs: ["e-1"] },
+					},
+				}),
+			).rejects.toThrow("未知线程生命周期事件");
 
 			await expect(
 				bb.events.append({
@@ -298,6 +299,7 @@ describe("events blackboard API", () => {
 					payload: { threadId: "t" },
 				}),
 			).rejects.toThrow("未知线程生命周期事件");
+			expect(await bb.events.all()).toEqual([]);
 		} finally {
 			await cleanup();
 		}

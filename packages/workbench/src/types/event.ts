@@ -34,8 +34,6 @@ export const THREAD_EVENT_TYPES = new Set([
 	"thread.resume_note_consumed",
 	"thread.inheritance_observed",
 	"thread.resume_action",
-	// merge-back summary/pointer (TF-0132); facts stay refs, never narrative
-	"thread.merged_back",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([

@@ -104,6 +104,7 @@ export const tribunalFoldedSchema = z.object({
 	at: z.string(),
 	detail: z.string().default(""),
 });
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type TribunalFolded = z.infer<typeof tribunalFoldedSchema>;
 
 export const TRIBUNAL_ITEM_STATES = [
@@ -112,6 +113,7 @@ export const TRIBUNAL_ITEM_STATES = [
 	"resolved",
 	"expired",
 ] as const;
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type TribunalItemState = (typeof TRIBUNAL_ITEM_STATES)[number];
 
 export const tribunalItemSchema = z.object({

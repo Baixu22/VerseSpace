@@ -106,10 +106,6 @@ export const TARGET_SHARES: Record<TribunalPriority, number> = {
 /** 20 percentage points — "接近", not exact. */
 export const SHARE_TOLERANCE = 0.2;
 
-export function shouldPush(score: number, escalated: boolean): boolean {
-	return escalated || score >= PUSH_THRESHOLD;
-}
-
 export function distributionHealthy(
 	counts: Record<TribunalPriority, number>,
 ): boolean {

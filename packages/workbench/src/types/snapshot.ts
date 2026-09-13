@@ -3,6 +3,7 @@ import type { Goal } from "./goal";
 import type { RegistryEntry } from "./interface-registry";
 import type { Workspot } from "./workspot";
 
+/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
 export type CheckpointZone = "staging" | "verified" | "failed";
 
 export interface ZoneCheckpoints {

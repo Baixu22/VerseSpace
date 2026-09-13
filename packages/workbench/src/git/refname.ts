@@ -83,7 +83,3 @@ export function branchNameProblem(branch: string): string | null {
 	}
 	return null;
 }
-
-export function isValidBranchName(branch: string): boolean {
-	return branchNameProblem(branch) === null;
-}
