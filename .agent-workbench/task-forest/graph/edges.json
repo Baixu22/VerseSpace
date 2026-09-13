@@ -3010,5 +3010,17 @@
     "to": "TF-0144",
     "type": "child_of",
     "updated_at": "2026-09-12T16:21:03.611595Z"
+  },
+  "TFE-0255": {
+    "blocking": false,
+    "confidence": 0.6,
+    "created_at": "2026-09-13T10:25:56.310420Z",
+    "created_from_session": null,
+    "from": "TF-0170",
+    "id": "TFE-0255",
+    "reason": "",
+    "to": "TF-0169",
+    "type": "related_to",
+    "updated_at": "2026-09-13T10:25:56.310427Z"
   }
 }
