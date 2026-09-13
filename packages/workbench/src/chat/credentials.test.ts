@@ -19,7 +19,17 @@ test("environment key is used for HTTP, masked on every UI surface, and never sa
 			requestedPath = new URL(request.url).pathname;
 			return new Response(
 				'data: {"choices":[{"delta":{"content":"真实通道"},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n',
-				{ headers: { "content-type": "text/event-stream" } },
+				{
+					headers: {
+						"content-type": "text/event-stream",
+						// Bun 1.3.14 (Windows) fetch 池把「同 host 不同 port」的
+						// keep-alive 连接跨端口复用：本请求留下的连接会在后续
+						// fetch 127.0.0.1:<ui.port>/api/bootstrap 时被复用，
+						// 响应被 provider 顶替（2026-09-13 分诊 #5）。close 头
+						// 让客户端不缓存这条连接。
+						connection: "close",
+					},
+				},
 			);
 		},
 	});
