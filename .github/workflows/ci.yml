@@ -46,6 +46,8 @@ jobs:
       e2e: ${{ steps.filter.outputs.e2e }}
       sidecar: ${{ steps.filter.outputs.sidecar }}
       workbench: ${{ steps.filter.outputs.workbench }}
+      workbench_ui: ${{ steps.filter.outputs.workbench_ui }}
+      context_rot: ${{ steps.filter.outputs.context_rot }}
       rust: ${{ steps.filter.outputs.rust }}
     steps:
       - uses: actions/checkout@v6
@@ -76,6 +78,17 @@ jobs:
             workbench: &workbench
               - *global
               - 'packages/workbench/**'
+            # The dashboard's own vitest target (21 specs) lives beside its
+            # sources under apps/workbench-ui and is NOT collected by the root
+            # vitest config (which excludes apps/**). It ran nowhere in CI
+            # until 2026-09-13 — a suite that never runs is a suite that
+            # silently rots (found while triaging a false "baseline red").
+            workbench_ui: &workbench_ui
+              - *global
+              - 'apps/workbench-ui/**'
+            context_rot: &context_rot
+              - *global
+              - 'packages/context-rot/**'
             # Agent SDK bumps land in sidecar/package.json + sidecar/bun.lock;
             # the SDK event shape is the contract the Rust accumulator depends
             # on, so those two files must re-run the pipeline snapshot tests
@@ -219,6 +232,43 @@ jobs:
       - name: Run workbench tests
         shell: bash
         run: bun run test:workbench
+
+  workbench-ui-test:
+    name: Workbench UI Test
+    needs: changes
+    if: needs.changes.outputs.workbench_ui == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup JS toolchain
+        uses: ./.github/actions/setup-js
+
+      # Must run with cwd inside apps/workbench-ui (the package's own
+      # `test` script). Passing `--root apps/workbench-ui` instead breaks
+      # vi.mock resolution: the factory mock registers under a module id the
+      # importing code never resolves to, so mocks silently no-op and every
+      # mocked test fails with "not a function".
+      - name: Run workbench UI tests
+        run: bun run test:workbench-ui
+
+  context-rot-test:
+    name: Context Rot Test
+    needs: changes
+    if: needs.changes.outputs.context_rot == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup JS toolchain
+        uses: ./.github/actions/setup-js
+
+      - name: Run context-rot tests
+        run: bun run test:context-rot
 
   rust-test:
     name: Rust Test
