@@ -452,6 +452,10 @@ export async function createUiServer(
 			try {
 				threadId = decodeURIComponent(chatMatch[1] ?? "");
 			} catch {
+				// Bun 1.3.14 起，非法百分号编码（如 %ZZ）在 HTTP 解析层即被
+				// 断开（fetch 直接 ECONNRESET），本分支在该运行时不可达；
+				// Bun 1.3.2（CI）仍走到这里。两条路径都是「拒收」，
+				// 保留为运行时兜底（2026-09-13 分诊）。
 				return Response.json({ error: "对话标识无效" }, { status: 400 });
 			}
 			if (!/^[a-zA-Z0-9_-]+$/.test(threadId)) {
