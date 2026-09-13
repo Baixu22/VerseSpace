@@ -27,6 +27,9 @@
 		"scripts/fit-ledger.ts",
 		"scripts/fit-ledger",
 		"scripts/fit-monitor.ts",
-		"scripts/fit-monitor"
+		"scripts/fit-monitor",
+		"scripts/measure-ask-costs.ts",
+		"scripts/measure-bc.ts",
+		"scripts/suite-total.ts"
 	]
 }

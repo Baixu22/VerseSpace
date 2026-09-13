@@ -52,7 +52,7 @@ function parseArgs(argv: string[]): RunOptions {
 	const opts: RunOptions = { trials: 7, outPath: null, nested: false };
 	for (let i = 0; i < argv.length; i += 1) {
 		if (argv[i] === "--trials") opts.trials = Number(argv[++i]);
-		else if (argv[i] === "--json") opts.outPath = argv[++i];
+		else if (argv[i] === "--json") opts.outPath = argv[++i] ?? null;
 		else if (argv[i] === "--nested") opts.nested = true;
 	}
 	return opts;
@@ -132,7 +132,9 @@ function median(xs: number[]): number {
 	if (xs.length === 0) return Number.NaN;
 	const s = [...xs].sort((a, b) => a - b);
 	const mid = s.length >> 1;
-	return s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+	const lo = s[mid - 1] ?? Number.NaN;
+	const hi = s[mid] ?? Number.NaN;
+	return s.length % 2 === 0 ? (lo + hi) / 2 : hi;
 }
 
 function pct(xs: number[], p: number): number {
@@ -142,7 +144,7 @@ function pct(xs: number[], p: number): number {
 		s.length - 1,
 		Math.max(0, Math.ceil((p / 100) * s.length) - 1),
 	);
-	return s[idx];
+	return s[idx] ?? Number.NaN;
 }
 
 async function main(): Promise<void> {
@@ -286,7 +288,7 @@ async function main(): Promise<void> {
 		const rows = samples.filter((s) => s.phase === phase);
 		if (rows.length === 0) continue;
 		console.log(`\n${phase} 分步耗时（中位，毫秒）`);
-		const names = rows[0].steps
+		const names = rows[0]!.steps
 			.map((s) => s.step)
 			.filter((s) => !s.startsWith("  "));
 		for (const name of names) {

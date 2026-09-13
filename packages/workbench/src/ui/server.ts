@@ -265,6 +265,12 @@ export async function createUiServer(
 		return null;
 	}
 
+	// R2 巡检的失败可观测性：15 秒循环里的 catch 不能静默——前提失效
+	// 检测/投递若持续抛错，产品表现是「再也没有失效通知」而无任何迹象
+	// （2026-09-13 收尾分诊 4.5）。计数与最后一次错误经 /api/state 暴露。
+	let reconcileFailures = 0;
+	let lastReconcileError: string | null = null;
+
 	async function handle(request: Request): Promise<Response> {
 		const url = new URL(request.url);
 		// Anti DNS-rebinding + anti cross-site pivot: only loopback hostnames.
@@ -283,7 +289,14 @@ export async function createUiServer(
 			}
 		}
 		if (url.pathname === "/api/state") {
-			return Response.json(await collectState(bb));
+			const state = await collectState(bb);
+			return Response.json({
+				...state,
+				reconcile: {
+					failures: reconcileFailures,
+					lastError: lastReconcileError,
+				},
+			});
 		}
 		if (url.pathname === "/api/sync" && request.method === "POST") {
 			const { runOnce } = await import("../runtime");
@@ -671,13 +684,31 @@ export async function createUiServer(
 	const RECONCILE_INTERVAL_MS = 15_000;
 	const reconcileTimer = setInterval(() => {
 		void (async () => {
-			await reconcilePremises(bb).catch(() => {});
+			try {
+				await reconcilePremises(bb);
+			} catch (err) {
+				reconcileFailures++;
+				lastReconcileError = err instanceof Error ? err.message : String(err);
+				console.error(
+					`[workbench-ui] reconcilePremises failed (#${reconcileFailures}):`,
+					err,
+				);
+			}
 			const config = await bb.config.load().catch(() => null);
-			await drainPremiseQueue(bb, {
-				tokenBudget: config?.chat.noticeTokenBudget,
-				deliver: (writerId, message, noticeId) =>
-					chat.notifySession(writerId, message, noticeId),
-			}).catch(() => {});
+			try {
+				await drainPremiseQueue(bb, {
+					tokenBudget: config?.chat.noticeTokenBudget,
+					deliver: (writerId, message, noticeId) =>
+						chat.notifySession(writerId, message, noticeId),
+				});
+			} catch (err) {
+				reconcileFailures++;
+				lastReconcileError = err instanceof Error ? err.message : String(err);
+				console.error(
+					`[workbench-ui] drainPremiseQueue failed (#${reconcileFailures}):`,
+					err,
+				);
+			}
 		})();
 	}, RECONCILE_INTERVAL_MS);
 
