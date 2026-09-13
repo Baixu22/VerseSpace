@@ -4,12 +4,22 @@ import { extractRefs, normalizeRef } from "./extract";
 describe("extractRefs", () => {
 	test("inline backticks that look like paths are citations", () => {
 		const refs = extractRefs(
-			"see `src/foo.ts` and `packages/workbench/src/cli.ts` please",
+			"see `src/keep.ts` and `packages/workbench/src/cli.ts` please",
 		);
 		expect(refs.map((item) => item.ref)).toEqual([
-			"src/foo.ts",
+			"src/keep.ts",
 			"packages/workbench/src/cli.ts",
 		]);
+	});
+
+	test("placeholder paths (foo/bar/baz) are examples, not citations", () => {
+		// issue #2: `foo.rs` / `src/foo.test.ts` / `foo/mod.rs` / `foo/` on the
+		// helmor AGENTS.md were counted as stale assertions — they are teaching
+		// placeholders and buried the real signal.
+		const refs = extractRefs(
+			"convert `foo.rs` to `foo/mod.rs`, split `foo.tsx` into `foo/`, test `src/foo.test.ts`, but keep `src/barrel.ts`",
+		);
+		expect(refs.map((item) => item.ref)).toEqual(["src/barrel.ts"]);
 	});
 
 	test("a basename with a source extension counts; a bare identifier does not", () => {

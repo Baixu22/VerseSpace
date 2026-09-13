@@ -66,7 +66,16 @@ export async function captureCodeRollback(
 	worktreePath: string,
 ): Promise<NonNullable<Rollback["code"]>> {
 	const head = await git(["rev-parse", "HEAD"], worktreePath);
-	const commit = head.ok ? head.stdout.trim() : "";
+	if (!head.ok) {
+		// 工作区不可读（如 worktree 还没被 dispatch 建立）时必须抛错：
+		// 空 commit 会绕过调用方的 catch，最后被 checkpoint schema 以裸
+		// zod JSON 拒绝（issue #1，2026-09-13）。抛错让调用方按
+		// 「不可读不阻塞」的既有约定降级为无恢复点 checkpoint。
+		throw new Error(
+			`无法读取工作区 HEAD（${worktreePath}）：${head.stderr.trim() || "git rev-parse 失败"}`,
+		);
+	}
+	const commit = head.stdout.trim();
 	const status = await git(["status", "--porcelain"], worktreePath);
 	const paths: string[] = [];
 	const hashes: Record<string, string> = {};

@@ -3,7 +3,9 @@ import { spawnSync } from "node:child_process";
 import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Command } from "commander";
 import { type Blackboard, openBlackboard } from "../blackboard";
+import { checkpointCreate } from "../commands/checkpoint";
 import { initWorkbench } from "../commands/init";
 import { runOnce } from "../runtime";
 import type { Checkpoint } from "../types/checkpoint";
@@ -204,6 +206,48 @@ describe("MVP end-to-end flow (real git repo)", () => {
 			expect(quiet.applied).toBe(0);
 			expect(quiet.reanchored).toEqual([]);
 		} finally {
+			await cleanup();
+		}
+	}, 60_000);
+
+	test("ws create 后（未 dispatch）直接 checkpoint create 应成功且 rollback 缺失（issue #1）", async () => {
+		const { projectDir, bb, cleanup } = await makeGitProject();
+		const prevCwd = process.cwd();
+		process.chdir(projectDir);
+		try {
+			// 验收原文顺序：init → goal add → ws create → 落 checkpoint。
+			// ws create 只登记 workspot，不建 worktree（dispatch 才建）——
+			// 曾经这个顺序被 checkpoint schema 以裸 zod JSON 拒绝。
+			const goalA = await bb.goals.add({ title: "先落检查点" });
+			await bb.state.workspots.save(workspotOn(goalA.id));
+			expect(
+				(await bb.state.workspots.get("ws-a"))?.worktreePath,
+			).toBeDefined();
+
+			const command = {
+				optsWithGlobals: () => ({ json: false, quiet: true }),
+			} as unknown as Command;
+			await expect(
+				checkpointCreate(
+					{
+						goal: goalA.id,
+						assertion: "无 worktree 也能落 checkpoint",
+						workspot: "ws-a",
+					},
+					command,
+				),
+			).resolves.toBeUndefined();
+
+			const saved = (await bb.checkpoints.scanZone("staging")).at(-1);
+			expect(saved).toBeDefined();
+			expect(saved?.goal).toBe(goalA.id);
+			expect(saved?.rollback).toBeUndefined();
+
+			// goal 的 checkpoints 列表同步登记（否则 doctor 会报 dangling 引用）
+			const updatedGoal = await bb.goals.get(goalA.id);
+			expect(updatedGoal?.checkpoints).toContain(saved?.id);
+		} finally {
+			process.chdir(prevCwd);
 			await cleanup();
 		}
 	}, 60_000);

@@ -36,6 +36,27 @@ const BARE_PATH =
 const FILE_EXT =
 	/\.(?:ts|tsx|js|jsx|mjs|cjs|mts|cts|rs|py|go|java|kt|swift|md|mdc|json|toml|yml|yaml|css|html|svg|sql|proto|graphql|sh|ps1)$/i;
 
+/**
+ * Classic placeholder names (foo.rs / src/foo.test.ts / foo/mod.rs / foo/)
+ * are teaching examples inside the instruction file, not architecture
+ * assertions. Counting them buries the real stale citations in noise
+ * (issue #2: they were 5 of the 11 "stale" refs on the helmor AGENTS.md).
+ */
+const PLACEHOLDER_SEGMENTS = new Set(["foo", "bar", "baz"]);
+
+function isPlaceholderRef(ref: string): boolean {
+	return ref
+		.replace(/\/+$/, "")
+		.split("/")
+		.some((segment) => {
+			const base = segment.toLowerCase();
+			return (
+				PLACEHOLDER_SEGMENTS.has(base) ||
+				[...PLACEHOLDER_SEGMENTS].some((name) => base.startsWith(`${name}.`))
+			);
+		});
+}
+
 export function extractRefs(markdown: string): ExtractedRef[] {
 	const text = markdown.replace(FENCE, (block) =>
 		"\n".repeat(newlinesIn(block)),
@@ -48,6 +69,9 @@ export function extractRefs(markdown: string): ExtractedRef[] {
 			return;
 		}
 		if (!isPathShaped(ref, kind)) {
+			return;
+		}
+		if (isPlaceholderRef(ref)) {
 			return;
 		}
 		found.set(ref, { ref, line: lineOf(text, index), kind });

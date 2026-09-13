@@ -96,6 +96,16 @@ describe("captureCodeRollback", () => {
 		expect(snap.paths).toHaveLength(0);
 		expect(snap.commit.length).toBeGreaterThan(0);
 	});
+
+	test("worktree 缺失时抛错，绝不返回空 commit（issue #1）", async () => {
+		// ws create 只登记 workspot 不建 worktree（dispatch 才建）。
+		// 曾经这里返回 commit: ""，一路传进 schema 才以裸 zod JSON 拒绝；
+		// 现在必须在此处抛错，由 checkpointCreate 的 catch 降级为无恢复点。
+		const missing = join(tmpdir(), `rollback-missing-${Date.now()}`);
+		await expect(captureCodeRollback(missing)).rejects.toThrow(
+			/无法读取工作区 HEAD/,
+		);
+	});
 });
 
 describe("planRollback", () => {

@@ -41,9 +41,12 @@ export async function checkpointCreate(
 	if (workspot) {
 		try {
 			rollback = { code: await captureCodeRollback(workspot.worktreePath) };
-		} catch {
+		} catch (error) {
 			// 工作区不可读（如派发失败）时不阻塞落 checkpoint，只是没有恢复点
 			rollback = undefined;
+			console.error(
+				`[警告] 未采集代码回退快照（该 checkpoint 无法用于代码回退）：${String(error)}`,
+			);
 		}
 	}
 	const checkpoint: Checkpoint = {

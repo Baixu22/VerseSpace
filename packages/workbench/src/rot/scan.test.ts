@@ -97,7 +97,7 @@ describe("runContextRot", () => {
 
 	test("a tree with no instruction files is a zero, not an error", async () => {
 		const { root, cleanup } = await makeTree({
-			"src/foo.ts": "export {};\n",
+			"src/placeholder.ts": "export {};\n",
 		});
 		try {
 			const report = await runContextRot(root);
@@ -107,4 +107,39 @@ describe("runContextRot", () => {
 			await cleanup();
 		}
 	});
+
+	test("a gitignored citation is generated, not stale (issue #2)", async () => {
+		const { root, cleanup } = await makeTree({
+			"AGENTS.md":
+				"built to `sidecar/dist/helmor-sidecar`, cache at `sidecar/.bundle-cache`, source in `src/real.ts`, gone `src/gone.ts`",
+			".gitignore": "sidecar/dist/\nsidecar/.bundle-cache/\n",
+			"src/real.ts": "export {};\n",
+			// the cache dir exists on disk (git never indexes it)
+			"sidecar/.bundle-cache/keep.txt": "cached\n",
+		});
+		try {
+			// the index must come from git (ls-files) for check-ignore to agree
+			// with it: seed a repo with the tracked files
+			const init = Bun.spawnSync(["git", "init", "-q"], { cwd: root });
+			expect(init.exitCode).toBe(0);
+			Bun.spawnSync(["git", "add", "AGENTS.md", ".gitignore", "src/real.ts"], {
+				cwd: root,
+			});
+			const report = await runContextRot(root);
+			const byRef = new Map(report.findings.map((item) => [item.ref, item]));
+			// exists on disk even though git ignores it: the citation is live
+			expect(byRef.get("sidecar/.bundle-cache")?.stale).toBe(false);
+			expect(byRef.get("sidecar/.bundle-cache")?.generated).toBe(false);
+			// covered by .gitignore and not on disk (unbuilt output):
+			// unverifiable from the index, counted as generated — never stale
+			expect(byRef.get("sidecar/dist/helmor-sidecar")?.generated).toBe(true);
+			expect(byRef.get("sidecar/dist/helmor-sidecar")?.stale).toBe(false);
+			expect(report.stale).toBe(1); // only src/gone.ts is real rot
+			expect(report.generated).toBe(1);
+			expect(formatRotHeadline(report)).toContain("1 条已失效");
+			expect(formatRotHeadline(report)).toContain("另有 1 条生成物引用不计入");
+		} finally {
+			await cleanup();
+		}
+	}, 30_000);
 });

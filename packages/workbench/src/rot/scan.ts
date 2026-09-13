@@ -22,6 +22,12 @@ export interface RotFinding {
 	ref: string;
 	kind: "path" | "file";
 	stale: boolean;
+	/**
+	 * The citation is covered by .gitignore (a build output / cache path).
+	 * It cannot be falsified from the index — `bun run build` will create
+	 * it — so it is counted separately, never as stale (issue #2).
+	 */
+	generated: boolean;
 	/** Instruction file that cited it, repo-relative. */
 	source: string;
 	line: number;
@@ -31,6 +37,8 @@ export interface RotReport {
 	/** Unique path-shaped citations across every instruction file. */
 	assertions: number;
 	stale: number;
+	/** Ignored-by-git citations: unverifiable from the index, not rot. */
+	generated: number;
 	sources: string[];
 	findings: RotFinding[];
 }
@@ -208,9 +216,33 @@ export async function runContextRot(startDir: string): Promise<RotReport> {
 				ref: extracted.ref,
 				kind: extracted.kind,
 				stale: !resolveRef(extracted.ref, index),
+				generated: false,
 				source,
 				line: extracted.line,
 			});
+		}
+	}
+
+	// Two reclassifications keep index-invisible citations out of the stale
+	// count (issue #2):
+	// 1. the path exists on disk (a gitignored cache dir like
+	//    `sidecar/.bundle-cache`) — the citation is simply live;
+	// 2. git says the path is covered by .gitignore and it is not on disk
+	//    (an unbuilt output like `sidecar/dist/helmor-sidecar`) — it cannot
+	//    be falsified from the index, count it separately as generated.
+	for (const finding of first.values()) {
+		if (finding.stale && (await pathExists(join(root, finding.ref)))) {
+			finding.stale = false;
+		}
+	}
+	const ignored = await checkIgnored(
+		root,
+		[...first.values()].filter((item) => item.stale).map((item) => item.ref),
+	);
+	for (const finding of first.values()) {
+		if (finding.stale && ignored.has(finding.ref)) {
+			finding.stale = false;
+			finding.generated = true;
 		}
 	}
 
@@ -223,6 +255,7 @@ export async function runContextRot(startDir: string): Promise<RotReport> {
 	return {
 		assertions: findings.length,
 		stale: findings.filter((item) => item.stale).length,
+		generated: findings.filter((item) => item.generated).length,
 		sources,
 		findings,
 	};
@@ -236,7 +269,33 @@ export function formatRotHeadline(report: RotReport): string {
 		report.stale === 0
 			? "0%"
 			: `${Math.round((report.stale / report.assertions) * 100)}%`;
-	return `context rot：${report.assertions} 条架构断言，${report.stale} 条已失效（${pct}）`;
+	const generatedNote =
+		report.generated > 0 ? `，另有 ${report.generated} 条生成物引用不计入` : "";
+	return `context rot：${report.assertions} 条架构断言，${report.stale} 条已失效（${pct}）${generatedNote}`;
+}
+
+/**
+ * Batch `git check-ignore` over the stale refs. Exit code 1 means "none of
+ * them are ignored" — a result, not a failure. Only called when the root is
+ * a git work tree; any other git failure conservatively ignores nothing.
+ */
+async function checkIgnored(
+	root: string,
+	refs: string[],
+): Promise<Set<string>> {
+	if (refs.length === 0 || !(await pathExists(join(root, ".git")))) {
+		return new Set();
+	}
+	const result = await git(["check-ignore", "--", ...refs], root);
+	if (result.code !== 0) {
+		return new Set();
+	}
+	return new Set(
+		result.stdout
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0),
+	);
 }
 
 async function gitLs(root: string): Promise<string[] | null> {
