@@ -572,6 +572,7 @@ export async function createUiServer(
 				const body = (await request.json()) as {
 					title?: string;
 					permissionMode?: "default" | "plan" | "acceptEdits";
+					archived?: boolean;
 				};
 				return Response.json(await chat.update(threadId, body));
 			}
