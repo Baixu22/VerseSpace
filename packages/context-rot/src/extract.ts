@@ -32,6 +32,27 @@ const QUALIFIED_SYMBOL = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
 const PLAIN_IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
 /**
+ * Classic placeholder names (foo.rs / src/foo.test.ts / foo/) are teaching
+ * examples inside the instruction file, not architecture assertions.
+ * Counting them buries the real stale citations in noise（与 workbench
+ * src/rot/extract.ts 的 issue #2 修复同口径，2026-09-13 同步移植）。
+ */
+const PLACEHOLDER_SEGMENTS = new Set(["foo", "bar", "baz"]);
+
+function isPlaceholderRef(ref: string): boolean {
+	return ref
+		.replace(/\/+$/, "")
+		.split("/")
+		.some((segment) => {
+			const base = segment.toLowerCase();
+			return (
+				PLACEHOLDER_SEGMENTS.has(base) ||
+				[...PLACEHOLDER_SEGMENTS].some((name) => base.startsWith(`${name}.`))
+			);
+		});
+}
+
+/**
  * 把围栏代码块内的行替换为空行，保持总行数不变。
  * 支持 ``` 与 ~~~ 两种围栏。
  */
@@ -103,14 +124,15 @@ export function classifySpan(
 			normalized.length < 2 ||
 			!/\w/.test(normalized) ||
 			normalized === "." ||
-			normalized.split("/").includes("..") // 不做仓库外遍历
+			normalized.split("/").includes("..") || // 不做仓库外遍历
+			isPlaceholderRef(normalized) // 教学示例名不是断言（issue #2）
 		) {
 			return null; // `@/`、`./` 之类的别名碎片
 		}
 		return { kind: "path", text: normalized };
 	}
 	if (candidate.split("/").includes("..")) return null;
-	if (KNOWN_EXTENSIONS.test(candidate)) {
+	if (KNOWN_EXTENSIONS.test(candidate) && !isPlaceholderRef(candidate)) {
 		return { kind: "path", text: candidate };
 	}
 

@@ -48,8 +48,10 @@ export function formatHuman(result: ScanResult): string {
 	lines.push(`扫描 ${result.docs.length} 个指引文件：${docList}`);
 	const unverifiedNote =
 		result.unverified > 0 ? `   ⚠ 未能判定 ${result.unverified} 条` : "";
+	const generatedNote =
+		result.generated > 0 ? `   ⚙ 生成物 ${result.generated} 条不计入` : "";
 	lines.push(
-		`架构断言：${result.total} 条   ✔ 有效 ${result.valid} 条   ✘ 已失效 ${result.stale.length} 条${unverifiedNote}`,
+		`架构断言：${result.total} 条   ✔ 有效 ${result.valid} 条   ✘ 已失效 ${result.stale.length} 条${generatedNote}${unverifiedNote}`,
 	);
 	if (result.stale.length > 0) {
 		lines.push("");
@@ -70,6 +72,7 @@ export function formatJson(result: ScanResult): string {
 			docs: result.docs,
 			totalAssertions: result.total,
 			valid: result.valid,
+			generated: result.generated,
 			unverified: result.unverified,
 			stale: result.stale.map((ref: StaleRef) => ({
 				doc: ref.doc,
