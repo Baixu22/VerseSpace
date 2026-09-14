@@ -427,6 +427,9 @@ export class ChatThreads {
 		const next = prev.then(task, task);
 		this.queues.set(
 			id,
+			// 判定（2026-09-13 收尾 §4.5 复核）：这里吞掉是**有意**的——队列
+			// 链只需要一个「已结算」的接力棒，真实错误通过返回的 `next` 交给
+			// 调用方，不是静默丢弃。
 			next.catch(() => {}),
 		);
 		return next;
@@ -886,7 +889,15 @@ export class ChatThreads {
 					const failed = await this.get(id).catch(() => null);
 					if (failed) {
 						failed.status = "idle";
-						await this.saveMeta(failed).catch(() => {});
+						await this.saveMeta(failed).catch((err) => {
+							// 落盘失败 = 线程永远停在 running，UI 的 busy 判定再也
+							// 回不到 idle。会话已经出错，这一层不能再静默
+							// （2026-09-13 收尾 §4.5 复核判定）。
+							console.error(
+								`[chat] 线程 ${id} 出错后无法把状态复位为 idle:`,
+								err,
+							);
+						});
 					}
 				}
 				return;

@@ -6,7 +6,7 @@ import {
 	hashPathClaim,
 	type ParsedStreamFootprint,
 } from "../blackboard/footprint";
-import { derive, foldUsage } from "../blackboard/metrics";
+import { derive } from "../blackboard/metrics";
 import { writerSpoolDir } from "../blackboard/sessions";
 import {
 	crashLoopTripped,
@@ -14,7 +14,7 @@ import {
 	spawnSupervised,
 } from "../supervisor";
 import { envelopes } from "../tribunal/envelopes";
-import { assessLane, shouldSuspend } from "../tribunal/lane-distress";
+import { foldAndAssess, shouldSuspend } from "../tribunal/lane-distress";
 import { extractUsage } from "./usage";
 
 export interface AgentSession {
@@ -102,7 +102,18 @@ export async function startAgent(
 	const registryDir = procRegistryDir(bb);
 	const label = `agent:${workspot.id}`;
 	if (crashLoopTripped(registryDir, label)) {
-		// OTP-style upgrade abandonment: stop dispatching a crashing agent
+		// OTP-style upgrade abandonment: stop dispatching a crashing agent.
+		// issue #6 item 12: the refusal must also surface as a card — otherwise
+		// the lane silently stops accepting work and only a generic log line
+		// says why. Same causeKey as the trip below, so repeats fold into one.
+		await bb.tribunal
+			.submit(envelopes.agentCrashloop(workspot.id, label))
+			.catch((err) => {
+				console.error(
+					`[agent] 熔断拒派的裁决卡投递失败（${workspot.id}），队列里看不到它:`,
+					err,
+				);
+			});
 		return {
 			ok: false,
 			reason: `agent 连续崩溃，暂停派发（${label} 在 60 秒内异常退出 3 次）`,
@@ -193,10 +204,13 @@ export async function startAgent(
 		}
 		const sample = extractUsage(event);
 		if (sample) {
-			const previous = derive(laneMetrics);
-			laneMetrics = foldUsage(laneMetrics, sample);
+			// TF-0084：折叠 + 判定走 lane-distress 的同一个组合步（此前这里
+			// 内联重写了 derive/foldUsage/assessLane 三步，2026-09-13 收尾 §4.2
+			// 收敛到生产入口）。
+			const folded = foldAndAssess(laneMetrics, sample);
+			laneMetrics = folded.lane;
 			dirty = true;
-			const distress = assessLane(derive(laneMetrics), previous);
+			const distress = folded.distress;
 			if (event.type === "result") {
 				fpQueue = fpQueue.then(flushUsage);
 			}
@@ -296,6 +310,16 @@ export async function startAgent(
 				type: "agent_crashloop",
 				payload: { workspotId: workspot.id, label },
 			});
+			// issue #6 item 12: the trip gets its own card so the crash loop is
+			// not buried in the activity stream. Folds with the refusal card.
+			await bb.tribunal
+				.submit(envelopes.agentCrashloop(workspot.id, label))
+				.catch((err) => {
+					console.error(
+						`[agent] 崩溃熔断的裁决卡投递失败（${workspot.id}），队列里看不到它:`,
+						err,
+					);
+				});
 		}
 		await bb.events.append({
 			timestamp: new Date().toISOString(),

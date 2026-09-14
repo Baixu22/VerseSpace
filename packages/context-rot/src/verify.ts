@@ -18,8 +18,10 @@ import {
 	readFileSync,
 	statSync,
 } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
 import type { CodeRef } from "./extract.ts";
+import { buildFileIndex, type FileIndex, resolveRef } from "./file-index";
 
 export type VerifyStatus = "valid" | "stale" | "unverified";
 
@@ -104,7 +106,6 @@ export function buildCorpus(root: string, docRelativePaths: string[]): Corpus {
 				continue;
 			if (entry.name === "package.json") {
 				packageJsonFiles.push(full);
-				continue;
 			}
 			if (docFiles.has(full)) continue;
 			if (!TEXT_EXTENSIONS.test(entry.name) || entry.name.endsWith(".d.ts"))
@@ -187,20 +188,19 @@ export function verifyRef(
 	ref: CodeRef,
 	root: string,
 	corpus: Corpus,
+	index?: FileIndex,
 ): VerifyResult {
 	if (ref.kind === "path") {
 		const target = join(root, ...ref.text.split("/"));
 		if (existsSync(target)) return { status: "valid" };
 
-		// 后缀匹配：`features/panel` → `src/features/panel`
-		const suffix = `/${ref.text}`;
-		const found = corpus.entries.some(
-			(e) => e === ref.text || e.endsWith(suffix),
-		);
-		if (found) return { status: "valid" };
+		const lastSegment = ref.text.split("/").pop() ?? "";
+		const path = lastSegment.includes(".") ? ref.text : `${ref.text}/`;
+		if (resolveRef(path, index ?? buildFileIndex(root))) {
+			return { status: "valid" };
+		}
 
 		// 无扩展名的目录引用找不到时降级，不进失效清单
-		const lastSegment = ref.text.split("/").pop() ?? "";
 		if (!lastSegment.includes(".")) {
 			return { status: "unverified" };
 		}
@@ -271,9 +271,8 @@ export async function verifySymbols(
 		const contents = await Promise.all(
 			chunk.map(async (file) => {
 				try {
-					const f = Bun.file(file);
-					if (f.size > MAX_FILE_BYTES) return null;
-					return await f.text();
+					if ((await stat(file)).size > MAX_FILE_BYTES) return null;
+					return await readFile(file, "utf8");
 				} catch {
 					return null;
 				}

@@ -78,6 +78,7 @@ jobs:
             workbench: &workbench
               - *global
               - 'packages/workbench/**'
+              - 'packages/context-rot/**'
             # The dashboard's own vitest target (21 specs) lives beside its
             # sources under apps/workbench-ui and is NOT collected by the root
             # vitest config (which excludes apps/**). It ran nowhere in CI

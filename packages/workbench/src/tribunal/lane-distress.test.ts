@@ -3,7 +3,6 @@ import { emptyUsage } from "../agents/usage";
 import { derive, emptyLaneMetrics, foldUsage } from "../blackboard/metrics";
 import {
 	assessLane,
-	evictToolResultContent,
 	foldAndAssess,
 	SUSPEND_COMPACTIONS,
 	SUSPEND_FAILURES,
@@ -59,15 +58,5 @@ describe("lane distress (TF-0084)", () => {
 		compacted = foldUsage(compacted, { ...emptyUsage(), compaction: true });
 		compacted = foldUsage(compacted, { ...emptyUsage(), compaction: true });
 		expect(shouldSuspend(derive(compacted))).toBe(true);
-	});
-
-	test("eviction drops the body and keeps the paths", () => {
-		const evicted = evictToolResultContent({
-			file_path: "src/foo.ts",
-			content: "x".repeat(400),
-		});
-		expect(evicted.evicted).toBe(true);
-		expect(evicted.paths).toEqual(["src/foo.ts"]);
-		expect(evicted.bytesDropped).toBeGreaterThan(400);
 	});
 });

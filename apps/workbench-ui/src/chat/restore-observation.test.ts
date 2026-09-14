@@ -12,6 +12,7 @@ const card: ResumeCardView = {
 	facts: [],
 	dismissed: false,
 	inject: true,
+	factsPreviewCount: 3,
 };
 
 function view(

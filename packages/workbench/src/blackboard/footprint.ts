@@ -108,6 +108,9 @@ async function spoolRead(
 	// keep only the newest SPOOL_KEEP spool files
 	const names = (await readdir(spoolDir)).sort();
 	for (const old of names.slice(0, Math.max(0, names.length - SPOOL_KEEP))) {
+		// 判定（2026-09-13 收尾 §4.5 复核）：确实无副作用的清理。删不掉只是
+		// 多留一个旧 spool 文件，下一次 spoolRead 还会再试；吞掉是为了不让
+		// 一次清理失败打断已经成功的读取。
 		await rm(join(spoolDir, old), { force: true }).catch(() => {});
 	}
 	return name;

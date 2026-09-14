@@ -105,9 +105,14 @@ describe("runOnce", () => {
 			).toEqual(["cp-1"]);
 			expect((await bb.goals.get(goal.id))?.status).toBe("ready");
 
-			// round 2: enqueue + start (workspot active) + verified → applied
+			// round 2: start (workspot active) + verified → applied
+			//
+			// 这里刻意**不**期望 enqueue：工位 ws-a 已经在施工该目标，队列是
+			// 「等派发」的名单，正在施工的目标不属于它（issue #6 item 10，见
+			// goal-machine.ts 的 workedOn 分支）。此前无条件入队，导致派发/
+			// 同步之间队列抖动，doctor 会看到假 stale_queue_entry。
 			const run2 = await runOnce(bb);
-			expect(run2.applied).toBe(3);
+			expect(run2.applied).toBe(2);
 			expect(
 				run2.transitions.some(
 					(t) => t.type === "checkpoint_lifecycle" && t.to === "applied",

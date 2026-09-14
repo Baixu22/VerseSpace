@@ -49,6 +49,10 @@ describe("kind baselines land in the intended bands", () => {
 		expect(band("workspot_blocked")).toBe("high");
 		expect(band("dependency_missing")).toBe("high");
 		expect(band("metric_suspend")).toBe("high");
+		// issue #6 item 12：这两条是「已经发生的管道故障」，要推给人而不是
+		// 沉在 pull-only 里——但也不能是 critical（critical 只留给升级通道）。
+		expect(band("dispatch_failed")).toBe("high");
+		expect(band("agent_crashloop")).toBe("high");
 		expect(band("dependency_dead")).toBe("medium");
 		expect(band("checkpoint_needs_review")).toBe("low");
 		expect(band("metric_tool_bloat")).toBe("low");

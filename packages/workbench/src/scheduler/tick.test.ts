@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkGoal, mkWorkspot } from "../automaton/fixtures";
+import { mkGoal, mkWorkspot } from "../test/automaton-fixtures";
 import type { SchedulerState } from "./tick";
 import { tick } from "./tick";
 

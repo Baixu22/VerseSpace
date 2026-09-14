@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { extractRefs, normalizeRef } from "./extract";
+import { extractRefs, normalizeRef } from "./path-refs";
 
 describe("extractRefs", () => {
 	test("inline backticks that look like paths are citations", () => {

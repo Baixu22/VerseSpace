@@ -7,15 +7,21 @@ import { envelopes } from "./envelopes";
 /**
  * Per-lane distress (TF-0084). Three *shapes* of failure, each one a
  * different decision:
- * - tool results ate the context → drop their bodies, keep the paths
- *   (recoverable eviction, never mid-context trimming);
+ * - tool results ate the context → 收窄工具输出（见下方注记：这是给人的建议，
+ *   不是本进程能执行的裁切）；
  * - cache hit rate dropped → do not compact, the prefix was mutated;
  * - compacted twice or failed twice in a row → hang the lane and reseed
  *   from filesystem notes + git diff.
  *
- * Pure: the caller decides when to submit the envelope and when to
- * actually evict. Folding twins is the queue's job, so firing this on
- * every sample is cheap and correct.
+ * Pure: the caller decides when to submit the envelope. Folding twins is the
+ * queue's job, so firing this on every sample is cheap and correct.
+ *
+ * ⚠ 2026-09-13 收尾 §4.2/§4.6：此前这里有一个 `evictToolResultContent()`，
+ * 自称「TF-0084 唯一允许的上下文裁切」，但**没有任何生产路径能执行它**——
+ * claude 车道的上下文活在 CLI 子进程里，HTTP 车道的 history 只回放消息文本、
+ * 不回放工具结果。没有执行者的裁切函数只会让读者以为裁切已经在发生，故删除。
+ * `evict-tool-results` 这个动作保留为**给人的建议**（信封里就是收窄工具输出），
+ * 不再假装机器会自己动手。
  */
 
 export const TOOL_BLOAT_SHARE = 0.4;
@@ -79,8 +85,9 @@ export function assessLane(
 }
 
 /**
- * 预留导出（仅测试消费，2026-09-13 审计 §4.2）：fold+assess 的组合步，
- * 生产路径在 agents/runner.ts 内联同一组合。
+ * 折叠一次用量样本并立刻判定：`agents/runner.ts` 每个 sample 走这一步。
+ * 组合在一起而不是让调用方自己拼，是因为顺序有语义——`distress` 必须拿
+ * 折叠**之前**的派生值做基线（缓存命中率是逐轮读数，折叠两次就看不见下降）。
  */
 export function foldAndAssess(
 	lane: LaneMetrics,
@@ -89,64 +96,4 @@ export function foldAndAssess(
 	const previous = derive(lane);
 	const next = foldUsage(lane, sample);
 	return { lane: next, distress: assessLane(derive(next), previous) };
-}
-
-/**
- * Recoverable eviction: throw away the tool-result body, keep every path
- * the body named so the agent can re-read the file instead of remembering
- * it. This is the only context cut TF-0084 allows — not a summary of a
- * summary, not a mid-window trim.
- *
- * ⚠ 预留导出（仅测试消费，2026-09-13 审计 §4.2）：TF-0084 允许的唯一
- * 上下文裁切，目前**无生产调用方执行该裁切**——接线或删除待拍板。
- */
-export function evictToolResultContent(content: unknown): {
-	evicted: true;
-	paths: string[];
-	bytesDropped: number;
-} {
-	const paths: string[] = [];
-	const acc = { n: 0 };
-	collectPaths(content, paths, acc);
-	return {
-		evicted: true,
-		paths: [...new Set(paths)],
-		bytesDropped: acc.n,
-	};
-}
-
-function collectPaths(
-	value: unknown,
-	paths: string[],
-	acc: { n: number },
-): void {
-	if (typeof value === "string") {
-		acc.n += value.length;
-		if (
-			value.length < 260 &&
-			value.length > 0 &&
-			/[\\/]/.test(value) &&
-			!value.includes("\n")
-		) {
-			paths.push(value);
-		}
-		return;
-	}
-	if (Array.isArray(value)) {
-		for (const item of value) {
-			collectPaths(item, paths, acc);
-		}
-		return;
-	}
-	if (value && typeof value === "object") {
-		const rec = value as Record<string, unknown>;
-		for (const key of ["path", "file_path", "filePath"]) {
-			if (typeof rec[key] === "string" && rec[key].length > 0) {
-				paths.push(rec[key]);
-			}
-		}
-		for (const nested of Object.values(rec)) {
-			collectPaths(nested, paths, acc);
-		}
-	}
 }

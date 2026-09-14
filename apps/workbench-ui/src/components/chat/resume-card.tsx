@@ -9,10 +9,6 @@ import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";
 import { ResumeFactRow, ResumeNarrativeRow } from "./resume-card-rows";
 
-// 与服务端 packages/workbench/src/chat/resume-card/types.ts 的同值常量保持同步
-// （两端构建独立无法共享 import；漂移会让事实条目数不一致——2026-09-13 收尾 4.2）
-const FACTS_PREVIEW_COUNT = 3;
-
 /** Dual-channel restore card: facts first, narrative second (TF-0128). */
 export function ResumeCard() {
 	const card = useChatStore((s) => s.resumeCard);
@@ -25,9 +21,11 @@ export function ResumeCard() {
 	const [factsExpanded, setFactsExpanded] = useState(false);
 	if (!card || (dismissed && !revealed)) return null;
 
+	// 预览条数随卡片载荷下发（服务端 FACTS_PREVIEW_COUNT 是唯一来源）——
+	// 客户端不再自带一份同值常量（2026-09-13 收尾 §5.6）
 	const visibleFacts = factsExpanded
 		? card.facts
-		: card.facts.slice(0, FACTS_PREVIEW_COUNT);
+		: card.facts.slice(0, card.factsPreviewCount);
 	const hiddenCount = Math.max(0, card.facts.length - visibleFacts.length);
 	return (
 		<motion.section

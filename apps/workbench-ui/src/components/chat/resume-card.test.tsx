@@ -101,6 +101,7 @@ function cardWith(facts: Array<ResumeCardFactRow>): ResumeCardView {
 		facts,
 		dismissed: false,
 		inject: true,
+		factsPreviewCount: 3,
 	};
 }
 

@@ -323,63 +323,11 @@ export async function createUiServer(
 			});
 			return Response.json(result, { status: result.ok ? 200 : 409 });
 		}
-		// R3: the three views that make the machine's own numbers visible —
-		// the queue (what wants a decision), WIP (what the flow allows), and
-		// per-lane usage (what each lane is burning).
-		if (url.pathname === "/api/tribunal" && request.method === "GET") {
-			const [{ renderCard }, wip] = await Promise.all([
-				import("../commands/tribunal"),
-				import("../scheduler/wip").then((m) => m.observeFlow(bb)),
-			]);
-			const [items, stats, distribution] = await Promise.all([
-				bb.tribunal.list(),
-				bb.tribunal.stats(),
-				bb.tribunal.distribution(),
-			]);
-			return Response.json({
-				items: items.map((item) => ({ ...item, card: renderCard(item) })),
-				stats,
-				distribution,
-				wip,
-			});
-		}
-		const tribunalItem = url.pathname.match(/^\/api\/tribunal\/([^/]+)$/);
-		if (tribunalItem && request.method === "POST") {
-			const id = decodeURIComponent(tribunalItem[1] ?? "");
-			const body = (await request.json().catch(() => ({}))) as {
-				action?: string;
-				minutes?: number;
-			};
-			const item =
-				body.action === "shelve"
-					? await bb.tribunal.shelve(id, body.minutes ?? 30)
-					: body.action === "resolve"
-						? await bb.tribunal.resolve(id)
-						: null;
-			if (!item) {
-				return Response.json(
-					{ ok: false, reason: "未知动作或条目不存在" },
-					{ status: 400 },
-				);
-			}
-			return Response.json({ ok: true, item });
-		}
-		if (url.pathname === "/api/wip" && request.method === "GET") {
-			const { explainWip, observeFlow } = await import("../scheduler/wip");
-			const flow = await observeFlow(bb);
-			return Response.json({ ...flow, explanation: explainWip(flow) });
-		}
-		if (url.pathname === "/api/metrics" && request.method === "GET") {
-			const { observeFlow } = await import("../scheduler/wip");
-			const [lanes, flow] = await Promise.all([
-				bb.metrics.list(),
-				observeFlow(bb),
-			]);
-			return Response.json({
-				lanes,
-				unreviewedBacklog: flow.unreviewedBacklog,
-			});
-		}
+		// 2026-09-13 收尾 §4.4：此前这里还有 /api/tribunal（GET+POST）、
+		// /api/wip、/api/metrics 三条只读观测路由。客户端零引用、server.test.ts
+		// 也不覆盖它们——真正的消费面是 CLI（`workbench tribunal list|show|shelve|
+		// resolve`、`workbench wip`、`workbench metrics`）。一个只服务「也许有人
+		// 会 curl」的 HTTP 面就是没人维护的第二个入口，已删除；要读这些数字走 CLI。
 		if (url.pathname === "/api/agent/run" && request.method === "POST") {
 			const { startAgent } = await import("../agents/runner");
 			const body = (await request.json()) as {
@@ -467,8 +415,9 @@ export async function createUiServer(
 			} catch {
 				// Bun 1.3.14 起，非法百分号编码（如 %ZZ）在 HTTP 解析层即被
 				// 断开（fetch 直接 ECONNRESET），本分支在该运行时不可达；
-				// Bun 1.3.2（CI）仍走到这里。两条路径都是「拒收」，
-				// 保留为运行时兜底（2026-09-13 分诊）。
+				// 不在此层断开请求的运行时仍会走到这里。两条路径都是
+				// 「拒收」，保留为运行时兜底（2026-09-13 分诊；CI 与本地
+				// 已统一到 1.3.14）。
 				return Response.json({ error: "对话标识无效" }, { status: 400 });
 			}
 			if (!/^[a-zA-Z0-9_-]+$/.test(threadId)) {

@@ -143,24 +143,34 @@ describe("交互事件日志（TF-0087）", () => {
 		const { projectDir, bb, cleanup } = await makeTempWorkbench();
 		try {
 			await bb.sessions.register("ws-a", "agent", "A");
-			// 模拟 30 天 × 每天 40 次活动 × 每次 1 读 1 写（约 120 事件/天）
-			for (let day = 0; day < 30; day += 1) {
-				for (let act = 0; act < 40; act += 1) {
-					await bb.sessions.recordActivity("ws-a", {
-						activity: `day${day}-act${act}`,
-						agent: "ws-a",
-						used: [{ path: `src/m${act % 10}.ts`, version: "v" }],
-						generated: [{ path: `src/w${act % 5}.ts`, version: "v" }],
-					});
-				}
+			// 一个月 = 30 天 × 每天 40 次活动 × 每次 3 行（1 足迹 + 2 交互）= 3600 行。
+			//
+			// 断言的是**每行平均体积**再外推到月规模：JSONL 单行大小不随条数
+			// 变化，所以小样本与大样本同性质。全量 1200 次活动在本机实测 ~76s
+			// （Windows 实时扫描下每次活动 ~63ms，见 bunfig.toml），会撞破 60s
+			// 预算；缩到 200 次仍保有 600 行的统计量。
+			const SAMPLE_ACTIVITIES = 200;
+			const LINES_PER_ACTIVITY = 3;
+			const MONTH_LINES = 3600;
+			for (let act = 0; act < SAMPLE_ACTIVITIES; act += 1) {
+				await bb.sessions.recordActivity("ws-a", {
+					activity: `act${act}`,
+					agent: "ws-a",
+					used: [{ path: `src/m${act % 10}.ts`, version: "v" }],
+					generated: [{ path: `src/w${act % 5}.ts`, version: "v" }],
+				});
 			}
 			const raw = readFileSync(eventsFile(projectDir), "utf8");
+			const lines = raw.split("\n").filter((line) => line.trim()).length;
+			// 每次活动必须落 1 足迹 + 2 交互，否则外推的分母就不成立
+			expect(lines).toBe(SAMPLE_ACTIVITIES * LINES_PER_ACTIVITY);
 			const bytes = Buffer.byteLength(raw, "utf8");
-			// 120 事件/天 × 30 天 = 3600 行；1MB 预算内留余量
-			expect(bytes).toBeLessThan(1_000_000);
 			expect(bytes).toBeGreaterThan(0);
-			// 顺带验证：footprint + interaction 双写后单事件平均 < 280B
-			expect(bytes / 3600).toBeLessThan(280);
+			// footprint + interaction 双写后单事件平均 < 280B
+			const perLine = bytes / lines;
+			expect(perLine).toBeLessThan(280);
+			// 一个月 3600 行；1MB 预算内留余量
+			expect(perLine * MONTH_LINES).toBeLessThan(1_000_000);
 		} finally {
 			await cleanup();
 		}

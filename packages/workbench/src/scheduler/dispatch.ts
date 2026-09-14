@@ -4,8 +4,9 @@ import { createWorktree, git } from "../git";
 import { branchNameProblem } from "../git/refname";
 import { envelopes } from "../tribunal/envelopes";
 import type { SchedulerPolicy } from "../types/config";
-import type { TribunalEnvelope } from "../types/tribunal";
 import type { Workspot } from "../types/workspot";
+import { guardBeforeDispatch } from "./merge-guard";
+import { type SchedulerNotify, schedulerNotifier } from "./notifications";
 import { type DispatchDecision, type SchedulerState, tick } from "./tick";
 import { admitDispatch } from "./wip";
 
@@ -53,17 +54,50 @@ async function checkBranchName(
 	);
 }
 
+export async function dispatchGoal(
+	bb: Blackboard,
+	goalId: string,
+	workspotId?: string,
+	options: { force?: boolean; notify?: SchedulerNotify } = {},
+): Promise<DispatchResult> {
+	const notify = options.notify ?? schedulerNotifier(bb);
+	const result = await performDispatch(bb, goalId, workspotId, {
+		...options,
+		notify,
+	});
+	if (!result.ok) {
+		await bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "scheduler",
+			type: "dispatch_failed",
+			payload: { ...result },
+		});
+		// Structured refusals already carry their own diagnostic card.
+		if (!result.error) {
+			const card = envelopes.dispatchFailed(
+				goalId,
+				result.workspotId ?? workspotId,
+				result.reason ?? "调度器未给出原因",
+			);
+			await notify(card.sbar.situation, "error", card).catch((err) => {
+				console.error(`[scheduler] 派发失败告警投递失败（${goalId}）:`, err);
+			});
+		}
+	}
+	return result;
+}
+
 /**
  * The concrete dispatch action (skeleton Phase 5): create/bind the git
  * worktree, activate the workspot on the goal, dequeue it, and refresh the
  * workspot's context file. Used by `workbench dispatch` regardless of policy,
  * and by the Runtime when the auto scheduler decides.
  */
-export async function dispatchGoal(
+async function performDispatch(
 	bb: Blackboard,
 	goalId: string,
-	workspotId?: string,
-	options: { force?: boolean } = {},
+	workspotId: string | undefined,
+	options: { force?: boolean; notify: SchedulerNotify },
 ): Promise<DispatchResult> {
 	const goal = await bb.goals.get(goalId);
 	if (!goal) {
@@ -136,9 +170,11 @@ export async function dispatchGoal(
 					branchProblem,
 				),
 			)
-			.catch(() => {
-				// The queue being unavailable must not turn a diagnosed refusal
-				// into a crash; the result below still carries the diagnosis.
+			.catch((err) => {
+				console.error(
+					`[scheduler] 分支名拒派告警投递失败（${workspot.id}）:`,
+					err,
+				);
 			});
 		await bb.events.append({
 			timestamp: new Date().toISOString(),
@@ -164,6 +200,10 @@ export async function dispatchGoal(
 			},
 		};
 	}
+
+	await guardBeforeDispatch(bb, workspot, options.notify).catch((err) => {
+		console.error(`[scheduler] 合并预检未完成（${workspot.id}）:`, err);
+	});
 
 	const worktree = await createWorktree(
 		bb.projectRoot,
@@ -208,12 +248,7 @@ export async function runScheduler(
 	bb: Blackboard,
 	policy: Exclude<SchedulerPolicy, "manual">,
 	maxConcurrentWorkspots: number,
-	notify: (
-		message: string,
-		severity: "info" | "warning" | "error",
-		/** R3: the structured envelope, when this decision is an alarm. */
-		tribunal?: TribunalEnvelope,
-	) => Promise<void>,
+	notify: SchedulerNotify,
 ): Promise<DispatchResult[]> {
 	const state: SchedulerState = {
 		policy,
@@ -224,6 +259,7 @@ export async function runScheduler(
 	};
 	const decisions: DispatchDecision[] = tick(state);
 	const results: DispatchResult[] = [];
+
 	for (const decision of decisions) {
 		if (decision.type === "notify_human") {
 			await notify(decision.message, decision.severity, decision.tribunal);
@@ -234,14 +270,9 @@ export async function runScheduler(
 				bb,
 				decision.goalId,
 				decision.workspotId,
+				{ notify },
 			);
 			results.push(result);
-			await bb.events.append({
-				timestamp: new Date().toISOString(),
-				source: "scheduler",
-				type: result.ok ? "goal_dispatched" : "dispatch_failed",
-				payload: { ...result },
-			});
 		}
 	}
 	return results;

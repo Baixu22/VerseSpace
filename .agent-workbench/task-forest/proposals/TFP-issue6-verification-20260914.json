@@ -1,0 +1,28 @@
+{
+  "applied_at": "2026-09-14T00:15:47.508052Z",
+  "base_graph_hash": "945b9d1d996142fbaa2ed79242bd4e7c5fe48fa88ef2df3aa62b562a287329ce",
+  "base_summary": {
+    "edge_count": 252,
+    "node_count": 170,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-14 issue #6 第 9 项：共享实现位于 packages/context-rot/src/{scan,file-index,path-refs,verify}.ts；packages/workbench/src/rot/scan.ts 仅适配报告。原 rot/extract.ts 已删除，原提取测试移到 context-rot/src/path-refs.test.ts，避免只供测试消费的兼容导出。两端单文件产物在构建时内联，无运行时跨包依赖。",
+          "context-rot/src/scan.test.ts 覆盖嵌套指引、锚点、占位符、围栏、索引中已删除文件、中文生成物，以及 Node 下的打包符号验证；workbench/src/rot/scan.test.ts 比较两个入口对同一证据的结果。",
+          ".github/workflows/ci.yml 将 context-rot 路径变更纳入 Workbench 测试触发；共享语义不再依赖人工双写注释。",
+          "最终回归：context-rot 65 项通过；Workbench 664 项与 1 份快照通过。Node 产物在当前仓库核对 346 条引用，失效 0、生成物 2、未确认 24；不把后两类当作已验证有效。"
+        ]
+      },
+      "id": "TF-0104"
+    }
+  ],
+  "created_at": "2026-09-14T00:15:46.938297Z",
+  "proposal_id": "TFP-issue6-verification-20260914",
+  "rationale": "在已授权的 issue #6 修复中，清除路径提取兼容导出并补记最终测试结果，修正 TF-0104 的引用；其余节点及状态不变。",
+  "session_id": "issue6-bugfix-20260914",
+  "status": "applied"
+}

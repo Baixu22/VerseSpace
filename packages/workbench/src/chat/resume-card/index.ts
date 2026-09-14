@@ -2,14 +2,15 @@
 import type { ReadSetDiff, ReadSetFact } from "../../runtime/read-set-diff";
 import type { ResumeBeat, ResumeNote } from "../resume";
 import { coverageOf } from "./coverage";
-import type {
-	ClaimObservation,
-	ConflictAnnotation,
-	ConflictRule,
-	FactRow,
-	NarrativeRow,
-	RepoFact,
-	ResumeCardView,
+import {
+	type ClaimObservation,
+	type ConflictAnnotation,
+	type ConflictRule,
+	FACTS_PREVIEW_COUNT,
+	type FactRow,
+	type NarrativeRow,
+	type RepoFact,
+	type ResumeCardView,
 } from "./types";
 
 export { FORBIDDEN_CARD_PHRASES } from "./coverage";
@@ -266,13 +267,8 @@ export function buildResumeCard(input: {
 		facts,
 		dismissed,
 		inject: !dismissed,
+		// 预览条数随载荷下发：客户端直接读它，不再自带一份同值常量
+		// （2026-09-13 收尾 §5.6——单一来源）。
+		factsPreviewCount: FACTS_PREVIEW_COUNT,
 	};
-}
-
-/**
- * 预留导出（仅测试消费，2026-09-13 审计 §4.2）：UI 侧直接读 card.inject，
- * 本函数暂无生产调用方——保留为注入判定的契约面。
- */
-export function shouldInjectResumeCard(card: ResumeCardView | null): boolean {
-	return Boolean(card?.inject);
 }

@@ -236,4 +236,55 @@ describe("agent runner", () => {
 			await cleanup();
 		}
 	});
+
+	test("issue #6 item 12: 崩溃熔断进裁决队列，且拒派与熔断折叠成一张卡", async () => {
+		const { projectDir, cleanup } = await makeProject();
+		try {
+			const bb = openBlackboard(join(projectDir, ".workbench"));
+			await mkdir(join(projectDir, "worktrees", "ws-a"), { recursive: true });
+			const config = await bb.config.load();
+			config.agent.command = "bun fake.js"; // 必然异常退出
+			await bb.config.save(config);
+			await bb.state.workspots.save({
+				id: "ws-a",
+				branch: "ws/ws-a",
+				worktreePath: join("worktrees", "ws-a"),
+				primaryTask: "g-1",
+				binding: "primary",
+				status: "active",
+				contextNeeds: { decisions: [], interfaces: [] },
+			});
+
+			// 三次异常退出 → 熔断（60 秒窗口 / 阈值 3）
+			for (let i = 0; i < 3; i++) {
+				const start = await startAgent(bb, { workspotId: "ws-a", prompt: "x" });
+				expect(start.ok).toBe(true);
+				await pollFor(async () => {
+					const { session } = await readAgentView(bb, "ws-a");
+					return session?.status === "failed";
+				});
+			}
+
+			const events = await bb.events.query({ type: "agent_crashloop" });
+			expect(events).toHaveLength(1);
+
+			const items = await bb.tribunal.list();
+			const cards = items.filter((item) => item.kind === "agent_crashloop");
+			expect(cards).toHaveLength(1);
+			expect(cards[0]?.subject).toBe("ws-a");
+			expect(cards[0]?.action.command).toBe("workbench log --tail 50");
+			expect(cards[0]?.sbar.recommendation.endsWith("？")).toBe(false);
+
+			// 熔断期间再派发被拒；拒派与熔断同 causeKey → 折叠，不刷屏
+			const refused = await startAgent(bb, { workspotId: "ws-a", prompt: "x" });
+			expect(refused.ok).toBe(false);
+			expect(refused.reason).toContain("连续崩溃");
+			const after = await bb.tribunal.list();
+			expect(
+				after.filter((item) => item.kind === "agent_crashloop"),
+			).toHaveLength(1);
+		} finally {
+			await cleanup();
+		}
+	}, 30_000);
 });

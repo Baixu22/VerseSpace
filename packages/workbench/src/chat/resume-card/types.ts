@@ -1,7 +1,4 @@
-/**
- * 恢复卡事实条目数。⚠ UI 侧 apps/workbench-ui/src/components/chat/resume-card.tsx
- * 有同值重声明（=3）——两端构建独立，无法共享 import；改动时必须同步（2026-09-13 收尾 4.2）。
- */
+/** 服务端通过 factsPreviewCount 下发事实预览条数，前端直接消费。 */
 export const FACTS_PREVIEW_COUNT = 3;
 
 export type ConflictRule =
@@ -76,6 +73,11 @@ export interface ResumeCardView {
 	dismissed: boolean;
 	/** Auto-inject into the restore surface. False after one dismiss. */
 	inject: boolean;
+	/**
+	 * 折叠前展示几条事实（= `FACTS_PREVIEW_COUNT`）。随载荷下发，客户端直接
+	 * 读它——客户端不再自带一份同值常量（2026-09-13 收尾 §5.6）。
+	 */
+	factsPreviewCount: number;
 }
 
 export interface CoverageRow {

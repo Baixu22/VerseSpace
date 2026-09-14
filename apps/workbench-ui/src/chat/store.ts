@@ -152,6 +152,12 @@ export interface ResumeCardView {
 	facts: ResumeCardFactRow[];
 	dismissed: boolean;
 	inject: boolean;
+	/**
+	 * 折叠前展示几条事实。由服务端随载荷下发（`FACTS_PREVIEW_COUNT` 的
+	 * 唯一来源在 packages/workbench/src/chat/resume-card/types.ts）——
+	 * 客户端不再自带一份同值常量（2026-09-13 收尾 §5.6）。
+	 */
+	factsPreviewCount: number;
 }
 
 export interface ReadSetDiff {
@@ -214,6 +220,17 @@ interface ChatState {
 	resumeCard: ResumeCardView | null;
 	resumeCardDismissed: boolean;
 	resumeCardRevealed: boolean;
+	/**
+	 * TF-0142 前提通知送达信号：本轮实际向 agent 送达了几条前提通知。
+	 * `null` = 本会话还没有送过。送达是「交付了但看不到」的反面——用户
+	 * 必须能看见 agent 被提醒过（2026-09-13 收尾 §4.3）。
+	 */
+	noticesDelivered: { count: number; at: string } | null;
+	/**
+	 * TF-0092 手动晋升手势是否可见。由服务端判定（无名且有内容），客户端只渲染
+	 * ——不复制「无名」这个判断（2026-09-13 收尾 §4.4）。
+	 */
+	canPromote: boolean;
 	init(): Promise<void>;
 	createThread(): Promise<void>;
 	switchThread(id: string): Promise<void>;
@@ -234,6 +251,10 @@ interface ChatState {
 	dismissResumeCard(): Promise<void>;
 	revealResumeCard(): void;
 	recordResumeAction(action: string): Promise<void>;
+	/** TF-0142：关掉送达提示（短暂可见后自动消失）。 */
+	dismissNoticeDelivered(): void;
+	/** TF-0092：手动晋升——一个手势给无名对话命名。 */
+	promoteActive(): Promise<void>;
 	cancel(): void;
 	setPlanMode(enabled: boolean): Promise<void>;
 	deleteThread(id: string): Promise<void>;
@@ -305,9 +326,16 @@ interface ThreadGetResponse {
 	suggestions: Suggestion[];
 	decisionPoints: DecisionPoint[];
 	resumeNote: ResumeNote | null;
+	/**
+	 * 「你不在时变了什么」：服务端 `collectRestoreView` 用
+	 * `chat/resume.ts` 的 `resumeDelta()` 算好随载荷下发，客户端直接读
+	 * ——不再内联重算同一算式（2026-09-13 收尾 §5.6，单一来源）。
+	 */
+	resumeDelta: number;
 	readSetDiff?: ReadSetDiff;
 	resumeCard?: ResumeCardView | null;
 	resumeCardDismissed?: boolean;
+	canPromote?: boolean;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -326,6 +354,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	resumeCard: null,
 	resumeCardDismissed: false,
 	resumeCardRevealed: false,
+	noticesDelivered: null,
+	canPromote: false,
 
 	async init() {
 		const threads = await apiFetch("/api/chat/threads").then(
@@ -360,6 +390,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							resumeCard: null,
 							resumeCardDismissed: false,
 							resumeCardRevealed: false,
+							noticesDelivered: null,
+							canPromote: false,
 						}),
 			};
 		});
@@ -406,6 +438,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 				resumeCard: null,
 				resumeCardDismissed: false,
 				resumeCardRevealed: false,
+				noticesDelivered: null,
+				canPromote: false,
 			};
 		});
 		// TF-0097：离开 prev 时 fire-and-forget 生成恢复笔记（agent 起草）。
@@ -422,25 +456,21 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			return;
 		}
 		set((s) => {
-			// TF-0097：返回时检测『你不在时变了什么』——对比离开签名与当前消息数。
-			// 纯呈现层，不写回 meta（笔记在离开时生成，不在返回时索取）。
-			// 与服务端 chat/resume.ts 的 resumeDelta() 同一算式（两端构建独立
-			// 无法共享 import），改动口径必须同步（2026-09-13 收尾 4.2）。
-			const delta =
-				data.resumeNote &&
-				data.messages.length > data.resumeNote.leaveSignature.messageCount
-					? data.messages.length - data.resumeNote.leaveSignature.messageCount
-					: 0;
+			// TF-0097：返回时检测『你不在时变了什么』——读数由服务端算好随载荷
+			// 下发（chat/resume.ts 的 resumeDelta() 是唯一来源），客户端不再内联
+			// 重算同一算式（2026-09-13 收尾 §5.6）。
 			return {
 				messages: { ...s.messages, [id]: data.messages },
 				suggestions: data.suggestions,
 				decisionPoints: data.decisionPoints,
 				resumeNote: data.resumeNote,
-				resumeDelta: delta,
+				resumeDelta: data.resumeDelta ?? 0,
 				readSetDiff: data.readSetDiff ?? null,
 				resumeCard: data.resumeCard ?? null,
 				resumeCardDismissed: Boolean(data.resumeCardDismissed),
 				resumeCardRevealed: false,
+				canPromote: Boolean(data.canPromote),
+				noticesDelivered: null,
 				threads: s.threads.some((t) => t.id === id)
 					? s.threads.map((t) => (t.id === id ? { ...t, ...data.meta } : t))
 					: [data.meta, ...s.threads],
@@ -603,6 +633,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ action }),
 		}).catch(() => {});
+	},
+
+	dismissNoticeDelivered() {
+		set({ noticesDelivered: null });
+	},
+
+	async promoteActive() {
+		const threadId = get().activeId;
+		if (!threadId || !get().canPromote) return;
+		const response = await apiFetch(`/api/chat/threads/${threadId}/promote`, {
+			method: "POST",
+		});
+		if (!response.ok) throw new Error("对话命名失败，请重试");
+		const meta = (await response.json()) as ThreadMeta;
+		if (meta.id !== threadId) throw new Error("对话命名失败，请重试");
+		set((s) => ({
+			threads: s.threads.map((thread) =>
+				thread.id === threadId ? { ...thread, ...meta } : thread,
+			),
+			...(s.activeId === threadId ? { canPromote: false } : {}),
+		}));
 	},
 
 	cancel() {
@@ -833,6 +884,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							resumeCard: null,
 							resumeCardDismissed: false,
 							resumeCardRevealed: false,
+							noticesDelivered: null,
+							canPromote: false,
 						}
 					: {}),
 			};
@@ -858,6 +911,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 		});
 		set((s) => ({
 			threads: s.threads.map((t) => (t.id === id ? { ...t, title } : t)),
+			...(s.activeId === id ? { canPromote: false } : {}),
 		}));
 	},
 
@@ -1007,8 +1061,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
 							},
 						}));
 					} else if (event.type === "notice_delivered") {
-						// TF-0142 前提通知送达信号：当前无 UI 消费面，显式跳过
-						// （2026-09-13 收尾 4.3——从静默丢弃改为知情跳过；UI 形态待产品拍板）
+						// Background runs must not show delivery on a different conversation.
+						if (
+							get().activeId === threadId &&
+							Number.isInteger(event.count) &&
+							event.count! > 0
+						) {
+							set({
+								noticesDelivered: {
+									count: event.count!,
+									at: new Date().toISOString(),
+								},
+							});
+						}
 					} else if (event.type === "done" && event.message) {
 						patchAssistant({
 							id: event.message.id,
@@ -1064,6 +1129,8 @@ async function refreshThread(threadId: string): Promise<void> {
 					readSetDiff: data.readSetDiff ?? null,
 					resumeCard: data.resumeCard ?? null,
 					resumeCardDismissed: Boolean(data.resumeCardDismissed),
+					resumeDelta: data.resumeDelta ?? 0,
+					canPromote: Boolean(data.canPromote),
 				}
 			: {}),
 		threads: s.threads.map((t) =>

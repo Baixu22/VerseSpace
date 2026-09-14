@@ -18,13 +18,15 @@ bun run lint                 # biome check . + cargo clippy -- -D warnings
 bun run lint:fix             # biome --write + cargo clippy --fix + cargo fmt
 ```
 
-Tests are **four targets** — `bun run test` runs all four (frontend -> sidecar -> workbench -> rust). Pre-commit hook runs biome on JS/TS and clippy/fmt on Rust.
+Tests are **six targets** — `bun run test` runs frontend, sidecar, workbench, workbench-ui, context-rot, then rust. Pre-commit hook runs biome on JS/TS and clippy/fmt on Rust.
 
 ```bash
-bun run test                 # All four suites
+bun run test                 # All six suites
 bun run test:frontend        # vitest run (jsdom, @testing-library/react)
 bun run test:sidecar         # cd sidecar && bun test
 bun run test:workbench       # cd packages/workbench && bun test
+bun run test:workbench-ui    # cd apps/workbench-ui && vitest run
+bun run test:context-rot     # cd packages/context-rot && bun test
 bun run test:rust            # cd src-tauri && cargo test
 bun run test:rust:update-snapshots    # INSTA_UPDATE=always
 bun run test:watch           # vitest watch (frontend only)
@@ -121,6 +123,61 @@ cd src-tauri && cargo run --example gen_pipeline_fixture -- <session_id> <name> 
 ```
 
 When a snapshot drifts: look at the diff first. Only accept after confirming the new shape is intended, not a regression.
+
+## Local environment caveats (Windows dev machine)
+
+These are **machine-local defects, not repo bugs**. They change what "green" means on this machine; CI is unaffected. Documented so that a green local run is not misread as proof that CI is green.
+
+### Rust lane: the cargo-registry bypass (`PATCH-BYPASS-LOCAL`)
+
+`boring-sys2` 4.15.15 copies its registry `deps/boringssl` into `OUT_DIR/boringssl`, then runs `git apply` in that copy (normally under `src-tauri/target/debug/build/`). The registry copy is the input, not the normal patch working directory. On this machine the patch process has been observed failing outside `%TEMP%`; the interfering process has not been identified. Real-time protection / host hooks remain a hypothesis, not a verified root cause.
+
+The workaround is two **untracked, machine-local** scripts. `/.workbuddy/` is gitignored, so they do not exist on other machines and cannot reach CI:
+
+- `.workbuddy/tf-registry-bypass.py` — applies the two patches (`boringssl-44b3df6f03d85c901767250329c571db405122d5.patch`, `boringssl-loongarch.patch`) into `%USERPROFILE%\.cargo\registry\src\index.crates.io-*\boring-sys2-4.15.15\deps\boringssl`, then rewrites that crate's `~/.cargo/registry/src/<registry>/boring-sys2-4.15.15/build/main.rs` so `ensure_patches_applied()` returns `Ok(())` immediately. The injected comment is the marker `PATCH-BYPASS-LOCAL` — grep for it to see whether the bypass is currently active.
+- `.workbuddy/tf-registry-restore.py` — overwrites the vendored tree from a known-good patched copy at `%TEMP%\boringssl-patched` and drops its `.git`. Use this when the tree itself is mangled, not merely unpatched.
+
+**Recovery — the bypass does not survive a registry refresh.** `cargo update`, repairing/clearing the registry, or deleting the `boring-sys2-*` registry directory restores the pristine crate and the rust lane goes red again. Fix: re-run `python .workbuddy/tf-registry-bypass.py` (run `.workbuddy/tf-registry-restore.py` first if the tree is broken), then re-run `bun run test:rust`.
+
+**Scope and honesty.** The bypass edits a *third-party crate in the local cargo registry*; it touches no repo file and cannot leak into CI. But it means a passing `cargo test` here is borrowed, so the rule that any change touching `pipeline/` must ship a snapshot test is only locally satisfiable under the bypass. **The root cause is unresolved.** On 2026-09-14 a separate `%TEMP%` probe built the checksum-verified original 4.15.15 crate with `pq-experimental` and its original patch steps successfully (`cargo check`, 68 seconds). No registry edits, patch bypass, or protection exclusions were used in that probe. This proves a clean temporary build works; it does not certify the main checkout, whose registry still contains the bypass. A full clean verification requires restoring the crate from its checksum-verified archive, using a temporary Cargo target directory (CARGO_TARGET_DIR), and running the Rust suite. Diagnose the interfering process before changing protection settings.
+
+### Test teardown under real-time scanning
+
+Windows real-time scanning holds handles on a freshly written git repository (`.git` is written file by file, each one scanned), so `rm` on that directory can fail with `EBUSY` for ~15s or more *after* a test's assertions have already passed. `packages/workbench/src/rot/scan.test.ts` retries and then warns instead of failing the test; `packages/workbench/src/fs/atomic.ts` already retries `EBUSY`/`EPERM`/`EACCES` for the same reason. A lone teardown `EBUSY` is environmental, not a regression.
+
+### `git rm` deletes the whole containing directory
+
+On this machine **`git rm <path-in-subdir>` removes the file's entire parent directory**, recursively, taking unrelated siblings with it. The index is unaffected — `git status` afterwards still lists the siblings as ` D` (deleted in worktree, present in index) — so nothing warns you until the files are needed again.
+
+Minimal repro (git 2.55.0.windows.3):
+
+```bash
+mkdir -p d/src && echo a > d/src/a.md && echo b > d/src/b.ts
+cd d && git init -q && git add . && git -c user.email=e@l -c user.name=e commit -qm s
+git rm -q src/b.ts   # exit 0
+ls src               # -> No such file or directory  (a.md is gone too)
+```
+
+Notes: `git rm --cached` is safe (index only, worktree untouched); a file in the repo root is safe; Node's fs.rm on a single file is safe. The mechanism is unresolved — it behaves like the same host-level delete hook that eats `.git/refs` (see below) — but it does not reproduce in CI.
+
+This is why `scripts/e2e/scenario.ts` stages its deletion with `git rm --cached` plus a Node `rm` of exactly that one file: the index outcome is identical to `git rm`, but the temporary fixture's alpha.ts and notes.md survive. Without that workaround the E2E dies at S5 (`读取范围末尾之外的追加被误报成失效前提`) for a reason that has nothing to do with the workbench. **Do not "simplify" it back to `git rm`.**
+
+### Git refs: slash-nested branches and remote-tracking refs
+
+Two more manifestations of the same host delete hook, both reproduced minimally on git 2.55.0.windows.3:
+
+- `git branch ws/probe` exits 0 but creates no ref; `git worktree add -b ws/ws-a` then fails `fatal: invalid reference: ws/ws-a`. Slash-free branch names work.
+- `git update-ref refs/remotes/origin/main` returns 0 without writing the file, so `origin/main` keeps vanishing and `git status` shows `[gone]`. Manual recovery: `mkdir -p .git/refs/remotes/origin && git rev-parse main > .git/refs/remotes/origin/main`.
+
+Consequence for tests: the five `packages/workbench/src/scheduler/*` and `runtime` cases that dispatch on `ws/ws-a` fail locally and pass in CI. Write new dispatch tests with slash-free branch names; do not read the local red as a regression.
+
+### Shared context-rot scanner
+
+`packages/workbench/src/rot/scan.ts` adapts `packages/context-rot/src/scan.ts` into the doctor's unique-path report. Discovery, path extraction, ignore handling, and verification have one implementation in `context-rot`; its standalone CLI additionally checks symbols and packages. Both single-file builds bundle the shared source, so neither installed package needs the other at runtime. Changes to `packages/context-rot/**` must run both test suites (wired in `.github/workflows/ci.yml`).
+
+### Bun version
+
+Pinned to **1.3.14** in `package.json` (`packageManager`), `.github/actions/setup-js/action.yml`, and `.github/workflows/release-workbench.yml`. Two version-bound behaviours must be re-checked on any bump: `fetch` connection-pool reuse across ports, and the HTTP layer rejecting illegal percent-encoding (`%ZZ`) before the request handler runs — see `packages/workbench/src/ui/server.ts` and `packages/workbench/src/ui/evidence-route.test.ts`.
 
 ## Key conventions
 

@@ -7,6 +7,7 @@ import type { Command } from "commander";
 import { type Blackboard, openBlackboard } from "../blackboard";
 import { checkpointCreate } from "../commands/checkpoint";
 import { initWorkbench } from "../commands/init";
+import { runDoctor } from "../doctor";
 import { runOnce } from "../runtime";
 import type { Checkpoint } from "../types/checkpoint";
 import type { Workspot } from "../types/workspot";
@@ -120,13 +121,16 @@ describe("MVP end-to-end flow (real git repo)", () => {
 			expect(run1.transitions.map((t) => t.type)).toEqual(["goal_status"]);
 			expect((await bb.goals.get(goalA.id))?.status).toBe("ready");
 
-			// sync 2: A enqueued and starts (workspot is active on it)
+			// sync 2: already active work is in_progress and never waits in the queue.
 			const run2 = await runOnce(bb);
-			expect(run2.transitions.map((t) => t.type)).toEqual([
-				"goal_status",
-				"enqueue_goal",
-			]);
+			expect(run2.transitions.map((t) => t.type)).toEqual(["goal_status"]);
 			expect((await bb.goals.get(goalA.id))?.status).toBe("in_progress");
+			expect(await bb.state.queue.get()).toEqual([]);
+			expect(
+				(await runDoctor(bb)).issues.some(
+					(issue) => issue.check === "stale_queue_entry",
+				),
+			).toBe(false);
 
 			// sync 3: drop a passing checkpoint; verification executes this round
 			const cpA = await dropCheckpoint(bb, projectDir, goalA.id, 0);

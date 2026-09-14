@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { mkCheckpoint, snapshotWith } from "../test/automaton-fixtures";
 import { evaluateCheckpoints } from "./checkpoint-machine";
-import { mkCheckpoint, snapshotWith } from "./fixtures";
 
 describe("checkpoint machine", () => {
 	test("draft with a verification strategy requests verification", () => {

@@ -417,7 +417,15 @@ export function spawnSupervised(
 								"utf8",
 							),
 						)
-						.catch(() => {})
+						.catch((err) => {
+							// pid 记录没落盘，重启后的孤儿回收就找不到这个进程；
+							// 崩溃循环计数也会失准。这是可观测性缺口，不能静默
+							// （2026-09-13 收尾 §4.5 复核判定）。
+							console.error(
+								`[supervisor] pid 注册失败（label=${options.label} pid=${pid}），孤儿回收将看不到它:`,
+								err,
+							);
+						})
 				: null;
 
 		let timer: ReturnType<typeof setTimeout> | null = null;

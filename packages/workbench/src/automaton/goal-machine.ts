@@ -105,7 +105,11 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 						reason: "工位已开始施工",
 					});
 				}
-				if (!snapshot.executionQueue.includes(goal.id)) {
+				// 已经在施工的目标不进队列：它不是在等派发。此前这里无条件入队，
+				// 于是「派发（出队）→ 下一轮同步（入队）→ 再下一轮（出队）」来回
+				// 抖动，两次同步之间 doctor 会看到「队列里的目标不再是 ready」的
+				// 假警告（2026-09-13 收尾 §3.2 观察①）。
+				if (!workedOn && !snapshot.executionQueue.includes(goal.id)) {
 					transitions.push({ type: "enqueue_goal", goalId: goal.id });
 				}
 				break;
@@ -152,10 +156,19 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 
 	// queue consistency: entries whose goal is no longer ready are drained
 	// (dispatch dequeues too, but a goal that completes/cancels while queued
-	// would otherwise linger forever)
+	// would otherwise linger forever). The judgement uses the *post-transition*
+	// status: a goal that leaves `ready` in this same pass must not linger in
+	// the queue, or doctor (which reads the queue between two syncs) reports a
+	// false `stale_queue_entry` until the next pass drains it.
+	const nextStatus = new Map<string, Goal["status"]>();
+	for (const transition of transitions) {
+		if (transition.type === "goal_status") {
+			nextStatus.set(transition.goalId, transition.to);
+		}
+	}
 	for (const goalId of snapshot.executionQueue) {
 		const goal = byId.get(goalId);
-		if (goal && goal.status !== "ready") {
+		if (goal && (nextStatus.get(goalId) ?? goal.status) !== "ready") {
 			transitions.push({ type: "dequeue_goal", goalId });
 		}
 	}

@@ -1,6 +1,6 @@
 /** Smoke-test built artifacts from a different workspace, without opening a browser. */
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import net from "node:net";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
@@ -67,6 +67,11 @@ for (const target of targets) {
 			return result.stdout;
 		};
 		run(["--json", "init", "--project", workspace]);
+		await writeFile(join(workspace, "AGENTS.md"), "Read `package.json`.\n");
+		await writeFile(join(workspace, "package.json"), '{"name":"built-smoke"}');
+		const doctor = JSON.parse(run(["--json", "doctor"]));
+		if (doctor.rot?.assertions !== 1 || doctor.rot.stale !== 0)
+			throw new Error("构建产物未包含共享 context-rot 扫描器");
 		const stats = JSON.parse(run(["--json", "stats"]));
 		if (!stats.lifecycle?.restoreToMessage || !stats.landmarkReviews?.current)
 			throw new Error("构建产物缺少当前统计字段");
@@ -120,6 +125,7 @@ for (const target of targets) {
 			JSON.stringify({
 				kind: target.kind,
 				initialized: true,
+				doctor: true,
 				stats: true,
 				headlessUi: true,
 				bundledUi: true,

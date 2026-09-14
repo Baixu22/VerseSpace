@@ -43,6 +43,16 @@ export const TRIBUNAL_KINDS = [
 	"metric_tool_bloat",
 	"metric_cache_miss",
 	"metric_suspend",
+	/** R2 / TF-0079: 派发前的合并预检给出了答案（真冲突 / 稀有重叠）。 */
+	"merge_conflict_predicted",
+	"write_overlap_rare",
+	/**
+	 * issue #6 item 12: 这两条此前只有 `log` 与 `/api/state` 活动流里的通用
+	 * 日志行，派发失败与 agent 崩溃循环因此没有专门的可观测面。现在各自
+	 * 有裁决项，会走 rationalization + 推送阈值，不再被日志淹没。
+	 */
+	"dispatch_failed",
+	"agent_crashloop",
 ] as const;
 export type TribunalKind = (typeof TRIBUNAL_KINDS)[number];
 

@@ -195,7 +195,13 @@ export async function runE2E(
 					`${notes}- 集成跑追加的尾部行（span 之外）\n`,
 					"utf8",
 				);
-				await git(ws, ["rm", "-q", "src/beta.ts"]);
+				// 本机 `git rm <路径>` 会连文件所在的整个目录一起删掉（宿主删除
+				// 钩子 + git 2.55.0.windows.3，见 AGENTS.md「Local environment
+				// caveats」），src/alpha.ts 与 src/notes.md 会被一并带走，E2E
+				// 随后在 S5 因为一个与被测组件无关的原因失败。改成「真 git 只
+				// 动索引 + 精确删除那一个文件」：索引侧的结果与 git rm 完全等价。
+				await git(ws, ["rm", "-q", "--cached", "src/beta.ts"]);
+				await rm(join(ws.projectDir, "src", "beta.ts"), { force: true });
 				await git(ws, [
 					"-c",
 					"user.email=e2e@local",

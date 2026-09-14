@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { makeTempWorkbench, type TempWorkbench } from "../test/fixtures";
 import { workbenchConfigSchema } from "../types/config";
 import type { Workspot } from "../types/workspot";
-import { generateAllContexts, generateContext } from "./generate";
+import { generateContext } from "./generate";
 
 async function seedWorkspot(
 	ws: TempWorkbench,
@@ -99,26 +99,6 @@ describe("generateContext", () => {
 			const noGoal = await generateContext(ws.bb, "ws-a");
 			expect(noGoal.ok).toBe(false);
 			expect(noGoal.reason).toContain("g-ghost");
-		} finally {
-			await ws.cleanup();
-		}
-	});
-});
-
-describe("generateAllContexts", () => {
-	test("refreshes every workspot and reports unresolvable ones", async () => {
-		const ws = await makeTempWorkbench();
-		try {
-			const goal = await ws.bb.goals.add({ title: "任务 A" });
-			await seedWorkspot(ws, "ws-a", goal.id);
-			await seedWorkspot(ws, "ws-broken", "g-ghost");
-
-			const results = await generateAllContexts(ws.bb);
-			expect(results).toHaveLength(2);
-			const ok = results.find((r) => r.workspotId === "ws-a");
-			const broken = results.find((r) => r.workspotId === "ws-broken");
-			expect(ok?.ok).toBe(true);
-			expect(broken?.ok).toBe(false);
 		} finally {
 			await ws.cleanup();
 		}

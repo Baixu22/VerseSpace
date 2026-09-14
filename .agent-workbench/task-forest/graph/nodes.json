@@ -2595,7 +2595,7 @@
     "acceptance_criteria": [
       "v5 与 v6 的证伪实验各跑一轮并有记账数据",
       "R1 验收：会话结束后能回答『读了哪些文件的哪个版本、写了哪些』",
-      "L1 验收：地标集合中 80% 以上是用户认可的『这次干的活的核心』"
+      "L1 验收采用现行 session-top-k（默认 K=3）：按写者隔离、种类门与 requireEdits 过滤后，真实人答认可的候选 / 全部当前候选 ≥0.8；reviewedCoverage 单列。只认真实 source=human 复核，不用脚本或模型代答（TF-0163）。本次只更正口径，未新增真人复核，不能据旧答案重算宣称 AC 达成。"
     ],
     "alignment": {
       "fit": "aligned",
@@ -2640,7 +2640,8 @@
       "（本轮）真实累积跑通：`& scripts/e2e/run-live.ps1 -DevelopmentWorkspace \"$env:TEMP\\workbench-e2e-live-tenant\"` → exit 0，四个阶段全过（读取旧实现建立前提 / 模型自主修复 endpoint 兼容 / 独立验收未通过 1 项后模型纠正 / 旧读者恢复复读并独立复核），随后 fork 三条分支（完整 endpoint 与重复斜杠 / 反向代理前缀与 query+fragment / 非法 URL 与嵌入凭据）。",
       "（本轮）监控闭环实测：跑前 `[warn] sampling-stalled · 两次采样之间没有任何累积 — rounds=26 threads=105`；累积后 `样本 6 条（已追加本次）`、告警 5→4 条，该告警消失。剩余三条是长期项/等待人：`restore-latency`（info，脚本手势驱动，只作「卡变重了」的工程信号）、`calendar-window`（info，2.16 天）、`natural-pending`（info，L1 0.3333 / 待复核 2）。",
       "（本轮·纠正自己的调用）live 累积入口只有 `run-live.ps1 -DevelopmentWorkspace <租户>`；直接 `bun live-development.ts --rounds 3` 会把 `--rounds` 当工作区路径，报 `ENOENT: --rounds\\.live-e2e-authorized`（授权标记要求内容为 `tenant-live-model-accumulation`）。这条写在这里，避免以后又绕一遍。",
-      "（仍未变）自然使用类指标只能等人：L1 认可率 0.3333（待复核 2 条，模板与回填已在第 8 轮修好并彩排通过）、恢复卡人类耗时无自然样本。监控的立场是不替人回答，只把待办变成「数量 + 一条命令」。"
+      "（仍未变）自然使用类指标只能等人：L1 认可率 0.3333（待复核 2 条，模板与回填已在第 8 轮修好并彩排通过）、恢复卡人类耗时无自然样本。监控的立场是不替人回答，只把待办变成「数量 + 一条命令」。",
+      "2026-09-14 issue #6 第 3 项：按实际代码更正 AC3。主读数为 session-top-k，DEFAULT_LANDMARK_TOP_K=3；分母是全部当前候选，不是“被复核条目”，requireEdits 对旧答案重算不是新的人答。issue 引用的 0.3333 等属于历史测量；本次未改写任何 human 事件，也不把工程测试通过当作 80% 真人认可。状态按 issue 要求保留。"
     ],
     "execution_hints": [
       "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
@@ -2676,7 +2677,7 @@
     "success_metrics": [],
     "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-    "updated_at": "2026-09-11T02:47:30.083405Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0058": {
     "acceptance_criteria": [
@@ -3879,7 +3880,8 @@
       "本仓库实测：git merge-tree --write-tree --name-only 单对约 320ms，十对并发 421ms；shell 里顺序跑十对约 3.2 秒、并发约 1.8 秒——shell 自身的开销把读数抬高了一个量级",
       "merge-tree 输出格式：干净时只有 tree oid 且退出码 0；冲突时 oid 之后到空行之间是冲突路径，退出码 1（是答案不是失败）",
       "退出码非 0/1 才是 git 真的出错，需要单独区分",
-      "2026-09-13 收尾审计：runtime/merge-guard.ts（245 行）零非测试调用方——scheduler/runtime/CLI/UI 均不接入，grep runMergeGuard/predictConflicts 仅命中自身与 merge-guard.test.ts。AC「N=5 一轮预测 1 秒内」在单测环境成立，生产链路未受益（偏差记录 TFD-c1b2f26f45；ADR-0010:77,138 的「在用」表述已同步修正）。done 状态保留：交付物与单测读数是真的，漂移在「已接入」的暗示而非交付本身；接入 dispatch 前置或降级由后续拍板。"
+      "2026-09-14 issue #6 第 1 项：scheduler/dispatch.ts 的 dispatchGoal 经 scheduler/merge-guard.ts 调用 runtime/merge-guard.ts，零生产调用偏差已消除，ADR-0010 §4 同步。",
+      "scheduler/dispatch-guard.test.ts 以真实 git 验证自动、手动、HTTP 三入口的冲突告警；同时验证单分支写集重叠仍会检测、预检失败不阻塞开工。历史 N=5 性能读数保留为当时的测量，不扩写为任意规模保证。"
     ],
     "execution_hints": [
       "本仓库实测：git merge-tree 热态 33ms／冷态约 41ms（2053 文件，git 2.51，Windows）",
@@ -3906,9 +3908,9 @@
     "source_sessions": [],
     "status": "done",
     "success_metrics": [],
-    "summary": "合并层只投入便宜的安全网。真正的力气花在上游把变更切小——那是调度问题不是合并问题。",
+    "summary": "合并安全网已接入共用派发入口：自动、CLI 和 HTTP 派发前运行真实合并预测及稀有写集重叠检查，告警进入裁决队列；失败可见，保持建议性质。",
     "title": "便宜的合并安全网（ConE 式写集重叠 + git merge-tree）",
-    "updated_at": "2026-09-13T13:02:20.475358Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0080": {
     "acceptance_criteria": [
@@ -4161,7 +4163,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4186,11 +4188,8 @@
     "estimate": 300,
     "estimated_total_minutes": null,
     "evidence": [
-      "60% 填充开始退化是民间传说；NoLiMa 实测 32K 处 12 个模型里 10 个跌破短文本基线的 50%",
-      "Laban：迷失后不会自行恢复——故恢复必须是 transcript 重放而非摘要的摘要",
-      "N 个并发 agent 不构成抖动系统（车道不共享上下文窗口），但该模型精确搬家到人的复核带宽上",
-      "每车道显示绝对 token / 缓存命中 / 压缩次数；全局未复核积压单独一个数",
-      "工具结果>40% 可恢复驱逐；命中率下降禁止压缩；压缩≥2 或连续失败≥2 在 startAgent 前挂起车道"
+      "2026-09-14 issue #6 第 6/7 项：agents/runner.ts 调用 tribunal/lane-distress.ts 的 foldAndAssess，生产用量折叠与测试共用一个入口。",
+      "evictToolResultContent 已删除：Claude 的上下文在 CLI 子进程内，HTTP 历史没有可裁剪的工具体；当前工具输出膨胀卡片只建议收窄输出，不宣称会自动裁切。计量与熔断行为由 agents/runner.test.ts 和 tribunal/lane-distress.test.ts 覆盖。"
     ],
     "execution_hints": [],
     "id": "TF-0084",
@@ -4201,7 +4200,7 @@
       "不做全局填充率水位线"
     ],
     "priority": 3,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4217,7 +4216,7 @@
     "success_metrics": [],
     "summary": "从 usage 对象取绝对 token（不是填充百分比）、缓存三分、每轮命中率、压缩次数、工具结果占比、连续失败数，以及全局唯一真正共享的未复核积压。",
     "title": "每车道计量（竞品全员空白）",
-    "updated_at": "2026-08-31T07:07:41.164733Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0085": {
     "acceptance_criteria": [
@@ -4612,7 +4611,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4636,7 +4635,8 @@
       "实现：chat/promote.ts（UNNAMED_TITLE、PROMOTION_TURNS=8、NEXT_DAY_RESUME_HOURS=20、PromotionSignal 五种、evaluatePromotion/deriveTitle/countUserTurns/hoursSinceLastMessage/collectSignals/promotionPatch 全纯函数）",
       "接线：chat/threads.ts——create 默认无名、run() 移除首消息立即命名、runClaudeTurn 与 HTTP finalize 两个完成轮次边界调 maybePromote、reload 按 anchor 消息 id 累计 forks、ThreadMeta 新增 forks/promotion 字段；ui/server.ts 新增 promote 子路由",
       "测试：chat/promote.test.ts 14 个全绿（信号判定/已命名不覆盖/无信号不晋升/标题裁断/隔天恢复阈值/首轮不算恢复/非法时间戳降级/纯函数不改消息）+ chat/threads.test.ts 3 个全绿（默认无名+手动晋升+消息零变化/已命名空操作+空对话保持无名/reload 分叉计数）；bunx tsc --noEmit 干净、biome check 干净",
-      "范围说明：repeated-test-failure 与 commit 两种信号已定义形状并由 maybePromote 的 extraSignals 入参预留，待足迹侧能可靠识别测试失败与提交事件后接线；晋升撤销走已有 PATCH 标题（一个动作）"
+      "范围说明：repeated-test-failure 与 commit 两种信号已定义形状并由 maybePromote 的 extraSignals 入参预留，待足迹侧能可靠识别测试失败与提交事件后接线；晋升撤销走已有 PATCH 标题（一个动作）",
+      "2026-09-14 issue #6 第 5 项：apps/workbench-ui/src/components/chat/promote-thread.tsx 消费 canPromote 并调用 POST /api/chat/threads/:id/promote；ui/promotion-route.test.ts 与前端 delivery-promotion.test.ts 覆盖认证、空对话、重复命名、错误和切换竞态。"
     ],
     "execution_hints": [],
     "id": "TF-0092",
@@ -4646,7 +4646,7 @@
       "不做自动任务边界检测——Bardram 试过 RFID，太粗太不精确，退回人工信号；自动推断相关性，让边界保持廉价、延后、由人来划"
     ],
     "priority": 3,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4660,9 +4660,9 @@
     "source_sessions": [],
     "status": "done",
     "success_metrics": [],
-    "summary": "加法式晋升落地：对话从第 0 个事件起就是无名上下文，命名发生在事后由既有事件触发。新模块 chat/promote.ts 是纯函数晋升引擎（5 种信号形状、evaluatePromotion 判定、deriveTitle 确定性命名、promotionPatch 产出标题+可观测记录）；threads.ts 移除即时自动标题、在 claude 与 HTTP 两条轮次边界的完成点评估晋升、reload 记录分叉计数（二次分叉信号输入）、公开 promote(id) 手动晋升（任意时刻一个手势）；UI server 暴露 POST /api/chat/threads/:id/promote。已命名的对话不再晋升（不覆盖用户的编辑），空对话无可派生名字保持无名。",
+    "summary": "加法式晋升落地：对话从第 0 个事件起就是无名上下文，命名发生在事后由既有事件触发。新模块 chat/promote.ts 是纯函数晋升引擎（5 种信号形状、evaluatePromotion 判定、deriveTitle 确定性命名、promotionPatch 产出标题+可观测记录）；threads.ts 移除即时自动标题、在 claude 与 HTTP 两条轮次边界的完成点评估晋升、reload 记录分叉计数（二次分叉信号输入）、公开 promote(id) 手动晋升（任意时刻一个手势）；UI server 暴露 POST /api/chat/threads/:id/promote。已命名的对话不再晋升（不覆盖用户的编辑），空对话无可派生名字保持无名。 2026-09-14 已在 Workbench 对话标题栏补命名按钮；可见性由 collectRestoreView 返回，失败显示重试反馈。",
     "title": "加法式晋升 + 触发信号绑定到既有事件",
-    "updated_at": "2026-09-01T04:38:24.999951Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0093": {
     "acceptance_criteria": [
@@ -5267,7 +5267,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5289,17 +5289,17 @@
     "estimate": 240,
     "estimated_total_minutes": null,
     "evidence": [
-      "复核发现并修复 4 处缺陷：① collectDocFiles 用 slice(root.length+1) 算相对路径，root 为 '.' 等相对路径时会截错，改用 path.relative；② Windows 盘符绝对路径（C:\\...）被当相对路径判定，会误报失效，已忽略；③ 路径带锚点后缀（README.md#usage）会误报失效，已剥锚点；④ 含 '..' 的引用会越出仓库根做存在性检查，已拒绝判定",
-      "回归测试 30 个全绿（新增 6 个：锚点剥离、盘符与越界路径忽略、相对 root 下 .cursor/rules 路径计算）",
-      "实测覆盖：主仓库与 worktrees/ws-s0 结果一致（356 条断言 / 有效 314 / 失效 38 / 未判定 4，约 10 秒）；空目录退出码 2、干净仓库 0、有腐烂仓库 1；.cursorrules 与 .cursor/rules/*.mdc 均能扫描且行号正确；dist/cli.js 用 node 直接跑通，运行时不依赖 Bun",
-      "工程接入：根 package.json 新增 test:context-rot 车道并接入 test 与 typecheck 链；biome check 与 tsc --noEmit 全绿"
+      "2026-09-14 issue #6 第 9 项：共享实现位于 packages/context-rot/src/{scan,file-index,path-refs,verify}.ts；packages/workbench/src/rot/scan.ts 仅适配报告。原 rot/extract.ts 已删除，原提取测试移到 context-rot/src/path-refs.test.ts，避免只供测试消费的兼容导出。两端单文件产物在构建时内联，无运行时跨包依赖。",
+      "context-rot/src/scan.test.ts 覆盖嵌套指引、锚点、占位符、围栏、索引中已删除文件、中文生成物，以及 Node 下的打包符号验证；workbench/src/rot/scan.test.ts 比较两个入口对同一证据的结果。",
+      ".github/workflows/ci.yml 将 context-rot 路径变更纳入 Workbench 测试触发；共享语义不再依赖人工双写注释。",
+      "最终回归：context-rot 65 项通过；Workbench 664 项与 1 份快照通过。Node 产物在当前仓库核对 346 条引用，失效 0、生成物 2、未确认 24；不把后两类当作已验证有效。"
     ],
     "execution_hints": [],
     "id": "TF-0104",
     "kind": "task",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5311,9 +5311,9 @@
     "source_sessions": [],
     "status": "done",
     "success_metrics": [],
-    "summary": "npx 一条命令产出可截图的数字。用它被安装，不用它取胜。",
+    "summary": "doctor 与 context-rot 复用一套扫描实现：指引文件发现、路径提取、索引和忽略规则共用；独立 CLI 额外检查符号与包，doctor 保持唯一文件引用的统计口径。",
     "title": "context-rot doctor（获客钩子，护城河最弱）",
-    "updated_at": "2026-08-31T10:27:07.427152Z"
+    "updated_at": "2026-09-14T00:15:47.456568Z"
   },
   "TF-0105": {
     "acceptance_criteria": [
@@ -6705,7 +6705,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "渲染快照：每条事实行至少一个 refs",
@@ -6730,11 +6730,10 @@
     "difficulty": "high",
     "estimated_total_minutes": 360,
     "evidence": [
-      "已提交 b5720ed：resume-card.tsx 挂进 sidecar，store 侧 consume / dismiss / resume-action 三个调用与服务端路由已通",
-      "本轮补齐四条缺口：chat/resume-card.ts（398 行）分区 narrative/facts、每行 refs、ConflictRule R1-R9 标注、inject=!dismissed",
-      "resume.ts 的 ResumeBeat 增 refs（message/tool/path/ledger/promotion 指针）；无 refs 的旧笔记走 legacy:<kind> 兜底而非静默渲染",
-      "resume-card.ts:385 无叙事且无事实时整卡不渲染，满足『无笔记且无分歧时不渲染』",
-      "验收实测：bun test resume-card/render/generate/events/wip/server + premises 共 70 通过 0 失败（2026-09-05）"
+      "2026-09-14 按 issue #6 复核：卡片构建入口是 packages/workbench/src/chat/resume-card/index.ts 的 buildResumeCard；叙事、事实、冲突注记和每行 refs 均由该目录维护，旧 chat/resume-card.ts 路径已失效。",
+      "buildResumeCard 在 narrative 与 facts 同时为空时返回 null；dismissal.ts 保存关闭签名，卡片 inject = !dismissed。chat/resume-card.test.ts 与 UI 的 components/chat/resume-card.test.tsx 覆盖这些行为。",
+      "事实预览条数只有 resume-card/types.ts 的 FACTS_PREVIEW_COUNT 一处定义，随 factsPreviewCount 下发；前端直接消费。恢复消息增量只有 chat/resume.ts 的 resumeDelta 一处计算，由 collectRestoreView 下发。",
+      "恢复卡挂在 apps/workbench-ui/src/components/chat/sidecar.tsx；store 的 consume、dismiss、resume-action 调用与服务端路由相连。旧笔记缺 refs 时保留 legacy 标记，不伪装为可核对证据。"
     ],
     "execution_hints": [
       "新增恢复卡数据结构",
@@ -6749,7 +6748,7 @@
       "不注入完整 diff 进模型"
     ],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把现有恢复笔记升级为可核验的恢复卡，同时保持安静加法式。",
     "remaining_minutes_max": 240,
@@ -6768,7 +6767,7 @@
     ],
     "summary": "叙事拍保留但加证据引用；事实段默认展开前三条；冲突时事实只标注不覆写叙事文本。",
     "title": "双通道恢复卡：叙事 + 事实 + 证据",
-    "updated_at": "2026-09-05T09:00:49.327663Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0129": {
     "acceptance_criteria": [
@@ -6925,7 +6924,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "Claude fresh fork 后 footprint.inherited 为空",
@@ -6950,15 +6949,10 @@
     "difficulty": "high",
     "estimated_total_minutes": 480,
     "evidence": [
-      "先核实实现现状再动手：inheritParentFootprint（chat/threads.ts:285-345）与 observeForkInheritance（同文件 346-388）此前已随 TF-0125 落库，闸门也已就位——所以本节点的净增量是诚实开关的验证，不是重写实现。这一点必须写明，否则森林会记成『本轮实现了继承』",
-      "新增 src/chat/fork-inheritance.test.ts 五个用例（500 pass / 0 fail，全量 67 files 40.79s；单文件 1.73s）",
-      "验收一（Claude fresh fork 不产生 inherited 读集）：用例一让源先攒下真实足迹再在中段消息上分叉——锚点不是尾巴 → agentContextPlan 为 undefined → 子线程 argv 里没有 --fork-session、footprint.inherited 事件 0 条、forkInheritance 两级开关都是 false。刻意让源有数据可继承，否则这个用例只是在测『没数据』",
-      "验收二（HTTP 无足迹不产生 inherited 读集）：用例四把 provider 切成 openai-chat 并 mock fetch。结论是两级而非一级：agentContextInherited=true（mode=http-history，每轮重发全量历史，上下文确实继承了）、premiseInherited=false、footprint.inherited 0 条。顺带断言观测事件 payload 不含 status 字段（types/event.ts 的信任边界）",
-      "验收四（refs 取每路径最新观测）：用例三让源分两轮读同一路径（中间改文件内容），确认源侧至少两条足迹行提到该路径，而继承事件的 paths 里该路径只出现 1 次、refs 与 paths 等长、子线程 inherited 足迹行对该路径只有 1 条 used，且 used 全部无 spool。readSetView（blackboard/sessions.ts:285-308）按 seq 顺序 reads.set(path,…) 覆盖，最新覆盖旧，是这条验收的机制来源",
-      "requirement『旧分叉不回填 inherited 事件』：用例五连跑分叉两轮，断言含 --fork-session 的 spawn 恰好 1 次、footprint.inherited 恰好 1 条、inherited 足迹行恰好 1 条、thread.inheritance_observed 恰好 1 条。机制是 ensureClaudeSession 的 forkPlan 闸门要求 !meta.hasResumableSession——第一轮之后分叉线程有了自己的会话，第二轮自然退回 fresh",
-      "requirement『足迹为空时不写 inherited』：用例二走的是尾部分叉 + 无工具调用的源。fork-session 这条路径确实走了（argv 里有），但 used.length===0 在 recordActivity 之前就返回，所以 0 条事件、premiseInherited=false。这正是成功判据要的那个 0",
-      "测试用的假 claude 只做三件事：按 --fork-session 换铸 session id、按 read:<相对路径> 发一次真实 tool_use/tool_result、把 argv 落盘。TF-0140 已提供真实运行时证据（逐字复刻、tool_use_id 不变），所以此处用假 CLI 钉契约是正当的，不再是『假设 + fake CLI 证据』",
-      "工程细节：fork 的 plan 闸门要求源会话不在 live 里，所以每轮之后都要等常驻会话退出（settle 辅助函数，80×25ms）；否则中段/尾部分叉的判定会随机漂"
+      "2026-09-14 按 issue #6 复核：实现是 packages/workbench/src/chat/threads.ts 的 inheritParentFootprint、observeForkInheritance 与 ensureClaudeSession，去掉已漂移的行号引用。",
+      "packages/workbench/src/chat/fork-inheritance.test.ts 覆盖中段 fresh fork 不继承、尾部 fork-session 无足迹不继承、每路径取最新观测、HTTP 的两级开关差异和重复运行不重复继承。",
+      "blackboard/sessions.ts 的 readSetView 按序覆盖 Map 中的同路径读观测；HTTP 路径记录 agentContextInherited=true/mode=http-history，同时 premiseInherited=false。",
+      "真实 CLI 的前置实验依据保留在 docs/report-2026-09-05-claude-fork-inheritance.md（TF-0140）；本节点的进程测试钉实现契约，不代替该实验。"
     ],
     "execution_hints": [
       "修改 blackboard/sessions.ts 与 runtime/premises.ts",
@@ -6970,7 +6964,7 @@
     "next_action": "无；继承事实的消费方在 TF-0129 覆盖率行与 TF-0151 的 R10。",
     "non_goals": [],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让分支在真实继承上下文时成为读者，否则诚实从空读集开始。",
     "remaining_minutes_max": 300,
@@ -6987,9 +6981,9 @@
     "success_metrics": [
       "没有合法继承路径时，inherited 事件数量为 0"
     ],
-    "summary": "形态由 TF-0140 的三问结果分支决定：问题 1+2 成立 → 退化为『fork 时复制 footprint 并标 inherited: true』，约一天；问题 1 不成立 → 改为『fork 不继承读集，恢复卡显式提示 unknown coverage』并与 TF-0129 合并。在结果出来前不写实现，仅保留诚实开关原则：仅当 agentContextInherited=true 时写 footprint.inherited。",
+    "summary": "已验证两级继承开关：Claude 仅在真实 fork-session 且源足迹非空时继承读集；HTTP 重放上下文但没有读集继承。继承只记一次，每个路径取最新观测。",
     "title": "分支读集继承与诚实开关",
-    "updated_at": "2026-09-05T15:11:55.372680Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0132": {
     "acceptance_criteria": [
@@ -7462,7 +7456,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "ADR 每条边界都能指到代码或实验证据",
@@ -7487,17 +7481,12 @@
     "difficulty": "medium",
     "estimated_total_minutes": 180,
     "evidence": [
-      "新增 docs/decisions/0010-premise-custody.md，并在 docs/decisions/README.md 的决策表补第 10 行（验收三的『口径同步』半条）",
-      "按 execution_hints 以『提案』状态入库，阶段 A 门后再转已接受——所以本节点停在 review_needed 而不是 done：验收一写的是『入库并通过评审』，评审是用户的动作",
-      "五条 requirements 逐条落到 ADR 章节：§4 禁内容级合并、§1+§3 世界投影不读会话事件且有载荷上限、§6 L0 线性默认不动、§2 source=threads 命名边界、§5 Claude 真实继承实验结论",
-      "验收四（每条边界都有代码或实验证据）逐条给了行号：isWorldEvent 定义在 types/event.ts:111-117、执行点在 contextgen/generate.ts:26 与 render.ts:63；validateThreadEvent 的禁字段表在 types/event.ts:41-107、强制调用在 blackboard/events.ts:237,303；载荷上限 contextgen/render.ts:21-23（400 字符）与 delivery.ts:43-147（300 token，先砍 diff 再砍文件列表保留总数）；禁合并 merge-guard.ts:1-22（含 LLM 合并一致率 55-59% 那句）；继承开关 fork.ts:36-70 与 notice-outcome.ts:59,289-293；L0 零仪式 fork.ts:1-11；回退 rollback.ts:1-13",
-      "验收五的一句话取舍标准放在 ADR 开头而不是末尾：Helmor = 写者中立的前提账本，agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，都答不了的走裁决队列",
-      "验收六的七条 non-goals 做成表格，每条配理由或代码证据；并明写要推翻其中任何一条需新开 ADR 标注取代关系",
-      "命名边界收紧了一处：历史上曾用过 source=sessions，本 ADR 之后只保留 threads 一个名字，避免同一类事实两个名字让投影过滤器漏一个",
-      "写作过程中修掉一处自己引错的证据：初稿引 src/types/event.test.ts，实际不存在——校验单测在 blackboard/events.test.ts 与 contextgen/{generate,render}.test.ts，已改",
-      "定稿后又修订了一次 §5（2026-09-05，做 TF-0131 时读 HTTP 路径发现的）：初稿写『只有走 --fork-session 才置 agentContextInherited=true』，与代码不符且是错的。chat/threads.ts:895-899 对 HTTP 也置 true，mode=http-history——HTTP 每轮重发全量历史，上下文确实继承了；不继承的是读集（premiseInherited 恒 false，无工具通道）。§5 已改成两级开关表，并明写压成一个布尔会同时犯两个错",
-      "复核：cd packages/workbench && bun test --timeout 60000 → 500 pass / 0 fail（含 TF-0131 新增 5 个用例），67 files；biome check 与 tsc --noEmit 均通过",
-      "提交 4895559：ADR-0010 已接受，收敛 ADR-0006/0007/0008 并同步 README/positioning；纠正 sessions=世界足迹、threads=会话生命周期的边界。Workbench 509 pass / 0 fail / 1 snapshot，typecheck 通过。"
+      "2026-09-14 按 issue #6 复核：docs/decisions/0010-premise-custody.md 已接受，docs/decisions/README.md 有入口；以函数名替换漂移行号。",
+      "世界/会话边界：types/event.ts 的 isWorldEvent、validateThreadEvent；blackboard/events.ts 的追加入口强制校验；contextgen/generate.ts 与 render.ts 只折叠世界事件。",
+      "载荷边界：contextgen/render.ts 的 DEFAULT_EVENT_LINE_CHARS=400；runtime/notice-render.ts 的 DEFAULT_NOTICE_TOKEN_BUDGET=300 与 renderNotice 控制通知预算；对应测试在 contextgen 和 runtime/notice-render.test.ts。",
+      "合并边界：runtime/merge-guard.ts 保留真实 git merge-tree 和稀有写集重叠；scheduler/dispatch.ts 经 scheduler/merge-guard.ts 接通自动、CLI、HTTP 三个派发入口，仍只建议、不阻塞。",
+      "继承边界：chat/fork.ts 与 threads.ts 的 observeForkInheritance 保留上下文/读集两级开关；chat/fork-inheritance.test.ts 和 TF-0140 报告分别提供工程契约与真实 CLI 证据。",
+      "ADR 的 L0 默认、七项 non-goals 和 runtime/rollback.ts 的带快照回退边界保持；未把当前价值门误写成已验证的价值主张。"
     ],
     "execution_hints": [
       "新增 docs/decisions/0010-premise-custody.md",
@@ -7510,7 +7499,7 @@
     "next_action": "已通过代码复核，后续边界引用 ADR-0010。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 Fable 5.1 的架构决策固化为 ADR，防止后续开发滑回编排器或树导航。",
     "remaining_minutes_max": 0,
@@ -7529,7 +7518,7 @@
     ],
     "summary": "在阶段 A 末尾固化前提守护架构：一条日志、两类事实、三个投影、source=threads 生命周期事件、真实继承语义与内容级合并禁令。同时收口 ADR-0006/0007/0008 的裁决文本与 non-goals 清算。",
     "title": "ADR：前提守护架构与产品边界",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0139": {
     "acceptance_criteria": [
@@ -7762,7 +7751,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "把 Workbench 的前提守护做成日常可用：回到旧线程先看到哪些前提变了，分支不伪装继承，并发通知不淹没注意力",
       "validation_plan": [
         "turn in flight 时 notifySession 排队而非写 stdin 的单测",
@@ -7791,7 +7780,8 @@
       "turn-in-flight：通知不写入 live stdin，premise_notice_queued.reason=turn-in-flight，下一轮折叠后 premise_notice_delivered 才落账",
       "多通知：两条 preceding notices 与用户请求同帧，单个 done，notice_delivered 先于 done，count=2",
       "footprint：投递后 Read 的 readSetView 版本哈希与磁盘一致（hashFile 断言）",
-      "HTTP：premise_notice_delivered.readObservability=unobservable 显式落账；HTTP 轮内 queued reason 亦为 turn-in-flight（旧行为误记 next-user-turn）"
+      "HTTP：premise_notice_delivered.readObservability=unobservable 显式落账；HTTP 轮内 queued reason 亦为 turn-in-flight（旧行为误记 next-user-turn）",
+      "2026-09-14 issue #6 第 4 项：notice_delivered 在 Workbench UI store 中转为可见送达数量，components/chat/notice-delivered.tsx 位于 composer 上方，十秒后收起并支持关闭；后台对话事件不能串入当前对话。delivery-promotion.test.ts 和 notice-delivered.test.tsx 已验证。"
     ],
     "execution_hints": [
       "先补测试，再改实现",
@@ -7804,7 +7794,7 @@
       "不在本节点实现 token 预算"
     ],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "先定义 notifySession 的正确行为，再往上叠加预算和家族折叠。",
     "remaining_minutes_max": 300,
@@ -7821,7 +7811,7 @@
     ],
     "summary": "通知通道语义先钉测试再修实现：notifySession 在 live 空闲、无 live 通道、turn-in-flight、多通知四种状态下都只排队不直写；多条 preceding notices 与用户请求折叠进同一个 stdin 帧，用户轮只在真实 result 后结束一次；投递事件新增 readObservability（claude=footprint，HTTP=unobservable）；turn-in-flight 判定统一为 turnInFlight()，fork/reload/notifySession 共用。",
     "title": "通知通道语义与测试",
-    "updated_at": "2026-09-05T04:56:19.393280Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0143": {
     "acceptance_criteria": [
@@ -8317,7 +8307,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -8338,15 +8328,17 @@
     "difficulty": "medium",
     "estimated_total_minutes": null,
     "evidence": [
-      "premise_stale 的 payload 只带 writer id，不带 writerKind（runtime/premises.ts:401-409）。护城河 B『推定写者是 git 或人』因此只能在读侧回查 blackboard/sessions/<writer>/writer.yaml 做 join——fit 账本已按这个口径实现（scripts/fit-ledger/metrics.ts 的 gitOrHumanNotices）",
-      "这个 join 的脆弱点留档：写者一旦从注册表消失，历史通知的 kind 就再也算不出来，而护城河 B 是一个 30 天回看的数字。要让它自描述，得把 writerKind 写进 premise_stale 的 payload；本轮不改事件形状，只记录代价"
+      "2026-09-14 按 issue #6 复核：packages/workbench/src/commands/sessions.ts 的 sessionsRecord 支持 --writer/--kind/--generated/--used/--activity，复用 register 与 recordActivity；默认 kind=git，sessions list 展示 kind。旧 summary 所说“缺 CLI 子命令”已过期。",
+      "三个 git hook 在 packages/context-rot/scripts/install-hooks.mjs 中安装；packages/context-rot/src/cli.test.ts 覆盖安装、卸载、保留用户 hook、非 git 仓库跳过，先前“找不到安装器”的结论已纠正。",
+      "packages/workbench/src/chat/git-pull-notice.test.ts 使用真实本地 git pull、真实存活子进程和 stdin：先读 README，再从另一 clone 拉取改动，reconcile 后下一轮收到前提失效文本，流事件 notice_delivered 与持久 premise_notice_delivered 均为一次。已运行通过；这是隔离工程测试，不冒充自然使用样本。",
+      "runtime/premises.ts 的 agent/human 筛选针对前提持有者，不阻止 git 改动导致 agent 失效。StalePremiseNotice 包含 writerKind，但 premise_stale 持久 payload 只有 writer/noticeId/stale；不能据此识别变更制造者的种类，旧“因跳过 git 而不可能通知 agent”的推论错误。"
     ],
     "execution_hints": [],
     "id": "TF-0150",
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "写者中立必须有一个非 agent、非人的写者真实产生过一条通知，否则它只是口号。",
     "remaining_minutes_max": null,
@@ -8355,9 +8347,9 @@
     "source_sessions": [],
     "status": "done",
     "success_metrics": [],
-    "summary": "post-merge / post-rewrite / post-checkout hook 调 workbench sessions record --writer git，把变更文件注册为 generated。底层 bb.sessions.register / recordActivity 已存在，缺的是 CLI 子命令：当前 workbench sessions 只有 list 与 show。",
+    "summary": "sessions record 已实现，post-merge/post-rewrite/post-checkout 随 context-rot 安装器分发。真实 git pull 引起 agent 读集失效后，通知在下一轮经现存会话 stdin 送达；事件中的 writer 指前提持有者。",
     "title": "git 作为写者：merge / rebase / checkout 后注册变更",
-    "updated_at": "2026-09-05T16:43:52.256259Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0151": {
     "acceptance_criteria": [
@@ -8534,7 +8526,7 @@
     "acceptance_criteria": [
       "手势只对当前投影里的条目有效：不在地标集合中的 handle 拒绝复核",
       "landmark.reviewed 事件只认 source=human 与合法 verdict，坏 payload 不进折叠",
-      "L1 读数分母是地标集合（DOI>10，positioning-v6 §11），不是投影的回退显示表——无地标时投影回退到可见集 top-N，那张表里的目录与项目根按 project.ts 注释不是地标；复核覆盖单列（reviewedCoverage），不以局部复核冒充集合认可率",
+      "L1 主读数使用 session-top-k（默认 K=3），经过记录型写者门与 requireEdits 过滤的当前文件候选为完整分母；endorsedShare=认可候选/全部当前候选，复核覆盖 reviewedCoverage 单列。threshold 保留为对照口径，不以局部复核冒充集合认可率。",
       "修正以新事件追加：同一地标取最新一次结论",
       "负载与账本接通：E2E 每轮一次复核（1/5 轮 reject），fit 账本出现 TF-0154 的 component 行"
     ],
@@ -8573,13 +8565,10 @@
     "difficulty": "low",
     "estimated_total_minutes": null,
     "evidence": [
-      "2026-09-07 验证见 docs/report-2026-09-07-mainline.md：Workbench 全量 569 pass / 0 fail、UI 14 pass / 0 fail、类型检查/构建/Biome 通过；修复后的工程现场 10 轮全部通过。",
-      "reviewLandmark 只接受当前投影里的条目；review-stats.ts 复用同一投影，以完整当前集合为分母、按写者隔离并取最新结论。",
-      "stats.landmarkReviews.current 显示认可率和复核覆盖率；既有 raw 反馈事件计数不冒充集合质量。",
-      "E2E 第五轮记录 reject；该确定性负载只验证通道与负样本，不能证明真实用户 80% 认可。",
-      "2026-09-08：landmark-diversity probe 闯入 8 次复核后 endorsedShare 从 0.058 积闪 0.091；主要影响是当前 landmarks （共 154） 仍大多不被复核，endorsedCoverage 只 10.9%→11.0%。TF-0154 若要把 aligned 班到 0.8，要么把未被复核的地标补上，要么把公式不拿 total=全部作为分母。",
-      "2026-09-10：账本 L1 行改为只认 natural 来源；landmark-coverage 探针的 0.739 只是 ENDORSE_PROBABILITY=0.75 的收敛值，不构成 L1 验收数据。通道工程（手势、human 事件、按写者隔离、最新结论覆盖、reviewedCoverage 单列）不变，仍为 done。",
-      "2026-09-11 分母契约修正（code: src/interactions/context.ts 新增 interestFromEvents().landmarkHandles、src/interactions/review-stats.ts 改用它）：修前租户分母 113 条，其中 108 条（96%）来自 27 个只有回退显示表的写者，56/111（50%）是 . / src 这类容器，端到端读数 0.739 是脚本常数；修后分母 = DOI>10 的真地标 5 条（src/alpha.ts、src/beta.ts 各 DOI 32.2/编辑 21 次；git-main 的 . 与 src；editor-1 的 src/beta.ts），已复核 3、认可 2、拒绝 1 → endorsedShare 0.4、reviewedCoverage 0.6，脚本手势来源下 fit 仍为 unknown。回归：review-stats.test.ts 两条用例改写为钉住新语义（被显示但不是地标 → 不进分母；无地标写者 total=0/share=null），bun test src/interactions 37+2 全绿，bunx tsc --noEmit 退出 0。复核手势（验收一）仍按投影校验，『只给你看过的东西点赞』不变。"
+      "2026-09-14 按 issue #6 复核：interactions/landmark-set.ts 的 landmarkCandidates 是候选定义，DEFAULT_LANDMARK_TOP_K=3；库函数默认 threshold，chat/stats.ts 明确以 session-top-k 调用生成主读数，不能把它写成全局默认已改变或每会话固定 5 条。",
+      "interactions/review-stats.ts 的 currentLandmarkAcceptance 使用全部当前候选为分母、按 writer 隔离并取最新 human 复核；旧答案不在当前集合时计入 legacyReviews。",
+      "interactions/review.ts 的 reviewLandmark 接受同一会话时钟下的 threshold 候选、session-top-k 候选与可见投影的并集；记录型 writer 不可复核。该接受集合不等于主读数分母。",
+      "工程回归位于 interactions/review-stats.test.ts、review.test.ts 和 landmark-set.test.ts；脚本化 E2E 的 endorse/reject 只验证通道，不代表真人已达到 80% 认可。"
     ],
     "execution_hints": [],
     "id": "TF-0154",
@@ -8601,9 +8590,9 @@
     "success_metrics": [
       "landmark.reviewed 事件随使用累积，L1 认可率可从账本直接读出"
     ],
-    "summary": "地标认可反馈通道已实现：CLI 手势、human 来源事件、按写者隔离的完整集合判定、最新复核覆盖旧结论、stats 与 fit 账本接入。",
+    "summary": "地标复核通道已实现：手势、真实 human 来源过滤、按写者隔离、最新结论覆盖、复核覆盖率单列；stats/fit 主口径为 session-top-k，默认 K=3。",
     "title": "地标认可反馈：L1 验收的事件通道",
-    "updated_at": "2026-09-10T18:01:30.570322Z"
+    "updated_at": "2026-09-14T00:00:56.687809Z"
   },
   "TF-0155": {
     "acceptance_criteria": [

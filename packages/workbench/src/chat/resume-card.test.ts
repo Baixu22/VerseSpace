@@ -5,8 +5,8 @@ import {
 	annotateClaim,
 	buildResumeCard,
 	extractPaths,
+	FACTS_PREVIEW_COUNT,
 	isResumeCardDismissed,
-	shouldInjectResumeCard,
 } from "./resume-card";
 
 function note(beats: ResumeNote["beats"]): ResumeNote {
@@ -267,8 +267,17 @@ describe("buildResumeCard (TF-0128)", () => {
 			dismissed: true,
 		});
 		expect(card!.dismissed).toBe(true);
+		// 注入判定直接读生产入口产出的 card.inject（此前经 shouldInjectResumeCard
+		// 再包一层，而 UI 侧本来就直读 card.inject——2026-09-13 收尾 §4.2 收敛）
 		expect(card!.inject).toBe(false);
-		expect(shouldInjectResumeCard(card)).toBe(false);
+	});
+
+	test("factsPreviewCount 随载荷下发，客户端无需自带同值常量", () => {
+		const card = buildResumeCard({
+			note: note([{ kind: "doing", text: "work", refs: ["message:m-1"] }]),
+			diff: null,
+		});
+		expect(card!.factsPreviewCount).toBe(FACTS_PREVIEW_COUNT);
 	});
 });
 

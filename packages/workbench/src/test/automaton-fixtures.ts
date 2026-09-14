@@ -1,3 +1,8 @@
+/**
+ * 世界快照构造器（仅测试）。2026-09-13 收尾 §4.1：此前放在
+ * `src/automaton/fixtures.ts`，会被算进生产 bundle 的可达性判断
+ * （实际 tree-shake 掉）——挪到 `src/test/`，与生产代码分开。
+ */
 import type { Checkpoint, CheckpointLifecycle } from "../types/checkpoint";
 import type { Goal } from "../types/goal";
 import type { RegistryEntry } from "../types/interface-registry";

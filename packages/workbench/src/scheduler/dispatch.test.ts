@@ -1,45 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { type Blackboard, openBlackboard } from "../blackboard";
-import { initWorkbench } from "../commands/init";
 import { runOnce } from "../runtime";
+import { makeCommittedRepo } from "../test/git-project";
 import { dispatchGoal } from "./dispatch";
-
-async function makeCommittedRepo(): Promise<{
-	projectDir: string;
-	bb: Blackboard;
-	cleanup(): Promise<void>;
-}> {
-	const projectDir = join(
-		tmpdir(),
-		`workbench-dispatch-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-	);
-	await mkdir(projectDir, { recursive: true });
-	const run = (args: string[]) => spawnSync("git", args, { cwd: projectDir });
-	// dispatch needs a HEAD to branch from
-	await writeFile(join(projectDir, "README.md"), "# repo\n", "utf8");
-	run(["init", "-q", "-b", "main"]);
-	run(["add", "-A"]);
-	run([
-		"-c",
-		"user.email=t@local",
-		"-c",
-		"user.name=t",
-		"commit",
-		"-qm",
-		"init",
-	]);
-	await initWorkbench(projectDir);
-	const bb = openBlackboard(join(projectDir, ".workbench"));
-	return {
-		projectDir,
-		bb,
-		cleanup: () => rm(projectDir, { recursive: true, force: true }),
-	};
-}
 
 describe("dispatchGoal (real git worktree)", () => {
 	test("creates the worktree, activates the workspot, dequeues, refreshes context", async () => {

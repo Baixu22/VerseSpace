@@ -6,6 +6,7 @@ import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Tooltip } from "../ui/tooltip";
+import { PromoteThread } from "./promote-thread";
 import { SettingsPanel } from "./settings";
 import { ChatThread } from "./thread";
 import { ThreadListSidebar } from "./thread-list";
@@ -84,6 +85,7 @@ function ChatHeader() {
 					{running ? "正在回复…" : "准备就绪"}
 				</p>
 			</div>
+			<PromoteThread key={activeThread?.id} />
 			<Sheet>
 				<Tooltip content="对话设置" side="bottom">
 					<SheetTrigger asChild>

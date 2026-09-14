@@ -198,6 +198,17 @@ describe("派发前的 ref 预检（TF-0117 验收三）", () => {
 		}
 	});
 
+	/**
+	 * ⚠️ 本机（git 2.55.0.windows.3）无法持久化**斜杠嵌套 ref**：`git branch
+	 * ws/probe` 返回 0 但 `refs/heads/ws/probe` 静默丢失（宿主钩子会清
+	 * `.git/refs` 下的新建文件），于是 `git worktree add -b ws/ws-ok` 报
+	 * `fatal: invalid reference: ws/ws-ok`。因此本用例在本机必红，**不是回归**
+	 * ——CI（Linux/macOS/Windows 官方 runner）上正常。最小复现：
+	 * `git init -q -b main . && git commit --allow-empty -qm x && git branch ws/p
+	 * && git for-each-ref`（只列出 refs/heads/main）。
+	 * 同一缺陷也让 `dispatch.test.ts` 里用 `ws/...` 的三条用例在本机红；
+	 * 新增用例改用无斜杠分支名以绕开它（见 dispatch.test.ts 的 TF-0079 用例）。
+	 */
 	test("合法分支名照常派发，预检不挡路", async () => {
 		const { bb, cleanup } = await makeCommittedRepo();
 		try {

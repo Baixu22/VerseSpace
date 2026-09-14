@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import type { Transition } from "../types/transitions";
 import {
 	mkCheckpoint,
 	mkEntry,
 	mkGoal,
 	mkWorkspot,
 	snapshotWith,
-} from "./fixtures";
+} from "../test/automaton-fixtures";
+import type { Transition } from "../types/transitions";
 import { evaluateGoals } from "./goal-machine";
 
 describe("goal machine", () => {
@@ -99,10 +99,8 @@ describe("goal machine", () => {
 			goals: [mkGoal({ id: "g-1", status: "ready" })],
 			workspots: [mkWorkspot("ws-a", "active", "g-1")],
 		});
-		expect(evaluateGoals(primary)).toEqual([
-			startTransition,
-			{ type: "enqueue_goal", goalId: "g-1" },
-		]);
+		// 已经在施工的目标不进队列——它不是在等派发（2026-09-13 收尾 §3.2 观察①）
+		expect(evaluateGoals(primary)).toEqual([startTransition]);
 
 		const borrowed = snapshotWith({
 			goals: [mkGoal({ id: "g-1", status: "ready" })],
@@ -113,9 +111,26 @@ describe("goal machine", () => {
 				}),
 			],
 		});
-		expect(evaluateGoals(borrowed)).toEqual([
-			startTransition,
-			{ type: "enqueue_goal", goalId: "g-1" },
+		expect(evaluateGoals(borrowed)).toEqual([startTransition]);
+	});
+
+	test("a queued goal that starts working is drained in the same pass", () => {
+		// 派发把目标出队、工位转 active；同一轮同步里目标从 ready 变 in_progress。
+		// 若这一轮不出队，两次同步之间 doctor 会看到假 stale_queue_entry。
+		const snapshot = snapshotWith({
+			goals: [mkGoal({ id: "g-1", status: "ready" })],
+			workspots: [mkWorkspot("ws-a", "active", "g-1")],
+			executionQueue: ["g-1"],
+		});
+		expect(evaluateGoals(snapshot)).toEqual([
+			{
+				type: "goal_status",
+				goalId: "g-1",
+				from: "ready",
+				to: "in_progress",
+				reason: "工位已开始施工",
+			},
+			{ type: "dequeue_goal", goalId: "g-1" },
 		]);
 	});
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { scanRepo } from "../../../context-rot/src/scan";
 import {
 	type FileIndex,
 	formatRotHeadline,
@@ -19,7 +20,42 @@ async function makeTree(
 		await mkdir(join(full, ".."), { recursive: true });
 		await writeFile(full, body, "utf8");
 	}
-	return { root, cleanup: () => rm(root, { recursive: true, force: true }) };
+	return { root, cleanup: () => removeTree(root) };
+}
+
+/**
+ * Windows real-time scanning holds transient handles on a freshly created git
+ * repository — `.git` is written file by file and each one gets scanned — so a
+ * single `rm` fails with EBUSY for many seconds *after* the assertions pass
+ * (measured on this machine: reclaimed at 17.6s, and longer under load).
+ * Retry with backoff, and if the budget runs out, warn instead of throwing:
+ * the assertions already passed, so failing here would report the environment
+ * defect as a product defect. The temp path is printed so the leak is visible.
+ * Non-transient errors still rethrow on the first attempt.
+ */
+async function removeTree(root: string): Promise<void> {
+	const TRANSIENT = new Set(["EBUSY", "EPERM", "ENOTEMPTY"]);
+	const deadline = Date.now() + 10_000;
+	for (let attempt = 0; ; attempt++) {
+		try {
+			await rm(root, { recursive: true, force: true });
+			return;
+		} catch (err) {
+			const code = (err as NodeJS.ErrnoException).code ?? "";
+			if (!TRANSIENT.has(code)) {
+				throw err;
+			}
+			if (Date.now() >= deadline) {
+				console.warn(
+					`[rot.test] 临时目录仍被占用（${code}），留待系统清理：${root}`,
+				);
+				return;
+			}
+			await new Promise((resolve) =>
+				setTimeout(resolve, Math.min(250 * (attempt + 1), 2000)),
+			);
+		}
+	}
 }
 
 describe("instruction file detection", () => {
@@ -71,6 +107,38 @@ describe("resolveRef", () => {
 });
 
 describe("runContextRot", () => {
+	test("doctor 与独立 CLI 对同一份路径证据给出一致结果", async () => {
+		const { root, cleanup } = await makeTree({
+			"AGENTS.md":
+				"[entry](src/keep.ts#L1) `src/gone.ts:3` `foo.rs` `KnownSymbol`",
+			"docs/GEMINI.md": "`src/gone.ts`",
+			".github/instructions/review.md": "`src/other.ts`",
+			"src/keep.ts": "export const KnownSymbol = 1;",
+		});
+		try {
+			const doctor = await runContextRot(root);
+			const standalone = await scanRepo(root);
+			expect(doctor.sources).toEqual(standalone.docs);
+			expect(
+				doctor.findings
+					.filter((ref) => ref.stale)
+					.map((ref) => ref.ref)
+					.sort(),
+			).toEqual(
+				[
+					...new Set(
+						standalone.stale
+							.filter((ref) => ref.kind === "path")
+							.map((ref) => ref.text),
+					),
+				].sort(),
+			);
+			expect(doctor.assertions).toBe(3);
+			expect(doctor.stale).toBe(2);
+		} finally {
+			await cleanup();
+		}
+	});
 	test("counts unique citations and reports how many are gone", async () => {
 		const { root, cleanup } = await makeTree({
 			"AGENTS.md": [
@@ -141,5 +209,5 @@ describe("runContextRot", () => {
 		} finally {
 			await cleanup();
 		}
-	}, 30_000);
+	}, 60_000);
 });

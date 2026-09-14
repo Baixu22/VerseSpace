@@ -16,12 +16,12 @@
 代码事实：
 
 1. `premise_stale` 全仓**唯一**追加点是 `src/runtime/premises.ts:410`（`reconcilePremises`）。
-2. reconcile 只处理 `kind ∈ {agent, human}` 的写者（`premises.ts:327`），git/ci 写者被显式跳过——**「失效制造者是 git」这条信息在当前实现里不会进入 premise_stale 事件**。
+2. reconcile 只处理 `kind ∈ {agent, human}` 的写者（`premises.ts:327`），git/ci 写者被显式跳过——该筛选针对**前提持有者**；事件没有记录失效制造者的种类，但 git 改动仍能使 agent 的读集失效。2026-09-14 的 `src/chat/git-pull-notice.test.ts` 已验证真实 git pull 后，通过存活子进程的 stdin 收到通知。
 3. 事件的 `payload.writer` 是**前提持有者**（被通知的写者），不是失效制造者。因此护城河 B 的口径（`gitOrHumanNotices`：payload.writer 回查注册表 kind）实义是「**human 或 git 作为前提持有者收到了失效通知**」。
-4. human 写者的**读集**在产品里没有生产路径：watcher R1 只给 human 记写集（`src/watcher/index.ts:100-107`，`used: []` 恒空）；读集只来自 agent 会话的 `recordActivity(used)`。唯一的外部入口 `sessions record --used`（TF-0150）在无编辑器集成的现场无人调用。
+4. human 写者的**读集**在产品里**有手动 CLI 路径、无自动路径**：watcher R1 只给 human 记写集（`src/watcher/index.ts:100-107`，`used: []` 恒空）；自动采集的读集来自 agent 会话的 `recordActivity(used)`。唯一能写非空 human 读集的生产入口是手动 CLI `sessions record --kind human --used <path>`（`src/commands/sessions.ts:171-209`，TF-0150），仓库中的自动调用来自 `scripts/e2e/scenario.ts`、`negative-scenarios.ts` 等验收脚本，没有采集人工读取的编辑器或 UI 集成；2026-09-13 现场未观测到自然人工读集。手动记录可用，但需人主动调用。
 5. 现场 232 个写者全部 `kind=agent`（2026-09-13 清点）。
 
-推论：B=0 是当前产品形态的**结构性结果**。它要的不是一次实验，是「human 读集的产品级生产路径」（如编辑器集成）。
+推论：B=0 是当前产品形态的**结构性结果**。它要的不是一次实验，是「human 读集的**自动**生产路径」（如编辑器集成）——手动 CLI 已存在，缺的是无需人主动调用的触发面。
 
 ### F3 · C 缺的是真实使用者，不是复核工具
 
@@ -42,10 +42,10 @@
 
 ## 二、判决
 
-- **J1（闸门）**：benchmark 闸门保持关闭。这不是未完成，是**有据的关闭**：B 缺 human 读集的产品路径，C 缺真实使用者，D 缺真实使用窗口。对外的 stale-premise benchmark 不得写。
+- **J1（闸门）**：benchmark 闸门保持关闭。这不是未完成，是**有据的关闭**：B 缺 human 读集的**自动**生产路径（手动 CLI 已有，见代码事实 4），C 缺真实使用者，D 缺真实使用窗口。对外的 stale-premise benchmark 不得写。
 - **J2（节点终态）**：TF-0167 的 purpose——「把 benchmark 可对外写收敛成明确前置、每个前置知道该由谁做」——已达成。答案为「不是本现场能补的」。节点以 **deprecated** 终态收尾（CLI 无删除动作，deprecate 是唯一出口，与 TF-0132/TF-0146 先例一致），保留审计痕迹。
 - **J3（重启条件，三者同时满足才重启）**：
-  1. human 读集有产品级生产路径（如编辑器集成把真实的人读记为 used）；
+  1. human 读集有**自动**生产路径（如编辑器集成把真实的人读记为 used；手动 `sessions record --used` 不算——它要求人主动调用）；
   2. 存在真实使用者参与封印复核（seal.reviewed 的 source=human 有真人背书）；
   3. 真实使用窗口（非 soak 形态）的 premise_pass 积累，D 的带内/带外可按自然负载复核。
   重启时**新开节点**，不复活本节点。

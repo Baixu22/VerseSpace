@@ -93,6 +93,29 @@ describe("classifySpan", () => {
 		});
 	});
 
+	test("占位符文件引用不判失效，也不下沉成符号（issue #2）", () => {
+		// `foo.rs` 不含分隔符：路径分支因占位符拒绝后曾继续下沉，而
+		// QUALIFIED_SYMBOL 的 a.b 形恰好匹配 `foo` + `.rs`，于是被误报失效。
+		// 共享路径提取与符号分类都使用同一占位符规则。
+		expect(classifySpan("foo.rs")).toBeNull();
+		expect(classifySpan("bar.test.ts")).toBeNull();
+		expect(classifySpan("baz.rs")).toBeNull();
+		expect(classifySpan("foo/mod.rs")).toBeNull(); // 含分隔符：走路径分支
+	});
+
+	test("限定符号不被占位符规则误伤", () => {
+		// isPlaceholderRef 对 `Foo.Bar` 也返回 true（以 `foo.` 开头），
+		// 但 `Bar` 不是已知扩展名，所以符号判定必须保留。
+		expect(classifySpan("Foo.Bar")).toEqual({
+			kind: "symbol",
+			text: "Foo.Bar",
+		});
+		expect(classifySpan("Bar.Baz")).toEqual({
+			kind: "symbol",
+			text: "Bar.Baz",
+		});
+	});
+
 	test("包引用：@scope/name", () => {
 		expect(classifySpan("@anthropic-ai/claude-agent-sdk")).toEqual({
 			kind: "package",
@@ -164,5 +187,14 @@ describe("extractRefs", () => {
 		const exists = refs.find((r) => r.text === "src/exists.ts");
 		expect(exists?.line).toBe(2);
 		expect(exists?.doc).toBe("AGENTS.md");
+	});
+
+	test("整篇抽取里占位符被剔除，真引用与真符号保留", () => {
+		const content = [
+			"convert `foo.rs` to `foo/mod.rs`, split `foo.tsx` into `foo/`",
+			"keep `src/real.ts` and `MissingSymbolName`",
+		].join("\n");
+		const texts = extractRefs("AGENTS.md", content).map((r) => r.text);
+		expect(texts).toEqual(["src/real.ts", "MissingSymbolName"]);
 	});
 });

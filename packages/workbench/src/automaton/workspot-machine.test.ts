@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkGoal, mkWorkspot, snapshotWith } from "./fixtures";
+import { mkGoal, mkWorkspot, snapshotWith } from "../test/automaton-fixtures";
 import { evaluateWorkspots } from "./workspot-machine";
 
 describe("workspot machine", () => {

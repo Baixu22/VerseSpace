@@ -42,10 +42,11 @@ test("证据接口要求认证，拒绝无效引用和目录越界，读取不�
 				(await fetch(`${root}/%ZZ/evidence?ref=${ref}`, { headers })).status,
 			);
 		} catch {
-			// Bun 1.3.14 (Windows) 在 HTTP 解析层直接断开含非法百分号编码
-			// （%ZZ）的请求，fetch 以 ECONNRESET 失败、handler 不可达；
-			// CI 钉的 Bun 1.3.2 则由 server.ts 的 decodeURIComponent catch
-			// 返回 400。两种行为都是「拒收」，均接受（2026-09-13 分诊）。
+			// Bun 1.3.14 起在 HTTP 解析层直接断开含非法百分号编码（%ZZ）的
+			// 请求：fetch 以 ECONNRESET 失败，handler 根本不被调用。不在此层
+			// 断开请求的运行时（更早的 Bun、非 Bun 实现）会走到 server.ts 的
+			// decodeURIComponent catch 返回 400。两条路径都是「拒收」，均接受
+			// （2026-09-13 分诊；CI 与本地已统一到 1.3.14）。
 			illegalPct = "connection-rejected";
 		}
 		expect(["400", "connection-rejected"]).toContain(illegalPct);

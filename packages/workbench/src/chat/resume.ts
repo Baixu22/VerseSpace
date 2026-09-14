@@ -200,8 +200,8 @@ export function buildResumeNote(
  * 返回时检测『你不在时变了什么』：对比离开时的签名与当前消息数。
  * 返回新增的消息条数（0 = 没有变化）。纯呈现层用，不写回 meta。
  *
- * ⚠ UI 侧 store.ts 的运行流内联重算了同一算式（两端构建独立无法共享
- * import）——改动口径时必须同步（2026-09-13 收尾 4.2）。
+ * 这是**唯一来源**：`collectRestoreView` 用它算出读数随 GET 载荷下发，
+ * 客户端直接读 `resumeDelta`，不再内联重算（2026-09-13 收尾 §5.6）。
  */
 export function resumeDelta(
 	currentMessages: StoredMessage[],

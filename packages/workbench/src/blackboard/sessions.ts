@@ -360,7 +360,15 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 							claimed.add(gen.path);
 						}
 					}
-				} catch {}
+				} catch (err) {
+					// 单个写者读失败会让它的 claim 从集合里消失，watcher 随即把
+					// 该写者的改动归给「人」——归属错误必须可见，不能静默降级
+					// （2026-09-13 收尾 §4.5 复核判定）。
+					console.error(
+						`[sessions] recentGeneratedPaths: 写者 ${name} 的足迹读取失败，本次归属判定将缺少它的 claim:`,
+						err,
+					);
+				}
 			}
 			return claimed;
 		},

@@ -1,3 +1,13 @@
+import {
+	blankFencedBlocks,
+	extractRefs as extractPathRefs,
+	isPlaceholderRef,
+	FILE_EXT as KNOWN_EXTENSIONS,
+	stripLineSuffix,
+} from "./path-refs";
+
+export { blankFencedBlocks, stripLineSuffix } from "./path-refs";
+
 /**
  * 从 agent 指引文件（AGENTS.md / CLAUDE.md / .cursorrules）中提取代码引用。
  *
@@ -23,58 +33,17 @@ export interface CodeRef {
 	line: number;
 }
 
-export const DOC_FILES = ["AGENTS.md", "CLAUDE.md", ".cursorrules"] as const;
-
-const KNOWN_EXTENSIONS =
-	/\.(ts|tsx|js|jsx|mjs|cjs|mts|cts|rs|py|go|java|kt|swift|c|h|cpp|hpp|cs|rb|php|toml|json|ya?ml|md|mdx|css|scss|html|sh|bash|zsh|ps1|bat|cmd|sql|graphql|proto|env|txt|lock)$/i;
-
 const QUALIFIED_SYMBOL = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
 const PLAIN_IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
 /**
- * Classic placeholder names (foo.rs / src/foo.test.ts / foo/) are teaching
- * examples inside the instruction file, not architecture assertions.
- * Counting them buries the real stale citations in noise（与 workbench
- * src/rot/extract.ts 的 issue #2 修复同口径，2026-09-13 同步移植）。
+ * 占位符**文件**引用：既命中 foo/bar/baz 段、又带已知扩展名。
+ *
+ * 必须带扩展名才生效：限定符号 `Foo.Bar` 对 isPlaceholderRef 也返回 true
+ * （以 `foo.` 开头），不能因此被豁免。
  */
-const PLACEHOLDER_SEGMENTS = new Set(["foo", "bar", "baz"]);
-
-function isPlaceholderRef(ref: string): boolean {
-	return ref
-		.replace(/\/+$/, "")
-		.split("/")
-		.some((segment) => {
-			const base = segment.toLowerCase();
-			return (
-				PLACEHOLDER_SEGMENTS.has(base) ||
-				[...PLACEHOLDER_SEGMENTS].some((name) => base.startsWith(`${name}.`))
-			);
-		});
-}
-
-/**
- * 把围栏代码块内的行替换为空行，保持总行数不变。
- * 支持 ``` 与 ~~~ 两种围栏。
- */
-export function blankFencedBlocks(content: string): string {
-	const lines = content.split(/\r?\n/);
-	let fence: string | null = null;
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i] as string;
-		const opener = line.match(/^\s{0,3}(`{3,}|~{3,})/);
-		if (fence === null) {
-			if (opener) {
-				fence = opener[1] as string;
-				lines[i] = "";
-			}
-		} else if (opener && line.trimEnd().startsWith(fence)) {
-			fence = null;
-			lines[i] = "";
-		} else {
-			lines[i] = "";
-		}
-	}
-	return lines.join("\n");
+function isPlaceholderFileRef(token: string): boolean {
+	return KNOWN_EXTENSIONS.test(token) && isPlaceholderRef(token);
 }
 
 /** 提取一行内的行内代码 span（`code`）。 */
@@ -85,12 +54,6 @@ export function inlineSpans(line: string): string[] {
 		spans.push((m[2] as string).trim());
 	}
 	return spans;
-}
-
-/** 去掉路径引用上的行号与锚点后缀：`src/a.ts:12`、`src/a.ts:12-40`、`src/a.ts#L12`、`README.md#usage`。 */
-export function stripLineSuffix(text: string): string {
-	// 先砍锚点（#usage / #L12），再砍行号后缀（:12 / :12-40）
-	return text.replace(/#.*$/, "").replace(/:\d+(?:-\d+)?$/, "");
 }
 
 /**
@@ -138,6 +101,8 @@ export function classifySpan(
 
 	// 符号：限定名（a.b.c）或「足够像代码」的单词标识符。
 	// 全小写短词（rust、bun、streamdown 之类）不是断言。
+	// 占位符文件不能继续落入限定符号分支（foo.rs 也匹配 a.b）。
+	if (isPlaceholderFileRef(t)) return null;
 	if (QUALIFIED_SYMBOL.test(t)) {
 		return { kind: "symbol", text: t };
 	}
@@ -154,14 +119,20 @@ export function classifySpan(
 
 /** 从一份指引文件内容中提取全部代码引用。 */
 export function extractRefs(doc: string, content: string): CodeRef[] {
-	const refs: CodeRef[] = [];
+	const refs: CodeRef[] = extractPathRefs(content).map((ref) => ({
+		kind: "path",
+		text: ref.ref.replace(/\/+$/, ""),
+		raw: ref.ref,
+		doc,
+		line: ref.line,
+	}));
 	const blanked = blankFencedBlocks(content);
 	const lines = blanked.split(/\r?\n/);
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i] as string;
 		for (const span of inlineSpans(line)) {
 			const classified = classifySpan(span);
-			if (classified) {
+			if (classified && classified.kind !== "path") {
 				refs.push({
 					kind: classified.kind,
 					text: classified.text,
@@ -172,5 +143,5 @@ export function extractRefs(doc: string, content: string): CodeRef[] {
 			}
 		}
 	}
-	return refs;
+	return refs.sort((a, b) => a.line - b.line);
 }

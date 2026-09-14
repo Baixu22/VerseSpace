@@ -21,8 +21,6 @@ export interface ExtractedRef {
 	kind: "path" | "file";
 }
 
-const FENCE = /```[\s\S]*?```/g;
-
 /** Inline `...` that looks like a path or a source filename. */
 const BACKTICK = /`([^`\n]{1,240})`/g;
 
@@ -33,8 +31,8 @@ const MD_LINK = /\[[^\]]*?\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
 const BARE_PATH =
 	/(?<![`\w./])((?:src|lib|packages|apps|scripts|docs|sidecar|e2e|src-tauri|crates|services)\/[\w./-]+\.\w+)\b/g;
 
-const FILE_EXT =
-	/\.(?:ts|tsx|js|jsx|mjs|cjs|mts|cts|rs|py|go|java|kt|swift|md|mdc|json|toml|yml|yaml|css|html|svg|sql|proto|graphql|sh|ps1)$/i;
+export const FILE_EXT =
+	/\.(?:ts|tsx|js|jsx|mjs|cjs|mts|cts|rs|py|go|java|kt|swift|c|h|cpp|hpp|cs|rb|php|md|mdx|mdc|json|toml|yml|yaml|css|scss|html|svg|sql|proto|graphql|sh|bash|zsh|ps1|bat|cmd|env|txt|lock)$/i;
 
 /**
  * Classic placeholder names (foo.rs / src/foo.test.ts / foo/mod.rs / foo/)
@@ -44,7 +42,7 @@ const FILE_EXT =
  */
 const PLACEHOLDER_SEGMENTS = new Set(["foo", "bar", "baz"]);
 
-function isPlaceholderRef(ref: string): boolean {
+export function isPlaceholderRef(ref: string): boolean {
 	return ref
 		.replace(/\/+$/, "")
 		.split("/")
@@ -58,9 +56,7 @@ function isPlaceholderRef(ref: string): boolean {
 }
 
 export function extractRefs(markdown: string): ExtractedRef[] {
-	const text = markdown.replace(FENCE, (block) =>
-		"\n".repeat(newlinesIn(block)),
-	);
+	const text = blankFencedBlocks(markdown);
 	const found = new Map<string, ExtractedRef>();
 
 	const consider = (raw: string, index: number, kind: ExtractedRef["kind"]) => {
@@ -110,10 +106,8 @@ export function normalizeRef(raw: string): string | null {
 		value = value.slice(1, -1);
 	}
 	value = value.replace(/^\.\//, "").replace(/\/+/g, "/");
-	value = value.replace(/[.,;:!?)]+$/, "");
-	if (value.startsWith("/")) {
-		value = value.slice(1);
-	}
+	value = stripLineSuffix(value).replace(/[.,;:!?)]+$/, "");
+	if (value.startsWith("/") || /^[a-z]:\//i.test(value)) return null;
 	if (!value || value.length > 240) {
 		return null;
 	}
@@ -140,7 +134,7 @@ export function normalizeRef(raw: string): string | null {
 	if (value.includes(" ")) {
 		return null;
 	}
-	if (value.startsWith("@") && !value.includes(".")) {
+	if (value.startsWith("@")) {
 		return null; // npm scope without a file
 	}
 	return value;
@@ -166,12 +160,28 @@ function lineOf(text: string, index: number): number {
 	return line;
 }
 
-function newlinesIn(text: string): number {
-	let n = 0;
-	for (const ch of text) {
-		if (ch === "\n") {
-			n += 1;
+export function blankFencedBlocks(content: string): string {
+	const lines = content.split(/\r?\n/);
+	let fence: string | null = null;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i] as string;
+		const opener = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+		if (fence === null) {
+			if (opener) {
+				fence = opener[1] as string;
+				lines[i] = "";
+			}
+		} else if (opener && line.trimEnd().startsWith(fence)) {
+			fence = null;
+			lines[i] = "";
+		} else {
+			lines[i] = "";
 		}
 	}
-	return n;
+	return lines.join("\n");
+}
+
+export function stripLineSuffix(text: string): string {
+	// 先砍锚点（#usage / #L12），再砍行号后缀（:12 / :12-40）
+	return text.replace(/#.*$/, "").replace(/:\d+(?:-\d+)?$/, "");
 }

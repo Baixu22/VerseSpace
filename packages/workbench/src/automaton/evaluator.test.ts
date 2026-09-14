@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
+import {
+	mkCheckpoint,
+	mkGoal,
+	mkWorkspot,
+	snapshotWith,
+} from "../test/automaton-fixtures";
 import { evaluate } from "./evaluator";
-import { mkCheckpoint, mkGoal, mkWorkspot, snapshotWith } from "./fixtures";
 
 describe("evaluator", () => {
 	test("composes goal, checkpoint, and workspot transitions in stable order", () => {

@@ -13,9 +13,11 @@ import type { TribunalKind, TribunalPriority } from "../types/tribunal";
  * Bands the baselines actually land in (score = 0.6·severity + 0.4·urgency):
  * - suppressed (below SOFT_THRESHOLD): concurrency_cap, dispatch_suggestion
  * - low, admitted, pull-only: review / no-policy / stale queue / no idle /
- *   tool-result bloat
- * - medium: dead dependency, invalidated premise, cache miss
- * - high, pushed: missing dependency, blocked/orphan workspot, lane suspend
+ *   tool-result bloat / rare write overlap
+ * - medium: dead dependency, invalidated premise, cache miss, predicted
+ *   merge conflict
+ * - high, pushed: missing dependency, blocked/orphan workspot, lane suspend,
+ *   dispatch failure, agent crash loop
  * - critical: never from a baseline — only `escalation.ts`
  */
 export interface KindProfile {
@@ -38,6 +40,17 @@ export const KIND_PROFILES: Record<TribunalKind, KindProfile> = {
 	metric_tool_bloat: { severity: 0.45, urgencyMinutes: 180 },
 	metric_cache_miss: { severity: 0.55, urgencyMinutes: 45 },
 	metric_suspend: { severity: 0.75, urgencyMinutes: 30 },
+	// 真冲突是「真做一次合并」得到的答案，不是启发式；但它是**合并时刻**的
+	// 问题，不是今天必须处理的——pull-only 的 medium。
+	merge_conflict_predicted: { severity: 0.6, urgencyMinutes: 120 },
+	// 重叠本身只值一句话，且只有「这个文件近期罕有共享」时才说。
+	write_overlap_rare: { severity: 0.45, urgencyMinutes: 180 },
+	// 派发**真的试过并失败了**（不是 tick 时的预测）：这一轮不产出，且若反复
+	// 出现就是管道停摆——high，推给人。causeKey 用诊断码而非 stderr 原文，
+	// 否则同一处故障每次的报错文字不同，折叠失效会变成刷屏。
+	dispatch_failed: { severity: 0.7, urgencyMinutes: 30 },
+	// 熔断已经自己停掉了这个工位的派发，是「车道自己停了」的唯一卡片。
+	agent_crashloop: { severity: 0.8, urgencyMinutes: 30 },
 };
 
 /**
