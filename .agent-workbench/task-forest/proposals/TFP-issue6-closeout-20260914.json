@@ -1,0 +1,260 @@
+{
+  "applied_at": "2026-09-14T11:13:03.345836Z",
+  "base_graph_hash": "6aa2b5833380977c5c314868669f00b1255e97024c742cc6e56c463ed486c553",
+  "base_summary": {
+    "edge_count": 252,
+    "node_count": 170,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "（本轮）真实累积跑通：`& scripts/e2e/run-live.ps1 -DevelopmentWorkspace \"$env:TEMP\\workbench-e2e-live-tenant\"` → exit 0，四个阶段全过（读取旧实现建立前提 / 模型自主修复 endpoint 兼容 / 独立验收未通过 1 项后模型纠正 / 旧读者恢复复读并独立复核），随后 fork 三条分支（完整 endpoint 与重复斜杠 / 反向代理前缀与 query+fragment / 非法 URL 与嵌入凭据）。",
+          "（本轮）监控闭环实测：跑前 `[warn] sampling-stalled · 两次采样之间没有任何累积 — rounds=26 threads=105`；累积后 `样本 6 条（已追加本次）`、告警 5→4 条，该告警消失。剩余三条是长期项/等待人：`restore-latency`（info，脚本手势驱动，只作「卡变重了」的工程信号）、`calendar-window`（info，2.16 天）、`natural-pending`（info，L1 0.3333 / 待复核 2）。",
+          "（本轮·纠正自己的调用）live 累积入口只有 `run-live.ps1 -DevelopmentWorkspace <租户>`；直接 `bun live-development.ts --rounds 3` 会把 `--rounds` 当工作区路径，报 `ENOENT: --rounds\\.live-e2e-authorized`（授权标记要求内容为 `tenant-live-model-accumulation`）。这条写在这里，避免以后又绕一遍。",
+          "（仍未变）自然使用类指标只能等人：L1 认可率 0.3333（待复核 2 条，模板与回填已在第 8 轮修好并彩排通过）、恢复卡人类耗时无自然样本。监控的立场是不替人回答，只把待办变成「数量 + 一条命令」。",
+          "2026-09-14 issue #6 第 3 项：按实际代码更正 AC3。主读数为 session-top-k，DEFAULT_LANDMARK_TOP_K=3；分母是全部当前候选，不是“被复核条目”，requireEdits 对旧答案重算不是新的人答。issue 引用的 0.3333 等属于历史测量；本次未改写任何 human 事件，也不把工程测试通过当作 80% 真人认可。状态按 issue 要求保留。",
+          "2026-09-14 第二轮收尾：cbb581d 的 13 项代码修复经完整套件复验；70c527a 新增自审不能宣称真人达标的回归检查，并修复前端收集本地审计副本。详见 docs/issue-6-closeout.md。",
+          "用户明确关注 Helmor 工程能力，自己不是一线样本会话的开发者。本轮真实现场 human 新记录为 0；既有答案映射不当作新复核。L1 ≥0.8 不变，独立产品评估见 https://github.com/Baixu22/VerseSpace/issues/7。"
+        ],
+        "next_action": "工程能力已复验；真实使用者的 L1 独立评估转 GitHub #7，历史 Windows 环境归因转 #8。用户不熟悉样本的回答没有记为认可；不再以全部 done 表示产品价值已证实。",
+        "progress": 66.7,
+        "progress_source": "manual",
+        "status": "review_needed"
+      },
+      "id": "TF-0057"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "现行入口是 packages/workbench/src/runtime/delivery.ts 与 packages/workbench/src/chat/threads.ts；通道转向记录在 docs/decisions/0010-premise-custody.md。",
+          "packages/workbench/src/chat/git-pull-notice.test.ts 用真实 git pull、存活子进程与 stdin 证明通知送达；chat 的通知测试覆盖重试和送达记录。2026-09-14 Workbench 665 项通过。"
+        ],
+        "summary": "通知通过现有会话的 stdin stream-json 输入送达，由 runtime 排队、chat 路径投递并记录确认。socket 是废止的早期方案，不是当前实现。",
+        "title": "失效通知投递（stdin stream-json，现有会话输入边界）"
+      },
+      "id": "TF-0077"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "schema 拒绝线程事件携带 verdict/done/passed 等世界状态字段。",
+          "世界 fold 覆盖 premises、delivery、wip、contextgen 四个消费者。",
+          "恢复卡引用事件 ID，不复制正文；merge-back 已随 TF-0132 废止，不列为当前功能。",
+          "白名单外线程事件（包含已删除的 thread.merged_back）必须被拒绝并有测试。"
+        ],
+        "evidence": [
+          "packages/workbench/src/types/event.ts、blackboard/events.ts 定义与校验事件边界；blackboard/events.test.ts 拒绝 thread.merged_back。",
+          "thread.merged_back 的历史引入已由 5ac9da2 删除；当前行为按拒绝分支验收，历史仍保留在森林事件中。2026-09-14 Workbench 全量 665 项通过。"
+        ],
+        "summary": "生命周期事件不能携带世界裁决；premises、delivery、wip、contextgen 的 fold 不受线程事件污染。thread.merged_back 已删除，白名单测试明确拒绝。"
+      },
+      "id": "TF-0124"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-10：SenseAudio 17 轮累积后护城河四数字齐备且非零：A 校准表行数 95（≥50）、B git/human 失效通知 1（≥1）、C 真实会话 seal block 18（≥1 且正确）、D notified/overlaps 0.149（10-30%）；benchmark 闸门 open。fit 账本分布 aligned 3 / partial 15 / unknown 9（分母 32 行含 5 条里程碑，直方图只统计 27 行；partial 均为已 done 节点有数据未设 judge 的保守展示）。原证据文本里的『partial 16 / unknown 6』写错，以快照 docs/fit-ledger-2026-09-10-senseaudio-17rounds.md 的行为准，本次更正。",
+          "2026-09-11 22 轮批次复核：A 127 · B 1 · C 23 · D 0.159（in-band），闸门仍开；unknown 9 条全部可解释（7 条 record 类按纪律不可判定 + 1 条 TF-0142 待样本 + 1 条 TF-0154 待人认可），早期现场『unspecified/unknown 20』不再出现。'第 30 天回看四个数字存在且非零'按 TF-0141 判例改以样本量门为准（样本窗口 48/127/25 全满足），日历观察窗口单独记偏差。",
+          "2026-09-13 收尾审计重算（现场 live-moyu-moyu-soak）：C 项口径已变——scripts/fit-ledger/ledger.ts:258-263 现要求 seal.reviews.correct ≥ 1（该处注释自承旧实现「只数了前半句」）。现行读数 A=59 ✓ / B=0 / C blocked=165 但 correct=0 / D=0.315 → gate.open=false。上列「闸门 open（09-10/09-11）」是旧口径下的历史读数，按现行实现不可复现；闸门现状与 TF-0167 判决书（docs/tf0167-moat-gate-verdict.md）一致。",
+          "2026-09-14 收尾更正：当前 gate 以 scripts/fit-ledger/ledger.ts 的 benchmarkGate 为准；C 同时要求 blocked≥1 与 reviews.correct≥1。历史 open 仅属旧口径。TF-0167 的有据关闭继续有效，本轮没有写入人工封印复核或新增 soak 数据。"
+        ],
+        "summary": "fit 账本按真实事件和明确口径记录价值证据。现行 benchmark 闸门关闭；历史 open 读数没有计入 C 的正确封印人工复核，不能作为当前达标证据。"
+      },
+      "id": "TF-0137"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "主读数与复核队列采用 session-top-k，分母为全部当前候选；同时展示 threshold 与未过滤对照。已实现。",
+          "复核队列显式报告抽样会话数/全部候选会话数，--all-sessions 可查看全量；K=3 是筛选预算，过滤后可能不足 3 条。已实现。",
+          "复核按 (writer, handle) 绑定；集合外历史结论保留为 legacy，口径重算与新一轮人答分开。已实现；独立产品认可率转 GitHub #7。"
+        ],
+        "evidence": [
+          "packages/workbench/src/chat/stats.ts 的 landmarkReviews.current 显式传 session-top-k 与 human；threshold、steward、unfiltered 分开计算。",
+          "packages/workbench/src/interactions/landmark-set.ts 与 review-stats.ts 是候选/读数单一来源；scripts/e2e/landmark-review-queue.ts 显式报告样本范围。",
+          "2026-09-14 全量 Workbench 665 项通过，含来源隔离的新回归；旧“代码尚未切换”的验收文字已替换为当前事实。"
+        ],
+        "summary": "CLI/账本/复核队列的 L1 主读数已迁移为 session-top-k（K=3），保留 threshold 与未过滤对照；底层函数的 threshold 默认供历史口径使用，调用面显式选择主口径。"
+      },
+      "id": "TF-0159"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "① 不再空集：四个现场里至少三个能产出非空的**文件级**地标集合。已在两轮真实现场达成（VAS1EM 5/5 会话非空、1OioVM 8/8 会话非空，share 均为 1.0），由种类门（候选 D）+ 相对口径共同达成——已实测权重调整（B）与产物声明门（C）都做不到。已满足。",
+          "② 不再打偏：集合里必须出现真任务文件。两轮现场均已出现（src/base-url.ts、src/family.ts、src/alpha.ts——模型真实修改与复核的目标）。已满足。",
+          "③ 不误杀真信号：构造「真实重复编辑 + 有声明产物」的会话仍产出地标；回归门 A/B 均通过。已满足。",
+          "④ 记录型会话必须被排除或单列：加门后 git/human 的地标数实测为 0（两轮现场各自复现，门后精确清掉只由记录型写者触碰的 src/beta.ts）。已满足。",
+          "⑤ 历史 22 条标注用于校准候选过滤；同批答案上的命中率不是独立的新一轮人答验收，局限已写入 docs/tf-0161-require-edits-measurement.md。",
+          "⑥ requireEdits 已默认开启（DEFAULT_REQUIRE_EDITS=true）；整段会话没有 edit 时保留只读候选；回滚为显式 requireEdits=false。",
+          "⑦ 工程默认与三种口径并报已完成；L1 ≥0.8 的独立真实使用评估转 GitHub #7，不能用旧答映射代替。"
+        ],
+        "evidence": [
+          "packages/workbench/src/interactions/landmark-set.ts 的 DEFAULT_REQUIRE_EDITS=true，landmarkCandidates 保留整段零 edit 的只读会话；review-stats.ts 和 chat/stats.ts 分别计算主口径及对照。",
+          "历史 VAS1EM 6/6 来自旧答映射；1OioVM 9/9 包含 6 旧答与 3 新答。70c527a 已纠正源码注释和 docs/tf-0161-require-edits-measurement.md 的独立验收表述。",
+          "2026-09-14 Workbench 665 项通过；真实现场未新增 human 事件，待实际使用者参加独立评估。"
+        ],
+        "next_action": "工程实现已结项；真实使用评估由 GitHub #7 承载。若出现新的真实失败案例，再判断是否需要修改候选规则。",
+        "summary": "工程实现已落库：按会话隔离的文件候选、记录型写者过滤、requireEdits 默认开启、只读会话豁免和三种口径并报。历史人答用于规则校准，独立用户认可率另行评估。"
+      },
+      "id": "TF-0161"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "（本轮·第二组真人读数）现场 `packages/workbench/.evidence-sites/live-run-2026-09-11-1OioVM`。回填命令：`bun scripts/e2e/landmark-review-queue.ts --workspace .evidence-sites/live-run-2026-09-11-1OioVM --apply answers.json`，输出「已回填地标复核 12 条（来源 human）；跳过 0 条」。`human/landmark.reviewed` 由 1 条增至 13 条（12 条本轮 + 1 条历史 legacy）。逐键核对 12 条与用户结论全部一致。",
+          "（本轮·四路读数一致）账本「当前候选 18 个，已复核 12 个，认可 6 个，不认可 6 个；完整集合认可率 33.3%；复核覆盖率 66.7%」；CLI stats `current.endorsedShare 0.3333 / reviewedCoverage 0.6667 / legacyReviews 1 / gatedWriters 2`；队列（抽样 5/8）0.5000；旧口径 threshold 四处均为「无样本（分母为空 → 不可计算）」。",
+          "（本轮·未抽样会话已定位，勿写成全量）抽样只覆盖 5 个会话（sampledSessions: 5/8），未抽样的 3 个会话是第三棵分叉树：`c34259ff`（src/base-url.ts 触碰 2 次 + src/branch-1.review.json 编辑 1 次）、`f6f2750d`（src/base-url.ts 触碰 1 次 + src/branch-2.review.json 编辑 1 次）、`d274b645`（src/base-url.ts 触碰 1 次 + src/branch-3.review.json 编辑 1 次）。三者形状完全相同：一个被复核的源文件 + 一个复核产物，每个源文件都只有触碰、只有 review.json 有编辑。若要全站读数齐，就答这 6 条。",
+          "（本轮·两轮读数并列后的跨现场规律）两轮共 22 条真人结论，驳回 10 条，驳回理由高度收敛为三类：① 仅提供前提的材料（requirements.txt，出现 3 次）；② 仅被动浏览且无 edit（出现 5 次）；③ 被复核/被引用的对象本身不等于该会话的产出（被复核的 base-url.ts）。**同一形状在两轮里反复被判 reject**，说明这不是单条噪声，而是候选投影的系统性口径问题——与 TF-0161 同源，且给出了具体的投影修法方向：候选应排除「纯 selection 无 edit」「录音型前提材料」「被复核的源文件」三类。",
+          "（本轮·评审纪律）用户显式要求「编号按会话分组解释，不按模板行序」，且要求按 (writer, handle) 键回填。这是 2026-09-11 早些时候那次模板行序错位的直接产物：模板按 writer 字典序重排，与队列表格/会话分组的编号不一致，靠行号绑定会静默错位。现已确立为规矩：**回填一律按 (writer, handle) 键绑定，禁止依赖物理行序。**",
+          "2026-09-14 收尾边界：moyu 的 5/5 是历史记录，本轮没有新增真实人答。工程测试证明机制与来源隔离，不证明自然使用的 L1 认可率；独立评估见 docs/l1-review-2026-09-14.md 与 GitHub #7。"
+        ],
+        "next_action": "采集与读数工程已结项。历史 0.6/0.5、过滤后的旧答映射、三条新增回答均按原来源保留；不再用“终局 1.0”替代独立产品评估。后者转 GitHub #7。"
+      },
+      "id": "TF-0162"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "命令与读数：cd packages/workbench && bun test src/interactions src/chat src/cli scripts/fit-ledger scripts/fit-monitor --timeout 60000 → 214 用例、68.14 秒、204 pass / 10 fail（其中『turn in flight：notifySession 只排队』60 秒超时）。",
+          "与本次改动无关：git diff 另存为 patch 后 checkout 掉 context.ts / review-stats.ts / review-stats.test.ts，再跑 src/chat/fork-inheritance.test.ts → 1 pass / 4 fail（与带改动时完全一致），随后已恢复改动（tsc=0、interactions 39 用例全绿）。",
+          "沙箱因素已排除：在测试进程内 spawnSync('bun',['--version']) 与 spawnSync('bun --version',{shell:true}) 均 status 0、输出 1.4.2。",
+          "失败样例：fork-inheritance.test.ts:131 expect(footprint(source.id).length).toBeGreaterThan(0) 收到 0；:176 expect(agentContextPlan?.mode).toBe('fork-session') 收到 undefined；:220 读集行数收到 0（期望 ≥2）。",
+          "对照：src/chat 里不依赖假 claude 的用例（如『HTTP provider：上下文靠历史重发算继承』）仍然 pass，说明失败集中在 spawn 假 claude 的那条路径上。",
+          "2026-09-13 回写（补 AC④「结论写回节点」）：两类红的根因是 supervisor 给假 claude 的 shim 在 Windows 需要 .cmd 包装——真修复在提交 ac106bf（supervisor/index.ts），完整分诊见 docs/report-2026-09-11-monitoring.md:131,166。修复后两类失败消失；上方 10 fail 记录的是修复前的失败现场。",
+          "2026-09-14 再次执行 bun run test:workbench：665 pass / 0 fail，106 文件，100.15 秒。使用项目既定 timeout，没有跳过原有用例。"
+        ],
+        "summary": "历史两类失败已定位并修复：Windows 假 claude 的 .cmd shim 启动路径由 ac106bf 修正。修复前的 10 fail 是历史现场，不是当前基线；当前 Workbench 全量 665 项通过。"
+      },
+      "id": "TF-0157"
+    },
+    {
+      "action": "add_node",
+      "alias": "engineering",
+      "node": {
+        "acceptance_criteria": [
+          "修复有提交可指，正式测试、类型检查和 Biome 通过。",
+          "原始 Rust 依赖在全新 target 完整验证，默认 target 旧缓存撤销并完成 Clippy。",
+          "GitHub #6 留下准确关闭记录，#7/#8 承接未验证事项；森林和报告同步。"
+        ],
+        "confidence": 0.95,
+        "difficulty": "unknown",
+        "evidence": [
+          "既有修复 cbb581d；本轮源码修复 70c527a。详细命令、日志与结果见 docs/issue-6-closeout.md。",
+          "原始 boring-sys2 归档 SHA256 与 Cargo.lock 一致，951 文件逐字节匹配；全新 target 的 cargo test 1695 pass / 0 fail / 0 ignored。详见 docs/windows-rust-clean-verification.md。",
+          "收尾报告与 Windows 默认双 worker 配置已落在 2739e0a 并推送；GitHub #6 已以工程完成关闭并留言，#7/#8 保留后续验收条件。默认 Rust target 同样 1695 项通过，Clippy 全 targets 零警告；Windows 标准前端命令 1692 项通过。"
+        ],
+        "kind": "task",
+        "next_action": "工程收尾完成后仅跟踪 #7 真实使用评估与 #8 历史环境归因；不据此宣称产品价值或旧故障根因已经证实。",
+        "priority": 1,
+        "progress": 100,
+        "progress_source": "manual",
+        "purpose": "让报告、运行结果、提交与 GitHub 状态一致，工程问题有确实完成的证据。",
+        "source_sessions": [
+          "issue6-closeout-20260914"
+        ],
+        "status": "done",
+        "summary": "13 项既有修复重新核验；补修 L1 自审误报与 Vitest 审计副本收集，恢复原始 Rust registry，完成完整测试和打包冒烟。独立产品评估和历史环境归因保留为后续项。",
+        "title": "issue #6 工程收尾：独立复验、撤销 Rust 旁路与修正完成状态"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "承接 issue #6 的工程结项或单列后续验证；已完成工程与未验证主张分别记录。"
+      },
+      "from": "engineering",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "l1_followup",
+      "node": {
+        "acceptance_criteria": [
+          "冻结实际使用窗口和候选口径，再请熟悉会话的使用者按 (writer, handle) 给出判断。",
+          "真实人答认可数/全部当前候选≥0.8，覆盖率、抽样范围和旧答映射单列；不降低门槛或代答。"
+        ],
+        "confidence": 0.95,
+        "difficulty": "unknown",
+        "evidence": [
+          "https://github.com/Baixu22/VerseSpace/issues/7",
+          "docs/l1-review-2026-09-14.md；本轮真实人答 0/5。"
+        ],
+        "kind": "follow_up",
+        "next_action": "待实际使用者按明确窗口复核；通过后据原始人答和读数更新本节点与 TF-0057，未通过则记录候选缺口。",
+        "priority": 3,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "验证 Helmor 选出的文件是否得到实际会话使用者认可，区分工程正确性与产品价值。",
+        "source_sessions": [
+          "issue6-closeout-20260914"
+        ],
+        "status": "review_needed",
+        "summary": "工程能力已验证。本轮用户不熟悉 moyu 会话，没有写入新的真实 human 结论；历史答案映射不得冒充独立新评估。",
+        "title": "L1 真实使用评估：冻结候选后由实际使用者独立复核"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "承接 issue #6 的工程结项或单列后续验证；已完成工程与未验证主张分别记录。"
+      },
+      "from": "l1_followup",
+      "to": "TF-0057",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "environment_followup",
+      "node": {
+        "acceptance_criteria": [
+          "取得旧运行环境或新的可重复失败、原始命令和构建输出。",
+          "用文件操作和进程证据确定因果；不能仅凭版本变化或当前未复现宣布根因。"
+        ],
+        "confidence": 0.95,
+        "difficulty": "unknown",
+        "evidence": [
+          "https://github.com/Baixu22/VerseSpace/issues/8",
+          "docs/windows-rust-clean-verification.md"
+        ],
+        "kind": "follow_up",
+        "next_action": "出现新的失败现场时保存命令、程序哈希、build-script 输出与文件操作进程证据；当前不反复重跑已绿套件，也不恢复补丁旁路。",
+        "priority": 3,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "保留未解的历史因果问题，避免把当前验证通过写成已定位旧故障。",
+        "source_sessions": [
+          "issue6-closeout-20260914"
+        ],
+        "status": "proposed",
+        "summary": "当前原始 Rust 依赖已通过完整验证；Git 2.51/2.53/官方 MinGit 2.55 的隔离探针未复现旧异常。旁路已移除，原始干扰进程仍未知。",
+        "title": "Windows 历史 Git/BoringSSL 异常归因（当前未复现）"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "承接 issue #6 的工程结项或单列后续验证；已完成工程与未验证主张分别记录。"
+      },
+      "from": "environment_followup",
+      "to": "TF-0057",
+      "type": "child_of"
+    }
+  ],
+  "created_at": "2026-09-14T11:13:03.100054Z",
+  "proposal_id": "TFP-issue6-closeout-20260914",
+  "rationale": "落实用户要求综合两份审计材料解决 issue 并收尾，以及后续明确的工程能力优先要求；不代填人答，不把遗留问题伪装为完成。",
+  "session_id": "issue6-closeout-20260914",
+  "status": "applied"
+}

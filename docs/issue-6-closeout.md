@@ -55,5 +55,7 @@ moyu 仅是现有测试样本。用户说明自己不熟悉一线会话，本轮
 
 - `mvp-flow` 中的 `git ENOENT` 来自未建立 worktree 的测试场景，断言验证无法采集回退快照时检查点仍能保存；不是漏装 Git。
 - Workbench 与 context-rot 仍在构建时共享源码；两种打包产物的独立工作区冒烟证明运行时不依赖源码目录。暂不为未来拆仓引入新包。
-- 任务森林提案 `TFP-issue6-closeout-20260914` 修正 8 个旧节点，新增工程收尾与两项后续跟踪；TF-0057 的产品验收保留待复核，不以“全部 done”掩盖未验证事项。
+- 任务森林提案 `TFP-issue6-closeout-20260914` 已经官方 CLI 应用，修正 8 个旧节点，新增 TF-0171 工程收尾、TF-0172 真实使用评估与 TF-0173 历史归因。当前 173 节点：163 done、7 deprecated、2 review_needed、1 proposed；TF-0057 保留产品验收待复核。
+- 森林 validate/export 通过；Tabbit 检查了待复核筛选、节点详情、DAG 拖动与边/标签跟随、重置布局、历史播放和折叠侧栏。详情明确显示本轮真实人答 0/5；结果保存在本地 `forest-browser-check.json`。
 - GitHub #6 按工程修复关闭，#7/#8 保留明确的验收条件。修复与报告提交至 `feat/premise-evidence-base`；本轮不代表代码已经合入 main 或发布。
+- 推送成功；历史森林事件文件约 83.5 MB 触发 GitHub 大文件提示，按 TF-0165 的保留决定处理，没有改写历史。

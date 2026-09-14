@@ -40,6 +40,8 @@ SHA256 `f48e2d2dc74a24454adc6d8fd0ac25bf9c2386f19cfb06202b9465aaad4f9f05` 与 re
 再次执行同一完整测试命令：1,695 passed、0 failed、0 ignored；继而
 `cargo clippy --locked -j 1 --all-targets -- -D warnings` 通过，零警告。
 默认构建路径也已验证，不需要以后继续依赖临时 target 或旧旁路。
+本轮临时 target 保留：收尾时自动审批以“blocked by policy”拒绝递归删除该编译缓存。
+这不影响验证结果、正常开发 target 或已保存的 registry 备份。
 
 ## 归因边界与复现入口
 
