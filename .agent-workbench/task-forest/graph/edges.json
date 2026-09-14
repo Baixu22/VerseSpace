@@ -3047,16 +3047,16 @@
     "type": "child_of",
     "updated_at": "2026-09-14T11:13:03.297477Z"
   },
-  "TFE-0258": {
-    "blocking": true,
+  "TFE-0259": {
+    "blocking": false,
     "confidence": 0.6,
-    "created_at": "2026-09-14T11:13:03.299479Z",
+    "created_at": "2026-09-14T12:46:53.667355Z",
     "created_from_session": null,
     "from": "TF-0173",
-    "id": "TFE-0258",
-    "reason": "承接 issue #6 的工程结项或单列后续验证；已完成工程与未验证主张分别记录。",
+    "id": "TFE-0259",
+    "reason": "历史环境归因独立跟踪，不阻塞已经验证的本阶段工程能力。",
     "to": "TF-0057",
     "type": "child_of",
-    "updated_at": "2026-09-14T11:13:03.299479Z"
+    "updated_at": "2026-09-14T12:46:53.667355Z"
   }
 }

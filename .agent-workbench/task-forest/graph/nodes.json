@@ -2595,18 +2595,16 @@
     "acceptance_criteria": [
       "v5 与 v6 的证伪实验各跑一轮并有记账数据",
       "R1 验收：会话结束后能回答『读了哪些文件的哪个版本、写了哪些』",
-      "L1 验收采用现行 session-top-k（默认 K=3）：按写者隔离、种类门与 requireEdits 过滤后，真实人答认可的候选 / 全部当前候选 ≥0.8；reviewedCoverage 单列。只认真实 source=human 复核，不用脚本或模型代答（TF-0163）。本次只更正口径，未新增真人复核，不能据旧答案重算宣称 AC 达成。"
+      "L1 工程验收：交互采集、按写者隔离的候选筛选、human/steward 来源隔离及主/对照口径计算有可运行验证。已通过；原真人认可率≥0.8 依本轮用户决定移出阶段验收，指标仍未验证。"
     ],
     "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.75,
-      "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
+      "user_goal": "本阶段验证 Helmor 工程能力，独立真实使用指标保持未验证。",
       "validation_plan": [
-        "t0+14d：TF-0136 四条判据",
-        "t0+30d：护城河四个数字存在且非零",
-        "任一数字缺失则先补它，不扩树"
+        "工程结果见 docs/issue-6-closeout.md；真实使用评估本阶段不计划。"
       ],
-      "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
+      "why_not_enough": "工程验收不等于自然使用价值已证实；L1 ≥0.8 未验证，benchmark 价值闸门仍按原判据。",
       "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
     },
     "alignment_records": [
@@ -2643,7 +2641,9 @@
       "（仍未变）自然使用类指标只能等人：L1 认可率 0.3333（待复核 2 条，模板与回填已在第 8 轮修好并彩排通过）、恢复卡人类耗时无自然样本。监控的立场是不替人回答，只把待办变成「数量 + 一条命令」。",
       "2026-09-14 issue #6 第 3 项：按实际代码更正 AC3。主读数为 session-top-k，DEFAULT_LANDMARK_TOP_K=3；分母是全部当前候选，不是“被复核条目”，requireEdits 对旧答案重算不是新的人答。issue 引用的 0.3333 等属于历史测量；本次未改写任何 human 事件，也不把工程测试通过当作 80% 真人认可。状态按 issue 要求保留。",
       "2026-09-14 第二轮收尾：cbb581d 的 13 项代码修复经完整套件复验；70c527a 新增自审不能宣称真人达标的回归检查，并修复前端收集本地审计副本。详见 docs/issue-6-closeout.md。",
-      "用户明确关注 Helmor 工程能力，自己不是一线样本会话的开发者。本轮真实现场 human 新记录为 0；既有答案映射不当作新复核。L1 ≥0.8 不变，独立产品评估见 https://github.com/Baixu22/VerseSpace/issues/7。"
+      "用户明确关注 Helmor 工程能力，自己不是一线样本会话的开发者。本轮真实现场 human 新记录为 0；既有答案映射不当作新复核。L1 ≥0.8 不变，独立产品评估见 https://github.com/Baixu22/VerseSpace/issues/7。",
+      "用户明确选择：按工程范围收口，#7 以本阶段不计划关闭，保留未验证的产品指标。没有新增真实 human 事件，没有宣称 L1 ≥0.8 已达成。",
+      "2026-09-14 GitHub #7 以 NOT_PLANNED 关闭。工程证据在 70c527a、2739e0a、de959f7，统计口径未改动；外部历史崩溃归因 #8 不阻塞工程结项。"
     ],
     "execution_hints": [
       "从空隔离工作区运行 packages/workbench/scripts/e2e/run-live.ps1，或设置 E2E_LLM_* 后运行 bun run test:live。",
@@ -2654,7 +2654,7 @@
     ],
     "id": "TF-0057",
     "kind": "global_task",
-    "next_action": "工程能力已复验；真实使用者的 L1 独立评估转 GitHub #7，历史 Windows 环境归因转 #8。用户不熟悉样本的回答没有记为认可；不再以全部 done 表示产品价值已证实。",
+    "next_action": "本阶段工程已完成。真人认可率保持未验证；只有后续明确启动产品评估时再安排独立人答。历史原生 Git 崩溃由 #8 单独跟踪。",
     "non_goals": [
       "a2a／多 agent 互聊协议",
       "手动工作流 DAG 编辑器",
@@ -2663,7 +2663,7 @@
       "Verifier 加 LLM 裁判"
     ],
     "priority": 1,
-    "progress": 66.7,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
     "remaining_minutes_max": null,
@@ -2675,11 +2675,11 @@
       "线性对话不动；结构发生在它之上或之下，从不发生在它里面"
     ],
     "source_sessions": [],
-    "status": "review_needed",
+    "status": "done",
     "success_metrics": [],
     "summary": "不做编排器。记录每个写者读到了什么，在其前提被推翻时通知它；更优先的是把操作改造成不会推翻别人前提的形状。对话是输入面，执行是结构的来源，仓库是结构的裁判。",
     "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-14T12:46:53.663316Z"
   },
   "TF-0058": {
     "acceptance_criteria": [
@@ -9589,19 +9589,23 @@
     "confidence": 0.95,
     "context_tags": [],
     "created_at": "2026-09-14T11:13:03.297477Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-14T12:46:53.667355Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "unknown",
     "estimated_total_minutes": null,
     "evidence": [
       "https://github.com/Baixu22/VerseSpace/issues/7",
-      "docs/l1-review-2026-09-14.md；本轮真实人答 0/5。"
+      "docs/l1-review-2026-09-14.md；本轮真实人答 0/5。",
+      "用户明确选择：按工程范围收口，#7 以本阶段不计划关闭，保留未验证的产品指标。没有新增真实 human 事件，没有宣称 L1 ≥0.8 已达成。",
+      "https://github.com/Baixu22/VerseSpace/issues/7#issuecomment-5663991870"
     ],
-    "execution_hints": [],
+    "execution_hints": [
+      "关闭原因是本阶段不计划，认可率并未被记为通过。"
+    ],
     "id": "TF-0172",
     "kind": "follow_up",
-    "next_action": "待实际使用者按明确窗口复核；通过后据原始人答和读数更新本节点与 TF-0057，未通过则记录候选缺口。",
+    "next_action": "本阶段不再安排真人评估；若以后启动，继续使用保留的原判据和真实使用者独立结论，不以本次关闭当作验收通过。",
     "non_goals": [],
     "priority": 3,
     "progress": 0.0,
@@ -9613,11 +9617,11 @@
     "source_sessions": [
       "issue6-closeout-20260914"
     ],
-    "status": "review_needed",
+    "status": "deprecated",
     "success_metrics": [],
-    "summary": "工程能力已验证。本轮用户不熟悉 moyu 会话，没有写入新的真实 human 结论；历史答案映射不得冒充独立新评估。",
+    "summary": "用户明确选择：按工程范围收口，#7 以本阶段不计划关闭，保留未验证的产品指标。没有新增真实 human 事件，没有宣称 L1 ≥0.8 已达成。",
     "title": "L1 真实使用评估：冻结候选后由实际使用者独立复核",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-14T12:46:53.667355Z"
   },
   "TF-0173": {
     "acceptance_criteria": [
@@ -9627,10 +9631,12 @@
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
+      "user_goal": "确定历史故障的真实原因，避免误报修复。",
+      "validation_plan": [
+        "取得原始或新的 Git dump 后分析堆异常与加载模块。"
+      ],
+      "why_not_enough": "ntdll 是检测位置；事件日志不能替代已经丢失的崩溃调用栈。",
+      "why_this_task": "已确认原生 Git 崩溃，仍需责任模块的直接证据。"
     },
     "alignment_records": [],
     "assumptions": [],
@@ -9644,12 +9650,17 @@
     "estimated_total_minutes": null,
     "evidence": [
       "https://github.com/Baixu22/VerseSpace/issues/8",
-      "docs/windows-rust-clean-verification.md"
+      "docs/windows-rust-clean-verification.md",
+      "Windows Application 记录 1241268/1241277/1241280：2026-09-13 08:23:28、09:48:29、10:02:21，Git 2.51.0.1，异常 c0000374；ntdll 固定版本 10.0.26100.7920，检测偏移 0x1176e5。",
+      "对应 WER 1001 记录 1241269/1241278/1241281 引用的 18 个报告/转储/附件路径均不存在。限定时窗的 Defender 事件未命中，不构成排除所有外部干扰的证据。",
+      "docs/issue-8-crash-investigation.md；原始字段保存在 .agent-contexts/issue-6-closeout-2026-09-14/issue8-investigation/。"
     ],
-    "execution_hints": [],
+    "execution_hints": [
+      "阻塞原因：原始转储与报告缺失；目前无复现，不应臆测修改 Helmor 代码或恢复旁路。"
+    ],
     "id": "TF-0173",
     "kind": "follow_up",
-    "next_action": "出现新的失败现场时保存命令、程序哈希、build-script 输出与文件操作进程证据；当前不反复重跑已绿套件，也不恢复补丁旁路。",
+    "next_action": "需要当时 Git 崩溃转储，或原宿主环境中的新可重复失败；取得调用栈、加载模块与文件操作进程证据后继续归因。",
     "non_goals": [],
     "priority": 3,
     "progress": 0.0,
@@ -9661,10 +9672,10 @@
     "source_sessions": [
       "issue6-closeout-20260914"
     ],
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [],
-    "summary": "当前原始 Rust 依赖已通过完整验证；Git 2.51/2.53/官方 MinGit 2.55 的隔离探针未复现旧异常。旁路已移除，原始干扰进程仍未知。",
-    "title": "Windows 历史 Git/BoringSSL 异常归因（当前未复现）",
-    "updated_at": "2026-09-14T11:13:03.299479Z"
+    "summary": "已恢复三次 Git 2.51 原生进程堆损坏事件（0xC0000374），与首份 Cargo 失败日志时间和退出码对应。18 个 WER 报告、转储及附件路径均已不存在；当前无可重复失败，尚不能确定责任模块。",
+    "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）",
+    "updated_at": "2026-09-14T12:46:53.667355Z"
   }
 }

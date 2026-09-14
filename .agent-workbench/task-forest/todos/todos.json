@@ -3,37 +3,12 @@
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.95,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0172",
-    "kind": "follow_up",
-    "next_action": "复核产物并决定是否标记完成",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "验证 Helmor 选出的文件是否得到实际会话使用者认可，区分工程正确性与产品价值。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "review_needed",
-    "success_metrics": [],
-    "title": "L1 真实使用评估：冻结候选后由实际使用者独立复核"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
+      "user_goal": "确定历史故障的真实原因，避免误报修复。",
+      "validation_plan": [
+        "取得原始或新的 Git dump 后分析堆异常与加载模块。"
+      ],
+      "why_not_enough": "ntdll 是检测位置；事件日志不能替代已经丢失的崩溃调用栈。",
+      "why_this_task": "已确认原生 Git 崩溃，仍需责任模块的直接证据。"
     },
     "blocked_by": [],
     "confidence": 0.95,
@@ -42,55 +17,15 @@
     "difficulty": "unknown",
     "id": "TF-0173",
     "kind": "follow_up",
-    "next_action": "取得旧运行环境或新的可重复失败、原始命令和构建输出。",
+    "next_action": "澄清阻塞原因并决定解除或废止",
     "priority": 3,
     "progress": 0.0,
     "purpose": "保留未解的历史因果问题，避免把当前验证通过写成已定位旧故障。",
-    "ready": true,
+    "ready": false,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "blocked",
     "success_metrics": [],
-    "title": "Windows 历史 Git/BoringSSL 异常归因（当前未复现）"
-  },
-  {
-    "alignment": {
-      "fit": "aligned",
-      "fit_confidence": 0.75,
-      "user_goal": "Helmor = 写者中立的前提账本：对每个写者（agent / 人 / git / CI）回答『你上次看到的东西，现在还成立吗』",
-      "validation_plan": [
-        "t0+14d：TF-0136 四条判据",
-        "t0+30d：护城河四个数字存在且非零",
-        "任一数字缺失则先补它，不扩树"
-      ],
-      "why_not_enough": "护城河的四个数字截至 2026-09-05 全为零；t0 未开始，dogfooding 是杠杆最高且零代码的一步",
-      "why_this_task": "三条通道（R2 / R2′ + 恢复卡 / 裁决队列）已各有代码与事件，写者中立是唯一能同时解释这三条通道的产品定义"
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "versespace",
-      "v5",
-      "v6",
-      "定调"
-    ],
-    "desired_outcomes": [
-      "多写者并存时，runtime 能指出谁基于已过时的前提在工作",
-      "裁决项速率可持续在约 1 条/10 分钟以内",
-      "用户从不画图，也从不为『随口的任务』付前置成本"
-    ],
-    "difficulty": "very_high",
-    "id": "TF-0057",
-    "kind": "global_task",
-    "next_action": "复核产物并决定是否标记完成",
-    "priority": 1,
-    "progress": 66.7,
-    "purpose": "让单人开发者在多写者（agent／人／git／CI）并发下，前提不失效、注意力不被淹没，且无需前置声明任何结构。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "review_needed",
-    "success_metrics": [],
-    "title": "前提守护者：协调运行时（v5）+ 追溯式交互层（v6）"
+    "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）"
   }
 ]

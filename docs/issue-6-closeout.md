@@ -41,7 +41,7 @@ moyu 仅是现有测试样本。用户说明自己不熟悉一线会话，本轮
 
 “真实使用者认可率 ≥0.8”仍是产品评估条件；不降低阈值、不借旧答案宣称新验收通过。
 [候选与评估边界](l1-review-2026-09-14.md)记录了全量 5 个候选，本轮人答 0/5，留待实际使用者独立复核。
-该评估由 [issue #7](https://github.com/Baixu22/VerseSpace/issues/7) 单独跟踪，不冒充代码缺陷，也不影响本轮已经通过的工程能力结论。
+用户随后明确选择按工程范围收口，[issue #7](https://github.com/Baixu22/VerseSpace/issues/7) 已以 `NOT_PLANNED` 关闭。本阶段不安排真人评估；指标保持未验证，不记为通过。
 
 ## 第 8 项：移除旁路与历史归因
 
@@ -50,12 +50,13 @@ moyu 仅是现有测试样本。用户说明自己不熟悉一线会话，本轮
 
 这些结果否定了“当前必现”以及“仅凭版本号即可归因”的说法，不能确定旧故障的根因。
 没有添加防护排除项，也没有禁用系统防护。历史归因由 [issue #8](https://github.com/Baixu22/VerseSpace/issues/8) 单独跟踪；详见 [Rust 和 Git 环境复验](windows-rust-clean-verification.md)。
+后续已取得三次 Git 2.51 堆损坏的 Windows 原始事件；对应转储和报告均已缺失，#8 保留开放。详见 [崩溃调查记录](issue-8-crash-investigation.md)。
 
 ## 其他观察与收尾
 
 - `mvp-flow` 中的 `git ENOENT` 来自未建立 worktree 的测试场景，断言验证无法采集回退快照时检查点仍能保存；不是漏装 Git。
 - Workbench 与 context-rot 仍在构建时共享源码；两种打包产物的独立工作区冒烟证明运行时不依赖源码目录。暂不为未来拆仓引入新包。
-- 任务森林提案 `TFP-issue6-closeout-20260914` 已经官方 CLI 应用，修正 8 个旧节点，新增 TF-0171 工程收尾、TF-0172 真实使用评估与 TF-0173 历史归因。当前 173 节点：163 done、7 deprecated、2 review_needed、1 proposed；TF-0057 保留产品验收待复核。
+- 任务森林提案 `TFP-issue6-closeout-20260914` 修正了 8 个旧节点并新增三项收尾记录。后续按用户范围决定，将 TF-0057 按工程验收完成、TF-0172 记为 deprecated；TF-0173 因缺原始转储/可复现失败而 blocked。173 节点中 164 done、8 deprecated、1 blocked，产品认可率并未因此变为已验证。
 - 森林 validate/export 通过；Tabbit 检查了待复核筛选、节点详情、DAG 拖动与边/标签跟随、重置布局、历史播放和折叠侧栏。详情明确显示本轮真实人答 0/5；结果保存在本地 `forest-browser-check.json`。
-- GitHub #6 按工程修复关闭，#7/#8 保留明确的验收条件。修复与报告提交至 `feat/premise-evidence-base`；本轮不代表代码已经合入 main 或发布。
+- GitHub #6 按工程修复关闭，#7 按本阶段不计划关闭，#8 保留开放并写明缺失证据。修复与报告提交至 `feat/premise-evidence-base`；本轮不代表代码已经合入 main 或发布。
 - 推送成功；历史森林事件文件约 83.5 MB 触发 GitHub 大文件提示，按 TF-0165 的保留决定处理，没有改写历史。

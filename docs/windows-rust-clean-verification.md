@@ -52,6 +52,8 @@ Git 2.55 的当前成功也不能解释原先为何失败。后续如再发生�
 Cargo build-script 输出、出错目录与文件操作进程证据，再判断原因；不能直接把防护排除项当作修复。
 
 历史归因独立跟踪于 [issue #8](https://github.com/Baixu22/VerseSpace/issues/8)，不把当前验证通过写成已定位旧故障。
+后续调查已恢复三次 Git 2.51 堆损坏的 Windows 事件，确认异常为 `0xC0000374`；原始转储和报告已缺失。
+证据、查询边界和继续条件见 [崩溃调查记录](issue-8-crash-investigation.md)。
 
 本轮原始日志与检查器保存在 `.agent-contexts/issue-6-closeout-2026-09-14/`：
 
