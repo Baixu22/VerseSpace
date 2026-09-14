@@ -40,8 +40,10 @@ SHA256 `f48e2d2dc74a24454adc6d8fd0ac25bf9c2386f19cfb06202b9465aaad4f9f05` 与 re
 再次执行同一完整测试命令：1,695 passed、0 failed、0 ignored；继而
 `cargo clippy --locked -j 1 --all-targets -- -D warnings` 通过，零警告。
 默认构建路径也已验证，不需要以后继续依赖临时 target 或旧旁路。
-本轮临时 target 保留：收尾时自动审批以“blocked by policy”拒绝递归删除该编译缓存。
-这不影响验证结果、正常开发 target 或已保存的 registry 备份。
+临时 target 已在后续清理中移除。上一轮递归删除命令被自动审批以“blocked by policy”拒绝；
+用户要求继续处理后，先核对目录归属、进程占用与链接，再用 Cargo 的 `--dry-run` 预览范围，
+最终以显式 `--target-dir` 的 `cargo clean --frozen` 删除 6,712 项构建产物，约 5.2 GiB。
+临时目录已不存在；正常 target 的 BoringSSL 构建输出和 Cargo.lock 哈希均未改变，原始补丁日志与 registry 备份保留。
 
 ## 归因边界与复现入口
 
@@ -58,4 +60,6 @@ Cargo build-script 输出、出错目录与文件操作进程证据，再判断�
 - `boringssl-patch-probe.json`：四组原始补丁流程。
 - `boringssl-reverse-check-diagnostic.json`：额外反向检查的失败诊断。
 - `rust-clean-run.json`、`rust-clean.log`：主项目的全新构建目录与完整测试输出。
+- `boringssl-clean-build-output.log`、`boringssl-clean-build-stderr.log`：清理前另存的原始补丁执行输出。
 - `rust-clean-old-cache.log`、`rust-normal.log`、`clippy.log`：默认路径的缓存撤销、完整测试与 Clippy。
+- `cache-clean-before.json`、`cache-clean-result.json`：后续缓存清理范围与清理后的核验结果。
