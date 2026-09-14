@@ -86,6 +86,9 @@ export default defineConfig(async () => ({
 		environment: "jsdom",
 		setupFiles: "./src/test/setup.ts",
 		css: true,
+		// The full UI suite exceeds this Windows machine's process/memory budget
+		// at the default worker count; keep the normal test command reproducible.
+		maxWorkers: process.platform === "win32" ? 2 : undefined,
 		// GitHub Actions macos-latest runs ~50x slower than local for the
 		// same spec (transform + import easily consume tens of seconds
 		// before the first test runs). waitFor-heavy tests in the nav +

@@ -1,5 +1,8 @@
 # Issue #6 修复记录
 
+本文件记录 `cbb581d` 的第一轮处理：13 项已修复，第 3 项只更正口径、第 8 项只补文档和临时探针，不能称为 15 项全部解决。
+后续补修、独立复验和 GitHub 跟踪状态见 [第二轮收尾记录](issue-6-closeout.md)。
+
 2026-09-14。对应 [GitHub issue #6](https://github.com/Baixu22/VerseSpace/issues/6) 中的 15 项。
 本次核验并补齐已有工作区改动，逐项结果如下。
 
