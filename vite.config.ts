@@ -114,6 +114,10 @@ export default defineConfig(async () => ({
 			"e2e/**",
 			"worktrees/**",
 			".claude/worktrees/**",
+			// Local audit snapshots can contain copies of other packages' tests.
+			"**/.workbuddy/**",
+			"**/.agent-contexts/**",
+			"**/.evidence-sites/**",
 		],
 	},
 }));

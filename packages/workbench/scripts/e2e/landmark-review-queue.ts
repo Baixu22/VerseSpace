@@ -429,7 +429,7 @@ if (applyPath) {
 			"自审只说明「机制能在无真人的前提下跑通」；用户认可那一格仍然等人本人回答，不会被自审抬起。",
 		);
 	}
-	if (siteWide.endorsedShare !== null)
+	if (applySource === "human" && siteWide.endorsedShare !== null)
 		console.log(
 			siteWide.endorsedShare >= 0.8
 				? "L1 判据（≥ 0.8 · 全站）已满足，可据此收口 TF-0057 的地标验收。"

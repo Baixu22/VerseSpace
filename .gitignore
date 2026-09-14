@@ -115,6 +115,7 @@ packages/workbench/.evidence-sites/
 # transcribed into docs/ reports and task-forest node evidence
 /.agent-contexts/closeout-*/
 /.agent-contexts/closeout-*.log
+/.agent-contexts/issue-6-closeout-*/
 # agent-kernel runtime state (session checkpoints, message blobs)
 /.agent-kernel/
 # WorkBuddy AI project data (session memory, logs)
