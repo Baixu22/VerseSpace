@@ -1,21 +1,15 @@
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
-import {
-	extractFootprint,
-	hashPathClaim,
-	type ParsedStreamFootprint,
-} from "../blackboard/footprint";
 import { derive } from "../blackboard/metrics";
-import { writerSpoolDir } from "../blackboard/sessions";
 import {
 	crashLoopTripped,
 	type ProcHandle,
 	spawnSupervised,
 } from "../supervisor";
 import { envelopes } from "../tribunal/envelopes";
-import { foldAndAssess, shouldSuspend } from "../tribunal/lane-distress";
-import { extractUsage } from "./usage";
+import { shouldSuspend } from "../tribunal/lane-distress";
+import { createAgentCapture } from "./capture";
 
 export interface AgentSession {
 	workspot: string;
@@ -168,107 +162,12 @@ export async function startAgent(
 			() => {},
 		);
 
-	// R1: the runner path also feeds stream-json lines through the footprint
-	// extractor (the second capture channel — chat threads are the first)
 	const writerId = `agent:${workspot.id}`;
 	await bb.sessions.register(writerId, "agent", command, {
 		workspot: workspot.id,
 		task: session.goal,
 	});
-	const pending = new Map<string, ParsedStreamFootprint>();
-	let fpQueue: Promise<void> = Promise.resolve();
-	// R3 / TF-0084: each sample is folded as it arrives, never accumulated
-	// first — the cache hit rate is a per-turn number, and collapsing a run's
-	// turns into one sample would report every lane as 100% hits. The counters
-	// are flushed at the end of the run and on every `result` line, so a panel
-	// opened mid-run still shows numbers.
-	let laneMetrics = await bb.metrics.get(workspot.id);
-	let dirty = false;
-	const flushUsage = async (): Promise<void> => {
-		if (!dirty) {
-			return;
-		}
-		dirty = false;
-		await bb.metrics.save(workspot.id, laneMetrics).catch((err) => {
-			// lane metrics 落盘失败无声 = 成本读数静默漂移（2026-09-13 收尾 4.5）
-			console.error("[runner] lane metrics flush failed:", err);
-		});
-	};
-
-	const capture = (raw: string) => {
-		let event: Record<string, unknown>;
-		try {
-			event = JSON.parse(raw) as Record<string, unknown>;
-		} catch {
-			return;
-		}
-		const sample = extractUsage(event);
-		if (sample) {
-			// TF-0084：折叠 + 判定走 lane-distress 的同一个组合步（此前这里
-			// 内联重写了 derive/foldUsage/assessLane 三步，2026-09-13 收尾 §4.2
-			// 收敛到生产入口）。
-			const folded = foldAndAssess(laneMetrics, sample);
-			laneMetrics = folded.lane;
-			dirty = true;
-			const distress = folded.distress;
-			if (event.type === "result") {
-				fpQueue = fpQueue.then(flushUsage);
-			}
-			if (distress.length > 0) {
-				fpQueue = fpQueue.then(async () => {
-					for (const item of distress) {
-						await bb.tribunal.submit(item.envelope).catch((err) => {
-							// distress 升级到裁决队列失败无声 = 高压信号丢失
-							// （2026-09-13 收尾 4.5）
-							console.error("[runner] lane distress submit failed:", err);
-						});
-					}
-				});
-			}
-		}
-		const fp = extractFootprint(event, writerId);
-		if (fp) {
-			pending.set(fp.activity, fp);
-			fpQueue = fpQueue.then(async () => {
-				for (const used of fp.used) {
-					Object.assign(
-						used,
-						await hashPathClaim(
-							bb.projectRoot,
-							used.path,
-							writerSpoolDir(bb.paths, writerId),
-							used.span,
-						),
-					);
-				}
-			});
-			return;
-		}
-		if (event.type === "user") {
-			const message = event.message as
-				| { content?: Array<Record<string, unknown>> }
-				| undefined;
-			for (const block of message?.content ?? []) {
-				if (block.type === "tool_result") {
-					const toolCallId = String(block.tool_use_id ?? "");
-					const fpResult = pending.get(toolCallId);
-					if (fpResult) {
-						pending.delete(toolCallId);
-						fpQueue = fpQueue.then(async () => {
-							for (const gen of fpResult.generated) {
-								Object.assign(
-									gen,
-									await hashPathClaim(bb.projectRoot, gen.path),
-								);
-							}
-							await bb.sessions.recordActivity(writerId, fpResult);
-						});
-					}
-				}
-			}
-		}
-	};
-
+	const capture = await createAgentCapture(bb, writerId, workspot.id, worktree);
 	const proc: ProcHandle = spawnSupervised(command, {
 		label,
 		registryDir,
@@ -278,26 +177,27 @@ export async function startAgent(
 		onLine: (line, kind) => {
 			void logLine(kind)(line);
 			if (kind === "out") {
-				capture(line);
+				capture.line(line);
 			}
 		},
 	});
 
 	void proc.wait().then(async (outcome) => {
-		await fpQueue;
-		await flushUsage();
-		for (const fp of pending.values()) {
-			await bb.sessions.recordActivity(writerId, fp);
+		let captureError: string | undefined;
+		try {
+			captureError = await capture.finish();
+		} catch (error) {
+			captureError = `agent 流记录失败：${String(error)}`;
 		}
-		pending.clear();
 		await bb.sessions.setStatus(writerId, "idle");
 		const finished: AgentSession = {
 			...session,
-			status: outcome.exitCode === 0 ? "done" : "failed",
+			status: outcome.exitCode === 0 && !captureError ? "done" : "failed",
 			finishedAt: new Date().toISOString(),
 			exitCode: outcome.exitCode,
 			error:
 				outcome.error ??
+				captureError ??
 				(outcome.exitCode !== 0 && outcome.exitCode !== null
 					? `异常退出（exitCode ${outcome.exitCode}）`
 					: undefined),

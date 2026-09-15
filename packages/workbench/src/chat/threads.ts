@@ -1336,7 +1336,10 @@ export class ChatThreads {
 						};
 						turn.messageParts.push(part);
 						turn.emit({ type: "tool", part });
-						const fp = extractFootprint(event, id);
+						const fp = extractFootprint(
+							{ ...event, message: { content: [block] } },
+							id,
+						);
 						if (fp) {
 							turn.pendingFootprints.set(fp.activity, fp);
 							turn.fpQueue = turn.fpQueue.then(async () => {
@@ -1375,6 +1378,7 @@ export class ChatThreads {
 						const fp = turn.pendingFootprints.get(toolCallId);
 						if (fp) {
 							turn.pendingFootprints.delete(toolCallId);
+							if (block.is_error === true) continue;
 							turn.fpQueue = turn.fpQueue.then(async () => {
 								// hash writes at result time: the state the write
 								// actually produced

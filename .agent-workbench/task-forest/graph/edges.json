@@ -3058,5 +3058,41 @@
     "to": "TF-0057",
     "type": "child_of",
     "updated_at": "2026-09-14T12:46:53.667355Z"
+  },
+  "TFE-0260": {
+    "blocking": false,
+    "confidence": 0.95,
+    "created_at": "2026-09-15T23:30:03.444265Z",
+    "created_from_session": null,
+    "from": "TF-0174",
+    "id": "TFE-0260",
+    "reason": "GUI 准入是前提守护产品边界的后续决策",
+    "to": "TF-0138",
+    "type": "child_of",
+    "updated_at": "2026-09-15T23:30:03.444265Z"
+  },
+  "TFE-0261": {
+    "blocking": false,
+    "confidence": 0.95,
+    "created_at": "2026-09-15T23:30:03.444265Z",
+    "created_from_session": null,
+    "from": "TF-0175",
+    "id": "TFE-0261",
+    "reason": "当前审计修复直接服务前提守护与交互主线",
+    "to": "TF-0057",
+    "type": "child_of",
+    "updated_at": "2026-09-15T23:30:03.444265Z"
+  },
+  "TFE-0262": {
+    "blocking": false,
+    "confidence": 0.95,
+    "created_at": "2026-09-15T23:30:03.444265Z",
+    "created_from_session": null,
+    "from": "TF-0175",
+    "id": "TFE-0262",
+    "reason": "补足既有真实模型执行闭环的 batch agent run 通道证据",
+    "to": "TF-0155",
+    "type": "contributes_to",
+    "updated_at": "2026-09-15T23:30:03.444265Z"
   }
 }

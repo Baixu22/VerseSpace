@@ -1,0 +1,472 @@
+{
+	"schemaVersion": 1,
+	"date": "2026-09-16",
+	"baselineHead": "da24a6187b6ee5f4df12620750993587ea700632",
+	"source": "local engineering verification of the audit changes",
+	"suites": {
+		"frontend": {
+			"exitCode": 0,
+			"passed": 1692
+		},
+		"sidecar": {
+			"exitCode": 0,
+			"passed": 418,
+			"skipped": 1
+		},
+		"workbench": {
+			"exitCode": 0,
+			"passed": 700,
+			"snapshots": 1,
+			"files": 110
+		},
+		"workbenchUi": {
+			"exitCode": 0,
+			"passed": 27
+		},
+		"contextRot": {
+			"exitCode": 0,
+			"passed": 65
+		},
+		"rust": {
+			"exitCode": 0,
+			"passed": 1695,
+			"ignored": 0,
+			"targets": 15
+		}
+	},
+	"total": {
+		"passed": 4597,
+		"skipped": 1,
+		"failed": 0
+	},
+	"gates": {
+		"typecheck": {
+			"exitCode": 0,
+			"projects": 5
+		},
+		"biome": {
+			"exitCode": 0,
+			"files": 1284
+		},
+		"clippy": {
+			"exitCode": 0,
+			"allTargets": true,
+			"warnings": 0
+		},
+		"rustFormat": {
+			"exitCode": 0
+		},
+		"workbenchBuild": {
+			"exitCode": 0,
+			"embeddedAssets": 14,
+			"warning": "main Vite chunk exceeds 500 kB"
+		},
+		"builtSmoke": {
+			"exitCode": 0,
+			"targets": ["native", "js"],
+			"checks": ["init", "doctor", "stats", "headlessUi", "bundledUi"]
+		},
+		"contextBuild": {
+			"exitCode": 0
+		},
+		"doctor": {
+			"exitCode": 0,
+			"blackboardOk": true,
+			"issues": [],
+			"stalePaths": 0
+		},
+		"contextScan": {
+			"exitCode": 0,
+			"total": 350,
+			"valid": 325,
+			"generated": 2,
+			"unverified": 23,
+			"stale": 0
+		}
+	},
+	"codeDigests": [
+		{
+			"path": "packages/workbench/src/agents/capture.ts",
+			"sha256": "d458b8bcdfd69d9f96b67c2cbcf94d8eb5003c637dc6dc61002b238cbf87a034"
+		},
+		{
+			"path": "packages/workbench/src/agents/capture.test.ts",
+			"sha256": "ca28ba1d220c8a31de58e68ba8d111ca25d580213d92e784309f6562fc7cc315"
+		},
+		{
+			"path": "packages/workbench/src/agents/runner.ts",
+			"sha256": "36a6f83e2001fa98edc617dbcddb25b032c9776a311cc98f339fa4d4b78c858e"
+		},
+		{
+			"path": "packages/workbench/src/chat/threads.ts",
+			"sha256": "c26569979ba275522675a6bef92dc4f78040677c8ef0f9bcb23935bb43aeaf30"
+		},
+		{
+			"path": "packages/workbench/src/chat/tool-footprints.test.ts",
+			"sha256": "c8cd6519d1a697db6f9a8345e8d69911e353fc3314425950167e2c5e533b2ad7"
+		},
+		{
+			"path": "packages/workbench/src/supervisor/index.ts",
+			"sha256": "47a4c5eb96a6ffd5c17df625e57c9e39e274776e75ce486350b40e79bef243a1"
+		},
+		{
+			"path": "packages/workbench/src/supervisor/argv.test.ts",
+			"sha256": "549b1a2f890abbe3f1f8b486d0755d71cd7b9fa6985bbbf4a755fd49675ccb41"
+		},
+		{
+			"path": "packages/workbench/src/types/config.ts",
+			"sha256": "9709cdc037f332a97ccdd341eb6f8c610414ce5d2eced02fe6a73b44c20d77d9"
+		},
+		{
+			"path": "packages/workbench/src/types/config.test.ts",
+			"sha256": "840e6fb646f57c8ef5cf58fd7e04e51604ee379e1113bbaea16eff8a545ef8a5"
+		},
+		{
+			"path": "packages/workbench/scripts/e2e/agent-run-live.ts",
+			"sha256": "5dad1473b10bf3187deb8e651e13598ba8901a2c1eec9148ad7b583e70343cd1"
+		},
+		{
+			"path": "packages/workbench/scripts/e2e/agent-run-check.ts",
+			"sha256": "9c7e990cc6e519212648754953f3781be30bd2c23f00efcaeb2b28c21f2f6534"
+		},
+		{
+			"path": "packages/workbench/scripts/e2e/live-agent.ts",
+			"sha256": "8fce477e70820339fdb5e89e61cc2cd27b70b8a660958968ff248ae67c7fc274"
+		},
+		{
+			"path": "packages/workbench/src/ui/assets.generated.js",
+			"sha256": "add05d8243946a57cb2efb862a98f32bbee9597246a02c69e26d275cc3c5ba8b"
+		}
+	],
+	"artifacts": [
+		{
+			"path": "verification-summary.json",
+			"sha256": "c5810af5c1a3d26d4c8b3bcedd0e964127397faa5a15dd9e495cd1b1ada24e3b"
+		},
+		{
+			"path": "workbench-full.log",
+			"sha256": "471e0542037360b689f61e01a46803b23f7aa1d4447b8be2d48eca8de010581f"
+		},
+		{
+			"path": "frontend-full.log",
+			"sha256": "ac734fe647754e9426532c4583c51d4f739ceebf7b9dd6961e83c1af758d4103"
+		},
+		{
+			"path": "sidecar-full.log",
+			"sha256": "31fa03c2b42e2909a6df7b759b774e2c6fd423e6c84aca26bf0bdee8b1d8263d"
+		},
+		{
+			"path": "workbench-ui-full.log",
+			"sha256": "f7bcd02df7ced93d98a17f69df607403072791fb4c2d92b660090b31655e70eb"
+		},
+		{
+			"path": "context-rot-full.log",
+			"sha256": "c3a57ed30e93c3ca8b9aab374d29623a9737d40943d082db88921e04512aedaa"
+		},
+		{
+			"path": "rust-full.log",
+			"sha256": "25ea76d952e3e1d28aa99acc582216b80ad80efadfad55fa0bd367ed6018216e"
+		},
+		{
+			"path": "typecheck-final.log",
+			"sha256": "a157887cd0f3178f7251af09de53e4fcfdefbaaf8f583c97aee2318912c62fc3"
+		},
+		{
+			"path": "biome-final.log",
+			"sha256": "ce2d75e0674162957754c981699fbbf00e5a5808dc493c1f14e74cefa82d8bea"
+		},
+		{
+			"path": "clippy-final.log",
+			"sha256": "f7f2fec29d686f2c1da3e407e5362405b3600b99b5e0adf73034a25e8ab2ac65"
+		},
+		{
+			"path": "workbench-build.log",
+			"sha256": "38813e5ae737ed3a532dfaee97a3b429e0c2728bd242606887c0e39d2a0e3f27"
+		},
+		{
+			"path": "workbench-built-smoke.log",
+			"sha256": "ee608d35b4d338b8844c746e3490571b56bc92dbe6785e7d29f2ec65a3d06e83"
+		},
+		{
+			"path": "doctor-final.json",
+			"sha256": "c93600ab4fbb9871a92e4e6f4541d88c24efc62f03d30e2d128dc27fb9a6f361"
+		},
+		{
+			"path": "context-repo-final.json",
+			"sha256": "295dfe7c1144cc882ea3e20cfeff511650ac8f0e914be20760fe45427ba5d839"
+		},
+		{
+			"path": "agent-run-live-sW9dur/report.json",
+			"sha256": "e38d314b1253a4f446b4064dc4e47e4062939a6c3a24bcf8aed419f8737deb03"
+		},
+		{
+			"path": "ledger-annotation.json",
+			"sha256": "c00ea969608f2cd2f4c1dec5408a1637244b046e70e1cf0924a470bbb6a8ae0c"
+		}
+	],
+	"liveModel": {
+		"provider": "openai-compatible-live-adapter",
+		"model": "senseaudio-s2-flash",
+		"source": "live-model-scripted-scenario",
+		"startedAt": "2026-09-15T22:48:29.734Z",
+		"finishedAt": "2026-09-15T22:48:37.139Z",
+		"modelSessionIds": [
+			"53455d6e-9e5f-41b9-8fa6-2723b65c6c82",
+			"50b65625-5ace-4919-abf4-2b47b6449a18",
+			"8e3d7a10-933e-4962-bcab-b4ff378e9018"
+		],
+		"sessions": [
+			{
+				"workspot": "reader",
+				"status": "done",
+				"exitCode": 0,
+				"startedAt": "2026-09-15T22:48:30.908Z",
+				"finishedAt": "2026-09-15T22:48:33.011Z",
+				"streamLog": ".workbench/agents/reader/2026-09-15T22-48-30-908Z.jsonl",
+				"streamSha256": "8b248167a98f350ac823ac10c8a01510205e2c1f970991f562edbac1e9cc6a58"
+			},
+			{
+				"workspot": "writer",
+				"status": "done",
+				"exitCode": 0,
+				"startedAt": "2026-09-15T22:48:33.199Z",
+				"finishedAt": "2026-09-15T22:48:34.606Z",
+				"streamLog": ".workbench/agents/writer/2026-09-15T22-48-33-199Z.jsonl",
+				"streamSha256": "aa74ba7d34b309f3e0a53c0b67fbaf245593534606e515fe7471464fc116ff68"
+			},
+			{
+				"workspot": "reader",
+				"status": "done",
+				"exitCode": 0,
+				"startedAt": "2026-09-15T22:48:34.863Z",
+				"finishedAt": "2026-09-15T22:48:37.111Z",
+				"streamLog": ".workbench/agents/reader/2026-09-15T22-48-34-863Z.jsonl",
+				"streamSha256": "269c006552391e91b530884c6d0ee340d85151feb2c9ba3b35d35a5c7d3aac2d"
+			}
+		],
+		"chain": {
+			"stale": 1,
+			"delivered": 1,
+			"repaired": true,
+			"footprintEvents": 5,
+			"started": 3,
+			"finished": 3
+		},
+		"calls": [
+			{
+				"at": "2026-09-15T22:48:31.734Z",
+				"sessionId": "53455d6e-9e5f-41b9-8fa6-2723b65c6c82",
+				"responseId": "chatcmpl-1fd74d34-b3c0-47d6-adab-78ff2ddcc258",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "tool_calls",
+				"elapsedMs": 720,
+				"usage": {
+					"promptTokens": 793,
+					"completionTokens": 29,
+					"totalTokens": 822
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:32.524Z",
+				"sessionId": "53455d6e-9e5f-41b9-8fa6-2723b65c6c82",
+				"responseId": "chatcmpl-1533d77b-0298-4c97-864c-b1f5f1b9f615",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "tool_calls",
+				"elapsedMs": 788,
+				"usage": {
+					"promptTokens": 847,
+					"completionTokens": 44,
+					"totalTokens": 891
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:32.995Z",
+				"sessionId": "53455d6e-9e5f-41b9-8fa6-2723b65c6c82",
+				"responseId": "chatcmpl-5aada3d2-6485-4ca5-87e1-0a09dfaf2fc8",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "stop",
+				"elapsedMs": 469,
+				"usage": {
+					"promptTokens": 911,
+					"completionTokens": 17,
+					"totalTokens": 928
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:34.188Z",
+				"sessionId": "50b65625-5ace-4919-abf4-2b47b6449a18",
+				"responseId": "chatcmpl-8e790566-395b-4829-aecb-4bd63326e4a1",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "tool_calls",
+				"elapsedMs": 887,
+				"usage": {
+					"promptTokens": 775,
+					"completionTokens": 48,
+					"totalTokens": 823
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:34.588Z",
+				"sessionId": "50b65625-5ace-4919-abf4-2b47b6449a18",
+				"responseId": "chatcmpl-ae380050-893d-49ac-bebf-98054f5946e6",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "stop",
+				"elapsedMs": 397,
+				"usage": {
+					"promptTokens": 843,
+					"completionTokens": 12,
+					"totalTokens": 855
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:35.656Z",
+				"sessionId": "8e3d7a10-933e-4962-bcab-b4ff378e9018",
+				"responseId": "chatcmpl-1f21113c-8abf-4f04-a9bf-d2fe266f097d",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "tool_calls",
+				"elapsedMs": 691,
+				"usage": {
+					"promptTokens": 1288,
+					"completionTokens": 29,
+					"totalTokens": 1317
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:36.499Z",
+				"sessionId": "8e3d7a10-933e-4962-bcab-b4ff378e9018",
+				"responseId": "chatcmpl-cbc335f7-62e6-4124-a37a-cfaa780e48e9",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "tool_calls",
+				"elapsedMs": 841,
+				"usage": {
+					"promptTokens": 1342,
+					"completionTokens": 44,
+					"totalTokens": 1386
+				}
+			},
+			{
+				"at": "2026-09-15T22:48:37.095Z",
+				"sessionId": "8e3d7a10-933e-4962-bcab-b4ff378e9018",
+				"responseId": "chatcmpl-1e0b605b-1df6-496f-822c-ceebad387e43",
+				"model": "senseaudio-s2-flash",
+				"finishReason": "stop",
+				"elapsedMs": 593,
+				"usage": {
+					"promptTokens": 1406,
+					"completionTokens": 23,
+					"totalTokens": 1429
+				}
+			}
+		],
+		"readerFootprint": [
+			{
+				"activity": "chatcmpl-tool-a9bc533886f610c3",
+				"agent": "agent:reader",
+				"used": [
+					{
+						"path": "src/alpha.ts",
+						"version": "d763274f1e57b6c61f5993e0147a36dfeca8a67a84a8a81a15d47dd9d6d9e8ec",
+						"durability": "volatile",
+						"spool": "mu39jn5o-src_alpha.ts"
+					}
+				],
+				"generated": [],
+				"facets": {
+					"tool": "Read"
+				},
+				"eventId": "fp-5ff5112b2c7ce82e",
+				"timestamp": "2026-09-15T22:48:31.750Z",
+				"eventSeq": 3,
+				"seq": 1
+			},
+			{
+				"activity": "chatcmpl-tool-a49b9e886504c206",
+				"agent": "agent:reader",
+				"used": [],
+				"generated": [
+					{
+						"path": "src/read-result.txt",
+						"version": "da87c6e8e7427d8f7afc7b2c7b93862005d5b7f9d9bbbea7c366c9362ba9e456",
+						"durability": "volatile"
+					}
+				],
+				"facets": {
+					"tool": "Write"
+				},
+				"eventId": "fp-587013ae8155e0e4",
+				"timestamp": "2026-09-15T22:48:32.540Z",
+				"eventSeq": 7,
+				"seq": 2
+			},
+			{
+				"activity": "chatcmpl-tool-aea0962a0c8906fa",
+				"agent": "agent:reader",
+				"used": [
+					{
+						"path": "src/alpha.ts",
+						"version": "8f3da00996c47e299bbb735049e043b0777da3885c2f33a81a57b49ee33b94cf",
+						"durability": "volatile",
+						"spool": "mu39jq6x-src_alpha.ts"
+					}
+				],
+				"generated": [],
+				"facets": {
+					"tool": "Read"
+				},
+				"eventId": "fp-0c091e4ba165c7fa",
+				"timestamp": "2026-09-15T22:48:35.684Z",
+				"eventSeq": 23,
+				"seq": 3
+			},
+			{
+				"activity": "chatcmpl-tool-9433f6f3ed445b7e",
+				"agent": "agent:reader",
+				"used": [],
+				"generated": [
+					{
+						"path": "src/read-result.txt",
+						"version": "7a77dcee18eef52f833cf7cdca7e7c226a36526bdba99e70619bcd6b1d2d004e",
+						"durability": "volatile"
+					}
+				],
+				"facets": {
+					"tool": "Write"
+				},
+				"eventId": "fp-7d70fbe1a36125c3",
+				"timestamp": "2026-09-15T22:48:36.517Z",
+				"eventSeq": 27,
+				"seq": 4
+			}
+		],
+		"humanWriters": 0,
+		"limitations": [
+			"模型工具实际执行，任务和通知转发由验证脚本安排；不代表自然使用或真人认可。",
+			"通知由本验证宿主通过下一次 agent run 的 prompt 转发；未声称批处理有常驻推送通道。",
+			"批处理会话和原始模型流保存在 agents/；不创建 GUI chat thread。"
+		]
+	},
+	"ledger": {
+		"snapshotAt": "2026-09-10T19:26:19.967Z",
+		"structural": [
+			"TF-0138",
+			"TF-0140",
+			"TF-0144",
+			"TF-0153",
+			"TF-0136",
+			"TF-0137",
+			"TF-0155"
+		],
+		"evidenceGaps": ["TF-0142", "TF-0154"],
+		"measurementsUnchanged": true,
+		"sourceMissing": true,
+		"beforeSha256": "b8a3238a304a839626cb370ea7f5f2451ab339503f3db80932f6c8055ed7deef",
+		"afterSha256": "5a8a6ecc9936e5c8d351fe4fd01c6607995d160d628d9953ac2feae638902e7c"
+	},
+	"boundaries": [
+		"This records local gates, not remote CI.",
+		"The real model scenario was scripted and provides no natural-user endorsement.",
+		"The fixture host forwarded the notice into the next batch prompt; no resident batch push channel is claimed.",
+		"Historical heap-crash attribution remains separate from current engineering verification.",
+		"Raw fixtures, process credentials, and model transcript directories remain local."
+	]
+}

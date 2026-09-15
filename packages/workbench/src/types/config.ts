@@ -3,6 +3,8 @@ import { z } from "zod";
 export const schedulerPolicies = ["manual", "semi-auto", "auto"] as const;
 export type SchedulerPolicy = (typeof schedulerPolicies)[number];
 
+const DEFAULT_AGENT_COMMAND = "claude -p --verbose --output-format stream-json";
+
 export const workbenchConfigSchema = z.object({
 	project: z.string().default(""),
 	scheduler: z
@@ -55,9 +57,19 @@ export const workbenchConfigSchema = z.object({
 	/** Agent CLI invoked per workspot (batch mode reads the prompt on stdin). */
 	agent: z
 		.object({
-			command: z.string().default("claude -p --output-format stream-json"),
+			// --verbose is required by current claude CLI with stream-json in
+			// --print mode ("...requires --verbose"); the chat lane already ships
+			// it. Without it the agent lane's default errors before any prompt.
+			command: z
+				.string()
+				.default(DEFAULT_AGENT_COMMAND)
+				.transform((command) =>
+					command === "claude -p --output-format stream-json"
+						? DEFAULT_AGENT_COMMAND
+						: command,
+				),
 		})
-		.default({ command: "claude -p --output-format stream-json" }),
+		.default({ command: DEFAULT_AGENT_COMMAND }),
 	/**
 	 * Chat runtime provider. claude = local CLI (stream-json); the rest are
 	 * HTTP streaming APIs. A saved apiKey takes precedence over the optional

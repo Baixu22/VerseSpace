@@ -79,19 +79,13 @@ unknown 时携带，渲染成行内的「；处置：…」：
 | 分类推导 vs issue 的 A 类清单 | 逐条一致（7 行 structural），TF-0142 / TF-0154 落 evidence-gap 且带处置 |
 | 生成器实跑 | `bun run scripts/fit-ledger.ts` 的 fit 列输出 `unknown（结构性）` 与 `unknown（证据缺口）`，处置渲染进行内 |
 
-## 一个刻意不做的事：重跑 `docs/fit-ledger.md`
+## 2026-09-16：已交付账本的分类补录
 
-已提交的账本头部写着「数据源黑板：`C:\Users\27933\AppData\Local\Temp\
-workbench-e2e-live-tenant\.workbench`」。**该临时目录已被系统清理**，
-本机不存在了。仓库自己的 `.workbench` 是另一个现场（实测 7 线程 / 35 计入 /
-25 unknown，而提交的账本是 97 线程 / 27 计入 / 9 unknown）。
+原始临时黑板已不存在，不能用另一个现场重算后冒充旧读数。本轮按当前 `PROBES` 对已提交的历史账本执行确定性的分类补录：7 行标为结构性 unknown，TF-0142/TF-0154 标为证据缺口并写入已有处置结论，同时加入禁止把 unknown 称为已验证的纪律。
 
-用它重跑会让全部读数换成另一个现场的数据，而头部仍声称是原现场——
-这比不重跑更糟。**账本每周重跑覆盖一次**，分类声明会在下一次
-对正确黑板的例行重跑时自动落进 `docs/fit-ledger.md`。本 issue 的验收
-不依赖那一次重跑：分类是推导规则，已由 `ledger.test.ts` 钉住。
+逐行核对并保持节点、状态、fit 值、可观测指标及 measured 值不变；生成时间和数据源仍为 2026-09-10 快照。文件头明确说明原始现场缺失，未把补分类当成重新采样。
 
-（这同 issue #9 的提案不直接改图是同一类取舍：工具链外的产物不手改。）
+补录脚本及前后 SHA256、数值不变断言位于 `.agent-contexts/audit-errors-2026-09-16/run-20260915T222636Z/annotate-fit-ledger.ts` 和 `ledger-annotation.json`。未来真实重跑仍使用已经具备分类逻辑的生成器。
 
 ## 验收标准对照
 
@@ -103,4 +97,4 @@ workbench-e2e-live-tenant\.workbench`」。**该临时目录已被系统清理**
 
 **未决（不影响本 issue）**：TF-0154 的 unknown 只能由 issue #12 的 J3 条件②
 （真实使用者参与复核）解开；TF-0167 §F5 已否决受控实验路线，本 issue 不复活它。
-`docs/fit-ledger.md` 的下一次例行重跑才会把分类渲染进文件。
+`docs/fit-ledger.md` 已补齐分类，历史数值未重算；新的自然使用结论仍需相应证据。

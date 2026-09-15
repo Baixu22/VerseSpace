@@ -286,10 +286,13 @@ async function resolveWindowsExecutable(
  * quoted `cmd.exe /d /s /c` wrapper (the only place a shell is involved).
  */
 export function spawnSupervised(
-	commandLine: string,
+	commandLine: string | readonly string[],
 	options: SpawnOptions,
 ): ProcHandle {
-	const argv = splitCommandLine(commandLine);
+	const argv =
+		typeof commandLine === "string"
+			? splitCommandLine(commandLine)
+			: [...commandLine];
 	const registryDir = options.registryDir;
 	let timedOut = false;
 	let killed = false;
@@ -409,7 +412,10 @@ export function spawnSupervised(
 										label: options.label,
 										pid,
 										startedAt: new Date().toISOString(),
-										command: commandLine,
+										command:
+											typeof commandLine === "string"
+												? commandLine
+												: JSON.stringify(commandLine),
 									} satisfies PidRecord,
 									null,
 									2,

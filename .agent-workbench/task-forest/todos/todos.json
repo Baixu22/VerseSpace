@@ -1,6 +1,66 @@
 [
   {
     "alignment": {
+      "fit": "aligned",
+      "fit_confidence": 0.95,
+      "user_goal": "解决当前审计错误并提供可核验的修复与验证证据",
+      "validation_plan": [
+        "核对具体产物与原始执行日志",
+        "任务森林 validate 与 export 通过"
+      ],
+      "why_not_enough": "工程验证不代表自然使用价值；当前工作区尚未提交",
+      "why_this_task": "直接收口 2026-09-15 审计点名的代码、决策记录和证据缺口"
+    },
+    "blocked_by": [],
+    "confidence": 0.95,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0174",
+    "kind": "decision",
+    "next_action": "复核产物并决定是否标记完成",
+    "priority": 2,
+    "progress": 100.0,
+    "purpose": "让 GUI 范围、生产路由和已有执行能力保持一致，并记录删除确认的真实边界",
+    "ready": true,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
+    "status": "review_needed",
+    "success_metrics": [],
+    "title": "ADR-0012：GUI 写端点准入复核与事实订正"
+  },
+  {
+    "alignment": {
+      "fit": "aligned",
+      "fit_confidence": 0.95,
+      "user_goal": "解决当前审计错误并提供可核验的修复与验证证据",
+      "validation_plan": [
+        "核对具体产物与原始执行日志",
+        "任务森林 validate 与 export 通过"
+      ],
+      "why_not_enough": "工程验证不代表自然使用价值；当前工作区尚未提交",
+      "why_this_task": "直接收口 2026-09-15 审计点名的代码、决策记录和证据缺口"
+    },
+    "blocked_by": [],
+    "confidence": 0.95,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0175",
+    "kind": "task",
+    "next_action": "复核产物并决定是否标记完成",
+    "priority": 2,
+    "progress": 100.0,
+    "purpose": "修复真实批处理状态/足迹缺陷，完成审计所需的真实执行、账本分类和可复核记录",
+    "ready": true,
+    "remaining_minutes_max": 0,
+    "remaining_minutes_min": 0,
+    "status": "review_needed",
+    "success_metrics": [],
+    "title": "审计 #9–#13 修复与真实批处理验证（2026-09-16）"
+  },
+  {
+    "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
       "user_goal": "确定历史故障的真实原因，避免误报修复。",

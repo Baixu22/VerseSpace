@@ -67,7 +67,16 @@ async function main() {
 		provider: "openrouter",
 		cwd: root,
 	});
-	for await (const line of createInterface({ input: process.stdin })) {
+	const textInput = arg("--input-format") === "text";
+	const inputLines = textInput
+		? [
+				JSON.stringify({
+					type: "user",
+					message: { content: await Bun.stdin.text() },
+				}),
+			]
+		: createInterface({ input: process.stdin });
+	for await (const line of inputLines) {
 		if (!line.trim()) continue;
 		const input = JSON.parse(line) as {
 			type: string;
@@ -75,6 +84,7 @@ async function main() {
 		};
 		if (input.type !== "user" || typeof input.message?.content !== "string")
 			continue;
+		if (!input.message.content.trim()) throw new Error("未收到 prompt");
 		history.push({ role: "user", content: input.message.content });
 		const turnGoal: LiveGoal | null = goalFromUserText(input.message.content);
 		const turnSpans = spansFromUserText(input.message.content);
@@ -198,6 +208,7 @@ async function main() {
 				session_id: sessionId,
 			});
 		} catch (error) {
+			if (textInput) process.exitCode = 1;
 			const message = String(error).split(provider.key).join("[REDACTED]");
 			emit({
 				type: "result",

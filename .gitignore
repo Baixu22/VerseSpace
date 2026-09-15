@@ -116,6 +116,8 @@ packages/workbench/.evidence-sites/
 /.agent-contexts/closeout-*/
 /.agent-contexts/closeout-*.log
 /.agent-contexts/issue-6-closeout-*/
+# Audit raw fixtures and logs stay local; reviewed summaries live in docs/.
+/.agent-contexts/audit-errors-*/
 # agent-kernel runtime state (session checkpoints, message blobs)
 /.agent-kernel/
 # WorkBuddy AI project data (session memory, logs)

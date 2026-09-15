@@ -1,5 +1,8 @@
 # Workbench 收尾扫描与完整性报告 · 2026-09-15
 
+> 2026-09-16 复验更新：[审计修复与验证](audit-errors-closeout-2026-09-16.md)记录了后续状态。
+> 本文的森林和指标数字保留 9 月 15 日扫描快照；后续已补齐 ADR 事实、argv 回归、真实 agent run 与 unknown 分类，并通过任务森林 CLI 创建正式节点 TF-0174/TF-0175。
+
 范围：`packages/workbench`、`apps/workbench-ui`、`packages/context-rot`、任务森林（`.agent-workbench/task-forest/`）、`docs/`。
 方法：森林普查（173 节点逐条读取）+ 三套测试套件 + 三个包 typecheck + 官方构建产物的冒烟 + 逐符号死代码扫描 + 全命令树的真实 argv 执行 + ADR 逐条比对。
 
@@ -55,7 +58,7 @@ aligned 3 · partial 15 · weak 0 · misaligned 0 · **unknown 9**
 
 **前提守护的端到端证据**（四个 `.evidence-sites/`）：足迹 → 重叠 → 通知 → 修复的链条闭合。soak 现场 9766 次重叠 / 3075 次通知 / 送达 4 条 / 修复 4 条，恒等式精确闭合（L1/L2/L3 全零）。
 
-**未能验证的部分**（诚实标注）：本机没有活动的 agent CLI 凭据，`agent run` 与 live 通道只能通过 fixture 与沙箱验证，没有跑过真实模型会话。
+**本次扫描未覆盖的部分**：9 月 15 日扫描没有执行真实 `agent run`，不能从 fixture 推断通过。9 月 16 日已补做 3 个真实模型批处理会话，读写及前提修复闭环通过，见 [issue #11](issue-11-closeout.md)。
 
 ---
 
@@ -102,7 +105,7 @@ aligned 3 · partial 15 · weak 0 · misaligned 0 · **unknown 9**
 
 ## 四、设计是否偏离了开发的边界或初衷
 
-结论：**ADR-0010 的产品边界（七条非目标）在代码里全部被遵守；ADR-0005 的 GUI 范围被实质性超出，且没有补一份决策记录。**
+扫描时结论：**ADR-0010 的产品边界（七条非目标）在代码里全部被遵守；ADR-0005 的 GUI 范围需要后续决策记录。** 后续 [ADR-0012](decisions/0012-gui-write-endpoint-admission.md) 已按 27 条真实路由补齐并复核；下面保留问题发现时的依据。
 
 ### ADR-0010（前提守护架构与产品边界）——遵守
 
@@ -152,9 +155,9 @@ Helmor 卖的是「前提守护保护真实开发者」。但：
 
 TF-0167 的 J3 给出了重启条件（三者同时满足）：①human 读集有自动生产路径；②有真实使用者参与封印复核；③真实使用窗口的读数积累。**重启时新开节点，不复活 TF-0167。**
 
-**R3 · 本机无活动 agent 凭据**
+**R3 · 扫描时缺少真实 agent run 验证（后续已补齐）**
 
-`agent run` 与 live 通道只能用 fixture 验证，没有跑过真实模型会话。这不代表坏，但代表「上线前最好在真实环境里跑一次」。
+9 月 16 日使用有效 SenseAudio 通道完成 3 个真实批处理会话、8 次模型调用及足迹/通知/复读修复验证。旧凭据的 HTTP 401 与本机代理失败现场保留，未算通过。该工程场景不替代 R1/R2 的自然使用评估。
 
 **R4 · 9 行 fit `unknown`**
 
@@ -167,10 +170,11 @@ TF-0167 的 J3 给出了重启条件（三者同时满足）：①human 读集�
 | 优先级 | 事项 | 状态 |
 | --- | --- | --- |
 | **P0** | 落库本次三处修复（`cli.ts` / `commands/ws.ts` / `cli.test.ts`）——P0 崩溃修复现在只在工作区，未提交，森林状态也未同步 | **已完成**（`d0d9caa`，已推送；667 用例全绿） |
-| **P0** | 补一份 ADR 记录 GUI 写操作端点的准入决策，把 ADR-0005 的「后续逐个评估」正式收口 | **待处理**（issue #9） |
-| **P1** | 把「注册成功但调用时崩」这个故障类纳入回归约定——本次暴露的是测试设计漏洞（只测形状不测执行）。新增的 `argv execution` 块已覆盖 tribunal 与 ws，其他带操作数的命令（`goal show <id>`、`checkpoint restore <id>` 等）可照此扩展 | 已覆盖先头部分，剩余部分见 issue #10 |
-| **P2** | 在有真实 agent 凭据的环境里跑一次 `agent run` 端到端 | **待处理**（issue #11） |
-| **不上线就不必做** | TF-0167 J3 三项 + L1 有真实使用者参与 | 重启条件已记录，见 issue #12 |
+| **P0** | 补 ADR 并对照实际 GUI 写端点 | ADR 与代码事实已订正，正式节点 TF-0174 已创建，见 [issue #9](issue-9-closeout.md) |
+| **P1** | 全部带操作数命令经过真实 argv 执行 | 32 项 CLI 测试及完整 Workbench 700 项复验通过，见 [issue #10](issue-10-closeout.md) |
+| **P2** | 真实 `agent run` 端到端 | 3 个真实模型会话通过，见 [issue #11](issue-11-closeout.md) |
+| **记录性事项** | TF-0167 J3 三项 + L1 重启条件 | 可核验判据已补齐，产品评估仍未启动，见 [issue #12](issue-12-closeout.md) |
+| **P2** | fit 账本 unknown 分类处置 | 7 条结构性 + 2 条证据缺口已在历史账本标注，数值不变，见 [issue #13](issue-13-closeout.md) |
 
 ---
 
