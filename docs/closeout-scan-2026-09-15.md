@@ -79,13 +79,19 @@ aligned 3 · partial 15 · weak 0 · misaligned 0 · **unknown 9**
 - `--task`、`--branch` 在运行时是必需的（缺了会报错），但声明成了 `.option()`，于是产生了一段**永远不可达的守卫代码**（运行时分支被参数解析器挡死）。
 - 修复：改为 `.requiredOption()`，删掉不可达守卫，类型从 `task?: string` 收紧为 `task: string`。错误信息也从运行时异常提前到参数解析阶段，对用户更友好。
 
-### 13 个未使用的类型别名（装饰性，无害）
+### 13 个未使用的类型别名 —— **本条是误报，已在 2026-09-13 由 issue #4 收口**
 
-全部是 `types/` 下的类型别名，没有任何运行时代码或值导出引用它们：
+初次扫描把它们列为「装饰性、无害、建议删除」。复核后发现这是**扫描方法的问题**：只做了引用计数，没有读注释。
 
-`LifecycleEventLike`（chat/resume-card）、`Artifact`、`BlackboardEffects`、`UnblockEntry`（types/checkpoint）、`AcceptanceCriteria`（types/goal）、`WriterStatus`（types/session）、`CheckpointZone`（types/snapshot）、`ConflictsFile`、`QueueFile`（types/state）、`TribunalFolded`、`TribunalItemState`（types/tribunal）、`ContextNeeds`、`WorkspotBinding`（types/workspot）。
+**issue #4 已经对这 13 项作出决定**：保留为公共 API 契约面，不删除，并逐项加了声明注释：
 
-建议随下次提交一并删除，不需要单独处理。
+`Artifact`、`BlackboardEffects`、`UnblockEntry`（types/checkpoint）、`AcceptanceCriteria`（types/goal）、`WriterStatus`（types/session）、`CheckpointZone`（types/snapshot）、`ConflictsFile`、`QueueFile`（types/state）、`TribunalFolded`、`TribunalItemState`（types/tribunal）、`ContextNeeds`、`WorkspotBinding`（types/workspot）、`WatchLock`（watcher/lock.ts 的 re-export 别名）。
+
+注释统一为 `// X 是预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。`，本次扫描确认 12 处注释与清单一致（`watcher/lock.ts` 的声明在 re-export 行上）。
+
+另外，初次扫描误把 `LifecycleEventLike`（chat/resume-card）也列入其中。**它不是死代码**：它是 `payloadOf` / `isResumeCardDismissed` 的参数类型，并从 `chat/resume-card/index.ts:17` 对外再导出，是活的契约类型。
+
+**结论：这一项从事项清单里移除。** 下次做死导出扫描时，应当先识别「预留导出」注释再计数，而不是把已声明的契约面重新标成嫌疑。
 
 ### 排查中排除的
 
@@ -160,12 +166,11 @@ TF-0167 的 J3 给出了重启条件（三者同时满足）：①human 读集�
 
 | 优先级 | 事项 | 状态 |
 | --- | --- | --- |
-| **P0** | 落库本次三处修复（`cli.ts` / `commands/ws.ts` / `cli.test.ts`）——P0 崩溃修复现在只在工作区，未提交，森林状态也未同步 | **待处理** |
-| **P0** | 补一份 ADR 记录 GUI 写操作端点的准入决策，把 ADR-0005 的「后续逐个评估」正式收口 | **待处理** |
-| **P1** | 把「注册成功但调用时崩」这个故障类纳入回归约定——本次暴露的是测试设计漏洞（只测形状不测执行）。新增的 `argv execution` 块已覆盖 tribunal 与 ws，其他带操作数的命令（`goal show <id>`、`checkpoint restore <id>` 等）可照此扩展 | 已覆盖先头部分 |
-| **P2** | 删除 13 个死类型别名（装饰性，随下次提交） | **待处理** |
-| **P2** | 在有真实 agent 凭据的环境里跑一次 `agent run` 端到端 | **待处理** |
-| **不上线就不必做** | TF-0167 J3 三项 + L1 有真实使用者参与 | 重启条件已记录 |
+| **P0** | 落库本次三处修复（`cli.ts` / `commands/ws.ts` / `cli.test.ts`）——P0 崩溃修复现在只在工作区，未提交，森林状态也未同步 | **已完成**（`d0d9caa`，已推送；667 用例全绿） |
+| **P0** | 补一份 ADR 记录 GUI 写操作端点的准入决策，把 ADR-0005 的「后续逐个评估」正式收口 | **待处理**（issue #9） |
+| **P1** | 把「注册成功但调用时崩」这个故障类纳入回归约定——本次暴露的是测试设计漏洞（只测形状不测执行）。新增的 `argv execution` 块已覆盖 tribunal 与 ws，其他带操作数的命令（`goal show <id>`、`checkpoint restore <id>` 等）可照此扩展 | 已覆盖先头部分，剩余部分见 issue #10 |
+| **P2** | 在有真实 agent 凭据的环境里跑一次 `agent run` 端到端 | **待处理**（issue #11） |
+| **不上线就不必做** | TF-0167 J3 三项 + L1 有真实使用者参与 | 重启条件已记录，见 issue #12 |
 
 ---
 
