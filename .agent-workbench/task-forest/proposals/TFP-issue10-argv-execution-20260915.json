@@ -1,0 +1,86 @@
+{
+  "proposal_id": "TFP-issue10-argv-execution-20260915",
+  "status": "proposed",
+  "summary": "issue #10：把「注册成功但调用时崩」故障类纳入回归约定——19 条带操作数命令各一个真实 parseAsync 执行用例，加树遍历完整性断言挡住未来新增命令。cli.test.ts 9→32 项。",
+  "base_graph_hash": "c28a4ad1bb404a28f6daff57ea875a66e47b29f0a5de013d5bf7cf1c23fce1df",
+  "base_summary": {
+    "edge_count": 255,
+    "node_count": 173,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "id": "TF-0175",
+      "node": {
+        "id": "TF-0175",
+        "kind": "task",
+        "title": "回归约定：带操作数的命令全部纳入 argv 执行测试（「注册成功但调用时崩」故障类）",
+        "purpose": "让 cli.test.ts 不再只断言命令树形状——每个带操作数的命令都有真实 parseAsync 执行用例，且有完整性断言保证新增命令无法漏登记。",
+        "summary": "tribunal shelve 全量崩溃（d0d9caa 修复）暴露的是测试设计漏洞而非单点 bug：commander 的 .action(fn) 按 (操作数..., options, command) 传参，参数个数与操作数个数不匹配时注册阶段完全正常、只在调用时崩；旧 cli.test.ts 只断言命令树形状，对该故障类完全盲。本次把 argv execution 块扩成 19 条 test.each 表（树遍历确认当前恰好 19 条带操作数的命令），每条跑真实 parseAsync 并断言输出或黑板状态；表后追加完整性测试，遍历 buildProgram() 全树收集 registeredArguments.length > 0 的命令与表格 path 集合严格比对，新增任何带操作数的命令立刻失败。issue 点名的三个零操作数命令（sessions record / premises seal / ui）各有专用用例：seal 与 record 只走显式路径避开 stdin，ui 用 node:net 端口 blocker 验证绑定拒绝路径。",
+        "status": "done",
+        "progress": 100,
+        "progress_source": "manual",
+        "context_tags": ["testing", "regression", "cli", "quality", "workbench"],
+        "confidence": 0.85,
+        "difficulty": "medium",
+        "priority": 2,
+        "estimated_total_minutes": 180,
+        "remaining_minutes_min": 0,
+        "remaining_minutes_max": 0,
+        "next_action": "已落库；后续新增带操作数的 CLI 命令必须同步登记进 cli.test.ts 的 CASES 表，完整性测试会强制提醒。",
+        "source_sessions": [],
+        "requirements": [
+          "每个带操作数的命令至少一个真实执行用例，不是形状断言",
+          "新增同类不匹配时测试能挡住（手动制造验证过）",
+          "workbench 套件全绿",
+          "保留原有 7 项形状测试与 2 项 argv 先头测试，不推翻既有覆盖"
+        ],
+        "acceptance_criteria": [
+          "① 树遍历确认的 19 条带操作数命令，表格逐条覆盖，每条跑 parseAsync；",
+          "② 完整性断言存在且能拦下未登记的新增命令（模拟 phantom <id> 验证）；",
+          "③ 真实参数不匹配会抛 TypeError，被每条用例拦下（复现 d0d9caa 故障类）；",
+          "④ workbench 全套 690 项通过，tsc 与 biome 干净。"
+        ],
+        "success_metrics": [
+          "此后新增带操作数的 CLI 命令时，CI 在登记用例之前就红，而不是上线后某个 id 必现崩溃",
+          "cli.test.ts 的覆盖约定可被后续命令作者直接照抄（夹具种子 + 退出码 + 输出/状态断言）"
+        ],
+        "evidence": [
+          "packages/workbench/src/cli.test.ts 由 9 项扩至 32 项：argv execution 表 19 项（test.each，覆盖 goal add/show/cancel、decision add、interface register、sessions show、premises review-seal、tribunal show/shelve/resolve、ws create/status/reassign、checkpoint restore/review、dispatch、config set、context lower/review）、完整性断言 1 项、零操作数命令专用用例 3 项（premises seal 空黑板封印、sessions record 写者注册、ui 端口占用拒绝）。",
+          "树遍历确认恰好 19 条带操作数的命令，与 CASES 表的 path 集合逐条一致（registeredArguments.length > 0 为筛选条件，因 commander 把每个 .action(fn) 包进闭包导致 _actionHandler.length 恒为 1，参数个数只能靠调用发现）。",
+          "完整性断言验证：在 buildProgram() 模拟新增 phantom <id> 命令，测试报 missing: [\"phantom\"]；模拟真实参数不匹配（声明 <id> 但 action 从错误位置读 command.optsWithGlobals()）抛 TypeError: command.optsWithGlobals is not a function——即 d0d9caa 的原始故障类。",
+          "测试：packages/workbench 全套 690 pass / 0 fail / 1 snapshot / 2662 expect / 106 文件（基线 667 → +23，与 9→32 增量一致）；bunx tsc --noEmit exit 0；bunx biome check clean。",
+          "两项套件纪律：Bun 忽略 process.exitCode = undefined（保留上一个非零值，需显式置 0 重置）；从测试读 process.stdin 会破坏同进程后续用例（ERR_STREAM_PREMATURE_CLOSE），故 seal/record 用例只走显式路径，stdin 分支仍归 sessions-record.test.ts。exitOverride() 递归到整棵树沿 d0d9caa 的既有封装。"
+        ],
+        "alignment": {
+          "fit": "unknown",
+          "fit_confidence": 0,
+          "user_goal": "Workbench 的 CLI 是权威执行面（ADR-0012 判据 ④），它不能有「注册时正常、调用时必崩」的命令",
+          "why_this_task": "tribunal shelve 崩溃证明形状测试对参数不匹配类故障零感知，而 workbench 的每个 GUI 写端点都镜像同一条 CLI 命令——CLI 崩等于 GUI 崩",
+          "why_not_enough": "只加固既有命令的执行覆盖，不产生新的用户可感知能力",
+          "validation_plan": [
+            "树遍历的带操作数命令集合与 CASES 表严格比对",
+            "模拟新增命令与模拟参数不匹配两种注入都验证被拦下",
+            "workbench 全套 + tsc + biome 三重确认无新增红"
+          ]
+        },
+        "non_goals": [
+          "不给零操作数命令进 CASES 表（表格的筛选条件就是 registeredArguments.length > 0，它们各有专用用例）",
+          "不测真实模型会话（agent run 端到端属 issue #11，本机无活动凭据）",
+          "不把 argv 表抽成独立数据文件（19 条命令的夹具逻辑各自不同，表驱动 + 内联 build 是可读性最好的形态）"
+        ]
+      }
+    },
+    {
+      "action": "add_edge",
+      "id": "TFE-0261",
+      "from": "TF-0175",
+      "to": "TF-0157",
+      "type": "child_of",
+      "blocking": false,
+      "confidence": 0.85,
+      "reason": "本机套件健壮性节点 TF-0157 已收过 fork 继承与通知通道两类红，argv 执行覆盖是同一脉络的第三类（测试设计漏洞），作为其决策子节点落库"
+    }
+  ]
+}
