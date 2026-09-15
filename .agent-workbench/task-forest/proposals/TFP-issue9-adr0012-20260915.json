@@ -1,0 +1,90 @@
+{
+  "proposal_id": "TFP-issue9-adr0012-20260915",
+  "status": "proposed",
+  "summary": "issue #9：补 ADR-0012 收口 ADR-0005 的「后续逐个评估」——GUI 写操作端点逐条准入，唯一不可撤销的线程删除补显式确认闸。决策记录与代码重新一致。",
+  "base_graph_hash": "c28a4ad1bb404a28f6daff57ea875a66e47b29f0a5de013d5bf7cf1c23fce1df",
+  "base_summary": {
+    "edge_count": 255,
+    "node_count": 173,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "id": "TF-0174",
+      "node": {
+        "id": "TF-0174",
+        "kind": "task",
+        "title": "ADR-0012：GUI 写操作端点准入决策（收口 ADR-0005 的「后续逐个评估」）",
+        "purpose": "把 server.ts 实际暴露的 GUI 写端点逐条作出准入决定，让 ADR-0005 声明的范围与代码重新一致；唯一不可撤销的操作（线程删除）补显式确认。",
+        "summary": "收尾扫描（2026-09-15）发现 ADR-0005 第 15 行声明「只读 + 一个幂等 sync 按钮」，实际 server.ts 暴露 dispatch/review/agent-run/config/chat-feedback 与整套会话生命周期写路由。这不是秘密越界——口子是 ADR-0005 自己开的（「后续逐个评估」「写操作端点未来需逐个设闸」），但从 ADR-0006 到 0011 没有一条收口它。本节点落库 ADR-0012，按四条判据（认证边界 / 可撤销或追加 / 不可撤销必须有确认 / CLI 有等价命令）逐端点准入，并把删除确认闸写进前端 store。",
+        "status": "done",
+        "progress": 100,
+        "progress_source": "manual",
+        "context_tags": ["adr", "architecture", "boundary", "gui", "security"],
+        "confidence": 0.85,
+        "difficulty": "medium",
+        "priority": 2,
+        "estimated_total_minutes": 120,
+        "remaining_minutes_min": 0,
+        "remaining_minutes_max": 0,
+        "next_action": "已落库；后续新增 GUI 写端点照 ADR-0012 复核清单答四条判据。",
+        "source_sessions": [],
+        "requirements": [
+          "新 ADR 逐端点给出准入决定与理由（不只是「全部保留」）",
+          "明确说明既有认证边界（per-run 令牌 + 回环绑定 + 零 CORS）为何在本机单用户场景下充分",
+          "ADR-0005 的两处预留口子改为指向 ADR-0012",
+          "唯一不可撤销的端点（DELETE 线程）必须带显式确认，判据 ③ 从纸面变成代码",
+          "任务森林有对应决策节点，可被后续评审引用"
+        ],
+        "acceptance_criteria": [
+          "① server.ts 路由清单与 ADR 表格逐条一致，无未登记的写端点；",
+          "② ADR-0005 第 15/26 行指向 ADR-0012，README 索引新增一行；",
+          "③ DELETE /api/chat/threads/:id 的删除确认在前端可复现（取消时不发请求）；",
+          "④ workbench 与 workbench-ui 测试套件无新增红。"
+        ],
+        "success_metrics": [
+          "再次比对时代码与决策记录无不一致（收尾扫描 §四的唯一不一致项关闭）",
+          "后续新增 GUI 写端点时，评审能引用 ADR-0012 的四条判据而非重开讨论"
+        ],
+        "evidence": [
+          "ADR-0012 落库于 docs/decisions/0012-gui-write-endpoint-admission.md，逐路由核对 server.ts 后写就：只读 6 条（含免令牌的 /api/bootstrap 握手）、幂等写 1 条（POST /api/sync）、有副作用的写 5 条（dispatch / agent/run / review / chat/feedback / PATCH config/chat）、会话生命周期写 14 条。",
+          "既有安全边界七条逐条核对并记录在 ADR 背景段：per-run randomUUID 令牌（server.ts:242、:283-290）、回环绑定 127.0.0.1 + hostname 白名单 403（server.ts:618、:278-281）、零 CORS、资产路径穿越防护（server.ts:255-257）、publicChatConfig 剥离 apiKey（chat/credentials.ts:8-11）、线程 ID 白名单与 zod 校验（server.ts:423、:469）、409 并发护栏与 enqueue 按线程串行（server.ts:306、chat/threads.ts:425/:1431）。",
+          "准入判据四条：① 令牌+回环+零 CORS；② 破坏可撤销/追加式/有运行时护栏；③ 不可撤销必须带显式确认；④ CLI 有等价命令。C 组 5 条与 D 组 14 条全部准入，每条记录闸与最坏后果。",
+          "唯一附条件端点 DELETE /api/chat/threads/:id：threads.ts:732-743 是 rm(recursive,force)，转录与恢复笔记一并删除且事件日志只留「删除了」。准入前前端 thread-list.tsx:126-137 的 Trash2 经 adapter.ts:103 → store.ts:859 直发 DELETE，无任何确认。条件已落库：deleteThread 加原生 confirm，取消时不发请求。",
+          "为什么不用软删除：会把「删了」变成「可能还没删」，与 source=threads 会话事件的追加式语义冲突，恢复卡会以为线程还在。一次确认比隐藏的墓地区诚实。",
+          "ADR-0005 第 15 行与第 26 行的预留口子改为指向 ADR-0012；docs/decisions/README.md 新增 0012 行（森林节点 TF-0174）。",
+          "测试：workbench-ui 新增 chat/delete-confirm.test.ts 两条（取消→不发 DELETE 且线程保留；确认→发 DELETE 且本地状态清理），2/2 通过；全套 25 项通过。workbench 侧未改代码，667 项维持绿。"
+        ],
+        "alignment": {
+          "fit": "unknown",
+          "fit_confidence": 0,
+          "user_goal": "Workbench 的 GUI 与 CLI 保持同源镜像，写操作的破坏面可兜底",
+          "why_this_task": "决策记录缺口会让后续评审无法引用既成事实的准入标准，每次新增写端点都要重开「该不该进 GUI」的讨论",
+          "why_not_enough": "ADR 只收口决策记录与一个确认闸，不产生新的用户可感知能力",
+          "validation_plan": [
+            "server.ts 路由清单与 ADR 表格逐条比对",
+            "删除确认闸有回归测试钉住取消路径",
+            "再次做代码与决策记录一致性比对时无不一致项"
+          ]
+        },
+        "non_goals": [
+          "不给 GUI 加用户系统或权限分级（本机单用户，认证边界已充分）",
+          "不给写端点加独立审计落库（事件日志本身就是审计）",
+          "不让 GUI 成为唯一入口（判据 ④：CLI 保持权威执行面）",
+          "不令牌持久化（per-run 令牌随进程生灭，持久化只扩大可重放窗口）"
+        ]
+      }
+    },
+    {
+      "action": "add_edge",
+      "id": "TFE-0260",
+      "from": "TF-0174",
+      "to": "TF-0138",
+      "type": "child_of",
+      "blocking": false,
+      "confidence": 0.85,
+      "reason": "GUI 写端点准入的判据沿自 ADR-0010 的产品边界（会话事件只记观测、载荷上限、两级通知），作为 TF-0138 的决策子节点落库"
+    }
+  ]
+}

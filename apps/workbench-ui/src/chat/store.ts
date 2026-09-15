@@ -857,6 +857,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
 	},
 
 	async deleteThread(id: string) {
+		// ADR-0012 判据 ③：删除是唯一不可撤销的 GUI 写操作，必须有一次显式确认。
+		if (
+			!confirm("删除该对话？转录、恢复笔记与派生关系将一并移除，且无法恢复。")
+		) {
+			return;
+		}
 		if (get().activeId === id) {
 			++switchGeneration;
 		}

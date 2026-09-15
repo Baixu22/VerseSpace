@@ -12,7 +12,7 @@
 
 - **前端**：新工作区应用 `apps/workbench-ui`（Vite + React 19 + Tailwind v4），shadcn 原语按 shadcn 惯例复制进应用（badge/button/separator），主题直接 `@import` 仓库真实的 `src/styles/color-theme.css`（单一来源，零 token 漂移），数据经 TanStack Query 每 2 秒轮询。
 - **服务**：`workbench ui` 用 Bun.serve 在 127.0.0.1 提供只读 API（`/api/state`、`/api/sync`、CORS）+ 静态 SPA。资产解析顺序：`--ui-dir` > 编译二进制内嵌资源（Bun `with { type: "file" }` 嵌入，构建时由 `scripts/ui-prepare.ts` 生成清单）> 仓库 dev 构建产物 > API-only 提示页。
-- **范围**：GUI 只读 + 一个幂等 sync 按钮；dispatch/review 等有副作用的操作不进 GUI（后续逐个评估）。
+- **范围**：GUI 只读 + 一个幂等 sync 按钮；dispatch/review 等有副作用的操作不进 GUI（**后续逐个评估——已由 [ADR-0012](./0012-gui-write-endpoint-admission.md) 于 2026-09-15 收口**：写端点不是被退回只读，而是按「破坏可撤销 / 追加式 / 有护栏，不可撤销则必须带确认」的判据逐条准入）。
 
 ## 理由
 
@@ -23,4 +23,4 @@
 ## 后果
 
 - 正面：观察成本大降；主题随仓库演进自动跟随；二进制仍单文件自包含（UI 资源内嵌）。
-- 负面：发布构建链多一步 Vite 构建；ADR-0004 的 no-web-server 约束部分失效；写操作端点未来需逐个设闸。
+- 负面：发布构建链多一步 Vite 构建；ADR-0004 的 no-web-server 约束部分失效；~~写操作端点未来需逐个设闸~~ **已由 ADR-0012 收口**——实际暴露的写端点远多于本文声明，但每个都过了令牌 + 回环 + 零 CORS 的认证边界，唯一的不可撤销操作（线程删除）补了显式确认。
