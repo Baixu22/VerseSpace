@@ -139,15 +139,15 @@ The old **untracked, machine-local** helpers are retained as historical evidence
 
 **Verified recovery.** Restore the exact crate archive after checking its checksum against Cargo.lock. Remove only the affected package's old build outputs (`cargo clean -p boring-sys2` in `src-tauri`), then run `cargo test --locked -j 1 -- --test-threads=1`. Cargo's CARGO_TARGET_DIR environment variable can select a fresh temporary target to isolate the check from old artifacts. On 2026-09-14 both a fresh temporary target and the normal `src-tauri/target` passed all **1,695 tests**, with both original patch steps executed; `cargo clippy --locked -j 1 --all-targets -- -D warnings` also passed.
 
-**Historical cause remains unresolved.** Current Git 2.51 and a checksum-verified official MinGit 2.55 both apply the original patches in temporary and repository-local isolated directories. No protection exclusions or system Git replacement were used. These passes do not identify the process or configuration behind the earlier failures. Keep that investigation separate in [issue #8](https://github.com/Baixu22/VerseSpace/issues/8); details and recovery evidence are in `docs/windows-rust-clean-verification.md`. The modified registry backup is outside the active registry, under the local closeout evidence directory.
+**Host reproduction found; historical heap attribution remains open.** On 2026-09-15, running the same Git through WorkBuddy 5.5.6's bundled sandbox reproduced sibling deletion and missing refs: its `tsbx.dll` allows `RemoveDirectoryW` to remove nonempty directories. Native Git remains healthy. SDK 5.6.1 with its matching center passes the filesystem checks, but its default content scanner blocks public BoringSSL test keys; the complete patch comparison passed only with that scanner disabled in an isolated test center. It is incompatible with the installed client's old API, so do not replace individual DLLs or call this a deployed fix. No installed runtime or system Git was replaced, and no protection exclusion was added. See [issue #8](https://github.com/Baixu22/VerseSpace/issues/8), `docs/issue-8-crash-investigation.md`, and `docs/windows-rust-clean-verification.md`. The modified registry backup remains outside the active registry.
 
 ### Test teardown under real-time scanning
 
 Windows real-time scanning holds handles on a freshly written git repository (`.git` is written file by file, each one scanned), so `rm` on that directory can fail with `EBUSY` for ~15s or more *after* a test's assertions have already passed. `packages/workbench/src/rot/scan.test.ts` retries and then warns instead of failing the test; `packages/workbench/src/fs/atomic.ts` already retries `EBUSY`/`EPERM`/`EACCES` for the same reason. A lone teardown `EBUSY` is environmental, not a regression.
 
-### Historical `git rm` directory deletion (currently not reproduced)
+### `git rm` directory deletion under WorkBuddy's old sandbox
 
-Earlier local runs reported that `git rm <path-in-subdir>` removed its whole parent directory, including siblings. On 2026-09-14 fresh isolated probes with Git 2.51, 2.53 and official MinGit 2.55 preserved the sibling file in both temporary and repository-local directories. The historical report below is retained; it is not a claim that the current environment still fails.
+Earlier local runs reported that `git rm <path-in-subdir>` removed its whole parent directory, including siblings. On 2026-09-14 native probes with Git 2.51, 2.53 and official MinGit 2.55 preserved the sibling file. On 2026-09-15 the failure was reproduced through WorkBuddy's bundled sandbox and official SDK 5.5.7. The hook changes nonempty-directory deletion into success; Git's empty-parent cleanup then deletes siblings. Run `powershell.exe -NoProfile -File scripts/win/check-git-filesystem.ps1` in the actual host to check it; the script retains only its own fixture and returns 1 for corruption even when Git exits 0.
 
 Previously reported repro (git 2.55.0.windows.3):
 
@@ -158,18 +158,18 @@ git rm -q src/b.ts   # exit 0
 ls src               # -> No such file or directory  (a.md is gone too)
 ```
 
-The narrow workaround remains `git rm --cached` plus removal of exactly the intended file. No common host delete hook has been identified; the mechanism remains an open historical question.
+The narrow workaround remains `git rm --cached` plus removal of exactly the intended file. Disabling the two problematic shell copy hooks does not correct this separate `tsbx.dll` directory-deletion defect.
 
 This is why `scripts/e2e/scenario.ts` stages its deletion with `git rm --cached` plus a Node `rm` of exactly that one file: the index outcome is identical to `git rm`, but the temporary fixture's alpha.ts and notes.md survive. Without that workaround the E2E dies at S5 (`读取范围末尾之外的追加被误报成失效前提`) for a reason that has nothing to do with the workbench. **Do not "simplify" it back to `git rm`.**
 
 ### Git refs: slash-nested branches and remote-tracking refs
 
-Two related historical failures were reported on git 2.55.0.windows.3; a shared cause has not been established:
+Two related historical failures were reported on git 2.55.0.windows.3; both were reproduced on Git 2.51 through WorkBuddy's old sandbox on 2026-09-15:
 
 - `git branch ws/probe` exits 0 but creates no ref; `git worktree add -b ws/ws-a` then fails `fatal: invalid reference: ws/ws-a`. Slash-free branch names work.
 - `git update-ref refs/remotes/origin/main` returns 0 without writing the file, so `origin/main` keeps vanishing and `git status` shows `[gone]`. Manual recovery: `mkdir -p .git/refs/remotes/origin && git rev-parse main > .git/refs/remotes/origin/main`.
 
-The 2026-09-14 Git 2.51/2.53/official MinGit 2.55 probes created nested branches and remote refs successfully in both directory types; Workbench's full 665-test suite passed. Keep existing narrow fixture workarounds, but diagnose any new failure instead of automatically calling it an environmental baseline. See `docs/windows-rust-clean-verification.md`.
+The 2026-09-14 native probes created both refs successfully; Workbench's full 665-test suite passed. The later host reproduction ties missing refs to the same nonempty-directory deletion defect: Git attempts empty-parent cleanup when releasing ref locks. Keep existing narrow fixture workarounds, and diagnose the actual host with the regression script above instead of assuming every Windows failure has this cause. See `docs/issue-8-crash-investigation.md`.
 
 ### Shared context-rot scanner
 
