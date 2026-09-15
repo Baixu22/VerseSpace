@@ -468,5 +468,20 @@
 		"The fixture host forwarded the notice into the next batch prompt; no resident batch push channel is claimed.",
 		"Historical heap-crash attribution remains separate from current engineering verification.",
 		"Raw fixtures, process credentials, and model transcript directories remain local."
-	]
+	],
+	"implementationCommit": "283580516c7a0fd0cd7477f6d61f98a119dc2ea3",
+	"taskForest": {
+		"nodes": {
+			"TF-0174": "done",
+			"TF-0175": "done"
+		},
+		"proposals": [
+			"TFP-audit-errors-20260916",
+			"TFP-audit-errors-landed-20260916"
+		],
+		"graphHash": "41d7b1160fab9ac8593eb92f02520ac02e6a38a7e650ea4e71083fea7f0276d9",
+		"validateExitCode": 0,
+		"exportExitCode": 0,
+		"exportRegressionExitCode": 0
+	}
 }

@@ -1,7 +1,7 @@
 # Workbench 收尾扫描与完整性报告 · 2026-09-15
 
 > 2026-09-16 复验更新：[审计修复与验证](audit-errors-closeout-2026-09-16.md)记录了后续状态。
-> 本文的森林和指标数字保留 9 月 15 日扫描快照；后续已补齐 ADR 事实、argv 回归、真实 agent run 与 unknown 分类，并通过任务森林 CLI 创建正式节点 TF-0174/TF-0175。
+> 本文的森林和指标数字保留 9 月 15 日扫描快照；后续已补齐 ADR 事实、argv 回归、真实 agent run 与 unknown 分类，并通过任务森林 CLI 完成正式节点 TF-0174/TF-0175。
 
 范围：`packages/workbench`、`apps/workbench-ui`、`packages/context-rot`、任务森林（`.agent-workbench/task-forest/`）、`docs/`。
 方法：森林普查（173 节点逐条读取）+ 三套测试套件 + 三个包 typecheck + 官方构建产物的冒烟 + 逐符号死代码扫描 + 全命令树的真实 argv 执行 + ADR 逐条比对。
@@ -170,7 +170,7 @@ TF-0167 的 J3 给出了重启条件（三者同时满足）：①human 读集�
 | 优先级 | 事项 | 状态 |
 | --- | --- | --- |
 | **P0** | 落库本次三处修复（`cli.ts` / `commands/ws.ts` / `cli.test.ts`）——P0 崩溃修复现在只在工作区，未提交，森林状态也未同步 | **已完成**（`d0d9caa`，已推送；667 用例全绿） |
-| **P0** | 补 ADR 并对照实际 GUI 写端点 | ADR 与代码事实已订正，正式节点 TF-0174 已创建，见 [issue #9](issue-9-closeout.md) |
+| **P0** | 补 ADR 并对照实际 GUI 写端点 | ADR 与代码事实已订正，正式节点 TF-0174 已完成，见 [issue #9](issue-9-closeout.md) |
 | **P1** | 全部带操作数命令经过真实 argv 执行 | 32 项 CLI 测试及完整 Workbench 700 项复验通过，见 [issue #10](issue-10-closeout.md) |
 | **P2** | 真实 `agent run` 端到端 | 3 个真实模型会话通过，见 [issue #11](issue-11-closeout.md) |
 | **记录性事项** | TF-0167 J3 三项 + L1 重启条件 | 可核验判据已补齐，产品评估仍未启动，见 [issue #12](issue-12-closeout.md) |
