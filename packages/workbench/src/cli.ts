@@ -291,13 +291,8 @@ export function buildProgram(): Command {
 				"queue gets shelved is itself a KPI.",
 		)
 		.option("--minutes <n>", "deferral length in minutes", "30")
-		.action(
-			(
-				id: string,
-				options: { minutes?: string },
-				_c: unknown,
-				command: Command,
-			) => tribunalShelveCommand({ id, minutes: options.minutes }, command),
+		.action((id: string, options: { minutes?: string }, command: Command) =>
+			tribunalShelveCommand({ id, minutes: options.minutes }, command),
 		);
 	tribunal
 		.command("resolve <id>")
@@ -339,8 +334,8 @@ export function buildProgram(): Command {
 		.description(
 			"create a workspot (--task goal-id, --branch, --worktree path)",
 		)
-		.option("--task <goal-id>", "primary goal for this workspot")
-		.option("--branch <branch>", "git branch this workspot holds")
+		.requiredOption("--task <goal-id>", "primary goal for this workspot")
+		.requiredOption("--branch <branch>", "git branch this workspot holds")
 		.option("--worktree <path>", "worktree path (default worktrees/<id>)")
 		.action(
 			async (
@@ -348,7 +343,11 @@ export function buildProgram(): Command {
 				options: { task?: string; branch?: string; worktree?: string },
 				command: Command,
 			) => {
-				await wsCreate(id, options, command);
+				await wsCreate(
+					id,
+					options as { task: string; branch: string; worktree?: string },
+					command,
+				);
 			},
 		);
 	ws.command("list")
@@ -356,7 +355,7 @@ export function buildProgram(): Command {
 		.action((_options, command) => wsList(command));
 	ws.command("reassign <id>")
 		.description("reassign a workspot (--task goal-id, --temporary borrows it)")
-		.option("--task <goal-id>", "new goal for this workspot")
+		.requiredOption("--task <goal-id>", "new goal for this workspot")
 		.option(
 			"--temporary",
 			"borrow the workspot instead of reassigning its primary task",
@@ -367,7 +366,11 @@ export function buildProgram(): Command {
 				options: { task?: string; temporary?: boolean },
 				command: Command,
 			) => {
-				await wsReassign(id, options, command);
+				await wsReassign(
+					id,
+					options as { task: string; temporary?: boolean },
+					command,
+				);
 			},
 		);
 	ws.command("status <id>")

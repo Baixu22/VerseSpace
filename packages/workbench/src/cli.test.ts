@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { buildProgram } from "./cli";
+import { makeTempWorkbench } from "./test/fixtures";
 
 describe("buildProgram", () => {
 	test("exposes the scaffolded top-level command tree", () => {
@@ -109,5 +110,85 @@ describe("buildProgram", () => {
 		const longFlags = buildProgram().options.map((option) => option.long);
 		expect(longFlags).toContain("--json");
 		expect(longFlags).toContain("--quiet");
+	});
+});
+
+// The shape tests above only see the command tree. A command whose action
+// arity does not match its operand count registers fine and crashes at call
+// time, so the verbs that matter are executed through the real argv path.
+describe("argv execution", () => {
+	const argv = (args: string[]): string[] => ["node", "workbench", ...args];
+
+	test("tribunal verbs run through parseAsync", async () => {
+		const ws = await makeTempWorkbench();
+		const cwd = process.cwd();
+		process.chdir(ws.projectDir);
+		try {
+			const submitted = await ws.bb.tribunal.submit({
+				kind: "workspot_blocked",
+				subject: "ws-a",
+				causeKey: "workspot_blocked:ws-a",
+				action: {
+					label: "重新指派工位",
+					command: "workbench ws reassign ws-a --task g-2",
+				},
+				sbar: {
+					situation: "工位 ws-a 被阻塞",
+					background: "任务 g-1 已进入 stale_done",
+					assessment: "工位空转，本轮产出为零",
+					recommendation: "把 ws-a 改派到 g-2，或关闭它",
+				},
+			});
+			if (!submitted.admitted || !submitted.item) {
+				throw new Error("fixture candidate was not admitted");
+			}
+
+			await buildProgram().parseAsync(
+				argv(["tribunal", "list", "--json", "--quiet"]),
+			);
+			await buildProgram().parseAsync(
+				argv(["tribunal", "show", submitted.item.id]),
+			);
+
+			// a deferral is the one that used to crash on action arity
+			await buildProgram().parseAsync(
+				argv(["tribunal", "shelve", submitted.item.id, "--minutes", "15"]),
+			);
+			const shelved = await ws.bb.tribunal.list({ includeResolved: true });
+			expect(
+				shelved.find((item) => item.id === submitted.item!.id)?.state,
+			).toBe("shelved");
+
+			await buildProgram().parseAsync(
+				argv(["tribunal", "resolve", submitted.item.id]),
+			);
+		} finally {
+			process.chdir(cwd);
+			await ws.cleanup();
+		}
+	});
+
+	test("ws create rejects a missing --branch at the arg parser", async () => {
+		const ws = await makeTempWorkbench();
+		const cwd = process.cwd();
+		process.chdir(ws.projectDir);
+		try {
+			// commander's default is process.exit(1) on a parse error, which would
+			// take the test runner down with it; exitOverride turns that into a
+			// throw. Subcommands copy the callback at creation time, so it has to be
+			// walked down the tree after the program is built.
+			const program = buildProgram();
+			const overrideExit = (cmd: Command): void => {
+				cmd.exitOverride();
+				cmd.commands.forEach(overrideExit);
+			};
+			overrideExit(program);
+			await expect(
+				program.parseAsync(argv(["ws", "create", "ws-a", "--task", "g-1"])),
+			).rejects.toThrow(/required option '--branch/);
+		} finally {
+			process.chdir(cwd);
+			await ws.cleanup();
+		}
 	});
 });
