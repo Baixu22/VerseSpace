@@ -58,6 +58,12 @@ export interface Probe {
 	 *          值照常显示，fit 停在 unknown（TF-0154 证据栏、TF-0136 执行提示）。
 	 */
 	requires?: "natural";
+	/**
+	 * 证据缺口 unknown 的处置结论（issue #13）。只在该探针的 fit 停在 unknown 时
+	 * 才有意义，所以它不是阈值、不是判据——它回答的是「这行怎么样才算有结论」。
+	 * 不填的组件行停在「证据缺口」分类，处置留空。
+	 */
+	disposition?: string;
 	read?(ctx: Ctx): { value: number | null; samples: number };
 	/** 有样本时的判据；不给就停在 partial（在用，但阈值还没定）。 */
 	judge?(value: number): Fit;
@@ -182,6 +188,13 @@ export const PROBES: Record<string, Probe> = {
 		metric: "被显式标成不可观测的通道数（HTTP 无工具通道）",
 		source: "stats.noticeOutcomes.agent.unknownBy.unobservable",
 		read: (c) => plain(c.stats.noticeOutcomes.agent.unknownBy.unobservable),
+		// 当前值 0 是好消息（没有通知走过被显式排除的通道），但样本为 0 就
+		// 无法证明降级语义真的被执行过。处置不是去 live 现场造样本——那会把
+		// 通道语义测试记成使用数据——而是在 fixture 里造一条走不可观测通道
+		// 的投递，验证计数路径活着（notice-outcome.test.ts 的 unobservable
+		// 用例 + ledger.test.ts 的 unknownBy 分类用例）。
+		disposition:
+			"fixture 通道语义测试验证 unknownBy.unobservable 计数路径活着；不在 live 现场造样本",
 	},
 	"TF-0143": {
 		kind: "component",
@@ -288,6 +301,12 @@ export const PROBES: Record<string, Probe> = {
 		source:
 			"stats.landmarkReviews.current.endorsedShare（每会话文件级 top-K + 种类门；reviewedCoverage 与 legacyReviews 单列；旧口径 .threshold 并报一个周期）",
 		requires: "natural",
+		// 读数 0.333 只反映脚本或模型运行安排的复核手势，不构成用户认可。处置
+		// 不是多跑几轮脚本把读数拉到 0.8——TF-0167 §F5 已否决受控实验路线，
+		// 读数只会收敛到脚本里的认可概率。这行的 unknown 只能由 issue #12 的
+		// J3 条件②（真实使用者参与复核）解开，本 issue 不单独追。
+		disposition:
+			"依赖 issue #12 的 J3 条件②（真实使用者参与复核）；不靠多跑脚本拉读数（TF-0167 §F5 已否决受控实验路线）",
 		read: (ctx) => {
 			const current = ctx.stats.landmarkReviews.current;
 			return {

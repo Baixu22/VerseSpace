@@ -1,0 +1,91 @@
+{
+  "proposal_id": "TFP-issue13-fit-ledger-unknown-classification-20260915",
+  "status": "proposed",
+  "summary": "issue #13：账本 9 行 unknown 的分类处置——推导式 unknownClass（structural / evidence-gap）+ B 类两行处置结论 + 一条「unknown 不得被表述为 validated」的叙事纪律，全部落在生成器里。ledger.test.ts 与 notice-outcome.test.ts 28→30 项。",
+  "base_graph_hash": "c28a4ad1bb404a28f6daff57ea875a66e47b29f0a5de013d5bf7cf1c23fce1df",
+  "base_summary": {
+    "edge_count": 255,
+    "node_count": 173,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "id": "TF-0176",
+      "node": {
+        "id": "TF-0176",
+        "kind": "task",
+        "title": "fit 账本 unknown 的分类声明与叙事纪律（结构性 / 证据缺口 / 处置结论）",
+        "purpose": "让账本的 unknown 一眼分得清是「纪律规定如此」还是「样本没攒够」，并明文禁止对外把 unknown 讲成 validated——分类是推导出来的，活过每周重跑。",
+        "summary": "issue #13 的 9 行 unknown 按账本纪律是诚实的，但对产品叙事是硬约束。本次在生成器里加三样东西，全部推导式、零手写 markdown：① Row.unknownClass 由 buildRows 推导——record 类节点（决策/实验/修复）恒为 structural（纪律 2 规定它们无 stats 或事件可引，trace 是复核指路不是证据），component 类节点停在 unknown 时为 evidence-gap；render.ts 的 fit 列据此渲染 `unknown（结构性）` / `unknown（证据缺口）`。推导结果与 issue 的 A 类 7 行逐条一致（TF-0138 / TF-0140 / TF-0144 / TF-0153 / TF-0136 / TF-0137 / TF-0155）。② PROBES 新增可选 disposition 字段，只在 fit 停在 unknown 时携带：TF-0142 的处置是 fixture 通道语义测试（新增 notice-outcome.test.ts 用例，沿 label → fold → stats 三段验证 unknownBy.unobservable 计数路径活着，事件只存在于临时黑板用完即弃、不进 live 现场）；TF-0154 的处置是依赖 issue #12 的 J3 条件②（真实使用者参与复核），不靠多跑脚本拉读数（TF-0167 §F5 已否决受控实验路线）。③ render.ts 的纪律段追加一条叙事纪律：unknown 不得在对外材料中被表述为 validated 或已验证。处置与分类在组件行离开 unknown 时自动消失，不残留。",
+        "status": "done",
+        "progress": 100,
+        "progress_source": "manual",
+        "context_tags": ["fit-ledger", "evidence", "narrative", "testing", "quality", "workbench"],
+        "confidence": 0.85,
+        "difficulty": "medium",
+        "priority": 2,
+        "estimated_total_minutes": 150,
+        "remaining_minutes_min": 0,
+        "remaining_minutes_max": 0,
+        "next_action": "已落库；docs/fit-ledger.md 的下一次例行重跑（对正确黑板）会自动把分类渲染进文件，本 issue 不为此重跑（见 evidence 的第六条）。",
+        "source_sessions": [],
+        "requirements": [
+          "分类必须由推导得出，不能手写进 markdown——账本每周重跑覆盖，手写分类没有来源",
+          "A 类 7 行的复核指针沿用既有 trace，不新造证据",
+          "TF-0142 的处置是通道语义测试，不是在 live 现场造样本（issue 明确禁止）",
+          "TF-0154 不追读数，只标依赖",
+          "叙事纪律写在生成器里，随账本重跑"
+        ],
+        "acceptance_criteria": [
+          "① A 类 7 行在账本上被标成结构性 unknown，附书面复核指针（buildRows 推导 unknownClass: structural，fit 列渲染 `unknown（结构性）`，7 行逐条一致）；",
+          "② B 类两行各有明确处置结论（TF-0142 fixture 通道语义测试三段计数；TF-0154 标为依赖 #12 的 J3 条件②）；",
+          "③ 叙事纪律进账本：unknown 不得被表述为 validated 或已验证（写在 render.ts 的纪律段）。"
+        ],
+        "success_metrics": [
+          "对外读账本时，7 行结构性 unknown 不再被误读成「7 个部件没人用」",
+          "foldNoticeOutcomes 把 unknownReason 折进 unknownBy 的那行代码（此前零覆盖）从此有测试钉住",
+          "账本重跑后分类与处置自动存活——它们是推导规则，不是文档里的一段手写文字"
+        ],
+        "evidence": [
+          "packages/workbench/scripts/fit-ledger/ledger.ts：Row 新增 unknownClass（structural | evidence-gap）与 disposition；record 分支恒为 structural，component 分支在 fit === 'unknown' 时为 evidence-gap 并携带 probe.disposition，离开 unknown 时两者皆置 undefined。",
+          "packages/workbench/scripts/fit-ledger/metrics.ts：Probe 新增可选 disposition；TF-0142 携带「fixture 通道语义测试验证 unknownBy.unobservable 计数路径活着；不在 live 现场造样本」，TF-0154 携带「依赖 issue #12 的 J3 条件②…TF-0167 §F5 已否决受控实验路线」。",
+          "packages/workbench/scripts/fit-ledger/render.ts：新增 fitLabel() 渲染两种 unknown；依据列追加「；处置：…」；纪律段在两条证据纪律之后追加叙事纪律（unknown 不得在对外材料中被表述为 validated 或已验证）。",
+          "packages/workbench/src/runtime/notice-outcome.test.ts：新增 describe「不可观测通道的计数路径活着（TF-0142 处置 · issue #13）」——一条走 unobservable 通道的投递，label 判 unknown/unobservable，fold 计入 unknownBy.unobservable 且不算 ignored，collectChatStats 经真实临时黑板读到同一计数。第二、三段此前零覆盖（fold 那行代码 notice-outcome.ts:348-350 没有任何测试）。",
+          "测试：ledger.test.ts + notice-outcome.test.ts 30 pass / 0 fail（原 28 + 新增 2）；packages/workbench 全套 692 pass / 0 fail / 1 snapshot / 2677 expect / 106 文件（基线 690 → +2）；bunx tsc --noEmit exit 0；bunx biome check clean。生成器实跑的 fit 列输出 `unknown（结构性）` 与 `unknown（证据缺口）`，处置渲染进行内。",
+          "刻意不重跑 docs/fit-ledger.md：已提交账本的数据源黑板（C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-live-tenant\\.workbench）已被系统清理，本机不存在；仓库自己的 .workbench 是另一个现场（7 线程 / 35 计入 / 25 unknown，而提交账本为 97 线程 / 27 计入 / 9 unknown）。用它重跑会让全部读数换现场而头部仍声称原现场，比不重跑更糟。分类是推导规则，已由 ledger.test.ts 钉住，下一次对正确黑板的例行重跑自动落进文件。"
+        ],
+        "alignment": {
+          "fit": "unknown",
+          "fit_confidence": 0,
+          "user_goal": "账本是砍留决策的依据，它的每个词都必须经得起对外追问——unknown 尤其如此",
+          "why_this_task": "9 行 unknown 按纪律诚实，但「unknown」这个词在对外材料里会被默认读成「没通过」或「失败了」；结构性 unknown 其实是「这类节点按纪律不该有可计数指标」",
+          "why_not_enough": "只澄清既有读数的叙事边界，不产生新的用户可感知能力，也不把任何一行推离 unknown（那会违反纪律 2）",
+          "validation_plan": [
+            "推导分类与 issue 的 A 类 7 行逐条比对",
+            "组件行离开 unknown 后分类与处置消失（ledger.test.ts 断言）",
+            "TF-0142 三段计数路径在临时黑板里端到端验证",
+            "workbench 全套 + tsc + biome 三重确认无新增红"
+          ]
+        },
+        "non_goals": [
+          "不把 9 行 unknown 推成 aligned（违反纪律 2：无真实使用一律 unknown，测试通过不算使用）",
+          "不在 live 现场为 TF-0142 造样本（那会把通道语义测试记成使用数据）",
+          "不为 TF-0154 多跑脚本拉读数（TF-0167 §F5 已否决受控实验路线，读数只会收敛到脚本认可概率）",
+          "不手工编辑 docs/fit-ledger.md（账本头部明文禁止；手写分类没有来源，重跑即丢）",
+          "不复活 issue #12 的工作（其正文写着「不要求现在开工」；TF-0154 的 unknown 只能由 J3 条件②解开）"
+        ]
+      }
+    },
+    {
+      "action": "add_edge",
+      "id": "TFE-0262",
+      "from": "TF-0176",
+      "to": "TF-0137",
+      "type": "child_of",
+      "blocking": false,
+      "confidence": 0.85,
+      "reason": "fit 账本节点 TF-0137 已 done，本次是在账本自身的推导规则与叙事纪律上加固（分类声明、处置结论、unknown 的对外边界），作为其决策子节点落库"
+    }
+  ]
+}

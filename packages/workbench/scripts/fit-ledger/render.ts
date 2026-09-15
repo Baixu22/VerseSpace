@@ -64,6 +64,23 @@ const KIND_LABEL: Record<Row["kind"], string> = {
 	unbuilt: "未开工/缺指标",
 };
 
+/**
+ * fit 列的显示（issue #13）。`unknown` 有两种来源，对外必须一眼分开：
+ * 结构性 unknown 是纪律规定（决策/实验/修复类无指标可引，有书面复核指针），
+ * 证据缺口 unknown 是部件建出来了但样本不足或来源不是自然使用。
+ * 分类是推导出来的，不是手写的——账本每周重跑覆盖，手写分类会丢。
+ */
+function fitLabel(row: Row): string {
+	if (row.fit !== "unknown") {
+		return `\`${row.fit}\``;
+	}
+	return row.unknownClass === "structural"
+		? "`unknown`（结构性）"
+		: row.unknownClass === "evidence-gap"
+			? "`unknown`（证据缺口）"
+			: "`unknown`";
+}
+
 export function renderMarkdown(report: Report): string {
 	const { histogram, moat, gate, rows } = report;
 	const counted = rows.filter((r) => r.kind !== "milestone").length;
@@ -84,6 +101,11 @@ export function renderMarkdown(report: Report): string {
 		"",
 		"1. fit 只取 task-forest `alignment.fit` 的五个值：`aligned` / `partial` / `weak` / `misaligned` / `unknown`。",
 		"2. 无真实使用一律 `unknown`。**测试通过不算使用**，所以「有测试」永远不会把一行推离 `unknown`。",
+		"",
+		"一条叙事纪律（issue #13）：**`unknown` 不得在对外材料中被表述为 `validated` 或已验证**。",
+		"它既不是「通过」也不是「失败」，而是「这行还没有可引用的证据」。结构性 unknown 用记录回答",
+		"（见各行的复核指路），证据缺口 unknown 用补样本或换来源回答——两者都不是「已验证」。",
+		"下表的 fit 列把两种 unknown 分开标注，就是为了挡住这个误读。",
 		"",
 		"同一个词表，两种问法，别混：",
 		"",
@@ -248,10 +270,11 @@ export function renderMarkdown(report: Report): string {
 	);
 	for (const r of rows) {
 		const trace = r.trace ? `${r.why}；复核指路：${r.trace}` : r.why;
+		const disposition = r.disposition ? `；处置：${r.disposition}` : "";
 		lines.push(
-			`| ${r.id} ${r.title} | ${KIND_LABEL[r.kind]} | ${r.status} | \`${r.fit}\` | ${
-				r.metric
-			} | ${show(r.value)} | ${trace} |`,
+			`| ${r.id} ${r.title} | ${KIND_LABEL[r.kind]} | ${r.status} | ${fitLabel(
+				r,
+			)} | ${r.metric} | ${show(r.value)} | ${trace}${disposition} |`,
 		);
 	}
 	lines.push("");

@@ -279,3 +279,45 @@ describe("stats 里能读到校准表", () => {
 		}
 	});
 });
+
+describe("不可观测通道的计数路径活着（TF-0142 处置 · issue #13）", () => {
+	// 账本里 TF-0142 的读数是 stats.noticeOutcomes.agent.unknownBy.unobservable，
+	// 而 live 现场这个计数恒为 0——HTTP 供应商没跑过。计数为 0 分不出「通道语义
+	// 被执行了」还是「计数路径断了」，所以在这里造一条走不可观测通道的投递，
+	// 验证 label → fold → stats 三段都活着。这是**通道语义测试**，不写进任何
+	// live 现场：fixture 事件只存在于本进程的临时黑板里，用完即弃。
+	test("一条不可观测通道的投递，沿 label → fold → stats 计入 unknownBy.unobservable", async () => {
+		const events = [
+			...delivered("w", ["src/a.ts"], { readObservability: "unobservable" }),
+			// 写者后来盲写了受影响文件：可观测通道这里会判 ignored，不可观测通道
+			// 不准把沉默读成证据，必须停在 unknown / unobservable。
+			footprint("w", [], ["src/a.ts"]),
+		];
+
+		const labeled = labelNoticeOutcomes(events);
+		expect(labeled[0]!.outcome).toBe("unknown");
+		expect(labeled[0]!.unknownReason).toBe("unobservable");
+
+		const folded = foldNoticeOutcomes(events);
+		expect(folded.agent.delivered).toBe(1);
+		expect(folded.agent.unknown).toBe(1);
+		expect(folded.agent.unknownBy.unobservable).toBe(1);
+		expect(folded.agent.ignored).toBe(0);
+
+		const ws = await makeTempWorkbench();
+		try {
+			for (const item of events) {
+				await ws.bb.events.append({
+					timestamp: item.timestamp,
+					source: item.source,
+					type: item.type,
+					payload: item.payload,
+				});
+			}
+			const stats = await collectChatStats(ws.bb);
+			expect(stats.noticeOutcomes.agent.unknownBy.unobservable).toBe(1);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+});

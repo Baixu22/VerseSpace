@@ -22,6 +22,16 @@ export interface Row {
 	samples: number;
 	fit: Fit;
 	why: string;
+	/**
+	 * unknown 的分类（issue #13）：同样是 `unknown`，一种是**结构性**的——
+	 * 决策/实验/修复类节点按纪律 2 停在这里，有书面复核指针，用记录回答而不是
+	 * 用数据回答；另一种是**证据缺口**的——部件有可观测指标，只是样本还没攒够
+	 * 或来源不是自然使用。两者在对外叙事里必须分开，否则 7 行结构性 unknown
+	 * 会被误读成「7 个部件没人用」。
+	 */
+	unknownClass?: "structural" | "evidence-gap";
+	/** 证据缺口 unknown 的处置结论（来自探针的 `disposition`，见 metrics.ts）。 */
+	disposition?: string;
 }
 
 const MILESTONE_KINDS = new Set(["milestone", "global_task"]);
@@ -181,6 +191,9 @@ export function buildRows(
 				metric: probe.metric,
 				source: probe.source,
 				trace: probe.trace,
+				// 结构性 unknown：纪律规定如此，不是缺口。分类声明让对外读账本时
+				// 不会把「决策类节点没有可计数指标」误读成「部件没人用」。
+				unknownClass: "structural" as const,
 				why: "决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown",
 			};
 		}
@@ -204,6 +217,11 @@ export function buildRows(
 			value: reading.value,
 			samples: reading.samples,
 			fit,
+			// 部件有可观测指标却停在 unknown，是证据缺口而不是结构性 unknown：
+			// 东西建出来了，样本没攒够，或来源不是自然使用。处置结论（如果有）
+			// 说明这行怎么样才算有结论。
+			unknownClass: fit === "unknown" ? ("evidence-gap" as const) : undefined,
+			disposition: fit === "unknown" ? probe.disposition : undefined,
 			why: !started
 				? "t0 未开始：.workbench 无真实线程或无注册写者，现有事件是自举期数据，不作样本"
 				: reading.samples === 0

@@ -92,6 +92,10 @@ const NODES = [
 const L1_NODE = [
 	{ id: "TF-0154", title: "地标认可", status: "done", kind: "task" },
 ];
+/** TF-0142 在 NODES 里没有，它的处置结论测试单独给它一个 scope。 */
+const B_CLASS_NODES = [
+	{ id: "TF-0142", title: "通知通道语义与测试", status: "done", kind: "task" },
+];
 
 describe("fit 账本推导规则（TF-0137）", () => {
 	test("t0 判据：既要有真实线程，也要有注册写者，缺一不算开始", () => {
@@ -206,6 +210,39 @@ describe("fit 账本推导规则（TF-0137）", () => {
 		expect(record.trace).toContain("report-2026-09-05-claude-fork-inheritance");
 		// t0 已开始也不升级：它没有 stats 或事件来源可引
 		expect(record.why).toContain("无 stats 或事件可引");
+	});
+
+	test("unknown 分两类（issue #13）：record 是结构性，组件缺样本是证据缺口", () => {
+		const started = ctx({
+			stats: stats({ threads: { total: 9 } }),
+			writerKind: new Map([["w", "human"]]),
+		});
+		// record 行无论 t0 是否开始，都是结构性 unknown——纪律规定如此，不是缺口
+		expect(
+			buildRows(NODES, started).find((r) => r.id === "TF-0140")!.unknownClass,
+		).toBe("structural");
+
+		// 组件行有指标但 t0 未开始：证据缺口
+		const before = buildRows(NODES, ctx()).find((r) => r.id === "TF-0148");
+		expect(before!.fit).toBe("unknown");
+		expect(before!.unknownClass).toBe("evidence-gap");
+
+		// 有处置结论的探针（TF-0142）只在停在 unknown 时携带处置
+		const gap = buildRows(B_CLASS_NODES, ctx()).find((r) => r.id === "TF-0142");
+		expect(gap!.unknownClass).toBe("evidence-gap");
+		expect(gap!.disposition).toContain("unknownBy.unobservable");
+
+		// 组件行一旦离开 unknown，分类与处置都消失，不残留
+		const resolved = buildRows(
+			NODES,
+			ctx({
+				stats: stats({ noticeOutcomes: { rows: 60 }, threads: { total: 1 } }),
+				writerKind: new Map([["w", "agent"]]),
+			}),
+		).find((r) => r.id === "TF-0148")!;
+		expect(resolved.fit).toBe("aligned");
+		expect(resolved.unknownClass).toBeUndefined();
+		expect(resolved.disposition).toBeUndefined();
 	});
 
 	test("里程碑不计入 fit 分布，避免把子节点的 unknown 重复计一次", () => {
