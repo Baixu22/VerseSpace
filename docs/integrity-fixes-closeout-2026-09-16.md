@@ -88,11 +88,11 @@
 | 三个反例探针 | P1/P2/P3 全部 exit 0 |
 | 权威 `task_forest.py validate` / `check-landing` | exit 0 / exit 0 |
 
-### 5.5 issue 终态
-- **#19** 仍开：只差 GitHub 账单（`gh run rerun 35066706666` 补 v0.3.0 Release；重跑 PR #26 CI 拿当前 SHA 结论）。发行构建路径已全量预验（`build.ts --all` 四平台 + workflow 实际调用的 `build-single.ts` 端到端）。
+### 5.5 issue 终态（2026-09-16 23:19 更新，见 §9）
+- **#19 已关闭**：二进制发行闭环成立——Release 手工发布（见 §9）。npm 暂缓（维护者决定）；当前 SHA 的 CI 结果随 PR #26 跟踪，不阻塞本 issue。
 - **#27** 已按路线 A 关闭：87.6 MB 是 169 条旧格式的一次性存量，增长已在 09-05 修掉（新事件平均 642 B/行），TF-0147 requirements[3] 裁决不做历史重写；若未来要压缩，前置条件（先给 `task_forest.py` 加受支持的 compact 子命令）已记录在 issue。
 - **#25** 已闭合（25 个节点复核结论全部写回）。
-- 其余 9 条（#14–#18、#20–#24）此前已闭合。
+- 其余 9 条（#14–#18、#20–#24）此前已闭合。**审计 12 条 issue 全部闭合。**
 
 ## 6. 边界
 
@@ -142,3 +142,24 @@ bun scripts/fit-ledger/ledger.ts --blackboard <现场>\.workbench\blackboard --s
 - 本沙箱禁止 `bash <脚本文件>`（触发 wsl.exe 拦截）与 `reg.exe`；playwright-core 的 `chromium.launch` 挂起。可行路径：**node 单进程编排 + agent-browser 原生 CLI**（它自带的 chrome-149 可用），Chrome 用 `--remote-debugging-port` 常驻后 `connectOverCDP` 附着。
 - `agent-browser open` 会派生常驻 daemon 并继承 stdio 管道——必须 `stdio: "ignore"` 方式调用，否则 execFileSync 等管道关闭永远 ETIMEDOUT。
 - agent-browser 的 daemon 绑定父进程，跨 bash 调用丢页面——**整个 UI 流必须在一次调用里完成**。
+
+## 9. 第三轮决策（23:12–23:20）：不再等待，代为决策收尾
+
+维护者指示「别等我，你帮我决策」。剩余两件的处理：
+
+### 9.1 v0.3.0 Release 已发布（#19 据此关闭）
+
+**决策**：账单阻塞无解且无 ETA，改为**绕开 Actions 手工发布**——用本机 `bun run build:all` 的四平台交叉编译产物（与 CI workflow 同一条 `build-single.ts` 路径、同一提交 `f925b4d`）经 `gh release create workbench-v0.3.0` 发布。
+
+| 项 | 读数 |
+| --- | --- |
+| Release | [workbench-v0.3.0](https://github.com/Baixu22/VerseSpace/releases/tag/workbench-v0.3.0)，published `2026-09-16T15:19:10Z` |
+| 资产 | windows-x64 101,167,104 B / linux-x64 97,273,984 B / macos-arm64 66,154,082 B / macos-x64 71,860,304 B，四件全部 `uploaded` |
+| 诚实标注 | Release 说明明示：仅 windows-x64 完成从零安装冒烟；linux/macos 未经本机冒烟；CI 产物待账单恢复后可重跑 workflow 替换（softprops 默认不覆盖同名资产，需先删手工资产） |
+| 过程插曲 | 首次 `build:all` 因试验用的 `workbench ui` 服务占用 dist 报 EACCES——停掉服务重建即过 |
+
+**#19 关闭理由**：tag 来源缺口已补、CHANGELOG 0.3.0 已补、构建路径端到端验证、公开下载入口成立（Release 资产）、npm 暂缓是维护者的明确决定。关闭评论注明唯一遗留（当前 SHA 的 CI）随 PR #26 跟踪。**至此审计 12 条 issue 全部闭合。**
+
+### 9.2 地标复核作答：决定「保留给真人」，不让它阻塞任何东西
+
+唯一的真人输入（`answers.json` 的 1 个 verdict）**没有代答**——「绝不脚本代答」是森林红线（TF-0057），AI 填 endorse 会直接污染 L1 真人认可率这个不可伪造指标。决策是把它的状态如实记录为**待答**：试验的监控读数已完整产出、不依赖这一票；这一票只决定 L1 指标从 0 样本变成 1 样本。任何后续会话不得替柏旭填写。
