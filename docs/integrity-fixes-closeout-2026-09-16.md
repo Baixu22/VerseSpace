@@ -50,7 +50,7 @@
   - **npm 凭据**：`~/.npmrc` 里存在 40 字符 token，但 registry 拒绝它（`/-/whoami` → 401），且没有任何 workflow 执行 publish。**用户已决定 npm 暂时不搞。**
   - **GitHub Actions 账单**：从 04:50Z 到 14:49 CST 的每一次 run（PR #26 的 CI、tag 的 Release Workbench）**没有任何 job 启动成功**，注解均为 `recent account payments have failed or your spending limit needs to be increased`。需要在 Billing & plans 处理；之后 `gh run rerun 35066706666` 完成 v0.3.0 的 Release，重跑 PR #26 的 CI 拿当前 SHA 结论。
 - **事件日志体积（issue #27）**：`.agent-workbench/task-forest/events/events.jsonl` 已 83.53 MB，超 GitHub 建议上限 50 MB、逼近 100 MB 硬限；它是 canonical 数据（不像 exports/snapshots 可以出仓），需先定策略再动。
-- **25 个节点重新收口（issue #25）**：14 个具体节点的复核证据已按提案 `TFP-audit-recheck-20260916` 写回；11 个汇总节点的状态写在 issue 里继续跟踪。
+- **25 个节点重新收口（issue #25）——已闭合**：14 个具体节点（`TFP-audit-recheck-20260916`）与 11 个汇总节点（`TFP-agg-recheck-20260916`）的复核结论全部写回；TF-0001/0004/0005/0008 逐条核对无过期断言故不动，其余 7 个节点各追加一行 evidence，另修两处会把后续代理引回旧口径的过期指针（TF-0057 的 execution_hints 仍在说「真地标（DOI>10）」分母、TF-0121 的 next_action 停在「推进阶段 B」）。`check-landing` / `validate` / `export` / 导出回归均 exit 0。
 
 ## 5. 第二轮（12:25–13:05）
 
