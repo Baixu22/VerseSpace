@@ -22,6 +22,14 @@ on:
     branches:
       - main
       - windows-port
+  # Manual entry point. Without this, a feature branch that never opens a PR
+  # gets no CI at all: `pull_request` needs a PR and `push` only covers the two
+  # branches above, so "what does CI say about this SHA" had no answer
+  # (2026-09-16: the last CI run was 2026-09-11, on main). Dispatch requires the
+  # workflow to exist on the default branch, so this only takes effect once it
+  # lands on main. Still push/PR-gated for normal work — this adds no automatic
+  # runs.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}

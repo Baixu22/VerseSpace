@@ -16,6 +16,20 @@ bunx @baixu22/workbench --help
 bun install -g @baixu22/workbench
 ```
 
+## 发行
+
+**当前对外承诺的形态是方式一的单文件二进制**（`workbench-v*` tag → 四平台构建 → 挂到 GitHub Release）。npm 形态的目标没变，但被两件事挡住，都不是代码问题：本机 `~/.npmrc` 里的 npm token 已被 registry 拒绝（`/-/whoami` → 401），且仓库里没有把 publish 接进任何 workflow。
+
+```bash
+# 看这一版会打什么 tag（默认 dry-run，不做任何写操作）
+bun run release:tag:workbench
+
+# 真正发布：创建并推送 workbench-v<version>，触发 release-workbench.yml
+bun run release:tag:workbench --push
+```
+
+`release-workbench.yml` 会先跑 `packages/workbench` 的测试，再交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64 并把产物挂到该 tag 的 Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。注意根目录的 `release:tag` 是旧 Helmor 的 tag（`v0.46.0`），与本包无关——workbench 用 `release:tag:workbench`。
+
 ## 5 分钟上手
 
 ```bash

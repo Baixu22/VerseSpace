@@ -16,7 +16,7 @@ exports[`renderContext full context renders every section (snapshot) 1`] = `
 
 ## 可用的接口定义
 - core/api → contracts/api.md（v3）
-  文件路径: \\proj\\contracts\\api.md
+  文件路径: /proj/contracts/api.md
 
 ## 最近的相关事件
 - [2026-08-28T01:00:00.000Z] checkpoint_moved: cp-1 staging → verified

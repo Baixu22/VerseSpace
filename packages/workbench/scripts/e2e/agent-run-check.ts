@@ -1,6 +1,8 @@
 /** Opt-in real-model verification of the public batch CLI (issue #11). */
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import type { AgentSession } from "../../src/agents/runner";
 import { openBlackboard } from "../../src/blackboard";
@@ -12,6 +14,36 @@ import { workbenchConfigSchema } from "../../src/types/config";
 import { seedProject } from "./fixtures";
 import { loadLiveModelCredentials } from "./live-credentials";
 
+/**
+ * Read the ANTHROPIC_* route `claude` will actually use, the same way the CLI
+ * does: from ~/.claude/settings.json. Returns undefined when the file or the
+ * env block is absent. No secret value is copied out — only the base URL and
+ * the model alias.
+ */
+function readClaudeRoute():
+	| { baseUrl: string; modelName?: string; proxyManaged: boolean }
+	| undefined {
+	try {
+		const file = join(homedir(), ".claude", "settings.json");
+		const parsed = JSON.parse(readFileSync(file, "utf8")) as {
+			env?: Record<string, string>;
+		};
+		const baseUrl =
+			process.env.ANTHROPIC_BASE_URL ?? parsed.env?.ANTHROPIC_BASE_URL;
+		if (!baseUrl) return undefined;
+		return {
+			baseUrl,
+			modelName:
+				process.env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME ??
+				parsed.env?.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME,
+			proxyManaged:
+				/^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:|\/|$)/i.test(baseUrl),
+		};
+	} catch {
+		return undefined;
+	}
+}
+
 async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	assert(args.includes("--run-live"), "真实模型验证必须显式传 --run-live");
@@ -20,6 +52,40 @@ async function main(): Promise<void> {
 		outAt < 0 ? ".evidence-sites" : (args[outAt + 1] ?? ""),
 	);
 	const nativeClaude = args.includes("--claude");
+	// `claude` does not necessarily talk to Anthropic: it reads ANTHROPIC_* from
+	// ~/.claude/settings.json, and on this machine that points at a loopback
+	// relay (ANTHROPIC_BASE_URL=http://127.0.0.1:<port>) which answers with
+	// OpenAI-shaped messages under an aliased model name. A run through such a
+	// relay is still a real end-to-end execution, but its output is NOT
+	// independent real-model evidence — record the route so nobody mistakes it
+	// for one (2026-09-16: a `--claude` run looked "real" in the report while
+	// every reply came from the local relay).
+	const claudeRoute = nativeClaude ? readClaudeRoute() : undefined;
+	if (claudeRoute?.proxyManaged && !args.includes("--allow-proxy")) {
+		// Stop before spending anything. Evidence, 2026-09-16: two independent
+		// `--claude` runs produced byte-identical assistant text and the same
+		// total_cost_usd (0.03087), with the only tool call carrying the literal
+		// placeholder `{"file_path": "value"}`. That is a canned relay response,
+		// not inference — calling it "真实模型验证" would be exactly the kind of
+		// false green this harness exists to prevent.
+		console.error(
+			[
+				"拒绝把本机代理当作真实模型通道运行。",
+				`  ANTHROPIC_BASE_URL=${claudeRoute.baseUrl}（本机代理）`,
+				`  模型别名=${claudeRoute.modelName ?? "?"}`,
+				"  这条路上的输出不能作为独立真实模型证据；两次运行返回逐字相同的固定回复。",
+				"  要跑真正的真实模型验证，请用显式 HTTP provider 凭据（E2E_LLM_KEY/E2E_LLM_BASE_URL/E2E_LLM_MODEL）",
+				"  或直连 Anthropic 的 claude 配置；确认代理背后是可靠模型时可加 --allow-proxy 继续。",
+			].join("\n"),
+		);
+		process.exit(3);
+	}
+	if (claudeRoute?.proxyManaged) {
+		console.warn(
+			`[agent-live] 注意：claude 的 ANTHROPIC_BASE_URL=${claudeRoute.baseUrl}（本机代理），` +
+				`模型别名 ${claudeRoute.modelName ?? "?"}；--allow-proxy 已给出，结果仍不是独立真实模型证据。`,
+		);
+	}
 	const credentials = nativeClaude ? undefined : loadLiveModelCredentials();
 	await mkdir(output, { recursive: true });
 	const root = await mkdtemp(join(output, "agent-run-live-"));
@@ -37,6 +103,7 @@ async function main(): Promise<void> {
 		model: credentials?.model,
 		baseUrl: credentials?.baseUrl,
 		credentialOrigin: credentials?.origin ?? "claude-code-login",
+		claudeRoute,
 		workspace: root,
 		startedAt: new Date().toISOString(),
 		limitations: [
@@ -131,12 +198,17 @@ async function main(): Promise<void> {
 				.map((line) => JSON.parse(line) as { kind: string; line: string })
 				.filter((line) => line.kind === "out")
 				.map((line) => JSON.parse(line.line) as Record<string, unknown>);
-			assert(
-				events.some(
-					(event) => event.type === "result" && event.subtype === "success",
-				),
-			);
-			assert(!events.some((event) => event.is_error === true));
+			// Turn-level health is carried by the top-level result event only.
+			// A `tool_result` may legitimately carry `is_error: true` whenever
+			// the model calls a tool with bad arguments — that is a fact about
+			// the model's tool use, not evidence that the run failed, and
+			// sweeping the whole stream for `is_error` conflated the two (the
+			// 2026-09-16 run failed here with a bare `false == true` even though
+			// the result event said subtype=success, is_error=false).
+			const resultEvent = events.find((event) => event.type === "result");
+			assert(resultEvent, "模型流里没有 result 事件");
+			assert.equal(resultEvent.subtype, "success");
+			assert.equal(resultEvent.is_error, false);
 			const init = events.find(
 				(event) => event.type === "system" && event.subtype === "init",
 			);

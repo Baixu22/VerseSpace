@@ -51,6 +51,7 @@
 		"release:tag": "node scripts/create-release-tag.mjs",
 		"release:verify": "node scripts/verify-release-config.mjs && bun run scripts/verify-release-announcements.ts",
 		"release:version": "changeset version && bun run release:announcements && bun run release:sync-versions",
+		"release:tag:workbench": "node scripts/tag-workbench-release.mjs",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
 		"dev:ui": "cd apps/workbench-ui && bun run dev",

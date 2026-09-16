@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { join } from "node:path";
 import type { Goal } from "../types/goal";
 import type { Workspot } from "../types/workspot";
 import type { ContextInput } from "./render";
@@ -84,7 +85,34 @@ describe("renderContext", () => {
 				},
 			],
 		});
-		expect(markdown).toMatchSnapshot();
+		expect(markdown.replaceAll("\\", "/")).toMatchSnapshot();
+	});
+
+	// The snapshot above is POSIX-normalised on purpose. The interface path in
+	// the rendered context comes from `join(projectRoot, canonicalPath)`, so it
+	// carries the host separator — a snapshot of the raw markdown therefore only
+	// matches on the platform that recorded it (the Windows-authored snapshot
+	// failed on the macOS CI runner, 2026-09-11). Keep the platform-neutral
+	// snapshot AND assert the host-correct path here, so neither coverage is
+	// lost.
+	test("interface absolute path uses the host path separator", () => {
+		const markdown = renderContext({
+			...baseInput(),
+			interfaces: [
+				{
+					key: "core/api",
+					canonicalPath: "contracts/api.md",
+					version: 3,
+					publishedBy: "ws-b",
+					lastModified: "2026-08-28T00:00:00.000Z",
+					contentHash: "abc",
+					subscribers: [],
+				},
+			],
+		});
+		expect(markdown).toContain(
+			`文件路径: ${join("/proj", "contracts/api.md")}`,
+		);
 	});
 
 	test("empty optional sections are omitted", () => {
