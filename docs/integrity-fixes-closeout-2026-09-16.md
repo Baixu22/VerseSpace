@@ -24,14 +24,18 @@
 
 | 验证 | 结果 |
 | --- | --- |
-| Workbench `bun run test` | exit 0；**713 pass / 0 fail**，112 文件，243.14 秒（审计时 700/110） |
+| Workbench `bun run test` | exit 0；**714 pass / 0 fail**，112 文件（审计时 700/110） |
 | Workbench UI `bun run test` | exit 0；27 pass，10 文件 |
+| 根 `test:frontend` | exit 0 |
 | 五项目 typecheck | exit 0 |
+| `biome check .` | exit 0 |
 | 三个反例探针 | 全部 `contractSatisfied=true`（F03 按起点观测判据） |
 | 权威副本 `task_forest.py validate` | exit 0（原 exit 1） |
 | `task_forest.py export` | exit 0 |
 | `validate_task_forest_export.py --skill-dir ...` | exit 0（原 exit 1） |
-| `check-landing` | exit 1：109 项未提交改动 + 26 个 done 晚于 HEAD（提交后复跑即转 0） |
+| `check-landing` | exit 1：109 项未提交改动 + 26 个 done 晚于 HEAD → 提交后 **exit 0** |
+| 从零安装冒烟（二进制/干净 PATH） | 全部 exit 0；内嵌 UI HTTP 200 |
+| 真实模型完整场景 | **exit 0**（换模型后；49 次模型响应） |
 
 ## 3. 森林变更（全部走提案流程，经用户确认）
 
@@ -42,10 +46,35 @@
 
 ## 4. 仍未闭合（需要外部条件或另行授权）
 
-- **F06 发行闭环**：README 已订正为「npm 形态尚未发布，公开 registry 上 `@baixu22/workbench` 返回 404」，但发布动作本身未执行，也未取得当前 SHA 的 CI 结果。分发形态需要用户决定（npm 包 vs GitHub 二进制）。
-- **真实模型通道**：审计期脚本默认端点返回 HTTP 401；本轮改用本机 claude-code 登录态跑了一次真实批处理读写验证，agent 回合 exit 0 但脚本断言未过（6.8 秒内完成，疑似未产生预期足迹）。尚未定论，没有替换密钥、没有把失败当通过。
-- **25 个节点重新收口**：F01–F10 的工程判据已绿，但节点字段写回与 `check-landing` 转 0 是后续动作（issue #25）。
+- **F06 发行闭环（issue #19）**：README 已订正为「npm 形态尚未发布，公开 registry 上 `@baixu22/workbench` 返回 404」；分发形态由用户定为**单文件二进制**。剩余两件外部条件：
+  - **npm 凭据**：`~/.npmrc` 里存在 40 字符 token，但 registry 拒绝它（`/-/whoami` → 401），且没有任何 workflow 执行 publish。
+  - **当前 SHA 的 CI**：已开 PR #26 触发 CI，但 job 5 秒即失败——注解为 `recent account payments have failed or your spending limit needs to be increased`。**GitHub Actions 在该账号上无法启动 job**，需要用户在 Billing & plans 处理。
+- **事件日志体积（issue #27）**：`.agent-workbench/task-forest/events/events.jsonl` 已 83.53 MB，超 GitHub 建议上限 50 MB、逼近 100 MB 硬限；它是 canonical 数据（不像 exports/snapshots 可以出仓），需先定策略再动。
+- **25 个节点重新收口（issue #25）**：14 个具体节点的复核证据已按提案 `TFP-audit-recheck-20260916` 写回；11 个汇总节点的状态写在 issue 里继续跟踪。
 
-## 5. 边界
+## 5. 第二轮（12:25–13:05）
+
+### 5.1 模型通道恢复
+| 项 | 读数 |
+| --- | --- |
+| `live-entry.ts check` | exit 0 |
+| 直连 `POST /v1/chat/completions` | **200**（审计期记录为 401，不可复现） |
+| 仓库自己的 `completeLiveTurn` | 成功返回 `Read {"file_path":"src/alpha.ts"}` |
+| 完整场景（默认模型） | S0–S11 全过、30 次模型响应；模型产物验收固定 11/12 |
+| 完整场景（`doubao-seed-2-0-code-preview-260215`） | **exit 0**；`通过；模型响应 49 次`；验收三轮收敛 10/12 → 11/12 → **12/12** |
+
+结论：**401 不是凭据失效也不是 provider 不匹配**——同一份 DPAPI 凭据、同一个默认端点直连即 200。「模型产物 11/12」是**模型选择问题**而不是用例缺陷（换模型后同样的两轮纠正预算内即收敛）。用例与阈值未改。默认模型未改，只在 README 里写明实测与要跑通验收应指定的模型。
+
+顺带修掉两个 harness 缺陷：`agent-run-check.ts` 曾把任意 `tool_result` 的 `is_error` 当回合失败（上一轮那次 `--claude` 跑死在这里，只报 `false == true`）；并且会把走本机代理的 `claude` 输出当真实模型证据——现已在识别到 loopback `ANTHROPIC_BASE_URL` 时默认拒跑（exit 3）。
+
+### 5.2 交付链
+- **补上缺失的 tag 来源**：`release-workbench.yml` 只监听 `workbench-v*`，而仓库里没有任何东西会产生它（`create-release-tag.mjs` 从根 package.json 打 `v0.46.0`，那是旧 Helmor）。新增 `scripts/tag-workbench-release.mjs`（默认 dry-run）与根脚本 `release:tag:workbench`。
+- **从零安装冒烟（本机 Windows，全绿）**：单一二进制放进干净独立 PATH，README 五分钟上手全 exit 0，内嵌 UI 对干净工程 HTTP 200。
+- **跨平台 CI 缺陷**：`contextgen/render.test.ts` 的快照记录了 Windows 路径分隔符，只可能在 Windows 通过而 CI 跑 macOS（2026-09-11 那次红的原因之一）。已改为 POSIX 归一化快照 + 另加一条宿主机分隔符断言。
+
+### 5.3 落库
+提交 `7df65fd`（F01–F05 修复 + 拆分）→ `dc157c4`（文档与森林）→ `5baf4a6`（CI / 发行 / harness）→ `86470a5`（14 节点复核证据）→ 提交 README 模型实测；分支已推送，PR **#26** 开着。每次 git 写后重钉 ref 并自证。
+
+## 6. 边界
 
 未伪造自然用户数据，未放宽任何判据或阈值，未删除失败记录，未改写历史审计证据。旧 Helmor（`src/`、`sidecar/`、`src-tauri/`）本轮未改动。
