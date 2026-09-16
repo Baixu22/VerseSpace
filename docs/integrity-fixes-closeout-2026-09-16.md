@@ -72,7 +72,7 @@
 - **从零安装冒烟（本机 Windows，全绿）**：单一二进制放进干净独立 PATH，README 五分钟上手全 exit 0，内嵌 UI 对干净工程 HTTP 200。
 - **跨平台 CI 缺陷**：`contextgen/render.test.ts` 的快照记录了 Windows 路径分隔符，只可能在 Windows 通过而 CI 跑 macOS（2026-09-11 那次红的原因之一）。已改为 POSIX 归一化快照 + 另加一条宿主机分隔符断言。
 - **补 0.3.0 CHANGELOG**：`package.json` 已是 0.3.0，`CHANGELOG.md` 却只有 0.1.0/0.2.0——而它在包的 `files` 里，不补就会发出陈旧内容。按 `workbench-v0.2.0..HEAD` 的提交归纳补上。
-- **v0.3.0 发行**：tag `workbench-v0.3.0` 已推（→ `f925b4d`），`Release Workbench` run `35066706666` 已触发但四个 `Build *` job 因账单未能启动，故**尚无 v0.3.0 Release**。四平台产物已在本机全部构建成功（文件名与 workflow 一致：windows-x64 101.2 MB / linux-x64 97.3 MB / macos-arm64 66.2 MB / macos-x64 71.9 MB）。账单恢复后 `gh run rerun 35066706666` 即可收尾，不必重推 tag。
+- **v0.3.0 发行**：tag `workbench-v0.3.0` 已推（→ `f925b4d`），`Release Workbench` run `35066706666` 已触发但四个 `Build *` job 因账单未能启动，故**尚无 v0.3.0 Release**。构建路径已全部预验：`bun run build:all` 四平台交叉编译成功（文件名与 workflow 一致：windows-x64 101.2 MB / linux-x64 97.3 MB / macos-arm64 66.2 MB / macos-x64 71.9 MB），且 workflow 实际调用的 `scripts/build-single.ts <target> <artifact>`（与 `build.ts --all` 是不同代码路径）也端到端验证通过、产物在干净 PATH 下 `--help`/`init`/`doctor` 全 exit 0。账单恢复后 `gh run rerun 35066706666` 即可收尾，不必重推 tag。
 
 ### 5.3 落库
 提交 `7df65fd`（F01–F05 修复 + 拆分）→ `dc157c4`（文档与森林）→ `5baf4a6`（CI / 发行 / harness）→ `86470a5`（14 节点复核证据）→ `61c977f`（README 模型实测）→ `f925b4d`（0.3.0 CHANGELOG，同时也是 tag `workbench-v0.3.0` 指向的提交）；分支已推送，PR **#26** 开着。每次 git 写后重钉 ref 并自证。
