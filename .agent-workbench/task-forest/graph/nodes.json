@@ -1242,7 +1242,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1263,13 +1263,15 @@
     "difficulty": "medium",
     "display_order": 340,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：接口注册表的列表读取不再吞掉 YAML 错误——损坏条目会让 `interfaces.list()` 抛错，doctor 与 sync 均 exit 1 并给出损坏文件的绝对路径（探针 `corrupt-registry.contractSatisfied=true`）。提交 7df65fd。"
+    ],
     "execution_hints": [],
     "id": "TF-0027",
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1280,7 +1282,7 @@
     "success_metrics": [],
     "summary": "YAML 目标与决策的读写；接口注册表（内容 hash、getSubscribers、checkDrift 漂移检查）。返回纯数据对象，不做任何业务判断。",
     "title": "Blackboard API：goals / decisions / interfaces",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-16T04:48:02.582953Z"
   },
   "TF-0028": {
     "acceptance_criteria": [
@@ -1426,7 +1428,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1447,13 +1449,15 @@
     "difficulty": "high",
     "display_order": 410,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：删除锚定接口文件后，目标转 `stale_done`、工位转 `blocked` 并发出人工通知，依赖它的新目标停在 `planned`（探针 `deleted-interface` 与 `deleted-interface-downstream` 均转绿）。提交 7df65fd。"
+    ],
     "execution_hints": [],
     "id": "TF-0031",
     "kind": "subtask",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1464,7 +1468,7 @@
     "success_metrics": [],
     "summary": "planned → ready（依赖满足）→ in_progress（被派发）→ done（验证通过）→ stale_done（锚定接口漂移）/ cancelled 的转移规则；含 stale 是否阻塞下游的策略点。",
     "title": "goal-machine 状态机",
-    "updated_at": "2026-08-28T11:05:09.680262Z"
+    "updated_at": "2026-09-16T04:48:02.583009Z"
   },
   "TF-0032": {
     "acceptance_criteria": [],
@@ -1786,7 +1790,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1807,13 +1811,15 @@
     "difficulty": "high",
     "display_order": 710,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：checkpoint 声明的受支持 effect 在标记 `applied` 前真正执行（探针 `checkpoint-effect.contractSatisfied=true`，publishedBy 由 before 变 after）；不支持的 effect 明确拒绝，不再接受字段后空转。提交 7df65fd。"
+    ],
     "execution_hints": [],
     "id": "TF-0039",
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1824,7 +1830,7 @@
     "success_metrics": [],
     "summary": "snapshot → automaton.evaluate → 逐条执行转移（含调 Verifier）→ scheduler 决策 → 接口漂移检测 → 事件落盘；幂等可重入，本轮转移触发的变化下一轮才生效（不递归）。",
     "title": "Runtime.runOnce 编排",
-    "updated_at": "2026-08-28T11:41:30.079611Z"
+    "updated_at": "2026-09-16T04:48:02.583053Z"
   },
   "TF-0040": {
     "acceptance_criteria": [],
@@ -2186,7 +2192,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2207,13 +2213,15 @@
     "difficulty": "medium",
     "display_order": 1010,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：doctor 对损坏注册表不再报健康——exit 1，输出含 invalid YAML 的位置与路径（探针 `corrupt-registry`）。提交 7df65fd。"
+    ],
     "execution_hints": [],
     "id": "TF-0048",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2224,13 +2232,13 @@
     "success_metrics": [],
     "summary": "检查 DAG 引用完整性、接口 hash 与注册表漂移、孤儿 checkpoint、队列中目标与状态机结论的矛盾、worktree 与分支绑定一致性；输出定位与修复建议。",
     "title": "doctor 全量一致性体检",
-    "updated_at": "2026-08-28T12:23:24.630126Z"
+    "updated_at": "2026-09-16T04:48:02.583092Z"
   },
   "TF-0049": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2251,13 +2259,15 @@
     "difficulty": "high",
     "display_order": 1020,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：半截接口 YAML 现在在真实 CLI 的 doctor / sync 链路上明确报错（带行号与文件路径），不再被过滤成空世界。提交 7df65fd。"
+    ],
     "execution_hints": [],
     "id": "TF-0049",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2268,13 +2278,13 @@
     "success_metrics": [],
     "summary": "写入中途 kill（半截 YAML/半行 JSONL）后 sync 自愈或明确报错；两个 CLI 进程并发写的串行化行为验证。",
     "title": "容错与并发写入测试",
-    "updated_at": "2026-08-28T12:23:24.630126Z"
+    "updated_at": "2026-09-16T04:48:02.583130Z"
   },
   "TF-0050": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2294,13 +2304,15 @@
     "difficulty": "medium",
     "display_order": 1110,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：npm 发布链仍未闭合，但阻塞已收敛为一件外部条件——本机 `~/.npmrc` 的 npm token 被 registry 拒绝（`/-/whoami` → 401），且仓库没有任何 workflow 执行 npm publish。代码侧已就位：`.changeset/config.json` 的 `access: public` 与 `packages/workbench/package.json` 的 `publishConfig.access=public`。README 已不再承诺可执行的 npm 安装命令。"
+    ],
     "execution_hints": [],
     "id": "TF-0050",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2311,7 +2323,7 @@
     "success_metrics": [],
     "summary": "把 packages/workbench 纳入 changesets：现 config 为 access: restricted 且 ignore 里只有 marketing，需改 public 并确认 privatePackages 行为；sidecar 不在 workspace 内的先例要显式处理，避免发行脚本漏掉新包。",
     "title": "changesets 接入与 npm 发布链路",
-    "updated_at": "2026-08-28T12:57:56.799471Z"
+    "updated_at": "2026-09-16T04:48:02.583166Z"
   },
   "TF-0051": {
     "acceptance_criteria": [],
@@ -2365,7 +2377,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2386,13 +2398,15 @@
     "difficulty": "medium",
     "display_order": 1130,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：二进制发行链补上了缺失的 tag 来源。此前 `.github/workflows/release-workbench.yml` 只监听 `workbench-v*`，而 `scripts/create-release-tag.mjs` 从根 package.json 打 `v0.46.0`（旧 Helmor），没有任何东西会产生 workbench 的 tag。新增 `scripts/tag-workbench-release.mjs`（默认 dry-run，`--push` 才推送）与根脚本 `release:tag:workbench`。npm 形态仍未接进任何 workflow。提交见本轮。"
+    ],
     "execution_hints": [],
     "id": "TF-0052",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2403,13 +2417,13 @@
     "success_metrics": [],
     "summary": "publish.yml 扩展或新增独立 workflow：平台矩阵构建、npm token、GitHub Release 产物挂载、tag 触发；沿用 release-plan.yml 的 changesets/action 模式。",
     "title": "发行流水线扩展",
-    "updated_at": "2026-08-28T12:57:56.799471Z"
+    "updated_at": "2026-09-16T04:48:02.583204Z"
   },
   "TF-0053": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2430,13 +2444,15 @@
     "difficulty": "medium",
     "display_order": 1140,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：README 的安装说明改为与真实交付物一致——二进制为当前承诺形态、npm 形态标注为尚未发布（公开 registry 404）；live 默认端点/模型订正为 `https://api.senseaudio.cn/v1` + `senseaudio-s2-flash`，并写明凭据文件名不决定 provider；新增「发行」小节写明发布流程与阻塞。"
+    ],
     "execution_hints": [],
     "id": "TF-0053",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2447,13 +2463,13 @@
     "success_metrics": [],
     "summary": "quickstart（5 分钟从 init 到 sync）、命令参考、.agent-context.md 生成示例、pre-commit 保护 hook 示例、架构说明（可直接引用骨架文档）。",
     "title": "README、docs 与示例项目",
-    "updated_at": "2026-08-28T12:57:56.799471Z"
+    "updated_at": "2026-09-16T04:48:02.583240Z"
   },
   "TF-0054": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2474,13 +2490,15 @@
     "difficulty": "medium",
     "display_order": 1150,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-16 复核：从零安装冒烟在本机通过——把构建出的单一二进制放进干净的独立 PATH（不带仓库任何其他文件），README 五分钟上手的 init / goal add / interface register / sync / doctor / status 全部 exit 0，内嵌 UI 对干净工程返回 HTTP 200；读数 `.agent-contexts/integrity-fixes-2026-09-16/install-smoke.json`。但 `workbench-v0.3.0` 在本地与远端都不存在：本版尚未形成发行物，发行验收因此仍不成立。"
+    ],
     "execution_hints": [],
     "id": "TF-0054",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2491,7 +2509,7 @@
     "success_metrics": [],
     "summary": "三平台安装冒烟、示例项目按文档端到端复现、CHANGELOG 与 tag v0.1.0、首个发行说明。",
     "title": "v0.1.0 发行验收清单",
-    "updated_at": "2026-08-28T12:57:56.799471Z"
+    "updated_at": "2026-09-16T04:48:02.583277Z"
   },
   "TF-0055": {
     "acceptance_criteria": [
@@ -3354,7 +3372,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3377,7 +3395,8 @@
     "evidence": [
       "stream-json 提取器（blackboard/footprint.ts）：Read/Glob/Grep/LS/Bash-cat 为读集，Edit/Write/MultiEdit/NotebookEdit 为写集，parent_tool_use_id 归因 subagent。",
       "footprint.jsonl 与工具调用一一对应（threads 集成测试：fake agent 两读一写，条目数与断言一致，版本为内容哈希）。",
-      "runner.ts 第二通道未用 hooks：该路径输出本就是 stream-json（agent.command 可配），直接经同一提取器采集，免 hook 注入且天然 async。"
+      "runner.ts 第二通道未用 hooks：该路径输出本就是 stream-json（agent.command 可配），直接经同一提取器采集，免 hook 注入且天然 async。",
+      "2026-09-16 复核：没有成功结果的工具调用不再被记为已读/已写事实（探针 `unfinished-tool-claims.contractSatisfied=true`，footprint 为空；此前会把并不存在的文件声明为 generated）。runner 与 chat 两条收尾路径同批修复。提交 7df65fd。"
     ],
     "execution_hints": [
       "packages/workbench/src/chat/threads.ts:338-343 已解析 tool_use（toolName + args）",
@@ -3389,7 +3408,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3404,7 +3423,7 @@
     "success_metrics": [],
     "summary": "tool_use 与 tool_result 已经在被解析，渲染完就丢掉。采集是在既有解析点加几行落盘，不是新搭管线。",
     "title": "stream-json 足迹采集（复用既有解析点）",
-    "updated_at": "2026-08-30T09:23:45.798238Z"
+    "updated_at": "2026-09-16T04:48:02.583318Z"
   },
   "TF-0071": {
     "acceptance_criteria": [
@@ -8447,7 +8466,8 @@
       "实测：proposal_applied 单行 515KB（before 257KB + after 258KB），142 行累计 66.5MB",
       "实测：本 proposal 若 deprecate TF-0132 与 TF-0146，TF-0130 的派生进度被两个 0% 子节点拉到 5.0%，砍节点反而降进度",
       "TF-0147 的第四条验收明确要求另开 skill 侧节点承载该修正",
-      "共享 skill 的 record_event 改存快照引用与变更 ID；旧事件只追加、不重写。test_history.py 两项回归、validate_task_forest_export.py 与 quick_validate.py 通过；新增事件在大载荷夹具中小于 2KB。"
+      "共享 skill 的 record_event 改存快照引用与变更 ID；旧事件只追加、不重写。test_history.py 两项回归、validate_task_forest_export.py 与 quick_validate.py 通过；新增事件在大载荷夹具中小于 2KB。",
+      "2026-09-16 复核：权威副本的导出回归 exit 0。根因是脚本在 Windows 中文环境下用文本模式读子进程 stdout，把 GBK 输出按 UTF-8 解码使读取线程抛错、stdout 变成 None，随后 `re.search(None)` 报 TypeError；已修为显式编码加容错解码。"
     ],
     "execution_hints": [],
     "id": "TF-0152",
@@ -8466,7 +8486,7 @@
     "success_metrics": [],
     "summary": "两处修正，都在 skill 侧（C:/Users/27933/.claude/skills/task-forest/scripts/task_forest.py），不在本仓库：(1) record_event 不再内嵌 before/after 全图，改存快照引用 + 变更节点 id 列表，历史留引用不留快照体；(2) derived_progress 的子节点分母排除 deprecated / archived——当前 deprecate 一个子节点会把父里程碑的进度按 0 算进平均，砍东西反而让进度下降。",
     "title": "task-forest 引擎侧修正：历史载荷与派生分母",
-    "updated_at": "2026-09-12T07:27:34.805464Z"
+    "updated_at": "2026-09-16T04:48:02.583359Z"
   },
   "TF-0153": {
     "acceptance_criteria": [
@@ -9221,7 +9241,8 @@
       "（权威副本·处置）用户 2026-09-12 定 ~/.workbuddy/skills/task-forest 为唯一权威副本。另一份只**新增**了 SUPERSEDED.md 说明文件（未改、未删它任何既有内容），写明已被取代的原因、已搬走的能力、以及「不要再在这里改」的处理建议。同时把 recover-snapshots 写进权威副本的 SKILL.md 命令段与并发章节指引，避免合并成果不可见。",
       "（空偏差守卫·实测）record_deviation 现在要求 summary 或 reason 至少有一个非空，否则抛错。实测空偏差提案在 proposal-save 的预校验阶段就被拒绝（报错原文：record_deviation 必须提供 summary 或 reason），deviations/ 保持为空文件。修复前实测存在两条只剩 id 与时间戳的空记录（TFD-87bb847a4f、TFD-9312cfb44c），来源已定位到 TFD 提案中的 deviation 只写了 id 与 related_task_ids。",
       "（历史体积·处置口径）86.5 MB 的全图历史事件保持原样、不改写：它们已经被提交进 Git，改写既不减少 clone 体积（历史已在对象库里），也破坏「审计只追加」的语义。止损靠新形态——修复后写下的每条事件都是几百字节，体积不再随 apply 次数线性增长。",
-      "（导出体积·归因）timeline.json 的结构是「每条一个 build_export 全量图」的快照数组，212 张快照 × 约 500 KB ≈ 99 MB，与 export 出的 108 MB 吻合；HTML 18.1 MB 同理。也就是说**导出的大是设计性的**（TF-0147 裁决保留 snapshots 供历史回放），与本次修掉的事件载荷缺陷无关——此前把两者当成同一条因果链是错的，这次查清了。"
+      "（导出体积·归因）timeline.json 的结构是「每条一个 build_export 全量图」的快照数组，212 张快照 × 约 500 KB ≈ 99 MB，与 export 出的 108 MB 吻合；HTML 18.1 MB 同理。也就是说**导出的大是设计性的**（TF-0147 裁决保留 snapshots 供历史回放），与本次修掉的事件载荷缺陷无关——此前把两者当成同一条因果链是错的，这次查清了。",
+      "2026-09-16 复核：本机只剩 `C:/Users/27933/.workbuddy/skills/task-forest` 一份权威副本（`.codex/skills/task-forest` 与 `.claude/skills/task-forest` 均不存在，实测）；同副本 `validate` 由 exit 1 转 exit 0（原报错为父节点 TF-0057 组内 4 个节点缺 display_order，已由用户确认的提案 TFP-display-order-20260916 整组补齐）。"
     ],
     "execution_hints": [],
     "id": "TF-0165",
@@ -9244,7 +9265,7 @@
     "success_metrics": [],
     "summary": "机器上有两份 task-forest skill 副本，已经分叉，而且各有对方没有的东西：~/.claude/skills 那份 3332 行、含精简事件载荷（以 before_snapshot/after_snapshot + 变更 id 列表代替全图）与 13 个子命令，但导出校验器只有 313 行；~/.workbuddy/skills 那份 2250 行、只有全图内嵌写法与 12 个子命令，但带有 ordering 模块与 1152 行的导出校验器。两文件差异 2134 行。当前会话加载的是 .workbuddy 那份，于是 TF-0152 当年在 .claude 那份上修掉的载荷纪律在这里不存在：events.jsonl 已涨到 86.7 MB，209 行里有 165 行超过 100 KB，其中 8 行最大的就是今天与昨天写下的（约 900 KB/行）。事件形态的分界点很清楚——第 197-199 行（截至 09-11T03:09）是约 590 字节的引用式，第 200-209 行（09-11T09:16 起）回到约 900 KB 的全图式，时间点正好是副本切换生效的时刻。",
     "title": "把「事件不内嵌全图」的载荷修复补到当前生效的 skill 副本上，并定下唯一权威副本",
-    "updated_at": "2026-09-12T07:45:11.595161Z"
+    "updated_at": "2026-09-16T04:48:02.583401Z"
   },
   "TF-0166": {
     "acceptance_criteria": [
@@ -9393,7 +9414,8 @@
       "（实测·单元 10/10）定向验证：proposed/deprecated 不进树、可见集合恒等于 done+in_progress+祖先、hiddenOpenCount==1、root.hiddenChildCount==1、done 叶子计数==0、概览条与卡片声明文案注入、未启动任务标题与 deprecated 标题均不泄露。首版「另有 1 项」断言写错（静态 HTML 里数字是运行时插入），修正为验证模板逻辑已注入后全过。",
       "（实测·回归）validate_task_forest_export.py exit=0，且新断言已进 validate_exports：hiddenOpenCount 对账、逐父节点 hiddenChildCount 对账、文案存在、any_branch_flagged 检查。中途踩坑一次：old_string 匹配把 for node in visible_nodes: 循环体拆开报 IndentationError，已修复。",
       "（实测·真森林）重导出 D:/helmor-main 后 grep：hiddenOpenCount 3 处、「未完成项未纳入本页」1 处、TF-0167 仍 0 匹配；git status --porcelain 干净（forest.json 出仓效果顺带复验）。",
-      "（未验证·诚实标注）浏览器端 JS 执行未点过——校验器是静态/JSON 级检查；新增模板字符串与既有 622 行同构，风险低但非零。"
+      "（未验证·诚实标注）浏览器端 JS 执行未点过——校验器是静态/JSON 级检查；新增模板字符串与既有 622 行同构，风险低但非零。",
+      "2026-09-16 复核：规定的全套导出回归（`validate_task_forest_export.py --skill-dir <权威副本>`）exit 0；导出 HTML 仍包含 hiddenOpenCount 与「未完成项未纳入本页」的声明，未用文件体积或搜索单个 ID 的方式推定 UI 隐瞒。"
     ],
     "execution_hints": [],
     "id": "TF-0168",
@@ -9414,7 +9436,7 @@
     "success_metrics": [],
     "summary": "task-forest.html 此前只渲染 done/in_progress 节点，概览也只给 doneCount/inProgressCount 两个数——唯一开口 TF-0167（proposed）在导出物里完全不存在，第一阅读者会把森林误读成全部完工。本次守住树的投影口径不变（契约「不展示未开始任务」依旧成立），把「隐瞒」改成「声明边界」：summary 增加 hiddenOpenCount（proposed/ready/blocked/review_needed 的未纳入总数），每个可见节点增加 hiddenChildCount（直接子节点中未纳入的未完成数，deprecated 不计）；概览条在 hiddenOpenCount>0 时显示「未完成项未纳入本页 N」，卡片显示「另有 N 项未完成未纳入本页」——开口既报总数也定位到分支。契约与 SKILL.md 同步加「投影边界必须声明：不展示 ≠ 隐瞒」。",
     "title": "导出 HTML 声明投影边界：未纳入的未完成项不再被隐瞒",
-    "updated_at": "2026-09-12T16:21:03.610044Z"
+    "updated_at": "2026-09-16T04:48:02.583441Z"
   },
   "TF-0169": {
     "acceptance_criteria": [
@@ -9783,7 +9805,8 @@
       "D:/helmor-main/.agent-contexts/audit-errors-2026-09-16/run-20260915T222636Z/ledger-annotation.json：7 条 structural、2 条 evidence-gap，逐行指标和值不变",
       "实现已提交：283580516c7a0fd0cd7477f6d61f98a119dc2ea3（fix(workbench): close audit execution and evidence gaps）；提交钩子 Biome 通过。",
       "docs/audit-errors-evidence-2026-09-16.json：13 个相关代码文件 SHA256 与当前提交一致，完整本地验收 4597 pass / 1 skip / 0 fail；typecheck、Biome、Clippy、原生/JS 构建和产物冒烟通过。",
-      "2026-09-16：任务森林提案已应用，正式节点存在；validate 与 HTML 导出回归通过。"
+      "2026-09-16：任务森林提案已应用，正式节点存在；validate 与 HTML 导出回归通过。",
+      "2026-09-16 复核：批处理的两处缺陷均已收口——失败/截断的工具调用不再进入足迹（`unfinished-tool-claims`），同工位并发启动被拒绝（`duplicate-batch` 第二次返回 `ok:false`「工位 ws 已有批处理运行中」，日志文件名带运行 UUID，中点不再出现「长任务在跑却报 done」）。提交 7df65fd。"
     ],
     "execution_hints": [],
     "id": "TF-0175",
@@ -9814,6 +9837,6 @@
     "success_metrics": [],
     "summary": "",
     "title": "审计 #9–#13 修复与真实批处理验证（2026-09-16）",
-    "updated_at": "2026-09-16T04:16:24.178486Z"
+    "updated_at": "2026-09-16T04:48:02.583484Z"
   }
 }
