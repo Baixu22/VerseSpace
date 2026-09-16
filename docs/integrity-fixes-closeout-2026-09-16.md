@@ -75,8 +75,50 @@
 - **v0.3.0 发行**：tag `workbench-v0.3.0` 已推（→ `f925b4d`），`Release Workbench` run `35066706666` 已触发但四个 `Build *` job 因账单未能启动，故**尚无 v0.3.0 Release**。构建路径已全部预验：`bun run build:all` 四平台交叉编译成功（文件名与 workflow 一致：windows-x64 101.2 MB / linux-x64 97.3 MB / macos-arm64 66.2 MB / macos-x64 71.9 MB），且 workflow 实际调用的 `scripts/build-single.ts <target> <artifact>`（与 `build.ts --all` 是不同代码路径）也端到端验证通过、产物在干净 PATH 下 `--help`/`init`/`doctor` 全 exit 0。账单恢复后 `gh run rerun 35066706666` 即可收尾，不必重推 tag。
 
 ### 5.3 落库
-提交 `7df65fd`（F01–F05 修复 + 拆分）→ `dc157c4`（文档与森林）→ `5baf4a6`（CI / 发行 / harness）→ `86470a5`（14 节点复核证据）→ `61c977f`（README 模型实测）→ `f925b4d`（0.3.0 CHANGELOG，同时也是 tag `workbench-v0.3.0` 指向的提交）；分支已推送，PR **#26** 开着。每次 git 写后重钉 ref 并自证。
+提交 `7df65fd`（F01–F05 修复 + 拆分）→ `dc157c4`（文档与森林）→ `5baf4a6`（CI / 发行 / harness）→ `86470a5`（14 节点复核证据）→ `61c977f`（README 模型实测）→ `f925b4d`（0.3.0 CHANGELOG，同时也是 tag `workbench-v0.3.0` 指向的提交）→ `0996345`（11 个汇总节点复核写回，#25 收尾）→ `72c0781` / `7374f39`（收口文档与状态索引）。分支已推送，PR **#26** 开着。每次 git 写后重钉 ref 并自证。
+
+### 5.4 终局复验（2026-09-16 18:02，全部改动落库后）
+| 门禁 | 结果 |
+| --- | --- |
+| Workbench `bun run test` | **714 pass / 0 fail**（112 文件，209.84s） |
+| Workbench UI `bun run test` | **27 passed**（10 文件） |
+| 根 `test:frontend` | **1692 passed**（162 文件，268.79s） |
+| 五项目 typecheck | exit 0 |
+| `biome check .` | exit 0（1353 files） |
+| 三个反例探针 | P1/P2/P3 全部 exit 0 |
+| 权威 `task_forest.py validate` / `check-landing` | exit 0 / exit 0 |
+
+### 5.5 issue 终态
+- **#19** 仍开：只差 GitHub 账单（`gh run rerun 35066706666` 补 v0.3.0 Release；重跑 PR #26 CI 拿当前 SHA 结论）。发行构建路径已全量预验（`build.ts --all` 四平台 + workflow 实际调用的 `build-single.ts` 端到端）。
+- **#27** 已按路线 A 关闭：87.6 MB 是 169 条旧格式的一次性存量，增长已在 09-05 修掉（新事件平均 642 B/行），TF-0147 requirements[3] 裁决不做历史重写；若未来要压缩，前置条件（先给 `task_forest.py` 加受支持的 compact 子命令）已记录在 issue。
+- **#25** 已闭合（25 个节点复核结论全部写回）。
+- 其余 9 条（#14–#18、#20–#24）此前已闭合。
 
 ## 6. 边界
 
 未伪造自然用户数据，未放宽任何判据或阈值，未删除失败记录，未改写历史审计证据。旧 Helmor（`src/`、`sidecar/`、`src-tauri/`）本轮未改动。
+
+## 7. 剩下唯一能推进的事：受控用户试用（只能本人做）
+
+审计 §6 的第 5 步是整个产品评估闸门里**唯一无法由代理完成**的一步——所有「自然使用」类指标（L1 真人认可率、恢复卡人类耗时）都被刻意设计为不可伪造（`scripted`/`live-model` 一律判 `insufficient-evidence`，账本只在 `natural` 来源下计分）。为了让这步真正可执行，把操作收敛成五步：
+
+```powershell
+# ① 在你自己的真实项目里初始化（不是脚本租户）
+workbench init
+workbench ui          # 打开 http://127.0.0.1:7700，线性对话为主
+
+# ② 正常让 agent 干活：读文件、改代码、需要分支时分叉、回来时恢复
+#    ——这一步自然产生 footprint / premise 通知 / restore 样本
+
+# ③ 对恢复卡做认可或拒绝（界面手势）——判决一与「恢复卡人类耗时」的数据源
+
+# ④ 会话结束后，生成地标复核模板并人工作答（≤5 条）
+bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace <你的现场> --template answers.json
+bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace <你的现场> --apply answers.json
+
+# ⑤ 看读数
+workbench stats --json
+bun scripts/fit-ledger/ledger.ts --blackboard <现场>\.workbench\blackboard --scope dual-source
+```
+
+纪律（与 TF-0057 / TF-0136 / TF-0159 的判据一致）：不把脚本租户的会话当成自然使用；不把工程测试通过当作真人认可；抽样必须写 `sampledSessions: N/M`；结论写回任务森林，阈值不调。
