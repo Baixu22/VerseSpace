@@ -4,8 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathExists } from "../fs/atomic";
 import { hashFile } from "../hash";
+import { chatContext } from "../test/chat-context";
 import { makeTempWorkbench } from "../test/fixtures";
 import { workbenchConfigSchema } from "../types/config";
+import { ackNotices, drainNotices } from "./notice-queue";
 import { UNNAMED_TITLE } from "./promote";
 import { ChatThreads, type StoredMessage } from "./threads";
 
@@ -60,11 +62,15 @@ type ThreadEventInternals = {
 };
 
 function noticeInternals(chat: ChatThreads): NoticeInternals {
-	return chat as unknown as NoticeInternals;
+	const context = chatContext(chat);
+	return {
+		drainNotices: (id) => drainNotices(context, id),
+		ackNotices: (id, ids) => ackNotices(context, id, ids),
+	};
 }
 
 function threadEventInternals(chat: ChatThreads): ThreadEventInternals {
-	return chat as unknown as ThreadEventInternals;
+	return chatContext(chat).store;
 }
 
 function noticesFile(workbenchRoot: string, id: string): string {
@@ -263,11 +269,7 @@ process.stdin.on("data", (chunk) => {
 			const source = await chat.create();
 			await chat.run(source.id, "source", () => {});
 			for (let attempt = 0; attempt < 40; attempt += 1) {
-				if (
-					!(chat as unknown as { live: Map<string, unknown> }).live.has(
-						source.id,
-					)
-				) {
+				if (!chatContext(chat).live.has(source.id)) {
 					break;
 				}
 				await new Promise((resolve) => setTimeout(resolve, 25));

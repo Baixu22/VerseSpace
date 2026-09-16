@@ -101,6 +101,8 @@ export const checkpointSchema = z.object({
 			at: z.string(),
 		})
 		.optional(),
+	/** Verification can pass while applying the declared registry changes fails. */
+	applicationError: z.string().optional(),
 	/** 回退快照（TF-0098）；缺失即无恢复点，回退必须拒绝。 */
 	rollback: rollbackSchema.optional(),
 });

@@ -6,16 +6,8 @@
  */
 
 import type { ContextStore } from "../runtime/rollback";
-import type { RegistryEntry } from "../types/interface-registry";
+import { registryEntrySchema } from "../types/interface-registry";
 import type { Blackboard } from "./index";
-
-function isRegistryEntry(value: unknown): value is RegistryEntry {
-	if (!value || typeof value !== "object") {
-		return false;
-	}
-	const v = value as Partial<RegistryEntry>;
-	return typeof v.key === "string" && typeof v.contentHash === "string";
-}
 
 export function registryContextStore(bb: Blackboard): ContextStore {
 	return {
@@ -24,20 +16,29 @@ export function registryContextStore(bb: Blackboard): ContextStore {
 		},
 
 		async set(key: string, value: unknown): Promise<void> {
-			if (!isRegistryEntry(value)) {
+			const parsed = registryEntrySchema.safeParse(value);
+			if (!parsed.success || parsed.data.key !== key) {
 				throw new Error(
 					`上下文回退失败：${key} 的快照不是接口注册表条目，无法写回`,
 				);
 			}
+			const snapshot = parsed.data;
 			const current = await bb.interfaces.getEntry(key);
 			if (!current) {
 				// 原本不存在（或已被删）：重新登记，恢复其内容与版本
-				await bb.interfaces.register(value);
+				await bb.interfaces.register(snapshot);
 				return;
 			}
-			await bb.interfaces.updateVersion(key, value.contentHash, {
-				expectedVersion: current.version,
-			});
+			await bb.interfaces.updateEntry(
+				key,
+				{
+					canonicalPath: snapshot.canonicalPath,
+					contentHash: snapshot.contentHash,
+					publishedBy: snapshot.publishedBy,
+					subscribers: snapshot.subscribers,
+				},
+				{ expectedVersion: current.version },
+			);
 		},
 
 		async remove(key: string): Promise<void> {

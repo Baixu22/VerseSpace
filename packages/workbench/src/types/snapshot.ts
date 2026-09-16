@@ -20,6 +20,8 @@ export interface WorldSnapshot {
 	goals: Goal[];
 	checkpoints: ZoneCheckpoints;
 	interfaces: RegistryEntry[];
+	/** Missing canonical files observed by the Blackboard; never persisted as entries. */
+	missingInterfaces?: string[];
 	workspots: Workspot[];
 	executionQueue: string[];
 }

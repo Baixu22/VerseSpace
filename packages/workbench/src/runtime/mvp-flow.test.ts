@@ -149,9 +149,12 @@ describe("MVP end-to-end flow (real git repo)", () => {
 			);
 			expect(appliedCp?.lifecycle).toBe("applied");
 
-			// sync 5: A completes; the workspot is released with fresh context
+			// sync 5: A completes after its effects were applied in sync 4.
 			await runOnce(bb);
 			expect((await bb.goals.get(goalA.id))?.status).toBe("done");
+			expect((await bb.state.workspots.get("ws-a"))?.status).toBe("active");
+			// sync 6: the completion is now in the entry snapshot; release A and ready B.
+			await runOnce(bb);
 			expect((await bb.state.workspots.get("ws-a"))?.status).toBe("idle");
 			const refreshed = await readFile(
 				join(projectDir, "worktrees", "ws-a", ".agent-context.md"),
@@ -159,8 +162,7 @@ describe("MVP end-to-end flow (real git repo)", () => {
 			);
 			expect(refreshed).toContain("自动生成");
 
-			// sync 6: B's dependency is done → ready
-			await runOnce(bb);
+			// B's dependency is done → ready in the same sixth snapshot.
 			expect((await bb.goals.get(goalB.id))?.status).toBe("ready");
 
 			// failed branch: work on B, verification blows up

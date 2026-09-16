@@ -1,3 +1,5 @@
+import { BlackboardDataError } from "./errors";
+
 export const EXIT_CODES = {
 	OK: 0,
 	ERROR: 1,
@@ -25,12 +27,13 @@ export function emitJson(data: unknown): void {
 
 export function emitError(error: unknown, json: boolean): number {
 	const message = error instanceof Error ? error.message : String(error);
+	const path = error instanceof BlackboardDataError ? error.path : undefined;
 	const exitCode =
 		error instanceof WorkbenchError ? error.exitCode : EXIT_CODES.ERROR;
 	if (json) {
-		emitJson({ ok: false, error: message });
+		emitJson({ ok: false, error: message, ...(path ? { path } : {}) });
 	} else {
-		console.error(`workbench: ${message}`);
+		console.error(`workbench: ${path ? `${path}: ` : ""}${message}`);
 	}
 	return exitCode;
 }

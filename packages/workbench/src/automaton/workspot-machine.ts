@@ -1,6 +1,7 @@
 import { envelopes } from "../tribunal/envelopes";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Transition } from "../types/transitions";
+import { currentGoalStatus } from "./goal-validity";
 
 /**
  * Workspot state machine: idle → active → blocked/borrowed/completed.
@@ -31,7 +32,8 @@ export function evaluateWorkspots(snapshot: WorldSnapshot): Transition[] {
 			});
 			continue;
 		}
-		if (task.status === "done") {
+		const status = currentGoalStatus(task, snapshot);
+		if (status === "done") {
 			transitions.push({
 				type: "workspot_status",
 				wsId: workspot.id,
@@ -43,19 +45,19 @@ export function evaluateWorkspots(snapshot: WorldSnapshot): Transition[] {
 				type: "refresh_context",
 				wsId: workspot.id,
 			});
-		} else if (task.status === "stale_done" || task.status === "cancelled") {
+		} else if (status === "stale_done" || status === "cancelled") {
 			transitions.push({
 				type: "workspot_status",
 				wsId: workspot.id,
 				from: "active",
 				to: "blocked",
-				reason: `任务 ${taskId} 已失效（${task.status}），需人工重新指派`,
+				reason: `任务 ${taskId} 已失效（${status}），需人工重新指派`,
 			});
 			transitions.push({
 				type: "notify_human",
-				message: `工位 ${workspot.id} 被阻塞：任务 ${taskId} ${task.status}`,
+				message: `工位 ${workspot.id} 被阻塞：任务 ${taskId} ${status}`,
 				severity: "warning",
-				tribunal: envelopes.blockedWorkspot(workspot.id, taskId, task.status),
+				tribunal: envelopes.blockedWorkspot(workspot.id, taskId, status),
 			});
 		}
 	}

@@ -10,95 +10,16 @@ import {
 	type InteractionEvent,
 } from "../interactions/types";
 import type { WorkbenchPaths } from "../paths";
-import type { WorkbenchEvent } from "../types/event";
 import { type Writer, writerSchema } from "../types/session";
 import { readYamlFile, writeYamlFile } from "../yamlio";
-
-/**
- * The sessions region (R1): every writer that can touch the repository —
- * agent sessions, the human's editor, git, CI — registers here and appends
- * a footprint. This is the precondition for premise invalidation (R2):
- * the runtime cannot notify a writer that is not in its model, and it
- * cannot compare premises it never recorded.
- *
- * Two stores, one truth:
- * - `sessions/<writer>/footprint.jsonl` — the writer's raw activity log;
- * - the shared `events.jsonl` — one PROV-shaped `footprint` event per
- *   activity, so cross-writer views are a fold over a single log.
- * Each local footprint line keeps its own monotonic `seq` for read-set replay;
- * `eventId`/`eventSeq` point at the shared event clock for cross-writer joins.
- */
-
-/**
- * R2 predicate layer 2 (TF-0075): the line range that actually entered the
- * writer's context, not the whole file. A 2000-line file the agent read 20
- * lines of is not invalidated by an edit on line 3.
- */
-export interface ReadSpan {
-	/** 1-based, inclusive. `end` may exceed the file length (read to EOF). */
-	start: number;
-	end: number;
-	/**
-	 * Hash of just this range as observed. Absent while the claim is still
-	 * being captured (the channel knows the range, not its content yet);
-	 * null when the range could not be read.
-	 */
-	hash?: string | null;
-}
-
-export interface FootprintUsed {
-	path: string;
-	/** Content hash at the time the writer observed the file. */
-	version?: string | null;
-	/** File size when the content was too large to hash. */
-	size?: number;
-	/** R2 predicate layer 1: durable claims never enter premise checking. */
-	durability?: "volatile" | "durable";
-	/** Spooled read-time content (≤64KB files) — the diff side of a notice. */
-	spool?: string;
-	/** R2 predicate layer 2: only this range has to still hold. */
-	span?: ReadSpan;
-}
-
-export interface FootprintEntry {
-	timestamp: string;
-	/** Stable join key shared with the mirrored events.jsonl footprint row. */
-	eventId?: string;
-	/** Global event clock observed when the mirror was appended. */
-	eventSeq?: number;
-	/** One tool call / batched editor change / ref update. */
-	activity: string;
-	/** The writer (or subagent via parent_tool_use_id) that acted. */
-	agent: string;
-	used: FootprintUsed[];
-	generated: FootprintUsed[];
-	/** Open facets: tool name, command line, ref name, capture channel. */
-	facets?: Record<string, unknown>;
-}
-
-export interface FootprintLine extends FootprintEntry {
-	/** Line number in footprint.jsonl (1-based) — the monotonic clock. */
-	seq: number;
-}
-
-export interface SessionsEvents {
-	append(event: {
-		timestamp: string;
-		source: string;
-		type: string;
-		payload: unknown;
-		id?: string;
-	}): Promise<WorkbenchEvent>;
-	appendMany(
-		batch: ReadonlyArray<{
-			timestamp: string;
-			source: string;
-			type: string;
-			payload: unknown;
-			id?: string;
-		}>,
-	): Promise<WorkbenchEvent[]>;
-}
+import { sanitizeWriterId } from "./session-paths";
+import type {
+	FootprintEntry,
+	FootprintLine,
+	FootprintUsed,
+	SessionsEvents,
+} from "./session-types";
+import { foldReadSet } from "./session-view";
 
 export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 	function dirFor(id: string): string {
@@ -289,36 +210,7 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 			reads: Map<string, FootprintUsed & { seq: number }>;
 			writes: Array<FootprintUsed & { seq: number; ts: string }>;
 		}> {
-			const reads = new Map<string, FootprintUsed & { seq: number }>();
-			const writes: Array<FootprintUsed & { seq: number; ts: string }> = [];
-			for (const line of await readFootprintLines(writerId)) {
-				if (uptoSeq !== undefined && line.seq > uptoSeq) {
-					break;
-				}
-				for (const used of line.used) {
-					// A content-reading tool observed the body, even if it never
-					// edited the file. Replay whole reads as 1..EOF so layer 3 cannot
-					// mistake code review for a signature-only dependency. Deriving
-					// this from existing facets also repairs old logs without a migration;
-					// the ordinary span claim survives real fork inheritance unchanged.
-					const span =
-						used.span ??
-						(["Read", "Bash", "PowerShell"].includes(String(line.facets?.tool))
-							? { start: 1, end: Number.MAX_SAFE_INTEGER }
-							: undefined);
-					reads.set(used.path, {
-						...used,
-						...(span ? { span } : {}),
-						seq: line.seq,
-					});
-				}
-				for (const gen of line.generated) {
-					writes.push({ ...gen, seq: line.seq, ts: line.timestamp });
-					// the writer's own write supersedes what it read before
-					reads.set(gen.path, { ...gen, seq: line.seq });
-				}
-			}
-			return { reads, writes };
+			return foldReadSet(await readFootprintLines(writerId), uptoSeq);
 		},
 
 		/**
@@ -375,27 +267,15 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 	};
 }
 
-/** Writer ids become directory names: keep them filesystem-safe. */
-export function sanitizeWriterId(id: string): string {
-	return id.replace(/[^A-Za-z0-9._-]/g, "_");
-}
-
-/** Canonical location for read-time spool snapshots. */
-export function writerSpoolDir(
-	paths: WorkbenchPaths,
-	writerId: string,
-): string {
-	return join(paths.sessions, sanitizeWriterId(writerId), "spool");
-}
-
-/**
- * Pre-R2 builds accidentally wrote chat spools below `.workbench/sessions`.
- * Keep this read-only fallback so an existing workspace does not lose its
- * diff evidence while all new writes use `writerSpoolDir`.
- */
-export function legacyWriterSpoolDir(
-	paths: WorkbenchPaths,
-	writerId: string,
-): string {
-	return join(paths.root, "sessions", sanitizeWriterId(writerId), "spool");
-}
+export {
+	legacyWriterSpoolDir,
+	sanitizeWriterId,
+	writerSpoolDir,
+} from "./session-paths";
+export type {
+	FootprintEntry,
+	FootprintLine,
+	FootprintUsed,
+	ReadSpan,
+	SessionsEvents,
+} from "./session-types";

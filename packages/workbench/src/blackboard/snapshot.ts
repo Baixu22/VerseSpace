@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { pathExists } from "../fs/atomic";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Blackboard } from "./index";
 
@@ -15,5 +17,21 @@ export async function getWorldSnapshot(bb: Blackboard): Promise<WorldSnapshot> {
 			bb.state.workspots.list(),
 			bb.state.queue.get(),
 		]);
-	return { goals, checkpoints, interfaces, workspots, executionQueue };
+	const missingInterfaces = (
+		await Promise.all(
+			interfaces.map(async (entry) =>
+				(await pathExists(join(bb.projectRoot, entry.canonicalPath)))
+					? null
+					: entry.key,
+			),
+		)
+	).filter((key): key is string => key !== null);
+	return {
+		goals,
+		checkpoints,
+		interfaces,
+		workspots,
+		executionQueue,
+		...(missingInterfaces.length ? { missingInterfaces } : {}),
+	};
 }

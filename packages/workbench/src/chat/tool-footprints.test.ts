@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { chatContext } from "../test/chat-context";
 import { makeTempWorkbench } from "../test/fixtures";
 import { ChatThreads } from "./threads";
 
@@ -52,6 +53,52 @@ process.exit(0);
 		expect(footprint.flatMap((entry) => entry.generated)).toEqual([]);
 	} finally {
 		if (threadId) await chat.cancel(threadId);
+		if (previous === undefined) delete process.env.WORKBENCH_CHAT_COMMAND;
+		else process.env.WORKBENCH_CHAT_COMMAND = previous;
+		await ws.cleanup();
+	}
+});
+
+test.each([
+	"model-error",
+	"truncated",
+])("chat does not promote pending tools after %s", async (ending) => {
+	const ws = await makeTempWorkbench();
+	const previous = process.env.WORKBENCH_CHAT_COMMAND;
+	const chat = new ChatThreads(ws.bb);
+	let id: string | undefined;
+	try {
+		await writeFile(
+			join(ws.projectDir, "input.txt"),
+			"not read by the agent\n",
+		);
+		const script = join(ws.projectDir, "aborted.mjs");
+		await writeFile(
+			script,
+			`
+import { createInterface } from "node:readline";
+const emit = (e) => console.log(JSON.stringify(e));
+emit({type:"system",subtype:"init"});
+for await (const line of createInterface({input:process.stdin})) {
+ if (!line.trim()) continue;
+ emit({type:"assistant",message:{content:[
+  {type:"tool_use",id:"pending-read",name:"Read",input:{file_path:"input.txt"}},
+  {type:"tool_use",id:"pending-write",name:"Write",input:{file_path:"absent.txt"}}
+ ]}});
+ ${ending === "model-error" ? 'emit({type:"result",is_error:true,result:"aborted before tools"});' : ""}
+ process.exit(1);
+}`,
+		);
+		process.env.WORKBENCH_CHAT_COMMAND = `"${process.execPath}" "${script}"`;
+		id = (await chat.create()).id;
+		await chat.run(id, "probe", () => {});
+		await chatContext(chat).live.get(id)?.closed;
+		expect(await ws.bb.sessions.footprint(id)).toEqual([]);
+		expect(await Bun.file(join(ws.projectDir, "absent.txt")).exists()).toBe(
+			false,
+		);
+	} finally {
+		if (id) chat.cancel(id);
 		if (previous === undefined) delete process.env.WORKBENCH_CHAT_COMMAND;
 		else process.env.WORKBENCH_CHAT_COMMAND = previous;
 		await ws.cleanup();

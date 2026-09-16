@@ -1,135 +1,19 @@
 import type { WorkbenchEvent } from "../types/event";
+import type {
+	LabeledDelivery,
+	NoticeOutcome,
+	UnknownReason,
+} from "./notice-window";
+import {
+	judgeWindow,
+	ordered,
+	pathsOf,
+	payloadOf,
+	STALE,
+	stringsOf,
+} from "./notice-window";
 import { deliveryWindows } from "./notice-windows";
-import { readSealRecord } from "./seal-counts";
 
-/**
- * Notice outcome labelling (moat A's data source · TF-0148).
- *
- * A delivered `premise_notice` with no recorded consequence tells you nothing
- * about the notice's precision — "did that help?" becomes a matter of feeling,
- * and the two-week fit gate (TF-0136 判决二) has no numerator or denominator.
- *
- * So every delivery is labelled from what the log already holds: the writer's
- * later footprint rounds and any seal decision against it. Nothing new is
- * asked of the user and no new instrumentation is added (AC 4) — the label is
- * derived, which also means an old log can be relabelled when the rules
- * improve.
- *
- * The four states, and the one honest refusal:
- *
- * - `repaired`  the writer went back to an affected file after the notice —
- *               re-read then wrote it, or re-read and concluded no patch was
- *               needed. Both mean the notice was acted on, which is the number
- *               TF-0136 判决二 needs on the positive side;
- * - `ignored`   wrote an affected file without re-reading it — the notice was
- *               seen and overridden, which is the dangerous case and therefore
- *               never masked by a `repaired` on a sibling path;
- * - `sealed`    the seal stopped the write before the writer got there;
- * - `dismissed` the writer kept working but never went near those files;
- * - `unknown`   nothing can be concluded yet. Reads may be structurally
- *               unobservable (an HTTP provider has no tool channel — TF-0142),
- *               the writer may not have run again, or the notice's paths may
- *               not be recoverable from the log.
- */
-
-export const NOTICE_OUTCOMES = [
-	"repaired",
-	"ignored",
-	"sealed",
-	"dismissed",
-	"unknown",
-] as const;
-export type NoticeOutcome = (typeof NOTICE_OUTCOMES)[number];
-
-export type UnknownReason =
-	/** HTTP provider: post-notice reads are not observable at all (TF-0142). */
-	| "unobservable"
-	/** The writer has not produced another footprint round yet. */
-	| "no-later-activity"
-	/** The delivery's affected paths could not be recovered from the log. */
-	| "unresolved-paths";
-
-export interface LabeledDelivery {
-	writer: string;
-	noticeIds: string[];
-	/** Affected paths, from the delivery payload or joined via noticeId. */
-	paths: string[];
-	at: string;
-	outcome: NoticeOutcome;
-	unknownReason?: UnknownReason;
-	readObservability: "footprint" | "unobservable";
-}
-
-const STALE = "premise_stale";
-const FOOTPRINT = "footprint";
-
-function payloadOf(event: WorkbenchEvent): Record<string, unknown> {
-	return event.payload &&
-		typeof event.payload === "object" &&
-		!Array.isArray(event.payload)
-		? (event.payload as Record<string, unknown>)
-		: {};
-}
-
-function stringsOf(value: unknown): string[] {
-	return Array.isArray(value)
-		? value.filter((item): item is string => typeof item === "string")
-		: [];
-}
-
-/** `{ path }` entries in a footprint or stale list, tolerant of junk. */
-function pathsOf(value: unknown): string[] {
-	if (!Array.isArray(value)) {
-		return [];
-	}
-	const out: string[] = [];
-	for (const item of value) {
-		if (item && typeof item === "object" && !Array.isArray(item)) {
-			const path = (item as Record<string, unknown>).path;
-			if (typeof path === "string" && path.length > 0) {
-				out.push(path);
-			}
-		}
-	}
-	return out;
-}
-
-function orderOf(event: WorkbenchEvent, index: number): number {
-	return Number.isSafeInteger(event.eventSeq)
-		? (event.eventSeq as number)
-		: Number.isSafeInteger(event.seq)
-			? (event.seq as number)
-			: index;
-}
-
-/** Log order, with the physical index as the last-resort tiebreak. */
-function ordered(events: WorkbenchEvent[]): WorkbenchEvent[] {
-	return events
-		.map((event, index) => ({ event, index }))
-		.sort(
-			(a, b) =>
-				orderOf(a.event, a.index) - orderOf(b.event, b.index) ||
-				a.event.timestamp.localeCompare(b.event.timestamp),
-		)
-		.map(({ event }) => event);
-}
-
-/** Same containment rule the seal uses: a directory covers its files. */
-function covers(target: string, claim: string): boolean {
-	return (
-		target === claim ||
-		claim.startsWith(`${target}/`) ||
-		target.startsWith(`${claim}/`)
-	);
-}
-
-/**
- * Label every delivered notice from the log alone.
- *
- * Each delivery owns its provider-attempt window, ending when the next
- * successful notice attempt begins. Late acknowledgement must not discard
- * same-turn repairs or attribute the next turn's reaction twice.
- */
 export function labelNoticeOutcomes(
 	events: WorkbenchEvent[],
 ): LabeledDelivery[] {
@@ -193,104 +77,6 @@ export function labelNoticeOutcomes(
 	return labeled;
 }
 
-/**
- * Decide one delivery's outcome from the events that followed it.
- *
- * Precedence is `sealed > ignored > repaired > dismissed > unknown`. `ignored`
- * outranks `repaired` deliberately: a writer that repaired one affected file
- * and blind-wrote another has still blind-written one, and that is the fact
- * worth counting (AC 2).
- */
-function judgeWindow(
-	window: WorkbenchEvent[],
-	writer: string,
-	paths: string[],
-	readObservability: "footprint" | "unobservable",
-): { outcome: NoticeOutcome; unknownReason?: UnknownReason } {
-	if (paths.length === 0) {
-		return { outcome: "unknown", unknownReason: "unresolved-paths" };
-	}
-
-	let sealed = false;
-	let ignored = false;
-	let repaired = false;
-	let touched = false;
-	let rounds = 0;
-	const readSoFar = new Set<string>();
-
-	for (const event of window) {
-		const seal = readSealRecord(event);
-		if (seal) {
-			if (
-				seal.writer === writer &&
-				seal.decision === "block" &&
-				paths.some((path) => covers(seal.path, path))
-			) {
-				sealed = true;
-			}
-			continue;
-		}
-		if (event.type !== FOOTPRINT) {
-			continue;
-		}
-		const payload = payloadOf(event);
-		if (payload.writer !== writer) {
-			continue;
-		}
-		rounds += 1;
-		const reads = pathsOf(payload.used);
-		const writes = pathsOf(payload.generated);
-		for (const path of paths) {
-			const wrote = writes.some((candidate) => covers(candidate, path));
-			const read =
-				readSoFar.has(path) ||
-				reads.some((candidate) => covers(candidate, path));
-			if (wrote || read) {
-				touched = true;
-			}
-			if (!wrote) {
-				continue;
-			}
-			// Read in an earlier round or in this same round both count: an agent
-			// that re-reads and edits inside one turn did exactly what was asked.
-			if (read) {
-				repaired = true;
-			} else {
-				ignored = true;
-			}
-		}
-		for (const path of paths) {
-			if (reads.some((candidate) => covers(candidate, path))) {
-				readSoFar.add(path);
-			}
-		}
-	}
-
-	if (sealed) {
-		return { outcome: "sealed" };
-	}
-	// An unobservable channel can still be sealed (the seal is a hook, not a
-	// read), but it can never produce repaired/ignored/dismissed — claiming
-	// otherwise would read silence as evidence.
-	if (readObservability === "unobservable") {
-		return { outcome: "unknown", unknownReason: "unobservable" };
-	}
-	if (ignored) {
-		return { outcome: "ignored" };
-	}
-	if (repaired) {
-		return { outcome: "repaired" };
-	}
-	if (rounds === 0) {
-		return { outcome: "unknown", unknownReason: "no-later-activity" };
-	}
-	// Re-read with no write: the writer went and checked, and its plan held.
-	// That is the notice being acted on, not the writer walking away, so it
-	// belongs with `repaired` rather than inflating the dismissed ratio.
-	return touched ? { outcome: "repaired" } : { outcome: "dismissed" };
-}
-
-/** The human column of the calibration table (instrumented by TF-0139). */
 export interface HumanNoticeActions {
 	/** `thread.resume_note_consumed`: the card's note was actually read. */
 	notesConsumed: number;
@@ -322,7 +108,7 @@ export interface NoticeOutcomeTotals {
 	dismissedRatio: number | null;
 }
 
-function ratio(part: number, whole: number): number | null {
+export function ratio(part: number, whole: number): number | null {
 	return whole > 0 ? Number((part / whole).toFixed(3)) : null;
 }
 
@@ -381,3 +167,10 @@ export function foldNoticeOutcomes(
 		dismissedRatio: ratio(agent.dismissed, agent.delivered),
 	};
 }
+
+export type {
+	LabeledDelivery,
+	NoticeOutcome,
+	UnknownReason,
+} from "./notice-window";
+export { NOTICE_OUTCOMES } from "./notice-window";

@@ -1,3 +1,4 @@
+import { incompleteDependencies } from "../automaton/goal-validity";
 import type { Blackboard } from "../blackboard";
 import { generateContext } from "../contextgen/generate";
 import { createWorktree, git } from "../git";
@@ -108,6 +109,14 @@ async function performDispatch(
 			ok: false,
 			goalId,
 			reason: `目标状态为 ${goal.status}，只有 ready 状态可以派发`,
+		};
+	}
+	const blockers = incompleteDependencies(goal, await bb.snapshot());
+	if (blockers.length > 0) {
+		return {
+			ok: false,
+			goalId,
+			reason: `依赖尚未有效完成：${blockers.join(", ")}`,
 		};
 	}
 	// R3 / TF-0083: CONWIP gate. Checked before anything is created so a

@@ -17,6 +17,18 @@ export const registryEntrySchema = z.object({
 });
 export type RegistryEntry = z.infer<typeof registryEntrySchema>;
 
+/** Registry identity, revision and timestamps are controlled by the store. */
+export const registryUpdateSchema = registryEntrySchema
+	.pick({
+		canonicalPath: true,
+		publishedBy: true,
+		contentHash: true,
+		subscribers: true,
+	})
+	.partial()
+	.strict();
+export type RegistryUpdate = z.infer<typeof registryUpdateSchema>;
+
 export const registrySchema = z.object({
 	entries: z.array(registryEntrySchema).default([]),
 });

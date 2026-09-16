@@ -83,14 +83,26 @@ export async function runDoctor(bb: Blackboard): Promise<DoctorReport> {
 	}
 
 	// ── checkpoints: orphans and zone/lifecycle mismatch ──
-	const _zoneOf = (cpId: string) =>
-		staging.some((cp) => cp.id === cpId)
-			? "staging"
-			: verified.some((cp) => cp.id === cpId)
-				? "verified"
-				: failed.some((cp) => cp.id === cpId)
-					? "failed"
-					: null;
+	for (const [zone, checkpoints, allowed] of [
+		[
+			"staging",
+			staging,
+			["draft", "pending", "verified", "failed", "awaiting_review", "rejected"],
+		],
+		["verified", verified, ["verified", "applied"]],
+		["failed", failed, ["failed", "rejected"]],
+	] as const) {
+		for (const checkpoint of checkpoints) {
+			if (!(allowed as readonly string[]).includes(checkpoint.lifecycle)) {
+				issues.push({
+					check: "checkpoint_zone_mismatch",
+					severity: "error",
+					message: `checkpoint ${checkpoint.id} 的 ${checkpoint.lifecycle} 状态不属于 ${zone} 分区`,
+					subject: checkpoint.id,
+				});
+			}
+		}
+	}
 	for (const checkpoint of [...staging, ...verified, ...failed]) {
 		if (!goalIds.has(checkpoint.goal)) {
 			issues.push({

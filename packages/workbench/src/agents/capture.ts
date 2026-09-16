@@ -119,9 +119,8 @@ export async function createAgentCapture(
 			await queue;
 			if (recordingError) throw recordingError;
 			await flushUsage();
-			for (const fp of pending.values()) {
-				await bb.sessions.recordActivity(writerId, fp);
-			}
+			// Raw stream logs retain attempts; only successful tool results are
+			// evidence of a read/write. A stopped turn may still have pending calls.
 			pending.clear();
 			return resultError;
 		},

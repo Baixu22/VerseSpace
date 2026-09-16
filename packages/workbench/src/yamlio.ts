@@ -15,8 +15,11 @@ export async function readYamlFile<T>(
 	let raw: string;
 	try {
 		raw = await readFile(path, "utf8");
-	} catch {
-		throw new BlackboardDataError("file not found", path);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+			throw new BlackboardDataError("file not found", path);
+		}
+		throw new BlackboardDataError(`cannot read YAML: ${String(error)}`, path);
 	}
 	let data: unknown;
 	try {

@@ -2,6 +2,11 @@ import { envelopes } from "../tribunal/envelopes";
 import type { Goal } from "../types/goal";
 import type { WorldSnapshot } from "../types/snapshot";
 import type { Transition } from "../types/transitions";
+import {
+	currentGoalStatus,
+	incompleteDependencies,
+	staleGoalReason,
+} from "./goal-validity";
 
 /**
  * Goal state machine: planned → ready → in_progress → done, with done →
@@ -11,8 +16,8 @@ import type { Transition } from "../types/transitions";
  * - a dependency is satisfied only by `done`; `stale_done` and `cancelled`
  *   deliberately block downstream goals (a broken anchor invalidates derived
  *   work), surfaced as notify_human warnings instead of silent readiness.
- * - a goal completes when a checkpoint anchored to it reaches the `verified`
- *   zone; per-criterion completion is a later refinement.
+ * - a goal completes only after a checkpoint's declared effects are applied;
+ *   being in the verified directory alone is not proof of completion.
  *
  * R3: each notify_human carries a `tribunal` envelope, because this machine is
  * the only place that knows which goal is stuck and what unsticks it. The
@@ -28,6 +33,7 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 		goal.dependsOn
 			.map((id) => byId.get(id))
 			.filter((dep): dep is Goal => dep !== undefined)
+			.map((dep) => ({ ...dep, status: currentGoalStatus(dep, snapshot) }))
 			.filter(
 				(dep) => dep.status === "stale_done" || dep.status === "cancelled",
 			);
@@ -35,10 +41,7 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 	for (const goal of goals) {
 		switch (goal.status) {
 			case "planned": {
-				const blockers = goal.dependsOn.filter((id) => {
-					const dep = byId.get(id);
-					return dep === undefined || dep.status !== "done";
-				});
+				const blockers = incompleteDependencies(goal, snapshot);
 				if (blockers.length === 0) {
 					transitions.push({
 						type: "goal_status",
@@ -76,6 +79,7 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 				break;
 			}
 			case "ready": {
+				const blockers = incompleteDependencies(goal, snapshot);
 				const dead = deadDependencies(goal);
 				if (dead.length > 0) {
 					transitions.push({
@@ -90,6 +94,16 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 							dead.map((dep) => ({ id: dep.id, status: dep.status })),
 						),
 					});
+				}
+				if (blockers.length > 0) {
+					transitions.push({
+						type: "goal_status",
+						goalId: goal.id,
+						from: "ready",
+						to: "planned",
+						reason: `依赖尚未有效完成：${blockers.join(", ")}`,
+					});
+					break;
 				}
 				const workedOn = snapshot.workspots.some(
 					(ws) =>
@@ -116,35 +130,23 @@ export function evaluateGoals(snapshot: WorldSnapshot): Transition[] {
 			}
 			case "in_progress": {
 				const verified = snapshot.checkpoints.verified.some(
-					(cp) => cp.goal === goal.id,
+					(cp) => cp.goal === goal.id && cp.lifecycle === "applied",
 				);
-				if (verified) {
+				if (verified && incompleteDependencies(goal, snapshot).length === 0) {
 					transitions.push({
 						type: "goal_status",
 						goalId: goal.id,
 						from: "in_progress",
 						to: "done",
-						reason: "存在已验证的 checkpoint",
+						reason: "checkpoint 已验证且效果已应用",
 					});
 				}
 				break;
 			}
 			case "done": {
-				for (const [key, version] of Object.entries(
-					goal.verifiedAgainst.interfaces,
-				)) {
-					const entry = snapshot.interfaces.find(
-						(candidate) => candidate.key === key,
-					);
-					if (entry && entry.version > version) {
-						transitions.push({
-							type: "mark_stale",
-							goalId: goal.id,
-							reason: `锚定接口 ${key} 已从 v${version} 漂移到 v${entry.version}`,
-						});
-						break;
-					}
-				}
+				const reason = staleGoalReason(goal, snapshot);
+				if (reason)
+					transitions.push({ type: "mark_stale", goalId: goal.id, reason });
 				break;
 			}
 			case "stale_done":

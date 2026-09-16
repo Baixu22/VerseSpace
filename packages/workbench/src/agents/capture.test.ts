@@ -140,6 +140,28 @@ describe("agent stream capture", () => {
 		expect(await ws.bb.sessions.footprint("agent:ws-capture")).toEqual([]);
 	});
 
+	test.each([
+		"model-error",
+		"truncated",
+	])("unexecuted tools remain unobserved after %s", async (ending) => {
+		await writeFile(
+			join(worktree, "src", "input.ts"),
+			"never read by the agent\n",
+		);
+		const session = await run(`
+			emit({type:"assistant",message:{content:[
+				{type:"tool_use",id:"pending-read",name:"Read",input:{file_path:"src/input.ts"}},
+				{type:"tool_use",id:"pending-write",name:"Write",input:{file_path:"src/absent.ts"}}
+			]}});
+			${ending === "model-error" ? 'emit({type:"result",is_error:true,result:"aborted before tools"});' : "process.exit(1);"}
+		`);
+		expect(session.status).toBe("failed");
+		expect(await ws.bb.sessions.footprint("agent:ws-capture")).toEqual([]);
+		expect(await Bun.file(join(worktree, "src", "absent.ts")).exists()).toBe(
+			false,
+		);
+	});
+
 	test("a footprint persistence error finishes failed instead of leaving an unhandled rejection", async () => {
 		const record = spyOn(ws.bb.sessions, "recordActivity").mockRejectedValue(
 			new Error("footprint disk full"),

@@ -8,8 +8,10 @@ import { hashFile } from "../hash";
 import type { WorkbenchPaths } from "../paths";
 import {
 	type RegistryEntry,
+	type RegistryUpdate,
 	registryEntrySchema,
 	registrySchema,
+	registryUpdateSchema,
 	type Subscriber,
 } from "../types/interface-registry";
 import { readYamlFile, writeYamlFile } from "../yamlio";
@@ -110,14 +112,10 @@ export function interfacesApi(paths: WorkbenchPaths, projectRoot: string) {
 				names
 					.filter((name) => name.endsWith(".yaml"))
 					.map((name) =>
-						readYamlFile(join(paths.registry, name), registryEntrySchema).catch(
-							() => null,
-						),
+						readYamlFile(join(paths.registry, name), registryEntrySchema),
 					),
 			);
-			return entries
-				.filter((entry): entry is RegistryEntry => entry !== null)
-				.sort((a, b) => a.key.localeCompare(b.key));
+			return entries.sort((a, b) => a.key.localeCompare(b.key));
 		},
 
 		async getEntry(key: string): Promise<RegistryEntry | null> {
@@ -146,6 +144,17 @@ export function interfacesApi(paths: WorkbenchPaths, projectRoot: string) {
 			contentHash: string,
 			options: UpdateVersionOptions = {},
 		): Promise<RegistryEntry> {
+			return this.updateEntry(key, { contentHash }, options);
+		},
+
+		/** Apply schema-checked metadata under the same CAS lock as hash updates. */
+		async updateEntry(
+			key: string,
+			patch: RegistryUpdate,
+			options: UpdateVersionOptions = {},
+		): Promise<RegistryEntry> {
+			const changes = registryUpdateSchema.parse(patch);
+			await migrateLegacyRegistry();
 			return withPidLock(lockFor(key), async () => {
 				const entry = await loadEntry(key);
 				if (!entry) {
@@ -166,8 +175,8 @@ export function interfacesApi(paths: WorkbenchPaths, projectRoot: string) {
 				}
 				const next = registryEntryCanonical({
 					...entry,
+					...changes,
 					version: entry.version + 1,
-					contentHash,
 					lastModified: new Date().toISOString(),
 				});
 				await saveEntry(next);

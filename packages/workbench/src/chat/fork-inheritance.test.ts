@@ -1,3 +1,4 @@
+import { chatContext } from "../test/chat-context";
 /**
  * TF-0131 · 分支读集继承与诚实开关。
  *
@@ -98,7 +99,7 @@ async function fakeClaude(): Promise<FakeClaude> {
  * （`!this.live.get(id)`），所以每轮之后都得等它真的收摊。
  */
 async function settle(chat: ChatThreads, id: string): Promise<void> {
-	const live = (chat as unknown as { live: Map<string, unknown> }).live;
+	const live = chatContext(chat).live;
 	for (let attempt = 0; attempt < 80; attempt += 1) {
 		if (!live.has(id)) return;
 		await new Promise((resolve) => setTimeout(resolve, 25));

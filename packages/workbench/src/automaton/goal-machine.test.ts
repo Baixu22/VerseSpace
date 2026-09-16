@@ -151,7 +151,7 @@ describe("goal machine", () => {
 		expect(evaluateGoals(snapshot)).toEqual([]);
 	});
 
-	test("in_progress goal completes on a verified checkpoint", () => {
+	test("in_progress goal completes only after checkpoint effects are applied", () => {
 		const snapshot = snapshotWith({
 			goals: [mkGoal({ id: "g-1", status: "in_progress" })],
 			checkpoints: {
@@ -160,13 +160,15 @@ describe("goal machine", () => {
 				failed: [],
 			},
 		});
+		expect(evaluateGoals(snapshot)).toEqual([]);
+		snapshot.checkpoints.verified[0]!.lifecycle = "applied";
 		expect(evaluateGoals(snapshot)).toEqual([
 			{
 				type: "goal_status",
 				goalId: "g-1",
 				from: "in_progress",
 				to: "done",
-				reason: "存在已验证的 checkpoint",
+				reason: "checkpoint 已验证且效果已应用",
 			},
 		]);
 	});
@@ -217,7 +219,7 @@ describe("goal machine", () => {
 		expect(evaluateGoals(snapshot)).toEqual([]);
 	});
 
-	test("done goal with an anchor missing from the registry is stable", () => {
+	test("done goal with an anchor missing from the registry becomes stale", () => {
 		const snapshot = snapshotWith({
 			goals: [
 				mkGoal({
@@ -228,7 +230,13 @@ describe("goal machine", () => {
 			],
 			interfaces: [],
 		});
-		expect(evaluateGoals(snapshot)).toEqual([]);
+		expect(evaluateGoals(snapshot)).toEqual([
+			{
+				type: "mark_stale",
+				goalId: "g-1",
+				reason: "锚定接口 legacy/api 的注册项或契约文件已缺失",
+			},
+		]);
 	});
 
 	test("terminal goals (stale_done, cancelled) yield nothing", () => {

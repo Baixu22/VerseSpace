@@ -8,11 +8,11 @@
 
 **方式一：下载单文件二进制**（无需 Bun）——从 [GitHub Releases](https://github.com/Baixu22/VerseSpace/releases) 下载对应平台的 `workbench-*` 可执行文件，放入 PATH。
 
-**方式二：npm 形态**（需要 Bun ≥ 1.3）：
+**方式二：npm 形态**（需要 Bun ≥ 1.3）——**尚未发布**。2026-09-16 核实公开 registry 上 `@baixu22/workbench` 返回 404，下列命令在包正式发布前不可用，请改用方式一。
 
 ```bash
+# 以下命令仅在包发布后可用；当前执行会 404
 bunx @baixu22/workbench --help
-# 或全局安装
 bun install -g @baixu22/workbench
 ```
 
@@ -78,7 +78,7 @@ workbench ui --no-open  # 只启动服务，适合自动验证与无界面环境
 workbench ui --port 8080 --ui-dir ./some-dist
 ```
 
-本地聊天面板支持线性对话、消息处分叉与双通道恢复卡，事实可点击查看原始消息、工具、事件和足迹。Claude CLI 支持工具足迹；HTTP 纯文本 provider 可聊天但读集不可观测，不参与读集继承。前端在 `apps/workbench-ui`（开发用 `bun run dev:ui`），资源内嵌进单文件二进制；npm 形态随 `dist/ui` 一起分发（ADR-0005）。
+本地聊天面板支持线性对话、消息处分叉与双通道恢复卡，事实可点击查看原始消息、工具、事件和足迹。Claude CLI 支持工具足迹；HTTP 纯文本 provider 可聊天但读集不可观测，不参与读集继承。前端在 `apps/workbench-ui`（开发用 `bun run dev:ui`），资源内嵌进单文件二进制；npm 形态随 `dist/ui` 一起分发（ADR-0005）——**包本身尚未发布**，见上文「安装」。
 
 HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必将它写入 `.workbench/workbench.yaml`。已保存的 `chat.apiKey` 优先；删除保存值不会清除进程环境中的密钥。聊天配置与面板状态 API 都只返回 `hasKey`，不返回密钥。OpenRouter 的 `chat.baseUrl` 可填 `https://openrouter.ai/api/v1` 或完整的 `/chat/completions` 地址，粘贴时两端的引号会被清理。
 
@@ -112,11 +112,13 @@ bun run build:all   # 交叉编译四平台二进制到 dist/
 
 `test:build` 可用 `--native <二进制路径> --js <workbench.js 路径>` 指定独立构建。检测层基准可运行 `bun scripts/benchmark-premises.ts --json`；它验证合成场景的检测契约，不代表真实用户效果。
 
-显式设置 `E2E_LLM_KEY`、`E2E_LLM_MODEL`（可选 `E2E_LLM_BASE_URL`，默认 OpenRouter）后，`bun run test:live` 会创建全新的临时仓库，用真实模型决定 Read/Write 工具调用，验证恢复、分叉、通知、证据与封印链路，并单独验证原生 HTTP 流式回合。随后模型自主修复一个 URL 兼容问题，另一个线程恢复并复核，再验证三个持久分支确实继承 provider 历史与读集。工具只允许隔离仓库 `src/` 下的文本读写，不开放 shell，不读取配置或密钥；原始模型调用 ID、用量、线程和工具结果保存在该临时仓库。该模式会访问第三方模型服务；不会在普通 `bun test` 中运行。报告明确标注脚本驱动的动作和复核；模型判为 pass 也不能替代独立测试或冒充自然用户数据。
+显式设置 `E2E_LLM_KEY`、`E2E_LLM_MODEL` 后，`bun run test:live` 会创建全新的临时仓库，用真实模型决定 Read/Write 工具调用，验证恢复、分叉、通知、证据与封印链路，并单独验证原生 HTTP 流式回合。`E2E_LLM_BASE_URL` 可选，**脚本默认 `https://api.senseaudio.cn/v1` + `senseaudio-s2-flash`**（见 `scripts/e2e/live-credentials.ts`）；换成别的 provider 时必须同时给定 `E2E_LLM_BASE_URL` 与 `E2E_LLM_MODEL`，端点、模型、密钥三者是配套关系。随后模型自主修复一个 URL 兼容问题，另一个线程恢复并复核，再验证三个持久分支确实继承 provider 历史与读集。工具只允许隔离仓库 `src/` 下的文本读写，不开放 shell，不读取配置或密钥；原始模型调用 ID、用量、线程和工具结果保存在该临时仓库。该模式会访问第三方模型服务；不会在普通 `bun test` 中运行。报告明确标注脚本驱动的动作和复核；模型判为 pass 也不能替代独立测试或冒充自然用户数据。
 
 Windows 上如已配置仓库外 `%LOCALAPPDATA%/HelmorWorkbench/credentials/openrouter.dpapi`（当前用户 DPAPI 加密），可直接运行 `powershell -NoProfile -File scripts/e2e/run-live.ps1`；加 `-CheckOnly` 只验证凭据可读取，不调用模型。脚本运行结束后恢复原环境变量，不输出或保存明文密钥。
 
-Windows 入口默认模型为 `cohere/north-mini-code:free`，可通过 `E2E_LLM_MODEL` 覆盖（此前的 `minimax/minimax-m3:free` 在 2026-09-08 返回 404）。S6c 在每次写入后检查各写者的家族通知，再分别记录投递与复读版本；通知离开待投递队列不等于前提已修复。完整集成阶段成功后立即保存 `runs/live-integration.json`，后续开发或分叉失败时，最终报告仍保留已完成的集成步骤，整轮 `ok` 仍为 `false`。
+注意：`openrouter.dpapi` 只是历史文件名——**凭据文件叫什么，不决定它配哪个 provider**。实际 provider 由 `E2E_LLM_BASE_URL`（默认 `https://api.senseaudio.cn/v1`）与 `E2E_LLM_MODEL`（默认 `senseaudio-s2-flash`）决定，密钥必须与这组端点/模型配套；换 provider 时三者一起换，否则会得到 401 或 404。
+
+Windows 入口默认模型为 `senseaudio-s2-flash`（默认端点 `https://api.senseaudio.cn/v1`），可通过 `E2E_LLM_MODEL`/`E2E_LLM_BASE_URL` 覆盖（历史默认 `cohere/north-mini-code:free`、`minimax/minimax-m3:free` 均已失效）。S6c 在每次写入后检查各写者的家族通知，再分别记录投递与复读版本；通知离开待投递队列不等于前提已修复。完整集成阶段成功后立即保存 `runs/live-integration.json`，后续开发或分叉失败时，最终报告仍保留已完成的集成步骤，整轮 `ok` 仍为 `false`。
 
 模型产物会独立执行固定 12 项 URL 用例，最多交回模型纠正两轮，全部结果保存在 `runs/live-validation.json`。如完整场景在开发阶段之前失败，可加 `-DevelopmentWorkspace <隔离现场路径>` 单独运行开发、恢复和分叉；只接受已有授权标记的现场，会重新初始化示例源文件，原 `runs/live-report.json` 保持不变，专项通过不代表完整场景通过。
 
