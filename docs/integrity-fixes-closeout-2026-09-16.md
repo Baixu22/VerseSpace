@@ -46,9 +46,9 @@
 
 ## 4. 仍未闭合（需要外部条件或另行授权）
 
-- **F06 发行闭环（issue #19）**：README 已订正为「npm 形态尚未发布，公开 registry 上 `@baixu22/workbench` 返回 404」；分发形态由用户定为**单文件二进制**。剩余两件外部条件：
-  - **npm 凭据**：`~/.npmrc` 里存在 40 字符 token，但 registry 拒绝它（`/-/whoami` → 401），且没有任何 workflow 执行 publish。
-  - **当前 SHA 的 CI**：已开 PR #26 触发 CI，但 job 5 秒即失败——注解为 `recent account payments have failed or your spending limit needs to be increased`。**GitHub Actions 在该账号上无法启动 job**，需要用户在 Billing & plans 处理。
+- **F06 发行闭环（issue #19）**：README 已订正为「npm 形态尚未发布，公开 registry 上 `@baixu22/workbench` 返回 404」；分发形态由用户定为**单文件二进制**，tag `workbench-v0.3.0` 已推。剩余两件外部条件：
+  - **npm 凭据**：`~/.npmrc` 里存在 40 字符 token，但 registry 拒绝它（`/-/whoami` → 401），且没有任何 workflow 执行 publish。**用户已决定 npm 暂时不搞。**
+  - **GitHub Actions 账单**：从 04:50Z 到 14:49 CST 的每一次 run（PR #26 的 CI、tag 的 Release Workbench）**没有任何 job 启动成功**，注解均为 `recent account payments have failed or your spending limit needs to be increased`。需要在 Billing & plans 处理；之后 `gh run rerun 35066706666` 完成 v0.3.0 的 Release，重跑 PR #26 的 CI 拿当前 SHA 结论。
 - **事件日志体积（issue #27）**：`.agent-workbench/task-forest/events/events.jsonl` 已 83.53 MB，超 GitHub 建议上限 50 MB、逼近 100 MB 硬限；它是 canonical 数据（不像 exports/snapshots 可以出仓），需先定策略再动。
 - **25 个节点重新收口（issue #25）**：14 个具体节点的复核证据已按提案 `TFP-audit-recheck-20260916` 写回；11 个汇总节点的状态写在 issue 里继续跟踪。
 
@@ -71,9 +71,11 @@
 - **补上缺失的 tag 来源**：`release-workbench.yml` 只监听 `workbench-v*`，而仓库里没有任何东西会产生它（`create-release-tag.mjs` 从根 package.json 打 `v0.46.0`，那是旧 Helmor）。新增 `scripts/tag-workbench-release.mjs`（默认 dry-run）与根脚本 `release:tag:workbench`。
 - **从零安装冒烟（本机 Windows，全绿）**：单一二进制放进干净独立 PATH，README 五分钟上手全 exit 0，内嵌 UI 对干净工程 HTTP 200。
 - **跨平台 CI 缺陷**：`contextgen/render.test.ts` 的快照记录了 Windows 路径分隔符，只可能在 Windows 通过而 CI 跑 macOS（2026-09-11 那次红的原因之一）。已改为 POSIX 归一化快照 + 另加一条宿主机分隔符断言。
+- **补 0.3.0 CHANGELOG**：`package.json` 已是 0.3.0，`CHANGELOG.md` 却只有 0.1.0/0.2.0——而它在包的 `files` 里，不补就会发出陈旧内容。按 `workbench-v0.2.0..HEAD` 的提交归纳补上。
+- **v0.3.0 发行**：tag `workbench-v0.3.0` 已推（→ `f925b4d`），`Release Workbench` run `35066706666` 已触发但四个 `Build *` job 因账单未能启动，故**尚无 v0.3.0 Release**。四平台产物已在本机全部构建成功（文件名与 workflow 一致：windows-x64 101.2 MB / linux-x64 97.3 MB / macos-arm64 66.2 MB / macos-x64 71.9 MB）。账单恢复后 `gh run rerun 35066706666` 即可收尾，不必重推 tag。
 
 ### 5.3 落库
-提交 `7df65fd`（F01–F05 修复 + 拆分）→ `dc157c4`（文档与森林）→ `5baf4a6`（CI / 发行 / harness）→ `86470a5`（14 节点复核证据）→ 提交 README 模型实测；分支已推送，PR **#26** 开着。每次 git 写后重钉 ref 并自证。
+提交 `7df65fd`（F01–F05 修复 + 拆分）→ `dc157c4`（文档与森林）→ `5baf4a6`（CI / 发行 / harness）→ `86470a5`（14 节点复核证据）→ `61c977f`（README 模型实测）→ `f925b4d`（0.3.0 CHANGELOG，同时也是 tag `workbench-v0.3.0` 指向的提交）；分支已推送，PR **#26** 开着。每次 git 写后重钉 ref 并自证。
 
 ## 6. 边界
 
