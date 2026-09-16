@@ -113,7 +113,7 @@ workbench ui          # 打开 http://127.0.0.1:7700，线性对话为主
 # ③ 对恢复卡做认可或拒绝（界面手势）——判决一与「恢复卡人类耗时」的数据源
 
 # ④ 会话结束后，生成地标复核模板并人工作答（≤5 条）
-bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace <你的现场> --template answers.json
+bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace <你的现场> --pending-only --template answers.json
 bun packages/workbench/scripts/e2e/landmark-review-queue.ts --workspace <你的现场> --apply answers.json
 
 # ⑤ 看读数
@@ -121,4 +121,6 @@ workbench stats --json
 bun scripts/fit-ledger/ledger.ts --blackboard <现场>\.workbench\blackboard --scope dual-source
 ```
 
-纪律（与 TF-0057 / TF-0136 / TF-0159 的判据一致）：不把脚本租户的会话当成自然使用；不把工程测试通过当作真人认可；抽样必须写 `sampledSessions: N/M`；结论写回任务森林，阈值不调。
+**第 ④ 步的具体动作**：`answers.json` 每条是「agent 这段会话最常碰的文件」，字段 `{writer, handle, current, verdict, reason}`——`current` 只是展示（回填时忽略），**要人填的是 `verdict`：`endorse`（是这次干活的核心）或 `reject`（不是）**，`reason` 一句话即可。**verdict 留空会被拒并点名，不会被悄悄当成认可**——这是刻意设计：模板若自带现状，照着点一遍就成了一次静默的重新认可。`--pending-only` 只列没答过的；默认抽样 5 个会话，要全量加 `--all-sessions`。队列最后一行会打出 `L1 判据（≥ 0.8 · 全站）` 的当前值——那就是「真人认可率」的读数来源。恢复卡这边没有「认可」按钮：读它或点「收起」即可，系统自动记录你是否消费了卡里的事实（判决一的数据源）。
+
+纪律（与 TF-0057 / TF-0136 / TF-0159 的判据一致）：不把脚本租户的会话当成自然使用；不把工程测试通过当作真人认可；`reject` 与 `endorse` 同样是有效数据，别为了好看多点 endorse；抽样必须写 `sampledSessions: N/M`；结论写回任务森林，阈值不调。
