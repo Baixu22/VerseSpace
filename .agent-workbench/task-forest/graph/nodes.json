@@ -2690,7 +2690,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2720,7 +2720,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2737,7 +2737,7 @@
     "success_metrics": [],
     "summary": "已裁决 accepted。runtime 通知，写者修补。乐观姿态、写立即生效、读集追踪、失效通知。修正三处：§5 按 stream-json 重写（不再假设 HTTP 纯文本 provider）；§1.5 缩为『saga 仅限 pivot 动作（push / PR / 外部 API）』，不建通用逆操作注册表；四裁三，砍掉三个产不出读写集的 HTTP 纯文本 provider。相关工作补 CoAgent、ATM、S-Bus、AgentRoom，并明写差异 = 供应商外部采集 + 运行时预过滤 + 写者中立 + 人类通道。",
     "title": "决策 ADR-0006：并发控制采用建议式，拒绝 single-writer 排他",
-    "updated_at": "2026-09-05T09:00:49.331675Z"
+    "updated_at": "2026-09-16T04:16:24.177505Z"
   },
   "TF-0059": {
     "acceptance_criteria": [
@@ -2745,7 +2745,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2776,7 +2776,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2792,7 +2792,7 @@
     "success_metrics": [],
     "summary": "已裁决 accepted。CALM：程序存在无协调实现当且仅当它是单调的。判据一行：后到的事实会不会让这个结论变错？三条逃生路按优先级——改造成单调 > 封印分段 > 事后补偿。封印分段的唯一实现是 seal（TF-0134），事后补偿只对 pivot 动作单独注册。",
     "title": "决策 ADR-0007：单调优先——与其协调，不如把操作改造成不需要协调",
-    "updated_at": "2026-09-05T09:00:49.331675Z"
+    "updated_at": "2026-09-16T04:16:24.177554Z"
   },
   "TF-0060": {
     "acceptance_criteria": [
@@ -2800,7 +2800,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2831,7 +2831,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2847,7 +2847,7 @@
     "success_metrics": [],
     "summary": "已裁决 accepted。对话是输入面，执行是结构的来源，仓库是结构的裁判，用户永远不画图。隐式层容忍 30% 噪声且永不请求批准；显式层必须能被执行验证。本轮起对森林自身生效：milestone / global_task 的 progress 由子节点派生（progress_source: derived），manual 只允许叶子——结构从执行推导，不从手填推断。",
     "title": "决策 ADR-0008：结构从执行推导，不从对话推断；交互层只做加法",
-    "updated_at": "2026-09-05T09:00:49.331675Z"
+    "updated_at": "2026-09-16T04:16:24.177594Z"
   },
   "TF-0061": {
     "acceptance_criteria": [
@@ -2856,7 +2856,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2884,7 +2884,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2895,7 +2895,7 @@
     "success_metrics": [],
     "summary": "三项缺陷 + 一项二元风险 + 自举。在这些完成之前，关于 runtime 的一切声明都不可信。",
     "title": "里程碑 S0：前置修复与二元风险验证（不加功能）",
-    "updated_at": "2026-08-30T08:33:04.300421Z"
+    "updated_at": "2026-09-16T04:16:24.177631Z"
   },
   "TF-0062": {
     "acceptance_criteria": [
@@ -3240,7 +3240,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3275,7 +3275,7 @@
       "不做任务身份证的治理展示——那是副产品，不是验收项"
     ],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3289,7 +3289,7 @@
     "success_metrics": [],
     "summary": "把会话、人的编辑器、git、CI 统一注册为『写者』，并采集它们的读写足迹。这不是治理功能——runtime 无法通知一个不在模型里的写者，所以它是协调的前置条件。",
     "title": "里程碑 R1：写者成为黑板公民（足迹采集）",
-    "updated_at": "2026-08-30T09:23:47.731255Z"
+    "updated_at": "2026-09-16T04:16:24.177668Z"
   },
   "TF-0069": {
     "acceptance_criteria": [
@@ -3524,7 +3524,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3554,7 +3554,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3569,7 +3569,7 @@
     "success_metrics": [],
     "summary": "差异化本体。reconciliation 循环比对活跃写者的读集与磁盘现值，不匹配则通知，由 LLM 判断是否真推翻前提并只修补受影响的那几步。",
     "title": "里程碑 R2：陈旧前提检测（建议式并发控制）",
-    "updated_at": "2026-08-30T15:27:05.983899Z"
+    "updated_at": "2026-09-16T04:16:24.177703Z"
   },
   "TF-0074": {
     "acceptance_criteria": [
@@ -3684,7 +3684,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3722,13 +3722,13 @@
       "不追求抓到纯方法体的语义变化（改默认值、翻布尔、收紧校验、换异常类型）——所有 ABI 式谓词对此按构造盲，这是已接受并记录在案的空洞"
     ],
     "priority": 3,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
-      "用 tree-sitter tags.scm，对每个 @definition 哈希 definition_node.text 减去 body 子节点",
+      "（现行实现，取代原方案）导出面哈希用 JS/TS 词法投影：按 SURFACE_KINDS 扫描 export 声明并对有序签名文本取哈希，剥掉方法体／注释／空白／私有成员／位置；存疑时保守报 changed，不做传递闭包。原方案要求 tree-sitter tags.scm，因它是原生依赖、与项目零重依赖定位冲突而改走词法投影——不声称具备通用解析能力（packages/workbench/src/runtime/surface.ts 开头即写明 Deliberately NOT tree-sitter）。",
       "读集条目标注 dependency 还是 subject-matter",
       "TS 可选升级到 tsc --declaration 以抓类型变化"
     ],
@@ -3737,7 +3737,7 @@
     "success_metrics": [],
     "summary": "H(surface) 为有序的（导出符号名、种类、签名文本），剥掉方法体／注释／空白／私有成员／位置。依赖式读只在导出面变化时通知；主题式读方法体变化也通知。",
     "title": "谓词第 3 层：导出面哈希 + 依赖式读与主题式读分离",
-    "updated_at": "2026-08-30T15:27:05.983706Z"
+    "updated_at": "2026-09-16T04:17:26.651954Z"
   },
   "TF-0077": {
     "acceptance_criteria": [
@@ -3961,7 +3961,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3972,7 +3972,7 @@
     "success_metrics": [],
     "summary": "notify_human 已有 9 个发射点遍布三个状态机与 scheduler，目前只是被丢掉的数组。把它变成按 ISA-18.2 纪律运作的真队列。",
     "title": "里程碑 R3：裁决队列 + WIP 推导 + 每车道计量",
-    "updated_at": "2026-08-31T07:07:41.165733Z"
+    "updated_at": "2026-09-16T04:16:24.177739Z"
   },
   "TF-0081": {
     "acceptance_criteria": [
@@ -4273,15 +4273,15 @@
     "success_metrics": [],
     "summary": "中位任务只有 2-4 轮，任何带每会话前置成本的结构其摊销分母接近零。且用户不会成长到高级用法。所有结构发生在对话之上或之下，从不发生在它里面。",
     "title": "要求 L0：线性对话是默认且不动它",
-    "updated_at": "2026-09-10T18:01:43.417131Z"
+    "updated_at": "2026-09-16T04:16:24.177773Z"
   },
   "TF-0086": {
     "acceptance_criteria": [
-      "一段会话结束后，系统能列出地标集合（DOI>10），其中 80% 以上是用户认可的『这次干的活的核心』"
+      "（现行口径，2026-09-12 起）一段会话结束后，系统能列出该会话的文件级地标集合：每会话 top-3（K=3），分母为全部当前候选（session-top-k），见 TF-0159 与 positioning-v6 §11。原文字「地标集合（DOI>10），其中 80% 以上是用户认可的核心」作废：DOI>10 的绝对阈值已降为对照口径，而「80% 真人认可」是独立产品认可指标，已按后续决定移出阶段工程验收并保持未验证（转 GitHub #7）。"
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4313,7 +4313,7 @@
       "不做预测式检索（Mylyn 的这一半只有五个用户重复使用过）"
     ],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4327,7 +4327,7 @@
     "success_metrics": [],
     "summary": "L1 隐式上下文层收口：交互事件日志（TF-0087，与 R1 足迹同日志同 seq）→ Mylyn DOI（TF-0088，衰减重置/双阈值/父级传播/生命周期自适应）→ 地标投影（TF-0089，过滤/排序/装饰/折叠）。链路完整：事件流 → DOI 模型 → 可直接回答『这次干了什么』的地标列表。下一步候选：L2 里程碑（晋升/分叉/恢复）或把 L1 产物接入 UI。",
     "title": "里程碑 L1：隐式上下文层（Mylyn DOI）",
-    "updated_at": "2026-08-31T13:32:46.963509Z"
+    "updated_at": "2026-09-16T04:17:26.652005Z"
   },
   "TF-0087": {
     "acceptance_criteria": [
@@ -4501,7 +4501,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4531,7 +4531,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4546,7 +4546,7 @@
     "success_metrics": [],
     "summary": "L2 里程碑完成（8 个子任务全 done）。TF-0091 实测 B/C/K → ADR-0009；TF-0098 回退 + diff 主安全网；TF-0092 加法式晋升；TF-0093 追溯式分叉；TF-0094 生成 N 展示 1（fanout）；TF-0095 提议下一步 + 决策账本；TF-0096 切换清场 + 停放快照；TF-0097 恢复笔记 + 有序叙事。",
     "title": "里程碑 L2：晋升、分叉与恢复（加法式的一层）",
-    "updated_at": "2026-09-02T04:35:22.916Z"
+    "updated_at": "2026-09-16T04:16:24.177841Z"
   },
   "TF-0091": {
     "acceptance_criteria": [
@@ -4998,7 +4998,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5037,7 +5037,7 @@
       "杀死判据：无法通过执行检查且输出空间开放的产物（计划、规格、设计文档）一律不建"
     ],
     "priority": 5,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "derived",
     "purpose": "",
     "ready": false,
@@ -5054,7 +5054,7 @@
     "success_metrics": [],
     "summary": "风险最高的一层，明确超前于证据。保持 p5 不开工：供应商 fork + checkpoint 已覆盖大部分场景。去留由 TF-0136 判决四按写死的判据裁决——无判据可满足（事件结构性为零）则砍。",
     "title": "里程碑 L3：显式衍生产物（最后建、最容易砍）",
-    "updated_at": "2026-09-09T02:30:00.000000Z"
+    "updated_at": "2026-09-16T04:16:24.177879Z"
   },
   "TF-0100": {
     "acceptance_criteria": [
@@ -5172,7 +5172,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5203,7 +5203,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5217,7 +5217,7 @@
     "success_metrics": [],
     "summary": "发行与分发形态收口：形态是开源 hook／linter／daemon，旗号 context rot。两条验收均达成——① 一条命令可安装（npx context-rot 扫描 + scripts/install-hooks.mjs 足迹采集，npm 发布按用户决定延后为 follow_up TF-0119）；② 同一份 .claude/settings.json hook 配置在 Claude Code 与 Cursor 都能加载。机制独占 stale premise 的检测与足迹采集，多会话协调留在代码库内不做宣传。",
     "title": "里程碑 R4：发行与分发形态",
-    "updated_at": "2026-08-31T11:11:37.366126Z"
+    "updated_at": "2026-09-16T04:16:24.177915Z"
   },
   "TF-0103": {
     "acceptance_criteria": [
@@ -5372,7 +5372,7 @@
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5399,7 +5399,7 @@
     "kind": "risk",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5413,13 +5413,13 @@
     "success_metrics": [],
     "summary": "风险已验证并处理：K(1/B+1/C)>1 在所有合理参数下成立（实测 B/C 为 ms 级机械成本，K 为秒级），提议区间为空——『要不要变成任务』式提示不通过检验，已按 ADR-0009 裁定删除该品类 UI，选『直接做』一边。",
     "title": "风险：提议区间为空，提议 UI 建了也没用",
-    "updated_at": "2026-08-31T14:35:51.401652Z"
+    "updated_at": "2026-09-16T04:16:24.177950Z"
   },
   "TF-0107": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5448,7 +5448,7 @@
     "next_action": "已收敛：导出面投影忽略格式与实现体变化、保留字面量语义；只有未来再次出现批量误通知时才重开新节点。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": 0,
@@ -5462,13 +5462,13 @@
     "success_metrics": [],
     "summary": "TypeScript #63664：首次编辑拿新算的 .d.ts 哈希比存着的文本哈希（必然不等），再穿 export * barrel 走完传递闭包；一次纯空白编辑重新产出 502/502 个文件。",
     "title": "风险：投影 bug 导致约 1000× 过度通知，通道开局即死",
-    "updated_at": "2026-09-09T03:00:45.315681Z"
+    "updated_at": "2026-09-16T04:16:24.177985Z"
   },
   "TF-0108": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5498,7 +5498,7 @@
     "next_action": "L3 已随 TF-0099 废止被砍，超前证据风险不再适用。判决书 docs/tf0136-l3-cut-verdict.md。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 0.0,
     "progress_source": "manual",
     "purpose": "",
     "ready": false,
@@ -5514,7 +5514,7 @@
     "success_metrics": [],
     "summary": "从对话追溯出显式产物几乎没有实证文献，现有的都是小样本实验室原型，无纵向与信任度数据。",
     "title": "风险：L3 明确超前于证据",
-    "updated_at": "2026-09-09T02:30:00.000000Z"
+    "updated_at": "2026-09-16T04:16:24.178020Z"
   },
   "TF-0109": {
     "acceptance_criteria": [],
@@ -5564,13 +5564,13 @@
     "success_metrics": [],
     "summary": "WSL2 与原生 Windows、宿主与容器 互相不可达；原生 Windows 需 CLI 2.1.234+。这是整套架构唯一的二元风险。",
     "title": "风险：跨会话 socket 在 Windows／WSL2 边界不可达",
-    "updated_at": "2026-09-09T10:35:09.763554Z"
+    "updated_at": "2026-09-16T04:16:24.178056Z"
   },
   "TF-0110": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5599,7 +5599,7 @@
     "next_action": "已收敛：生命周期自适应 DOI 与按写者的降低兴趣出口均已落地；继续由 reduction 计数与地标复核数据观察常数是否再次双向失配，出现实证时另开节点。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": 0,
@@ -5613,7 +5613,7 @@
     "success_metrics": [],
     "summary": "Mylyn 的数据显示：2.06% 的选择落在已衰减出视野的元素上（衰减太狠），同时两位被试点了 225 和 210 次『降低兴趣』（衰减不够）。作者指出模型对任务生命周期是盲的却从未修。",
     "title": "风险：隐式层用一套全局常数必然同时在两个方向失败",
-    "updated_at": "2026-09-09T03:17:26.844921Z"
+    "updated_at": "2026-09-16T04:16:24.178092Z"
   },
   "TF-0111": {
     "acceptance_criteria": [],
@@ -5662,7 +5662,7 @@
     "success_metrics": [],
     "summary": "无服务器、无数据库、本地优先是很好的架构，是很差的生意。Bloop 有数千日活与 VC 资金仍无法转化。",
     "title": "风险：本地优先这组工程约束正好使收费不可能",
-    "updated_at": "2026-09-09T17:35:50.681024Z"
+    "updated_at": "2026-09-16T04:16:24.178126Z"
   },
   "TF-0112": {
     "acceptance_criteria": [],
@@ -5711,7 +5711,7 @@
     "success_metrics": [],
     "summary": "Claude Code 文档逐字写着『当一个会话的改动破坏了另一个正在依赖的东西，Claude 可以在你发现之前警告它』，GA 且默认开启。",
     "title": "风险：叙事位已被厂商占据",
-    "updated_at": "2026-09-09T17:35:50.681024Z"
+    "updated_at": "2026-09-16T04:16:24.178159Z"
   },
   "TF-0113": {
     "acceptance_criteria": [
@@ -5721,7 +5721,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5759,7 +5759,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "让本地每一轮验证都能真实跑起来，而不是被机器本身的 IO 开销伪装成代码缺陷。",
     "remaining_minutes_max": null,
@@ -5774,7 +5774,7 @@
     "success_metrics": [],
     "summary": "本机（Windows / D 盘）单次 unlink 约 70ms，宿主注入的 safe-delete 钩子再叠加约 40ms；临时目录里 100 个条目的 rm -rf 实测 5–35 秒，随并发负载大幅波动。bun 默认的 5000ms 超时恰好卡在这个区间的边界上，凡用 makeTempWorkbench() 的用例会随机假失败。",
     "title": "抬高 workbench 测试超时上限，抵消本机超慢的文件删除",
-    "updated_at": "2026-08-30T14:40:37.685916Z"
+    "updated_at": "2026-09-16T04:16:24.178194Z"
   },
   "TF-0114": {
     "acceptance_criteria": [
@@ -5785,7 +5785,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5823,7 +5823,7 @@
     "next_action": "继续使用包内 bun run test 的 60000ms 超时；再次复现时按实际现场诊断。",
     "non_goals": [],
     "priority": 2,
-    "progress": 100,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把这台机器的 IO 现实登记在案：既避免反复误判成 Workbench 的代码缺陷，也避免按正常机器的速度做估时。",
     "remaining_minutes_max": 0,
@@ -5834,7 +5834,7 @@
     "success_metrics": [],
     "summary": "文件删除慢：单次 unlink 约 70ms，宿主注入的 safe-delete 钩子再叠加约 40ms（去掉 NODE_OPTIONS 里的 genie-safe-delete.cjs 后从 110ms 降到 70ms）。临时目录里 100 个条目的 rm -rf 实测 5–35 秒，随并发负载大幅波动。bun 默认 5000ms 的测试超时恰好卡在这个区间的边界上，所以凡用 makeTempWorkbench() 的用例会随机假失败。git 提交本身不慢（先前的 40–60 秒读数是并发负载污染，空闲复测为秒级）。",
     "title": "风险：本机文件删除慢一个数量级，bun 默认超时恰好卡在边界上",
-    "updated_at": "2026-09-05T17:44:32.869386Z"
+    "updated_at": "2026-09-16T04:16:24.178229Z"
   },
   "TF-0115": {
     "acceptance_criteria": [
@@ -6199,7 +6199,7 @@
     ],
     "summary": "以恢复处境、前提失效、分支事实为核心，砍掉内容级合并与树导航冲动，保留 L0 线性默认和加法式交互。",
     "title": "Fable 5.1 前提守护收敛：交互 / 会话树 / 并发统一",
-    "updated_at": "2026-09-10T18:01:43.417131Z"
+    "updated_at": "2026-09-16T04:16:24.178272Z"
   },
   "TF-0121": {
     "acceptance_criteria": [
@@ -7262,7 +7262,7 @@
     ],
     "id": "TF-0135",
     "kind": "milestone",
-    "next_action": "工程基线齐备且可复现；验收文第 1 条要求『基线与两周数据』，当前观测跨度 1.93 天（t0=2026-09-08）未达两周，且 success_metrics 含 14 天样本，故保持 in_progress；到期复跑 fit-ledger 即判。",
+    "next_action": "已 done。状态与验收按后续证据改为样本量门：四条判决数据达标且可复现，日历两周不再是保持 in_progress 的理由（详见 TF-0136 的 evidence 与 docs/report-2026-09-10-senseaudio-17round-acceptance.md）。阶段 D 工程侧无待办，剩余只有 natural 来源指标；没有 natural 现场就不再动这棵子树。旧 next_action 写的「保持 in_progress，到期复跑即判」已作废。",
     "non_goals": [
       "不用主观好评替代行为数据"
     ],
@@ -7287,7 +7287,7 @@
     ],
     "summary": "建立两周真实使用门、L3 证据门与 fit 账本，把“能建”换成“有人用”。",
     "title": "阶段 D：fit 门与范围仲裁",
-    "updated_at": "2026-09-10T18:01:43.417131Z"
+    "updated_at": "2026-09-16T04:17:26.652054Z"
   },
   "TF-0136": {
     "acceptance_criteria": [
@@ -7342,7 +7342,7 @@
     ],
     "id": "TF-0136",
     "kind": "task",
-    "next_action": "工程侧四条判决数据全部达标且可复现（docs/report-2026-09-10-senseaudio-17round-acceptance.md）；验收文含两周窗口（summary: t0+14d，t0=2026-09-08 → 2026-09-22）与自然使用项，窗口未到故保持 in_progress，到期后按同一脚本复跑即判。",
+    "next_action": "已 done。工程侧四条判决数据全部达标且可复现（docs/report-2026-09-10-senseaudio-17round-acceptance.md）。日历两周窗口（t0=2026-09-08 → 2026-09-22）按 TF-0141 判例改以样本量门判定（restores 48 / noticeOutcomes 127 / sealDecisions 25 ≥ 3/5/3），窗口本身只作长期观察，不伪造经过的日期，也不再作为保持 in_progress 的理由。旧 next_action 写的「窗口未到故保持 in_progress」已作废。",
     "next_action_from": "report-2026-09-10-l1-source-gate",
     "non_goals": [],
     "priority": 1,
@@ -7367,7 +7367,7 @@
     ],
     "summary": "两周后（t0 + 14d）只用 workbench stats --json 的真实输出做四个判决，判据事先写死以避免事后合理化。四条判据全部来自已埋点或本批新增的事件源，不用不可观测代理。",
     "title": "两周真实使用门与 L3 证据门",
-    "updated_at": "2026-09-10T18:01:43.417131Z"
+    "updated_at": "2026-09-16T04:17:26.652099Z"
   },
   "TF-0137": {
     "acceptance_criteria": [
@@ -8668,7 +8668,7 @@
     "acceptance_criteria": [
       "（已满足）用 ≥3 个不同工作形状的真实现场跑标定扫描，给出文件级地标集合与容器占比的数字——4 个现场的数字见证据栏。",
       "（已满足）定下 L1 分母的粒度规则并落在代码与测试上：分母 = 文件级地标集合（目录不进），且参考时刻 = 会话自己的末尾（`{ clock: \"session\" }`）；两条都有回归用例，Revert 即红。",
-      "（未满足）让文件级地标集合在真实现场非空且覆盖 ≥ 一半写者。已排除两条路：降阈值（floor=4 仍有两个现场是空集，且目录占比升到 52–75%）与换时钟（本轮实测只把 node-verified 从 0 拉到 4）。剩下唯一测出来非空的规则是相对选择（每写者文件级 top-K）：非空率 78/103、32/32、15/16、12/13，写者覆盖 76%/100%/94%/92%，已达标。实现它还差两个决定：① 单位取每会话 top-K（K=3，符合 §11 原文，也让人评规模回到 3–5 条）；② 排序要有下界感——真实现场 DOI 普遍为负时 top-K 排的是「衰减最小」，需要窗口内相对份额或归一化。",
+      "（已由后续实现满足，原「未满足」结论作废）让文件级地标集合在真实现场非空且覆盖 ≥ 一半写者——由 TF-0159（分母切换为每会话文件级 top-3）与 TF-0161（种类门 + requireEdits 默认开启 + 只读会话豁免）达成：两轮现场 VAS1EM 5/5、1OioVM 8/8 会话非空，share 均为 1.0。降阈值与换时钟两条路仍按原记录排除，判据本身未放宽。",
       "（已满足）结论写回 positioning-v6 §11：分母 = 文件级地标集合、空集合 = 不可计算不记 0 分、单位是每会话、参考时刻是会话自己的末尾，四条都在 §11，并附实测数字与复现入口。"
     ],
     "alignment": {
@@ -8723,7 +8723,7 @@
     "success_metrics": [],
     "summary": "L1 的分母修好之后才看得见真问题：22 轮真实现场里 95 个写者只有 2 个产出地标（5 条），其中 2 条是 . / src 这类容器（40%）。标定扫描说明这不是阈值问题——容器占比由 DOI 的父级传播份额决定：floor=10 时 40%、floor=6 时 70%、floor=4 时 50%、edit=4 时 40–54%，而每种配置下去重的 handle 都只有 4 个（.、src、src/alpha.ts、src/beta.ts）。所以『80% 的地标是这次活的核心』现在一半在量容器占位；降阈值只会同时牺牲覆盖（floor=4 时仍有 52 个写者无地标）。",
     "title": "地标集合的粒度与覆盖：让核心真的进 L1 分母",
-    "updated_at": "2026-09-11T09:16:18.226939Z"
+    "updated_at": "2026-09-16T04:17:26.652139Z"
   },
   "TF-0157": {
     "acceptance_criteria": [
@@ -9362,7 +9362,7 @@
     "success_metrics": [],
     "summary": "判决（docs/tf0167-moat-gate-verdict.md）：benchmark 闸门保持「有据的关闭」，对外的 stale-premise benchmark 不得写。三项前置在当前现场结构性不可达——B：premise_stale 全仓唯一生产者是 reconcile（premises.ts:410），payload.writer 是前提持有者，而 human 写者的读集在产品里没有生产路径（watcher 只记写集，watcher/index.ts:100-107 used 恒空），232 个写者全是 agent，B=0 是结构性结果；C：seal.reviewed 强制 source=human（seal-review.ts:20），现场 165 条 block 全来自脚本编排的模型线程，缺真实使用者，复核 CLI 已就绪但无人可答；D：80 pass 全在 09-12 当天 2.7h soak 批次，聚合 0.3149，轨迹自第 21 轮稳态于 0.30-0.33，恒等式精确闭合（9766=6691 dedup+3075 notified），判定为负载形状（soak 每轮全新 writer/path/version，dedup 抑制不了新组合），非噪声非口径错误，与租户下侧漂移 0.16-0.058 同机制。purpose 已达成：每个前置该由谁做已收敛——B 等 human 读集的产品路径（编辑器集成），C 等真实使用者，D 等真实使用窗口。判据与 band 一律不动。重启时新开节点，不复活本节点。受控实验路线被否：AI 读记为 human 即冒充写者身份，且对工程无增益。",
     "title": "补齐 benchmark 闸门剩下的三项：B 的 git/human 写者、C 的人工封印复核、D 的比值带",
-    "updated_at": "2026-09-13T06:32:56.958396Z"
+    "updated_at": "2026-09-16T04:16:24.178347Z"
   },
   "TF-0168": {
     "acceptance_criteria": [
@@ -9544,6 +9544,7 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "unknown",
+    "display_order": 2600,
     "estimated_total_minutes": null,
     "evidence": [
       "既有修复 cbb581d；本轮源码修复 70c527a。详细命令、日志与结果见 docs/issue-6-closeout.md。",
@@ -9569,7 +9570,7 @@
     "success_metrics": [],
     "summary": "13 项既有修复重新核验；补修 L1 自审误报与 Vitest 审计副本收集，恢复原始 Rust registry，完成完整测试和打包冒烟。独立产品评估和历史环境归因保留为后续项。",
     "title": "issue #6 工程收尾：独立复验、撤销 Rust 旁路与修正完成状态",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-16T04:16:24.178382Z"
   },
   "TF-0172": {
     "acceptance_criteria": [
@@ -9593,6 +9594,7 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "unknown",
+    "display_order": 2700,
     "estimated_total_minutes": null,
     "evidence": [
       "https://github.com/Baixu22/VerseSpace/issues/7",
@@ -9621,7 +9623,7 @@
     "success_metrics": [],
     "summary": "用户明确选择：按工程范围收口，#7 以本阶段不计划关闭，保留未验证的产品指标。没有新增真实 human 事件，没有宣称 L1 ≥0.8 已达成。",
     "title": "L1 真实使用评估：冻结候选后由实际使用者独立复核",
-    "updated_at": "2026-09-14T12:46:53.667355Z"
+    "updated_at": "2026-09-16T04:16:24.178415Z"
   },
   "TF-0173": {
     "acceptance_criteria": [
@@ -9647,6 +9649,7 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "unknown",
+    "display_order": 2800,
     "estimated_total_minutes": null,
     "evidence": [
       "https://github.com/Baixu22/VerseSpace/issues/8",
@@ -9676,7 +9679,7 @@
     "success_metrics": [],
     "summary": "已恢复三次 Git 2.51 原生进程堆损坏事件（0xC0000374），与首份 Cargo 失败日志时间和退出码对应。18 个 WER 报告、转储及附件路径均已不存在；当前无可重复失败，尚不能确定责任模块。",
     "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）",
-    "updated_at": "2026-09-14T12:46:53.667355Z"
+    "updated_at": "2026-09-16T04:16:24.178448Z"
   },
   "TF-0174": {
     "acceptance_criteria": [
@@ -9771,6 +9774,7 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "medium",
+    "display_order": 2900,
     "estimated_total_minutes": 60,
     "evidence": [
       "docs/audit-errors-closeout-2026-09-16.md；docs/issue-11-closeout.md；docs/issue-12-closeout.md；docs/issue-13-closeout.md",
@@ -9810,6 +9814,6 @@
     "success_metrics": [],
     "summary": "",
     "title": "审计 #9–#13 修复与真实批处理验证（2026-09-16）",
-    "updated_at": "2026-09-15T23:36:35.716494Z"
+    "updated_at": "2026-09-16T04:16:24.178486Z"
   }
 }

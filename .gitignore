@@ -118,6 +118,11 @@ packages/workbench/.evidence-sites/
 /.agent-contexts/issue-6-closeout-*/
 # Audit raw fixtures and logs stay local; reviewed summaries live in docs/.
 /.agent-contexts/audit-errors-*/
+# 2026-09-16 integrity audit + fix round: same rule — raw probes/logs are local
+# machine evidence, the reviewed summary is docs/integrity-fixes-closeout-2026-09-16.md
+/.agent-contexts/integrity-audit-*/
+/.agent-contexts/integrity-audit-*.log
+/.agent-contexts/integrity-fixes-*/
 # agent-kernel runtime state (session checkpoints, message blobs)
 /.agent-kernel/
 # WorkBuddy AI project data (session memory, logs)
