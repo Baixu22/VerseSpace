@@ -132,7 +132,9 @@ Windows 上如已配置仓库外 `%LOCALAPPDATA%/HelmorWorkbench/credentials/ope
 
 注意：`openrouter.dpapi` 只是历史文件名——**凭据文件叫什么，不决定它配哪个 provider**。实际 provider 由 `E2E_LLM_BASE_URL`（默认 `https://api.senseaudio.cn/v1`）与 `E2E_LLM_MODEL`（默认 `senseaudio-s2-flash`）决定，密钥必须与这组端点/模型配套；换 provider 时三者一起换，否则会得到 401 或 404。
 
-Windows 入口默认模型为 `senseaudio-s2-flash`（默认端点 `https://api.senseaudio.cn/v1`），可通过 `E2E_LLM_MODEL`/`E2E_LLM_BASE_URL` 覆盖（历史默认 `cohere/north-mini-code:free`、`minimax/minimax-m3:free` 均已失效）。S6c 在每次写入后检查各写者的家族通知，再分别记录投递与复读版本；通知离开待投递队列不等于前提已修复。完整集成阶段成功后立即保存 `runs/live-integration.json`，后续开发或分叉失败时，最终报告仍保留已完成的集成步骤，整轮 `ok` 仍为 `false`。
+Windows 入口默认模型为 `senseaudio-s2-flash`（默认端点 `https://api.senseaudio.cn/v1`），可通过 `E2E_LLM_MODEL`/`E2E_LLM_BASE_URL` 覆盖（历史默认 `cohere/north-mini-code:free`、`minimax/minimax-m3:free` 均已失效）。
+
+**实测（2026-09-16）：默认模型过不了这条验收。** `senseaudio-s2-flash` 能跑完整链路（S0–S11 全过、30 次模型响应），但最后那关「模型产物独立执行 12 项 URL 用例」固定停在 **11/12**，差的是「尾部弯引号」标定，两轮纠正都修不动。换成 `doubao-seed-2-0-code-preview-260215` 后同样两轮纠正就收敛（10/12 → 11/12 → **12/12**），整轮 `通过；模型响应 49 次`。要跑通 `test:live` 的完整验收，请显式指定这个模型：`E2E_LLM_MODEL=doubao-seed-2-0-code-preview-260215`。两次读数都在 `.agent-contexts/integrity-fixes-2026-09-16/`。默认值未改——它同时也决定了日常开发用的模型，换不换留给人决定。S6c 在每次写入后检查各写者的家族通知，再分别记录投递与复读版本；通知离开待投递队列不等于前提已修复。完整集成阶段成功后立即保存 `runs/live-integration.json`，后续开发或分叉失败时，最终报告仍保留已完成的集成步骤，整轮 `ok` 仍为 `false`。
 
 模型产物会独立执行固定 12 项 URL 用例，最多交回模型纠正两轮，全部结果保存在 `runs/live-validation.json`。如完整场景在开发阶段之前失败，可加 `-DevelopmentWorkspace <隔离现场路径>` 单独运行开发、恢复和分叉；只接受已有授权标记的现场，会重新初始化示例源文件，原 `runs/live-report.json` 保持不变，专项通过不代表完整场景通过。
 
