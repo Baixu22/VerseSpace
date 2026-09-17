@@ -9686,7 +9686,8 @@
       "docs/windows-rust-clean-verification.md",
       "Windows Application 记录 1241268/1241277/1241280：2026-09-13 08:23:28、09:48:29、10:02:21，Git 2.51.0.1，异常 c0000374；ntdll 固定版本 10.0.26100.7920，检测偏移 0x1176e5。",
       "对应 WER 1001 记录 1241269/1241278/1241281 引用的 18 个报告/转储/附件路径均不存在。限定时窗的 Defender 事件未命中，不构成排除所有外部干扰的证据。",
-      "docs/issue-8-crash-investigation.md；原始字段保存在 .agent-contexts/issue-6-closeout-2026-09-14/issue8-investigation/。"
+      "docs/issue-8-crash-investigation.md；原始字段保存在 .agent-contexts/issue-6-closeout-2026-09-14/issue8-investigation/。",
+      "2026-09-17 收尾扫描复核：HEAD e21ca1b 上六套测试 4611 pass / 0 fail 与全部门禁（validate / export / 导出回归 / check-landing / typecheck / biome）全绿；Git 2.51 堆损坏仍无可复现失败、无新转储，按节点验收维持 blocked，不宣布根因（本轮扫描产物 .agent-contexts/integrity-scan-2026-09-16/）。"
     ],
     "execution_hints": [
       "阻塞原因：原始转储与报告缺失；目前无复现，不应臆测修改 Helmor 代码或恢复旁路。"
@@ -9709,7 +9710,7 @@
     "success_metrics": [],
     "summary": "已恢复三次 Git 2.51 原生进程堆损坏事件（0xC0000374），与首份 Cargo 失败日志时间和退出码对应。18 个 WER 报告、转储及附件路径均已不存在；当前无可重复失败，尚不能确定责任模块。",
     "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）",
-    "updated_at": "2026-09-16T04:16:24.178448Z"
+    "updated_at": "2026-09-17T04:30:34.287356Z"
   },
   "TF-0174": {
     "acceptance_criteria": [
