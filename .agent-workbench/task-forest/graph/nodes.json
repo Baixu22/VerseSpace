@@ -9881,11 +9881,16 @@
       "dispatch 有 worktree 预检与两阶段创建回滚",
       "支线的四项容器耦合清零，退役条件可核查"
     ],
-    "deviations": [],
+    "deviations": [
+      "TFD-1d70ea4b93"
+    ],
     "difficulty": "high",
+    "display_order": 2700,
     "estimated_total_minutes": null,
     "evidence": [
-      "docs/helmor-absorption-deep-exploration-2026-09-17.md 第 1.3/1.5/1.6/3.3/4.2/6.2/7 节"
+      "docs/helmor-absorption-deep-exploration-2026-09-17.md 第 1.3/1.5/1.6/3.3/4.2/6.2/7 节",
+      "阶段 1 落地读数：已于 5523f37 提交（TF-0184–0187 + ADR-0013）",
+      "进度按估时加权：已完成 300 分钟 / 计划 5,160 分钟"
     ],
     "execution_hints": [],
     "id": "TF-0176",
@@ -9897,7 +9902,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 6.0,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9905,7 +9910,7 @@
     "requirements": [
       "任何新功能先过 ADR-0010 一句取舍标准：服务哪类写者、走哪条通道、答的是不是「你上次看到的东西现在还成立吗」",
       "主线保持 4 个运行时依赖、单文件编译二进制、纯文件系统持久化",
-      "删除支线任一目录前须重新核查样式/构建/发布/CI 引用并另立决策（ADR-0011）"
+      "删除支线任一目录前须重新核查样式/构建/发布/CI 引用并另立决策（ADR-0011；退役条件见 ADR-0013）"
     ],
     "source_sessions": [
       "session-2026-09-17-absorption-plan"
@@ -9914,7 +9919,7 @@
     "success_metrics": [],
     "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-17T14:52:13.552198Z"
+    "updated_at": "2026-09-17T16:04:01.719240Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -9937,8 +9942,9 @@
     "difficulty": "unknown",
     "estimated_total_minutes": null,
     "evidence": [
-      "报告 §1.3 四样容器耦合",
-      "§1.6 商标条款：Forks must ship under a distinct name"
+      "固化位置：docs/decisions/0013-workbench-identity-and-compliance.md 决策 1",
+      "落地读数：根包 helmor@0.46.0 → versespace；@helmor/workbench-ui → @baixu22/workbench-ui；根 README 叙事翻转",
+      "不抽独立仓库的理由与「将来要抽须另立 ADR」一并写入 ADR-0013"
     ],
     "execution_hints": [],
     "id": "TF-0177",
@@ -9956,11 +9962,11 @@
       "三个名字（helmor@0.46.0 / @baixu22/workbench / @helmor/workbench-ui）统一到非 Helmor 商标命名"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "推荐：根 package 改名（脱离 helmor 商标），@helmor/workbench-ui 改为 @baixu22/workbench-ui，README 叙事翻转为「workbench 是产品，src/src-tauri/sidecar 是冻结的参考实现」。抽仓的条件并入决策 6。",
     "title": "决策 1：主线身份收口 = 保留 monorepo、改名、翻转叙事，不抽独立仓库",
-    "updated_at": "2026-09-17T14:52:13.552198Z"
+    "updated_at": "2026-09-17T16:04:01.719073Z"
   },
   "TF-0178": {
     "acceptance_criteria": [],
@@ -9983,8 +9989,10 @@
     "difficulty": "unknown",
     "estimated_total_minutes": null,
     "evidence": [
-      "报告 §1.5 嵌入链",
-      "§1.6 表：dist 无 NOTICE/LICENSE、包声明 MIT"
+      "固化位置：docs/decisions/0013-workbench-identity-and-compliance.md 决策 2",
+      "三件一次做完：断 CSS 嵌入链（TF-0184）+ 补 NOTICE/LICENSE 归属（TF-0185）+ 改名（TF-0186）",
+      "包 license 由 MIT 改为 SPDX \"MIT AND Apache-2.0\"；NOTICE 里写明这是分类标注不是双许可",
+      "图标层生成暂不拆的判断与理由（输出是 reicon 映射，非 Helmor 版权物）写入 ADR-0013"
     ],
     "execution_hints": [],
     "id": "TF-0178",
@@ -9998,11 +10006,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "推荐：断掉全仓唯一跨目录 import（color-theme.css），build 把 NOTICE 与 Apache-2.0 归属打进 dist/，包元数据改为 MIT + portions Apache-2.0。图标层生成脚本暂不拆（输出是 reicon 映射，非 Helmor 版权物）。",
     "title": "决策 2：合规做到最小合规，但三件一次做完（内联 CSS + NOTICE/LICENSE 进 dist + 改名）",
-    "updated_at": "2026-09-17T14:52:13.552198Z"
+    "updated_at": "2026-09-17T16:04:01.719107Z"
   },
   "TF-0179": {
     "acceptance_criteria": [],
@@ -10025,9 +10033,9 @@
     "difficulty": "unknown",
     "estimated_total_minutes": null,
     "evidence": [
-      "packages/workbench/src/types/config.ts:81-83 default claude",
-      "docs/integrity-fixes-closeout-2026-09-16.md:138 UI 聊天走 HTTP 无足迹",
-      "memory: 本机无 live 凭据"
+      "固化位置：docs/decisions/0013-workbench-identity-and-compliance.md 决策 3",
+      "轻路的两条内容（在有 claude 凭据的环境验证足迹链 + UI 诚实标注 readObservability）写入 ADR-0013 并排入阶段 2",
+      "sidecar 重路触发条件与接入形态约束写入 ADR-0013，对应风险节点 TF-0221"
     ],
     "execution_hints": [],
     "id": "TF-0179",
@@ -10041,11 +10049,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "修正报告一处事实：chat.provider 默认值已是 claude（types/config.ts:83）。试用走 HTTP 是因为试用机无 claude 凭据。因此轻路不是改默认值，而是：在有凭据的机器上验证 claude 车道足迹链 + UI 诚实标注 readObservability。sidecar 的真实理由是多 provider 与可靠性基础设施，不是补足迹。",
     "title": "决策 3：足迹命门走轻路；重路（sidecar）触发条件 = 出现第二个需要足迹观测的 provider",
-    "updated_at": "2026-09-17T14:52:13.552198Z"
+    "updated_at": "2026-09-17T16:04:01.719139Z"
   },
   "TF-0180": {
     "acceptance_criteria": [],
@@ -10152,8 +10160,9 @@
     "difficulty": "unknown",
     "estimated_total_minutes": null,
     "evidence": [
-      "报告 §1.3",
-      "ADR-0011 删除前置要求"
+      "固化位置：docs/decisions/0013-workbench-identity-and-compliance.md 决策 4",
+      "四项耦合以「清零判据 + 当前状态」表列出：CSS 跨目录 import 本轮达成（0）；图标层、postinstall、pre-commit 三项待做（TF-0216 / TF-0214 / TF-0215）",
+      "退役闸门 ADR-0014 的触发条件写成「四项全清后另立」，未全清不得删除"
     ],
     "execution_hints": [],
     "id": "TF-0182",
@@ -10167,11 +10176,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "四项：CSS 跨目录 import 断；图标层生成能在主线独立跑；postinstall 不再装 sidecar 依赖；pre-commit 对主线提交不跑 clippy。用户数是产品指标，与能否删目录无关。",
     "title": "决策 6：支线退役条件 = 四项容器引用清零，而非用户数；满足后另立 ADR-0014 删除 src/src-tauri/sidecar",
-    "updated_at": "2026-09-17T15:02:29.895069Z"
+    "updated_at": "2026-09-17T16:04:01.719171Z"
   },
   "TF-0183": {
     "acceptance_criteria": [],
@@ -10190,27 +10199,32 @@
     "created_at": "2026-09-17T14:52:13.552703Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-1d70ea4b93"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 480,
-    "evidence": [],
+    "evidence": [
+      "已完成 TF-0184 / TF-0185 / TF-0186 / TF-0187（四项，估时 300 / 480 分钟）",
+      "未完成 TF-0188（改名后发版链回归干跑）与归属本阶段的 TF-0222 风险"
+    ],
     "execution_hints": [],
     "id": "TF-0183",
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 62.5,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "in_progress",
     "success_metrics": [],
     "summary": "每次 tag 都在放大暴露面，排最前。",
     "title": "阶段 1：合规与身份收口（发布阻塞级）",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-17T16:04:01.719203Z"
   },
   "TF-0184": {
     "acceptance_criteria": [
@@ -10233,10 +10247,19 @@
     "created_at": "2026-09-17T14:52:13.552703Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-5f3a91c7e2",
+      "TFD-9c14b6d08a"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": 90,
-    "evidence": [],
+    "evidence": [
+      "apps/workbench-ui/src/styles/theme.css：内联 47 个已消费 token（Base 子集 + shadcn 协议层 18 名），名称与取值逐字保留，附 Apache-2.0 §4(b) 改动声明",
+      "apps/workbench-ui/src/index.css 不再 @import 到 src/；全仓指向 src/ 的相对 import 从 1 降到 0",
+      "构建读数：发版 CSS 68,068 → 47,818 字节；打进发行物的 color-theme token 166 → 47",
+      "纯删除性证明：改动后的自定义属性声明集合是改动前的子集（新增 0 条），120 个共用 token 名的取值差异 0 条",
+      "bun run build + test:build 两种产物通过；test:workbench-ui 27 pass"
+    ],
     "execution_hints": [
       "先 grep index.css 现有映射表，只内联被引用的变量",
       "保留 Apache-2.0 归属注释头"
@@ -10255,11 +10278,11 @@
       "只搬 Base 层实际被映射的 token（--bg-base/--fg-default/--border-default/--status-* 等）与 shadcn 协议层 15 对"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "",
     "title": "内联 color-theme.css 的 Base 层 token 子集进 workbench-ui，断掉全仓唯一跨目录 import",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-17T16:04:01.718917Z"
   },
   "TF-0185": {
     "acceptance_criteria": [
@@ -10281,10 +10304,18 @@
     "created_at": "2026-09-17T14:52:13.552703Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-5f3a91c7e2"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": 60,
-    "evidence": [],
+    "evidence": [
+      "packages/workbench/{NOTICE,LICENSE,LICENSE-APACHE} 新增；LICENSE-APACHE 与根 LICENSE 逐字节相同（sha256 83b265ab…）",
+      "scripts/copy-legal.ts 被 build.ts 与 build-single.ts 调用，三个文件进 dist/；dist 内副本与包根副本逐字节相同",
+      "package.json license → SPDX \"MIT AND Apache-2.0\"，files 收录 NOTICE / LICENSE / LICENSE-APACHE",
+      "release-workbench.yml 的 artifact 上传路径与 Release 附件都加入三个归属文件；YAML 解析通过，矩阵任务本地复现后 dist 四项齐备（upload-artifact 的 zip 因此内含 NOTICE）",
+      "bun run test:build 两种产物通过"
+    ],
     "execution_hints": [],
     "id": "TF-0185",
     "kind": "task",
@@ -10301,11 +10332,11 @@
       "npm 包 files 字段包含这两个文件"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "",
     "title": "发布物附 NOTICE 与 Apache-2.0 归属；包元数据 license 改为 MIT + portions Apache-2.0",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-17T16:04:01.718965Z"
   },
   "TF-0186": {
     "acceptance_criteria": [
@@ -10330,7 +10361,14 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 90,
-    "evidence": [],
+    "evidence": [
+      "根 package.json name：helmor → versespace（仓库即 Baixu22/VerseSpace，与 Git 身份 Baixu22 一致）",
+      "apps/workbench-ui/package.json：@helmor/workbench-ui → @baixu22/workbench-ui",
+      "全仓 grep '@helmor/workbench-ui'（排除 node_modules/bun.lock）为 0；bun.lock 内同步为 0 处旧名",
+      "bun install --frozen-lockfile 通过且 lock 逐字节不变；typecheck 五段通过",
+      "根 README 首段改写为「产品是 Workbench，src/ src-tauri/ sidecar/ 为冻结参考实现」，引 ADR-0003 / ADR-0011 / ADR-0013",
+      "清理 node_modules/@helmor/workbench-ui 旧 junction 后重复安装无 ENOENT"
+    ],
     "execution_hints": [
       "改名后核查 scripts/tag-workbench-release.mjs、release-workbench.yml、ci.yml 的 workspace 过滤名"
     ],
@@ -10349,11 +10387,11 @@
       "根 README 首段：workbench 是产品，src/src-tauri/sidecar 为冻结参考实现（引 ADR-0003/0011）"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "",
     "title": "改名：根 package 与 @helmor/workbench-ui 脱离 Helmor 商标；README 叙事翻转",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-17T16:04:01.719003Z"
   },
   "TF-0187": {
     "acceptance_criteria": [
@@ -10378,7 +10416,11 @@
     "difficulty": "low",
     "estimated_total_minutes": 60,
     "evidence": [
-      "编号顺延：ADR-0012 已被 GUI 写端点准入复核（TF-0174）占用"
+      "编号顺延：ADR-0012 已被 GUI 写端点准入复核（TF-0174）占用",
+      "docs/decisions/0013-workbench-identity-and-compliance.md 落库，固化决策 1/2/3/6",
+      "标注与 ADR-0011 的关系：取代其「共享主题继续单一来源」一句，其余结论保留；补充 ADR-0003 的退役前置条件",
+      "写入 sidecar 重路触发条件（第二个需要足迹观测的 provider）与接入形态约束（只允许 spawn-sidecar，不允许 import SDK 进主包）",
+      "写明四项退役耦合清零判据与状态，并登记进 docs/decisions/README.md 索引"
     ],
     "execution_hints": [],
     "id": "TF-0187",
@@ -10391,16 +10433,16 @@
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [
-      "docs/decisions/0012-*.md",
+      "docs/decisions/0013-*.md",
       "标注与 ADR-0011 的取代/补充关系",
       "写明 sidecar 接入触发条件与四项退役清零条件"
     ],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "",
     "title": "ADR-0013：主线身份、合规解法、重路触发条件与退役条件（固化决策 1/2/3/6）",
-    "updated_at": "2026-09-17T15:02:13.230857Z"
+    "updated_at": "2026-09-17T16:04:01.719039Z"
   },
   "TF-0188": {
     "acceptance_criteria": [
@@ -11628,7 +11670,9 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-5f3a91c7e2"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": 60,
     "evidence": [],
@@ -11735,18 +11779,18 @@
     "remaining_minutes_min": null,
     "requirements": [
       "ADR-0011：删除前核查样式/构建/发布/CI 引用",
-      "决策记录并入 ADR-0012 或独立 ADR"
+      "决策记录并入 ADR-0014（退役闸门）"
     ],
     "source_sessions": [],
     "status": "proposed",
     "success_metrics": [],
     "summary": "",
     "title": "核查引用后删除支线外围 apps/marketing 与 apps/registry（官网、手机配对服务）",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-17T16:04:01.719304Z"
   },
   "TF-0219": {
     "acceptance_criteria": [
-      "ADR-0013 落库；未满足则记录缺项，不删"
+      "ADR-0014 落库；未满足则记录缺项，不删"
     ],
     "alignment": {
       "fit": "unknown",
@@ -11786,7 +11830,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "退役闸门核查：四项耦合清零后另立 ADR-0014，决定删除 src/、src-tauri/、sidecar/",
-    "updated_at": "2026-09-17T15:02:21.969431Z"
+    "updated_at": "2026-09-17T16:04:01.719272Z"
   },
   "TF-0220": {
     "acceptance_criteria": [],
