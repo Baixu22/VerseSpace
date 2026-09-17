@@ -71,7 +71,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: workbench-${{ matrix.target }}
-          path: packages/workbench/dist/${{ matrix.artifact }}
+          # The attribution files ride along so every artifact zip carries
+          # NOTICE (Apache-2.0 §4(d)); build-single.ts copies them into dist/.
+          path: |
+            packages/workbench/dist/${{ matrix.artifact }}
+            packages/workbench/dist/NOTICE
+            packages/workbench/dist/LICENSE
+            packages/workbench/dist/LICENSE-APACHE
           if-no-files-found: error
 
   release:
@@ -89,5 +95,11 @@ jobs:
       - name: Attach to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/workbench-*
+          # Attribution travels with the binaries, not only with the source
+          # tarball — Apache-2.0 §4(d) applies to the distributed binaries.
+          files: |
+            dist/workbench-*
+            dist/NOTICE
+            dist/LICENSE
+            dist/LICENSE-APACHE
           fail_on_unmatched_files: true

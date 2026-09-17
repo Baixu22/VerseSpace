@@ -58,3 +58,10 @@ export async function prepareUiAssets(): Promise<void> {
 	await writeFileAtomic(MANIFEST, [...imports, ...map, ""].join("\n"));
 	console.log(`ui assets: ${distFiles.length} files embedded`);
 }
+
+// Entry point so `bun run scripts/ui-prepare.ts` (used by the root `build:ui`
+// script) actually does something. Imported from build.ts / build-single.ts it
+// stays a plain module and this block does not run.
+if (import.meta.main) {
+	await prepareUiAssets();
+}

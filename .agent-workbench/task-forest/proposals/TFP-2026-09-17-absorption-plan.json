@@ -1,0 +1,1742 @@
+{
+  "applied_at": "2026-09-17T14:52:13.745272Z",
+  "base_graph_hash": "7919ce1f9677cd373b238d036053c9d1b285b5e86ea85f823681b2df9ea68c4b",
+  "base_summary": {
+    "edge_count": 258,
+    "node_count": 175,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "add_node",
+      "alias": "G",
+      "node": {
+        "alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.8,
+          "user_goal": "把 Helmor 仓库里的 Workbench 主线做成一个身份清晰、合规、可靠、可被别的 agent 直接使用的产品",
+          "validation_plan": [
+            "ADR-0012 落库",
+            "release 产物含 NOTICE",
+            "fit-ledger 出现非零 resumeActions 与 withFootprints"
+          ],
+          "why_not_enough": "报告是探索不是规划；六个决策需用户确认；真实使用数据仍为零",
+          "why_this_task": "报告已核验四项容器耦合与合规暴露面，且六个决策点决定后续全部工作的形态"
+        },
+        "assumptions": [
+          "主线尚无真实用户（fit-ledger 无样本），优先级按「先让真实使用转起来」排，不按功能酷炫度排"
+        ],
+        "confidence": 0.8,
+        "context_tags": [
+          "absorption",
+          "compliance",
+          "workbench"
+        ],
+        "desired_outcomes": [
+          "每次 workbench 发布不再含未声明归属的 Apache-2.0 代码",
+          "UI 聊天在 claude 车道上产生真实足迹并在界面诚实标注可观测性",
+          "恢复卡上的分支动静（D3-Q2）落地",
+          "dispatch 有 worktree 预检与两阶段创建回滚",
+          "支线的四项容器耦合清零，退役条件可核查"
+        ],
+        "difficulty": "high",
+        "evidence": [
+          "docs/helmor-absorption-deep-exploration-2026-09-17.md 第 1.3/1.5/1.6/3.3/4.2/6.2/7 节"
+        ],
+        "kind": "global_task",
+        "non_goals": [
+          "整体接入 sidecar（等第二个需要足迹观测的 provider 出现）",
+          "一键创建 PR / 修 CI / inbox（编排器，ADR-0010 non-goals）",
+          "Monaco 编辑器、Tauri、SQLite 迁移",
+          "抽独立仓库（改名不抽仓，条件见退役决策）"
+        ],
+        "priority": 1,
+        "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
+        "requirements": [
+          "任何新功能先过 ADR-0010 一句取舍标准：服务哪类写者、走哪条通道、答的是不是「你上次看到的东西现在还成立吗」",
+          "主线保持 4 个运行时依赖、单文件编译二进制、纯文件系统持久化",
+          "删除支线任一目录前须重新核查样式/构建/发布/CI 引用并另立决策（ADR-0011）"
+        ],
+        "source_sessions": [
+          "session-2026-09-17-absorption-plan"
+        ],
+        "status": "in_progress",
+        "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
+        "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "D1",
+      "node": {
+        "confidence": 0.75,
+        "evidence": [
+          "报告 §1.3 四样容器耦合",
+          "§1.6 商标条款：Forks must ship under a distinct name"
+        ],
+        "kind": "decision",
+        "non_goals": [
+          "现在抽独立仓库（216 commit 历史、CI、release 全搬，收益是心理上的）"
+        ],
+        "requirements": [
+          "三个名字（helmor@0.46.0 / @baixu22/workbench / @helmor/workbench-ui）统一到非 Helmor 商标命名"
+        ],
+        "status": "proposed",
+        "summary": "推荐：根 package 改名（脱离 helmor 商标），@helmor/workbench-ui 改为 @baixu22/workbench-ui，README 叙事翻转为「workbench 是产品，src/src-tauri/sidecar 是冻结的参考实现」。抽仓的条件并入决策 6。",
+        "title": "决策 1：主线身份收口 = 保留 monorepo、改名、翻转叙事，不抽独立仓库"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "D2",
+      "node": {
+        "confidence": 0.8,
+        "evidence": [
+          "报告 §1.5 嵌入链",
+          "§1.6 表：dist 无 NOTICE/LICENSE、包声明 MIT"
+        ],
+        "kind": "decision",
+        "status": "proposed",
+        "summary": "推荐：断掉全仓唯一跨目录 import（color-theme.css），build 把 NOTICE 与 Apache-2.0 归属打进 dist/，包元数据改为 MIT + portions Apache-2.0。图标层生成脚本暂不拆（输出是 reicon 映射，非 Helmor 版权物）。",
+        "title": "决策 2：合规做到最小合规，但三件一次做完（内联 CSS + NOTICE/LICENSE 进 dist + 改名）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "D3",
+      "node": {
+        "confidence": 0.85,
+        "evidence": [
+          "packages/workbench/src/types/config.ts:81-83 default claude",
+          "docs/integrity-fixes-closeout-2026-09-16.md:138 UI 聊天走 HTTP 无足迹",
+          "memory: 本机无 live 凭据"
+        ],
+        "kind": "decision",
+        "status": "proposed",
+        "summary": "修正报告一处事实：chat.provider 默认值已是 claude（types/config.ts:83）。试用走 HTTP 是因为试用机无 claude 凭据。因此轻路不是改默认值，而是：在有凭据的机器上验证 claude 车道足迹链 + UI 诚实标注 readObservability。sidecar 的真实理由是多 provider 与可靠性基础设施，不是补足迹。",
+        "title": "决策 3：足迹命门走轻路；重路（sidecar）触发条件 = 出现第二个需要足迹观测的 provider"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "D4",
+      "node": {
+        "confidence": 0.8,
+        "evidence": [
+          "报告 §4.3 forge 内核条目",
+          "ADR-0010 七项 non-goals"
+        ],
+        "kind": "decision",
+        "status": "proposed",
+        "summary": "merge-guard 做预测、tribunal 做裁决，都在回答「上次看到的还成立吗」，未越界。PR 创建/CI 修复是「替你做完」，越界。non-goals 不变，不新开 ADR。",
+        "title": "决策 4：编排器边界不动；forge 只吸收 GithubResolution 预检枚举与 merge 方式协商模式"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "D5",
+      "node": {
+        "confidence": 0.7,
+        "evidence": [
+          "报告 §6.2",
+          "TF-0132 evidence：checkpoint schema 只有 workspot 字段；白名单无 thread.merged_back"
+        ],
+        "kind": "decision",
+        "status": "proposed",
+        "summary": "三候选中只有它设计完成、验收标准写好且有数据支持（restores 12 vs resumeActions 1）。TF-0132 被废止的两条硬理由必须先补：checkpoint schema 无线程/写者链接（Verifier 状态无生产者）、thread.merged_back 不在事件白名单。tribunal 前端入口与足迹可视化排后。",
+        "title": "决策 5：交互层先落 D3-Q2 分支动静（复活 TF-0132），前置补齐其废止原因"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "D6",
+      "node": {
+        "confidence": 0.8,
+        "evidence": [
+          "报告 §1.3",
+          "ADR-0011 删除前置要求"
+        ],
+        "kind": "decision",
+        "status": "proposed",
+        "summary": "四项：CSS 跨目录 import 断；图标层生成能在主线独立跑；postinstall 不再装 sidecar 依赖；pre-commit 对主线提交不跑 clippy。用户数是产品指标，与能否删目录无关。",
+        "title": "决策 6：支线退役条件 = 四项容器引用清零，而非用户数；满足后另立 ADR 删除 src/src-tauri/sidecar"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M1",
+      "node": {
+        "confidence": 0.75,
+        "difficulty": "medium",
+        "estimated_total_minutes": 480,
+        "kind": "milestone",
+        "priority": 1,
+        "status": "ready",
+        "summary": "每次 tag 都在放大暴露面，排最前。",
+        "title": "阶段 1：合规与身份收口（发布阻塞级）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T1.1",
+      "node": {
+        "acceptance_criteria": [
+          "grep -r '\\.\\./\\.\\./\\.\\./src' apps/workbench-ui/src 为 0",
+          "浅色/深色两套视觉对比截图无差异",
+          "bun run build 后 dist css 不含未使用的支线 token"
+        ],
+        "confidence": 0.8,
+        "difficulty": "low",
+        "estimated_total_minutes": 90,
+        "execution_hints": [
+          "先 grep index.css 现有映射表，只内联被引用的变量",
+          "保留 Apache-2.0 归属注释头"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "apps/workbench-ui/src/index.css 不再 @import ../../../src/",
+          "只搬 Base 层实际被映射的 token（--bg-base/--fg-default/--border-default/--status-* 等）与 shadcn 协议层 15 对"
+        ],
+        "status": "ready",
+        "title": "内联 color-theme.css 的 Base 层 token 子集进 workbench-ui，断掉全仓唯一跨目录 import"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T1.2",
+      "node": {
+        "acceptance_criteria": [
+          "ls packages/workbench/dist 含 NOTICE",
+          "release-workbench.yml 产物 zip 内含 NOTICE"
+        ],
+        "confidence": 0.85,
+        "difficulty": "low",
+        "estimated_total_minutes": 60,
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "packages/workbench/scripts/build.ts 把 NOTICE、LICENSE-APACHE 复制进 dist/",
+          "packages/workbench/package.json license 与 README 归属段更新",
+          "npm 包 files 字段包含这两个文件"
+        ],
+        "status": "ready",
+        "title": "发布物附 NOTICE 与 Apache-2.0 归属；包元数据 license 改为 MIT + portions Apache-2.0"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T1.3",
+      "node": {
+        "acceptance_criteria": [
+          "grep -rn '@helmor/workbench-ui' 全仓（排除 node_modules/bun.lock 外）为 0",
+          "bun install 后 bun.lock 更新且 typecheck 通过"
+        ],
+        "confidence": 0.75,
+        "difficulty": "low",
+        "estimated_total_minutes": 90,
+        "execution_hints": [
+          "改名后核查 scripts/tag-workbench-release.mjs、release-workbench.yml、ci.yml 的 workspace 过滤名"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "根 package.json name 不含 helmor",
+          "apps/workbench-ui/package.json 改为 @baixu22/workbench-ui",
+          "根 README 首段：workbench 是产品，src/src-tauri/sidecar 为冻结参考实现（引 ADR-0003/0011）"
+        ],
+        "status": "ready",
+        "title": "改名：根 package 与 @helmor/workbench-ui 脱离 Helmor 商标；README 叙事翻转"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T1.4",
+      "node": {
+        "acceptance_criteria": [
+          "四个 decision 节点转 done 并引用该 ADR"
+        ],
+        "confidence": 0.85,
+        "difficulty": "low",
+        "estimated_total_minutes": 60,
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "docs/decisions/0012-*.md",
+          "标注与 ADR-0011 的取代/补充关系",
+          "写明 sidecar 接入触发条件与四项退役清零条件"
+        ],
+        "status": "ready",
+        "title": "ADR-0012：主线身份、合规解法、重路触发条件与退役条件（固化决策 1/2/3/6）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T1.5",
+      "node": {
+        "acceptance_criteria": [
+          "ci.yml 在分支上绿",
+          "release workflow 用 workflow_dispatch 干跑四平台交叉编译不推 tag"
+        ],
+        "confidence": 0.7,
+        "difficulty": "low",
+        "estimated_total_minutes": 60,
+        "kind": "subtask",
+        "priority": 2,
+        "status": "proposed",
+        "title": "改名后发版链回归：tag 脚本 + release-workbench.yml + ci.yml 干跑"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M2",
+      "node": {
+        "confidence": 0.7,
+        "difficulty": "medium",
+        "estimated_total_minutes": 360,
+        "kind": "milestone",
+        "priority": 1,
+        "status": "proposed",
+        "summary": "默认 provider 已是 claude，本阶段不改默认值；做验证与可视化诚实。",
+        "title": "阶段 2：足迹命门轻路——验证 claude 车道 + UI 诚实标注可观测性"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T2.1",
+      "node": {
+        "acceptance_criteria": [
+          "stats --json 出现非零 withFootprints",
+          "同一试用在 HTTP provider 下仍为 0（对照组）"
+        ],
+        "assumptions": [
+          "本机无 live 凭据，需在有凭据的机器或临时凭据下跑"
+        ],
+        "confidence": 0.6,
+        "difficulty": "low",
+        "estimated_total_minutes": 90,
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "复用受控试用脚本（d419223 UI 车道）",
+          "provider=claude 时线程 withFootprints ≥ 1",
+          "记录到 docs/fit-ledger.md"
+        ],
+        "status": "proposed",
+        "title": "在有 claude 凭据的环境验证 UI chat 走 claude 车道产生足迹（footprintSeq > 0）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T2.2",
+      "node": {
+        "acceptance_criteria": [
+          "HTTP 线程有标注，claude 线程无标注（快照测试）",
+          "GET /api 返回字段不含凭据"
+        ],
+        "confidence": 0.75,
+        "difficulty": "low",
+        "estimated_total_minutes": 120,
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "agentContextInherited 与 premiseInherited 分开展示，不合成布尔",
+          "无证据不渲染：可观测线程不加任何标签"
+        ],
+        "status": "proposed",
+        "title": "UI 线程头显示 provider 与 readObservability，unobservable 时明示「本线程读集不可观测、不参与继承」"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T2.3",
+      "node": {
+        "confidence": 0.8,
+        "difficulty": "low",
+        "estimated_total_minutes": 45,
+        "kind": "subtask",
+        "priority": 3,
+        "status": "proposed",
+        "title": "README 与 provider 设置面板写明两条车道的观测能力差异与选择建议"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M3",
+      "node": {
+        "confidence": 0.6,
+        "difficulty": "low",
+        "estimated_total_minutes": 120,
+        "kind": "milestone",
+        "priority": 2,
+        "status": "proposed",
+        "summary": "阶段 1/2 之后才第一次有真实足迹数据；D3-Q2 的 fit 门需要这个基线。与 TF-0159/0161（L1 分母与地标投影）在同一观察窗内并行。",
+        "title": "阶段 3：一周自用观察窗——首次产生带足迹的真实读数"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T3.1",
+      "node": {
+        "acceptance_criteria": [
+          "fit-ledger 新增一行带日期与四个读数",
+          "恢复卡展开率有分母（restores）与分子（resumeActions）"
+        ],
+        "confidence": 0.6,
+        "difficulty": "low",
+        "estimated_total_minutes": 120,
+        "kind": "task",
+        "priority": 2,
+        "status": "proposed",
+        "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M4",
+      "node": {
+        "confidence": 0.65,
+        "difficulty": "high",
+        "estimated_total_minutes": 1200,
+        "evidence": [
+          "docs/fable-brief/05-review/D3-Q2-merge-back.md"
+        ],
+        "kind": "milestone",
+        "non_goals": [
+          "L2 内容合并（LLM 语义合并一致率 55–59%）"
+        ],
+        "priority": 1,
+        "requirements": [
+          "无分歧不渲染、无证据不渲染",
+          "叙事折叠标「由足迹拼接」且不注入模型",
+          "模型侧注入 ≤300 token、每分支每次 ≤1 行",
+          "从不出现「完成」二字"
+        ],
+        "status": "proposed",
+        "summary": "设计完成度最高、只差实现。前提账本向人交付价值的瞬间（R2′）。",
+        "title": "阶段 4：D3-Q2 分支动静——恢复卡上的 L1 结构摘要（复活 TF-0132）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T4.1",
+      "node": {
+        "acceptance_criteria": [
+          "chat/threads.test 与 blackboard/events.test 新增用例通过",
+          "doctor 对旧 checkpoint 不报错"
+        ],
+        "confidence": 0.7,
+        "difficulty": "medium",
+        "estimated_total_minutes": 240,
+        "evidence": [
+          "TF-0132 废止证据两条"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "checkpoint schema 增加��选 threadId/writerId，旧数据兼容",
+          "THREAD_EVENT_TYPES 加 thread.merged_back，validateThreadEvent 仍拒绝结论键",
+          "方向性不变量不破：会话事件引用世界事件，反向禁止"
+        ],
+        "status": "proposed",
+        "title": "前置：checkpoint 与 thread/writer 链接（Verifier 状态生产者）+ thread.merged_back 进事件白名单"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T4.2",
+      "node": {
+        "acceptance_criteria": [
+          "测试断言渲染输出 refs 完整性",
+          "空分支零痕迹"
+        ],
+        "confidence": 0.65,
+        "difficulty": "high",
+        "estimated_total_minutes": 360,
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "每行事实带 refs（seq / ledger 条目 / diff）",
+          "R3 措辞互斥：「未经 Verifier」与 checkpoint id 不同时出现",
+          "有 verified@ 必并列「分支自身 k 个前提已失效」"
+        ],
+        "status": "proposed",
+        "title": "L1 摘要生成：账本差 · 写集(N 文件, hash) · 接口 Δ · merge-guard 预测 · Verifier 状态 · 失效前提数，refs 全溯源"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T4.3",
+      "node": {
+        "acceptance_criteria": [
+          "dismiss 后模型侧注入队列为空（测试）",
+          "熔断后 stats 有降级记录且可恢复"
+        ],
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 180,
+        "kind": "task",
+        "priority": 2,
+        "status": "proposed",
+        "title": "渲染门与熔断：≥3 分支合并一行、dismiss ≤2s 清注入队列、dismiss 率 >50% 自动降 L0"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T4.4",
+      "node": {
+        "acceptance_criteria": [
+          "展开/被点比例可从 stats --json 读出"
+        ],
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 240,
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "apps/workbench-ui resume-card.tsx 加法式扩展",
+          "埋点进交互事件日志供 fit 指标计算"
+        ],
+        "status": "proposed",
+        "title": "前端：resume-card 展示分支动静行 + 展开区叙事 + 埋点（展开/点击比例）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T4.5",
+      "node": {
+        "acceptance_criteria": [
+          "adopt 后回退快照逐项一致（测试）"
+        ],
+        "confidence": 0.55,
+        "difficulty": "medium",
+        "estimated_total_minutes": 180,
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "唯一显式手势",
+          "无快照明确拒绝（runtime/rollback 纪律）"
+        ],
+        "status": "proposed",
+        "title": "adopt「以分支为主线」手势：拓扑操作、改身份不改内容、快照可逆（复活 TF-0146）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M5",
+      "node": {
+        "confidence": 0.65,
+        "difficulty": "high",
+        "estimated_total_minutes": 1500,
+        "kind": "milestone",
+        "priority": 2,
+        "status": "proposed",
+        "summary": "不需要 sidecar，直接提升可靠性。只有 git ops 与 pipeline collapse 是用户能感知的，排前。",
+        "title": "阶段 5：纯 TS 零依赖的可靠性吸收（支线 Rust → 主线 TS 翻译）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.1",
+      "node": {
+        "acceptance_criteria": [
+          "git/ 从 0 测试到有覆盖（临时仓库夹具）",
+          "两工位抢同一分支的场景测试被拒绝"
+        ],
+        "confidence": 0.7,
+        "difficulty": "medium",
+        "estimated_total_minutes": 300,
+        "evidence": [
+          "src-tauri/src/git/ops.rs 对应函数",
+          "报告 §4.2 最大空白"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "git/ 模块从 2 文件 4 函数扩展，保持 git(args, cwd) 永不抛错约定",
+          "dispatch 在 createWorktree 前检查分支是否已被其他 worktree 持有，结构化拒绝",
+          "StashOutcome = clean | conflict 显式，不靠 exit code"
+        ],
+        "status": "proposed",
+        "title": "git ops 深化：worktree_holding_branch / list_worktrees / remove_worktree / 结构化 stash 结局，dispatch 前预检分支占用"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.2",
+      "node": {
+        "acceptance_criteria": [
+          "Phase1/Phase2 之间注入崩溃后 doctor 无孤儿 workspot",
+          "回滚路径有测试"
+        ],
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 300,
+        "evidence": [
+          "src-tauri/src/workspace/lifecycle.rs、branching.rs rollback_continue_branch"
+        ],
+        "kind": "task",
+        "priority": 1,
+        "requirements": [
+          "Phase1 只写状态行，Phase2 才建 worktree",
+          "git 操作失败回滚状态；状态写失败回滚 git",
+          "runOnce 启动时清理 Initializing 残留"
+        ],
+        "status": "proposed",
+        "title": "dispatch 两阶段创建 + 双向回滚：Initializing 状态行 → 建 worktree → 激活；崩溃可恢复、启动可清理"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.3",
+      "node": {
+        "acceptance_criteria": [
+          "grep provider === 字面量比较为 0",
+          "测试矩阵覆盖四种 provider"
+        ],
+        "confidence": 0.75,
+        "difficulty": "low",
+        "estimated_total_minutes": 150,
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "单一 capabilities 表（observesFootprint / supportsFork / supportsStreamJson / requiresApiKey）",
+          "后端与 UI 读同一份"
+        ],
+        "status": "proposed",
+        "title": "ProviderCapabilities 数据化能力表替换散落的 provider 判断"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.4",
+      "node": {
+        "acceptance_criteria": [
+          "模拟父进程消失/管道损坏两种场景的测试区分结局"
+        ],
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 200,
+        "evidence": [
+          "sidecar/src/index.ts 心跳与双信号",
+          "src-tauri agents/streaming HEARTBEAT_TIMEOUT"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "接收端在 supervisor/ 实现（支线只有发送端）",
+          "常驻 claude 进程超时判死并结构化上报，不静默"
+        ],
+        "status": "proposed",
+        "title": "supervisor 进程存活心跳：15s 心跳 + 45s 超时接收端 + EPIPE vs stdin-EOF 双信号"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.5",
+      "node": {
+        "acceptance_criteria": [
+          "用 tests/fixtures/streams 样本做快照测试",
+          "UI 每按键 IPC 体积下降可量化"
+        ],
+        "confidence": 0.6,
+        "difficulty": "medium",
+        "estimated_total_minutes": 300,
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "折叠规则对齐 Claude Code TUI（pattern 去重 + 文件计数）",
+          "每种新事件类型必须做一次显式渲染决策（Finalized/StreamingDelta/NoOp）"
+        ],
+        "status": "proposed",
+        "title": "claude-router 折叠与增量：连续 read/search/shell 折叠成摘要行；终态全量、delta 只发尾部"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.6",
+      "node": {
+        "confidence": 0.65,
+        "difficulty": "low",
+        "estimated_total_minutes": 120,
+        "kind": "subtask",
+        "priority": 3,
+        "status": "proposed",
+        "title": "turn id 预分配：流式事件 id 与 messages.jsonl 持久化 id 对齐，前端免二次匹配"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T5.7",
+      "node": {
+        "confidence": 0.6,
+        "difficulty": "low",
+        "estimated_total_minutes": 120,
+        "kind": "subtask",
+        "non_goals": [
+          "创建 PR、修 CI、inbox"
+        ],
+        "priority": 3,
+        "status": "proposed",
+        "title": "merge-guard 吸收 forge 模式：Resolution 预检枚举（Ready/Unavailable/Unauthenticated）+ merge 方式协商"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M6",
+      "node": {
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 600,
+        "kind": "milestone",
+        "priority": 2,
+        "status": "proposed",
+        "summary": "代价极低、过尺子，可能是最低成本的真实使用来源。最该抄的是响应体积控制。",
+        "title": "阶段 6：MCP server——让 Claude Code / Cursor 直接调用前提账本（R2 通道）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T6.1",
+      "node": {
+        "acceptance_criteria": [
+          "workbench mcp 子命令可被 MCP Inspector 握手",
+          "不引入 SDK 依赖"
+        ],
+        "confidence": 0.7,
+        "difficulty": "medium",
+        "estimated_total_minutes": 200,
+        "evidence": [
+          "src-tauri/src/mcp/mod.rs 142 行"
+        ],
+        "kind": "task",
+        "priority": 2,
+        "status": "proposed",
+        "title": "stdio JSON-RPC 2.0 骨架：initialize / ping / tools/list / tools/call，零新依赖，直接 openBlackboard"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T6.2",
+      "node": {
+        "acceptance_criteria": [
+          "每个工具有体积上限测试"
+        ],
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 300,
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "工具只回答三条通道内的问题，不暴露编排动作",
+          "响应 ≤2000 字符默认截断"
+        ],
+        "status": "proposed",
+        "title": "工具目录：premises 查询 / 足迹读取 / 恢复卡 / tribunal 列表 / 通知投递；响应体积控制（白名单 + 去 null + 截断）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T6.3",
+      "node": {
+        "confidence": 0.7,
+        "difficulty": "low",
+        "estimated_total_minutes": 100,
+        "kind": "subtask",
+        "priority": 3,
+        "status": "proposed",
+        "title": "Claude Code 与 Cursor 接入验证 + README 配置片段"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "M7",
+      "node": {
+        "confidence": 0.65,
+        "difficulty": "medium",
+        "estimated_total_minutes": 900,
+        "kind": "milestone",
+        "priority": 2,
+        "status": "proposed",
+        "summary": "四项容器耦合逐项清零 + 删除已废止节点对应的残留代码与无引用的支线外围目录。每项删除前核查引用（ADR-0011）。",
+        "title": "阶段 7：容器耦合清零与不必要代码删除（支线退役准备）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.1",
+      "node": {
+        "acceptance_criteria": [
+          "主线开发者 bun install 不再拉 agent SDK",
+          "新增 install:legacy 脚本供支线用"
+        ],
+        "confidence": 0.8,
+        "difficulty": "low",
+        "estimated_total_minutes": 60,
+        "kind": "task",
+        "priority": 2,
+        "status": "proposed",
+        "title": "postinstall 去掉 cd sidecar && bun install 与 sccache 提示；支线依赖改为按需脚本"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.2",
+      "node": {
+        "acceptance_criteria": [
+          "仅改 packages/ 或 apps/workbench-ui 的提交 hook 耗时不含 cargo"
+        ],
+        "confidence": 0.8,
+        "difficulty": "low",
+        "estimated_total_minutes": 60,
+        "kind": "task",
+        "priority": 2,
+        "status": "proposed",
+        "title": "pre-commit / lint-staged 按路径分车道：主线提交不触发 clippy/cargo fmt"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.3",
+      "node": {
+        "acceptance_criteria": [
+          "node scripts/gen-icon-layer.mjs --target workbench-ui 后 git status 不含 src/"
+        ],
+        "confidence": 0.8,
+        "difficulty": "low",
+        "estimated_total_minutes": 60,
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "映射表仍单一来源，不拆两份"
+        ],
+        "status": "proposed",
+        "title": "gen-icon-layer.mjs 参数化输出目标：主线可只生成 workbench-ui 图标层，不再顺带改写 src/ 184 文件"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.4",
+      "node": {
+        "acceptance_criteria": [
+          "扫描报告归档到 .agent-contexts/",
+          "packages/workbench 与 apps/workbench-ui 无未引用导出"
+        ],
+        "confidence": 0.6,
+        "difficulty": "medium",
+        "estimated_total_minutes": 240,
+        "kind": "task",
+        "priority": 2,
+        "requirements": [
+          "先扫描再删；每处删除附引用为 0 的证据",
+          "测试与类型检查全绿"
+        ],
+        "status": "proposed",
+        "title": "删除已废止节点的残留代码：L3（TF-0099/0100/0101）与旧 merge-back stub，以及主线未引用导出（knip/ts-prune 扫描）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.5",
+      "node": {
+        "acceptance_criteria": [
+          "ci.yml / biome.json / 根 workspaces / tsconfig 无残留引用",
+          "bun install、typecheck、test 三套全绿"
+        ],
+        "confidence": 0.65,
+        "difficulty": "low",
+        "estimated_total_minutes": 90,
+        "evidence": [
+          "报告 §1.2：两目录 0 commit，支线外围"
+        ],
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "ADR-0011：删除前核查样式/构建/发布/CI 引用",
+          "决策记录并入 ADR-0012 或独立 ADR"
+        ],
+        "status": "proposed",
+        "title": "核查引用后删除支线外围 apps/marketing 与 apps/registry（官网、手机配对服务）"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.6",
+      "node": {
+        "acceptance_criteria": [
+          "ADR-0013 落库；未满足则记录缺项，不删"
+        ],
+        "confidence": 0.6,
+        "difficulty": "low",
+        "estimated_total_minutes": 90,
+        "kind": "task",
+        "priority": 3,
+        "requirements": [
+          "核查清单逐项附证据：CSS import、图标生成、postinstall、pre-commit",
+          "保留冻结 tag 或分支作为行为参考"
+        ],
+        "status": "proposed",
+        "title": "退役闸门核查：四项耦合清零后另立 ADR-0013，决定删除 src/、src-tauri/、sidecar/"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "T7.7",
+      "node": {
+        "confidence": 0.8,
+        "difficulty": "low",
+        "estimated_total_minutes": 30,
+        "kind": "follow_up",
+        "priority": 4,
+        "status": "proposed",
+        "title": "根目录杂物治理：*.log、dist/、worktrees/ 进 .gitignore 或清理；.agent-contexts 归档口径"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "R1",
+      "node": {
+        "confidence": 0.8,
+        "kind": "risk",
+        "status": "proposed",
+        "summary": "缓解：决策 3 把触发条件写进 ADR；接入形态只允许 spawn-sidecar，不允许 import SDK 进主包。",
+        "title": "风险：以「补足迹」为由整体接入 sidecar，破坏零依赖单文件二进制定位"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "R2",
+      "node": {
+        "confidence": 0.75,
+        "kind": "risk",
+        "status": "proposed",
+        "summary": "缓解：T1.5 干跑发版链。",
+        "title": "风险：改名后 release/CI 的 workspace 过滤名与 npm publish 名残留旧值"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "R3",
+      "node": {
+        "confidence": 0.7,
+        "kind": "risk",
+        "status": "proposed",
+        "summary": "这是设计内建的负样本出口，不是失败；若触发则记录到 fit-ledger 并回到阶段 3 数据重新判断。",
+        "title": "风险：D3-Q2 复活后 dismiss 率 >50%，被自身熔断降回 L0"
+      }
+    },
+    {
+      "action": "add_node",
+      "alias": "R4",
+      "node": {
+        "confidence": 0.75,
+        "kind": "risk",
+        "status": "proposed",
+        "summary": "缓解：每项删除三套测试 + typecheck + lint 全绿为验收。",
+        "title": "风险：删除 apps/marketing、apps/registry 或残留代码时 CI/biome/tsconfig 引用未清导致全仓构建断"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "主线收口服务前提守护者产品目标"
+      },
+      "from": "G",
+      "to": "TF-0057",
+      "type": "contributes_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.85,
+        "reason": "ADR-0011 保留支线的后续；本目标给出退役条件"
+      },
+      "from": "G",
+      "to": "TF-0055",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策点 1"
+      },
+      "from": "D1",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策点 2"
+      },
+      "from": "D2",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策点 3"
+      },
+      "from": "D3",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策点 4"
+      },
+      "from": "D4",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策点 5"
+      },
+      "from": "D5",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策点 6"
+      },
+      "from": "D6",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "MVP 期冻结 GUI 的处置进入下一阶段：改名与叙事翻转"
+      },
+      "from": "D1",
+      "to": "TF-0015",
+      "type": "supersedes"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "复活 merge-back L1，前置补齐其废止原因"
+      },
+      "from": "D5",
+      "to": "TF-0132",
+      "type": "supersedes"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.6,
+        "reason": "adopt 手势随 D3-Q2 一起重新决定"
+      },
+      "from": "D5",
+      "to": "TF-0146",
+      "type": "supersedes"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 1"
+      },
+      "from": "M1",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2"
+      },
+      "from": "M2",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3"
+      },
+      "from": "M3",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 4"
+      },
+      "from": "M4",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 5"
+      },
+      "from": "M5",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 6"
+      },
+      "from": "M6",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 7"
+      },
+      "from": "M7",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "风险"
+      },
+      "from": "R1",
+      "to": "G",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "风险"
+      },
+      "from": "R2",
+      "to": "M1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "风险"
+      },
+      "from": "R3",
+      "to": "M4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "风险"
+      },
+      "from": "R4",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "同一类重依赖风险"
+      },
+      "from": "R1",
+      "to": "TF-0019",
+      "type": "related_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "合规三件套之一"
+      },
+      "from": "T1.1",
+      "to": "M1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "合规三件套之二"
+      },
+      "from": "T1.2",
+      "to": "M1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "合规三件套之三"
+      },
+      "from": "T1.3",
+      "to": "M1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策固化"
+      },
+      "from": "T1.4",
+      "to": "M1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "改名回归"
+      },
+      "from": "T1.5",
+      "to": "M1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "改名后才有回归对象"
+      },
+      "from": "T1.5",
+      "to": "T1.3",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "ADR 固化决策 1"
+      },
+      "from": "T1.4",
+      "to": "D1",
+      "type": "clarifies"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "ADR 固化决策 2"
+      },
+      "from": "T1.4",
+      "to": "D2",
+      "type": "clarifies"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "ADR 写入重路触发条件"
+      },
+      "from": "T1.4",
+      "to": "D3",
+      "type": "clarifies"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "ADR 写入退役条件"
+      },
+      "from": "T1.4",
+      "to": "D6",
+      "type": "clarifies"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "四项容器耦合之一（CSS）在此清零"
+      },
+      "from": "T1.1",
+      "to": "M7",
+      "type": "contributes_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "验证"
+      },
+      "from": "T2.1",
+      "to": "M2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "诚实标注"
+      },
+      "from": "T2.2",
+      "to": "M2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "文档"
+      },
+      "from": "T2.3",
+      "to": "M2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "可观测性字段应来自 capabilities 表"
+      },
+      "from": "T2.2",
+      "to": "T5.3",
+      "type": "related_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "观察窗"
+      },
+      "from": "T3.1",
+      "to": "M3",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "没有足迹的观察窗读数无意义"
+      },
+      "from": "T3.1",
+      "to": "T2.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "同一观察窗内的 L1 分母切换"
+      },
+      "from": "T3.1",
+      "to": "TF-0159",
+      "type": "related_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "同一观察窗内的地标投影修正"
+      },
+      "from": "T3.1",
+      "to": "TF-0161",
+      "type": "related_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "两周观察窗口的延续"
+      },
+      "from": "M3",
+      "to": "TF-0141",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "前置"
+      },
+      "from": "T4.1",
+      "to": "M4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "核心"
+      },
+      "from": "T4.2",
+      "to": "M4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "门与熔断"
+      },
+      "from": "T4.3",
+      "to": "M4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "前端"
+      },
+      "from": "T4.4",
+      "to": "M4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "adopt"
+      },
+      "from": "T4.5",
+      "to": "M4",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "Verifier 状态需要生产者"
+      },
+      "from": "T4.2",
+      "to": "T4.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "先有摘要再有门"
+      },
+      "from": "T4.3",
+      "to": "T4.2",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "前端消费后端摘要"
+      },
+      "from": "T4.4",
+      "to": "T4.2",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "adopt 是分支动静上的唯一显式手势"
+      },
+      "from": "T4.5",
+      "to": "T4.4",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "confidence": 0.6,
+        "reason": "fit 门需要恢复卡展开率基线"
+      },
+      "from": "M4",
+      "to": "T3.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "merge-guard 预测复用 ConE + merge-tree"
+      },
+      "from": "T4.2",
+      "to": "TF-0079",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "恢复卡 R10 兄弟分支规则的结构化升级"
+      },
+      "from": "T4.2",
+      "to": "TF-0151",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "git ops"
+      },
+      "from": "T5.1",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "两阶段"
+      },
+      "from": "T5.2",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "capabilities"
+      },
+      "from": "T5.3",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "心跳"
+      },
+      "from": "T5.4",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "collapse"
+      },
+      "from": "T5.5",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "turn id"
+      },
+      "from": "T5.6",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "forge 模式"
+      },
+      "from": "T5.7",
+      "to": "M5",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "两阶段创建依赖 worktree 预检与移除"
+      },
+      "from": "T5.2",
+      "to": "T5.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "派发链路健壮性的延续"
+      },
+      "from": "T5.1",
+      "to": "TF-0117",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.8,
+        "reason": "supervisor 抽取的延续"
+      },
+      "from": "T5.4",
+      "to": "TF-0063",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "决策 4 唯一允许吸收的 forge 内容"
+      },
+      "from": "T5.7",
+      "to": "D4",
+      "type": "clarifies"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "骨架"
+      },
+      "from": "T6.1",
+      "to": "M6",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "工具"
+      },
+      "from": "T6.2",
+      "to": "M6",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "验证"
+      },
+      "from": "T6.3",
+      "to": "M6",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": ""
+      },
+      "from": "T6.2",
+      "to": "T6.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": ""
+      },
+      "from": "T6.3",
+      "to": "T6.2",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.7,
+        "reason": "与 hooks 分发同属「让别的 agent 用起来」"
+      },
+      "from": "M6",
+      "to": "TF-0105",
+      "type": "related_to"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "耦合之三"
+      },
+      "from": "T7.1",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "耦合之四"
+      },
+      "from": "T7.2",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "耦合之二"
+      },
+      "from": "T7.3",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "残留代码删除"
+      },
+      "from": "T7.4",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "外围目录删除"
+      },
+      "from": "T7.5",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "退役闸门"
+      },
+      "from": "T7.6",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "杂物"
+      },
+      "from": "T7.7",
+      "to": "M7",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "耦合一清零"
+      },
+      "from": "T7.6",
+      "to": "T1.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "耦合三清零"
+      },
+      "from": "T7.6",
+      "to": "T7.1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "耦合四清零"
+      },
+      "from": "T7.6",
+      "to": "T7.2",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": true,
+        "reason": "耦合二清零"
+      },
+      "from": "T7.6",
+      "to": "T7.3",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "执行决策 6 的核查"
+      },
+      "from": "T7.6",
+      "to": "D6",
+      "type": "clarifies"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.6,
+        "reason": "清理该已废止里程碑的残留"
+      },
+      "from": "T7.4",
+      "to": "TF-0099",
+      "type": "related_to"
+    }
+  ],
+  "created_at": "2026-09-17T14:32:42.008067Z",
+  "proposal_id": "TFP-2026-09-17-absorption-plan",
+  "rationale": "基于 docs/helmor-absorption-deep-exploration-2026-09-17.md 第七部分的六个决策点，建立主线（workbench）从 Helmor 容器收口、吸收支线可靠性能力、并清理不必要代码的完整节点规划。六个决策以 decision 节点记录推荐答案，待用户确认后由 ADR-0012 固化。",
+  "session_id": "session-2026-09-17-absorption-plan",
+  "status": "applied"
+}

@@ -1,13 +1,17 @@
 /*
- * Workbench dashboard styles. Reuses the repo's REAL theme file (single source
- * of truth — no copied token drift) and maps the shadcn protocol + the Base
- * subset the dashboard consumes into Tailwind utilities, mirroring the root
- * App.css wiring.
+ * Workbench dashboard styles. The theme lives in ./styles/theme.css — a
+ * vendored subset of the legacy Helmor theme, carrying only the Base and
+ * shadcn-protocol tokens this dashboard consumes (see that file's origin and
+ * change notice). This file maps those tokens into Tailwind utilities.
+ *
+ * No cross-directory import into the legacy `src/` container: the dashboard
+ * owns its own tokens so that container can be retired
+ * (docs/decisions/0013-*.md, decision 6).
  */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
-@import "../../../src/styles/color-theme.css";
+@import "./styles/theme.css";
 @import "./styles/interactions.css";
 @import "./styles/chat.css";
 

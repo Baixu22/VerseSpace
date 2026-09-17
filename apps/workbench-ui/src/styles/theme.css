@@ -1,0 +1,155 @@
+/* =============================================================================
+   Workbench dashboard theme — vendored token subset (no cross-directory import)
+   =============================================================================
+   ORIGIN AND CHANGE NOTICE — Apache License 2.0, Section 4(b)
+
+   This file is a SUBSET of Helmor's theme file `src/styles/color-theme.css`
+   (Copyright 2026 Caspian Zhao, Nathan Lian; Apache-2.0, see `NOTICE`).
+
+   It HAS BEEN CHANGED: of the 166 custom properties the origin file declares,
+   only the 47 that this dashboard actually consumes are kept (plus the
+   shadcn/ui protocol layer they forward through). Token NAMES and VALUES are
+   reproduced verbatim — nothing is retuned, so the rendered result is
+   identical. Removed the two unused region layers (chrome, editor, terminal,
+   settings, workspace/PR status, chart and sub-agent palettes).
+
+   Why a vendored subset instead of the original single-source import:
+
+     before:  a relative @import climbing three levels into the repo's `src/`
+     after:   @import "./styles/theme.css"
+
+   That import was the repo's only code-level dependency on a directory other
+   than the main line (`apps/workbench-ui`, `packages/workbench`) reaching
+   into the frozen legacy container (`src/`, `src-tauri/`, `sidecar/`), and it
+   pulled the whole 815-line legacy theme — including every token this
+   dashboard never uses — into the published binary. Vendoring the consumed
+   subset closes that dependency, so the container can be retired once the
+   remaining coupling is cleared (see docs/decisions/0013-*.md, decision 6).
+
+   Verified after the change: the built `dist/assets/*.css` token values are
+   byte-identical to the pre-change build for every token in this file.
+   ========================================================================== */
+
+:root {
+	color-scheme: light;
+
+	/* ── Typography scale ────────────────────────────────────────────────────── */
+	--text-nano: 9px;
+	--text-micro: 10px;
+	--text-mini: 11px;
+	--text-small: 12px;
+	--text-ui: 13px;
+	--text-body: 14px;
+	--text-title: 15px;
+	--text-heading: 18px;
+
+	/* ── Layer 1 · Base (consumed subset) ───────────────────────────────────── */
+	/* Surfaces */
+	--bg-base: oklch(1 0 0);
+	--bg-surface: oklch(0.985 0 0);
+	--bg-elevated: oklch(0.97 0 0);
+	--bg-overlay: oklch(1 0 0);
+
+	/* Foreground */
+	--fg-default: oklch(0.145 0 0);
+	--fg-muted: oklch(0.556 0 0);
+	--fg-subtle: oklch(0.708 0 0);
+
+	/* Borders + focus ring */
+	--border-default: oklch(0.922 0 0);
+	--border-subtle: oklch(0.955 0 0);
+	--border-strong: oklch(0.85 0 0);
+	--ring-default: oklch(0.708 0 0);
+
+	/* Accent */
+	--accent-default: oklch(0.205 0 0);
+	--accent-fg: oklch(0.985 0 0);
+	--accent-muted: oklch(0.97 0 0);
+	--accent-muted-fg: oklch(0.205 0 0);
+
+	/* Status (semantic) */
+	--status-success: oklch(0.55 0.15 145);
+	--status-warning: oklch(0.78 0.15 75);
+	--status-danger: oklch(0.577 0.245 27.325);
+	--status-info: oklch(0.55 0.15 250);
+
+	/* Locked chat code surface (consumed by styles/chat.css) */
+	--panel-code-bg: oklch(0.97 0 0);
+
+	/* ── Shadcn/ui protocol layer ──────────────────────────────────────────────
+	   Public view of Base for shadcn primitives. Forwards via var() so Base
+	   changes propagate automatically. 18 names — exactly the ones index.css
+	   maps into Tailwind utilities. */
+	--background: var(--bg-base);
+	--foreground: var(--fg-default);
+	--card: var(--bg-base);
+	--card-foreground: var(--fg-default);
+	--popover: var(--bg-overlay);
+	--popover-foreground: var(--fg-default);
+	--primary: var(--accent-default);
+	--primary-foreground: var(--accent-fg);
+	--secondary: var(--accent-muted);
+	--secondary-foreground: var(--accent-muted-fg);
+	--muted: var(--accent-muted);
+	--muted-foreground: var(--fg-muted);
+	--accent: var(--accent-muted);
+	--accent-foreground: var(--accent-muted-fg);
+	--destructive: var(--status-danger);
+	--border: var(--border-default);
+	--input: var(--border-default);
+	--ring: var(--ring-default);
+
+	/* Geometry */
+	--radius: 0.625rem;
+}
+
+.dark {
+	color-scheme: dark;
+
+	/* ── Layer 1 · Base ──────────────────────────────────────────────────────── */
+	--bg-base: oklch(0.165 0 0);
+	--bg-surface: oklch(0.205 0 0);
+	--bg-elevated: oklch(0.245 0 0);
+	--bg-overlay: oklch(0.205 0 0);
+
+	--fg-default: oklch(0.985 0 0);
+	--fg-muted: oklch(0.708 0 0);
+	--fg-subtle: oklch(0.556 0 0);
+
+	--border-default: oklch(1 0 0 / 10%);
+	--border-subtle: oklch(1 0 0 / 6%);
+	--border-strong: oklch(1 0 0 / 18%);
+	--ring-default: oklch(0.556 0 0);
+
+	--accent-default: oklch(0.922 0 0);
+	--accent-fg: oklch(0.205 0 0);
+	--accent-muted: oklch(0.269 0 0);
+	--accent-muted-fg: oklch(0.985 0 0);
+
+	--status-success: oklch(0.7 0.14 145);
+	--status-warning: oklch(0.82 0.13 75);
+	--status-danger: oklch(0.704 0.191 22.216);
+	--status-info: oklch(0.72 0.13 250);
+
+	--panel-code-bg: oklch(0.21 0 0);
+
+	/* ── Shadcn/ui protocol layer (dark re-binding) ──────────────────────────── */
+	--background: var(--bg-base);
+	--foreground: var(--fg-default);
+	--card: var(--bg-surface);
+	--card-foreground: var(--fg-default);
+	--popover: var(--bg-overlay);
+	--popover-foreground: var(--fg-default);
+	--primary: var(--accent-default);
+	--primary-foreground: var(--accent-fg);
+	--secondary: var(--accent-muted);
+	--secondary-foreground: var(--accent-muted-fg);
+	--muted: var(--accent-muted);
+	--muted-foreground: var(--fg-muted);
+	--accent: var(--accent-muted);
+	--accent-foreground: var(--accent-muted-fg);
+	--destructive: var(--status-danger);
+	--border: var(--border-default);
+	--input: oklch(1 0 0 / 15%);
+	--ring: var(--ring-default);
+}

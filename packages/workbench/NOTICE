@@ -1,0 +1,81 @@
+@baixu22/workbench — NOTICE
+================================================================================
+
+MIT-licensed package with Apache-2.0 portions. Read together with LICENSE
+(MIT — the package itself) and LICENSE-APACHE (Apache-2.0 — the incorporated
+portions). Both files ship in `dist/` and in the npm tarball.
+
+
+Portions derived from Helmor (Apache-2.0)
+--------------------------------------------------------------------------------
+
+Copyright 2026 Caspian Zhao, Nathan Lian
+
+The following part of this product is derived from the Helmor project, which is
+licensed under the Apache License, Version 2.0:
+
+  apps/workbench-ui/src/styles/theme.css
+    A token subset of Helmor's `src/styles/color-theme.css`. It is compiled
+    into the dashboard bundle and therefore into every published binary and
+    npm tarball.
+
+  That file has been CHANGED. It keeps only the 47 custom properties this
+  dashboard consumes, out of the 166 the origin file declares: token names and
+  values are reproduced verbatim, and the unused region / editor / terminal /
+  settings / workspace-PR / chart / sub-agent tokens were removed. The change
+  notice required by Section 4(b) is at the top of that file.
+
+Everything else in this package — the CLI, the filesystem state manager, the
+local HTTP dashboard and its components — is original work of the package
+author. No other file is derived from Helmor, and this package imports nothing
+from it.
+
+Per Section 4(d), this NOTICE is distributed with every release: `scripts/build.ts`
+copies it into `dist/` (and into each platform archive), and the package
+`files` field keeps it in the npm tarball. Do not remove it.
+
+
+Trademark notice
+--------------------------------------------------------------------------------
+
+"Helmor" and the Helmor logo are trademarks of Caspian Zhao and Nathan Lian.
+
+The Apache License 2.0 grants the right to use, modify and redistribute the
+software source code. It does NOT grant the right to use the "Helmor" name,
+logo, brand assets, or any confusingly similar mark to identify this product,
+fork or service. Forks must ship under a distinct name. This package ships as
+`@baixu22/workbench` and does not use the Helmor mark to identify itself. For
+commercial use of the "Helmor" name or logo, contact the authors.
+
+
+Third-party components distributed in the product
+--------------------------------------------------------------------------------
+
+Components actually bundled into the published binary / dashboard / npm
+bundle, with the license each declares in its own package metadata:
+
+- Bun runtime (oven-sh/bun) — MIT
+- chokidar — MIT
+- commander — MIT
+- yaml — ISC
+- zod — MIT
+- React, React DOM (facebook/react) — MIT
+- assistant-ui (@assistant-ui/react, react-markdown) — MIT
+- Radix UI (radix-ui, @radix-ui/react-slot) — MIT
+- class-variance-authority — Apache-2.0
+- clsx — MIT
+- lucide-react — ISC
+- motion — MIT
+- reicon-react — MIT
+- remark-gfm — MIT
+- TanStack Query (@tanstack/react-query) — MIT
+- tailwind-merge — MIT
+- zustand — MIT
+- Geist and Geist Mono webfonts (@fontsource-variable/*) — SIL Open Font
+  License 1.1
+
+Build-time tooling (Tailwind CSS, Vite, TypeScript, Biome) is used to produce
+the artifacts but is not redistributed in them.
+
+Inclusion of these components does not imply endorsement by their respective
+owners.

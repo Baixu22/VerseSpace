@@ -5,10 +5,12 @@
 // Build outputs (git-ignored):
 //   dist/workbench-<platform>-<arch>[.exe]  — single-file binaries
 //   dist/workbench.js                       — bun-runtime JS bundle (npm bin)
+//   dist/{NOTICE,LICENSE,LICENSE-APACHE}    — attribution shipped with every build
 
 import { mkdir, rm } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { copyLegalFiles } from "./copy-legal";
 import { prepareUiAssets } from "./ui-prepare";
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -71,6 +73,10 @@ const targets = buildAll ? RELEASE_TARGETS : [HOST_TARGET];
 await prepareUiAssets();
 await rm(DIST, { recursive: true, force: true });
 await mkdir(DIST, { recursive: true });
+const legal = await copyLegalFiles(DIST);
+console.log(
+	`attribution → ${legal.map((name) => join("dist", name)).join(", ")}`,
+);
 
 for (const target of targets) {
 	const result = await Bun.build({

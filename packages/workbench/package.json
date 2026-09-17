@@ -3,13 +3,16 @@
 	"description": "Workbench — CLI + filesystem state manager for AI-assisted development.",
 	"version": "0.3.0",
 	"type": "module",
-	"license": "MIT",
+	"license": "MIT AND Apache-2.0",
 	"bin": {
 		"workbench": "./dist/workbench.js"
 	},
 	"files": [
 		"dist/workbench.js",
 		"dist/ui",
+		"NOTICE",
+		"LICENSE",
+		"LICENSE-APACHE",
 		"README.md",
 		"CHANGELOG.md"
 	],

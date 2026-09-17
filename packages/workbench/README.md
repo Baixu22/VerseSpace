@@ -142,4 +142,19 @@ Windows 入口默认模型为 `senseaudio-s2-flash`（默认端点 `https://api.
 
 ## License
 
-MIT
+**MIT，含 Apache-2.0 部分。** 包本身以 MIT 发布（`LICENSE`）。其中内联的主题 token 子集
+——`apps/workbench-ui/src/styles/theme.css`，派生自 Helmor 的 `src/styles/color-theme.css`
+（Copyright 2026 Caspian Zhao, Nathan Lian）——按 Apache-2.0 分发，归属与改动声明见
+`NOTICE` 与 `LICENSE-APACHE`。
+
+```
+license: MIT AND Apache-2.0     # SPDX
+```
+
+这三个文件随每次分发一起走：`scripts/build.ts` 把它们复制进 `dist/`，包 `files` 字段把它们
+留在 npm tarball 里，`release-workbench.yml` 把它们挂到 GitHub Release。Apache-2.0 §4(d)
+要求分发时附上可读的 NOTICE，请不要删除。
+
+"Helmor" 与 Helmor logo 是 Caspian Zhao 与 Nathan Lian 的商标。Apache-2.0 授权源码的
+使用、修改与再分发，但不授权用该名称或 logo 标识本产品或派生品——所以本包以自己的名字
+`@baixu22/workbench` 发布。

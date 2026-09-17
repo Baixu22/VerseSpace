@@ -5,6 +5,7 @@
 import { mkdir, rm } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { copyLegalFiles } from "./copy-legal";
 import { prepareUiAssets } from "./ui-prepare";
 
 const [bunTarget, artifactName] = process.argv.slice(2);
@@ -21,6 +22,10 @@ const DIST = join(PKG_ROOT, "dist");
 await prepareUiAssets();
 await rm(DIST, { recursive: true, force: true });
 await mkdir(DIST, { recursive: true });
+const legal = await copyLegalFiles(DIST);
+console.log(
+	`attribution → ${legal.map((name) => join("dist", name)).join(", ")}`,
+);
 
 const result = await Bun.build({
 	entrypoints: [join(PKG_ROOT, "src/index.ts")],
