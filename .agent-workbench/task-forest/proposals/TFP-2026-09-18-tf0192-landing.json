@@ -1,0 +1,70 @@
+{
+  "applied_at": "2026-09-18T02:09:48.841371Z",
+  "base_graph_hash": "9cd6748dfed22e89080b9acf409bc7360103bb26c395730ddb49be2809aeca9c",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "交付（提交 f08267b）：packages/workbench/README.md 新增「两条聊天车道的观测能力」小节 —— 工具车道（claude，本机 Claude Code）读集可观测、前提失效能定位并给证据；纯文本车道（openai-chat / openai-responses / anthropic）读集不可观测、只能标注不参与继承；附选择建议，并写明线程头按每轮实际使用的 provider 标注、不回头改写历史轮次。",
+          "设置面板：apps/workbench-ui settings-fields.tsx 的四个 provider 说明各自补上读集可观测性（claude 可观测 / HTTP 三类不可观测）；选到 HTTP 车道时当场说明后果（读了什么不会留下足迹 → 前提失效无法判断本线程是否受影响 → 不能作分叉继承的读集来源），并点明同模型不同车道也适用（Anthropic 直连走 Messages API，没有工具通道）。",
+          "测试：workbench-ui settings.test.tsx 新增 1 例 —— 同一 mount 对照，HTTP 车道渲染提示、claude 车道不渲染。读数：workbench-ui 32 passed（11 文件，31 + 1）；UI typecheck exit 0；biome exit 0（含 pre-commit 的 lint-staged）。",
+          "措辞与 TF-0191 的 thread-observability 组件保持一致（同一句口径：没有工具通道 → 读集不可观测 → 不参与前提继承），避免面板与文档对同一件事说两套话。"
+        ],
+        "progress": 100.0,
+        "summary": "把「claude 车道读集可观测、HTTP 车道不可观测」这条产品边界写进两处人真正会读的地方：README 的对照表，和设置面板里选到 HTTP 车道时的当场说明。"
+      },
+      "id": "TF-0192"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0192",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "本机（以及受控试用机）都没有 claude 凭据，产生不了 footprintSeq > 0 的真实读数：这个节点要的是「有凭据的环境」这个外部条件，不是代码改动，所以谁在本机都开不了工。",
+          "按 blocked 挂起而不是留 proposed：留 proposed 会让它每轮扫描都被列为可开工项，实际不可开工；blocked 才如实反映「等外部条件」。",
+          "验收仍未取证：stats --json 的非零 withFootprints、以及同一试用在 HTTP provider 下的 0 对照。拿到凭据环境后按 requirements 复用 d419223 的 UI 车道脚本即可执行，不需要额外开发。"
+        ]
+      },
+      "id": "TF-0190"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0190",
+      "status": "blocked"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "TF-0191 done；TF-0190 需 claude 凭据环境，本机无；TF-0192 文档待做。",
+          "2026-09-18 收尾：TF-0192 完成（提交 f08267b）—— README 对照表 + 设置面板当场提示。阶段 2 至此只剩 TF-0190 一项。",
+          "TF-0190 转 blocked：卡的是外部条件（有 claude 凭据的环境），本机不可推进；阶段 2 的验收（非零 withFootprints 与 HTTP 对照）在拿到凭据前无法取证，因此本里程碑保持 in_progress 而不是 done。",
+          "不计入验收的旁证：受控试用实测过 HTTP provider 的读集不可观测（footprintSeq = 0、withFootprints = 0），确认这是产品边界而非缺陷；该结论已写进 README 与设置面板。"
+        ]
+      },
+      "id": "TF-0189"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 16.0
+      },
+      "id": "TF-0176"
+    }
+  ],
+  "created_at": "2026-09-18T02:09:47.671550Z",
+  "proposal_id": "TFP-2026-09-18-tf0192-landing",
+  "rationale": "收尾阶段 2：TF-0192（两条车道观测能力差异与选择建议）本机可做完，已交付提交 f08267b；TF-0190 需要「有 claude 凭据的环境」这个外部条件，本机没有，按 blocked 显式挂起而不是继续挂在 proposed 里——它每轮扫描都会被当成可开工项，而实际上谁也开不了。TF-0189 保持 in_progress 并记录阶段内真实进度。进度口径沿用 2026-09-17 建立的口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900 = 5160 分钟），分子 = 已完成的具体任务估时之和（现为 780 + TF-0192 的 45 = 825）。",
+  "session_id": "session-2026-09-18-nodes-dev",
+  "status": "applied"
+}

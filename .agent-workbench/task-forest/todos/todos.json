@@ -90,33 +90,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0192",
-    "kind": "subtask",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 45,
-    "remaining_minutes_min": 45,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "README 与 provider 设置面板写明两条车道的观测能力差异与选择建议"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.6,
     "context_tags": [],
     "desired_outcomes": [],
@@ -652,7 +625,7 @@
     "kind": "global_task",
     "next_action": "补充下一步动作或开始执行",
     "priority": 1,
-    "progress": 15.1,
+    "progress": 16.0,
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -687,33 +660,6 @@
     "status": "in_progress",
     "success_metrics": [],
     "title": "阶段 2：足迹命门轻路——验证 claude 车道 + UI 诚实标注可观测性"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0190",
-    "kind": "task",
-    "next_action": "stats --json 出现非零 withFootprints",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 90,
-    "remaining_minutes_min": 90,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "在有 claude 凭据的环境验证 UI chat 走 claude 车道产生足迹（footprintSeq > 0）"
   },
   {
     "alignment": {
@@ -1002,6 +948,33 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "工具目录：premises 查询 / 足迹读取 / 恢复卡 / tribunal 列表 / 通知投递；响应体积控制（白名单 + 去 null + 截断）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0190",
+    "kind": "task",
+    "next_action": "澄清阻塞原因并决定解除或废止",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": false,
+    "remaining_minutes_max": 90,
+    "remaining_minutes_min": 90,
+    "status": "blocked",
+    "success_metrics": [],
+    "title": "在有 claude 凭据的环境验证 UI chat 走 claude 车道产生足迹（footprintSeq > 0）"
   },
   {
     "alignment": {
