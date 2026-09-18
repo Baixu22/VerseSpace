@@ -1,0 +1,66 @@
+{
+  "applied_at": "2026-09-18T02:28:51.196204Z",
+  "base_graph_hash": "97abd7b3312c1fa6af7f5dd1ad086198bed33c5c544b75e21018cc36fa5f419c",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "交付（提交 2718a30）：新增 packages/workbench/src/chat/provider-capabilities.ts —— PROVIDER_CAPABILITIES: Record<ChatProvider, { channel, observesFootprint, supportsFork, supportsStreamJson, requiresApiKey }> + capabilitiesOf + readObservabilityOf。类型签名让「新增 provider 忘了填」变成编译错误。",
+          "四处能力判断全部改读表：thread-types.ts 的可观测性由 observesFootprint 推导（re-export 保持既有 import 路径）；thread-fork.ts 的 agentContextPlan 走 supportsFork；http-run.ts 的密钥前置检查走 requiresApiKey；thread-run.ts 的车道选择走 channel === \"local-cli\"；claude-session.ts 认 fork plan 走 supportsFork。",
+          "验收「grep provider === 字面量比较为 0」：按字面读法不成立，也不应该成立 —— http-request.ts / http-stream.ts / http-run.ts 里 6 处 `provider === \"anthropic\" | \"openai-chat\"` 是**线协议**选择（发哪种报文、怎么解析 SSE），两个 provider 在线协议上不同、在能力上可以完全相同；搬进能力表会让表退化成「关于 provider 的一切」。已按语义收窄判据为「能力判断为 0」并在 http-request.ts 文件头写明理由。可复算：`grep -rn \"provider ===\\|provider !==\" packages/workbench/src --include=*.ts` 命中 6 处，全部落在 http-request/http-stream/http-run（另 1 处命中是 provider-capabilities.ts 里的注释引用）。",
+          "验收「测试矩阵覆盖四种 provider」：新增 chat/provider-capabilities.test.ts 5 例 —— 四 provider × 五字段的能力矩阵写全值（不是「claude 为真」这类弱断言）、表的键集合与 schema 允许的 provider 集合一致、readObservabilityOf 恒等于 observesFootprint 的投影、requiresApiKey ↔ channel === \"http\" 不变量、publicChatConfig 带能力且序列化后不含密钥。",
+          "后端与 UI 读同一份：publicChatConfig（chat/credentials.ts）在响应里带上当前 provider 的 capabilities；apps/workbench-ui 的 SettingsFields 改用 config.capabilities.observesFootprint 决定是否渲染「读集不可观测」提示，响应里没有能力表就不标注（无证据不渲染）。UI 侧只保留产品文案（label 与功能描述），观测能力不再由 UI 自己判。",
+          "读数：workbench 739 pass / 0 fail（116 文件 = 734 + 本节点 5）；workbench-ui 33 passed（11 文件 = 32 + 新增 1 例「无能力表不标注」）；workbench 与 workbench-ui typecheck exit 0；biome exit 0。"
+        ],
+        "progress": 100.0,
+        "summary": "把「这个 provider 能做什么」从各处的 provider 名字比较，收成一张表：能力判断读表，线协议选择留在各自的 HTTP 模块，后端与 UI 读同一份。"
+      },
+      "id": "TF-0204"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0204",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 50.3
+      },
+      "id": "TF-0201"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 24.7
+      },
+      "id": "TF-0176"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "correction": "后续节点的验收写「grep ... 为 0」这类绝对判据时，必须先给出可复算的 grep 命令并当场跑一次；若命中不为 0，要么改实现、要么把判据收窄到能用一条命令证明的范围，不允许「基本为 0」。",
+        "created_at": "2026-09-18T02:30:00Z",
+        "id": "TFD-4f8b21c6a9",
+        "kind": "acceptance_judgement_narrowed",
+        "reason": "判据写的时候把「能力判断」和「线协议选择」当成了同一类。实测证明二者不同：能力表描述行为，线协议描述报文；把它们混进一张表会让表失去边界（今天正确的边界是「有行为分支才进表」）。按 SOUL 的「判据错了就改判据的文字，不改数字」，收窄判据并把理由写进代码注释，而不是为了凑数字把线协议也搬进表、或把线协议塞进一个假的 capability 字段。",
+        "related_task_ids": [
+          "TF-0204",
+          "TF-0201"
+        ],
+        "summary": "TF-0204 的验收「grep provider === 字面量比较为 0」按字面执行不可能通过：线协议分支必须比较 provider 名才能选报文形状。收窄为「能力判断里的字面量比较为 0」，并保留 6 处线协议比较并在文件头写明为什么它们不属于能力表。"
+      }
+    }
+  ],
+  "created_at": "2026-09-18T02:28:49.945869Z",
+  "proposal_id": "TFP-2026-09-18-tf0204-landing",
+  "rationale": "阶段 5 第三个节点 TF-0204（ProviderCapabilities 数据化）已做完并提交 2718a30。本提案落库状态与读数，并记一条判据收窄的偏差：验收写的「grep provider === 字面量比较为 0」按字面全仓不可能为 0，因为线协议选择必须比较 provider 名。已把判据收窄为「能力判断的字面量比较为 0」，并给出可复算命令。进度口径沿用 2026-09-17 建立的口径：分母 = 七个阶段里程碑估时之和（5160 分钟），分子 = 已完成的具体任务估时之和（1125 + TF-0204 的 150 = 1275）。",
+  "session_id": "session-2026-09-18-nodes-dev",
+  "status": "applied"
+}
