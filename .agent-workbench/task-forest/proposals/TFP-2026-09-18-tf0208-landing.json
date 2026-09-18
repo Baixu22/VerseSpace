@@ -1,0 +1,73 @@
+{
+  "applied_at": "2026-09-18T03:35:36.081289Z",
+  "base_graph_hash": "eca69e269704e83d7f82cc38d82d6f93c9dbad850612e9b607fa5c1ba58d1bbd",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "ref 不存在、零提交仓库里的 HEAD —— 两条回归用例都不得产出「合并干净」（实测旧读法都读成 CLEAR）",
+          "merge-tree --write-tree 不可用时明说 unsupported，既不解析输出、也不把 git 对象哈希当成冲突路径",
+          "正常场景行为不变：干净 → clear、真冲突 → conflicts(paths)（对照实验逐行核对）"
+        ],
+        "evidence": [
+          "2026-09-18 侦察依据：结论是「功能层不可吸收、模式层可吸收，性质是修主线缺陷」。主线 packages/workbench 对 forge/github/gitlab 零匹配；节点自身 non_goals（创建 PR、修 CI、inbox）与探索文档 §4.4「明确不吸收」一致。",
+          "侦察规模切分（先破除「要吸收 12535 行」的误读）：src-tauri/src/forge/ = 33 个 .rs / 12535 行，其中 inbox 3185 + accounts 2379 + actions 941 + detect 470 = 6975 行属明确不吸收；可吸收的模式只在 github/context.rs + gitlab/context.rs，合计 881 行（占目录 7%）。",
+          "侦察模式结构读数（「把原因变成类型而非散布早返回」的字面含义）：context.rs（构造者）464/417 行、Resolution:: 16 次、早退 5 次；mod.rs（消费者）226/397 行、Resolution:: 11 次、早退 0 次。5 个「为什么打不通」收敛进一个 resolver，4 个消费入口、11 个匹配臂、0 早退。本轮照这个结构落地。",
+          "侦察实测（临时仓库夹具 + 真实 git 2.51 + 逐字移植的 parseMergeTree；脚本 .workbuddy/_probe_mergetree.py、_probe_mergetree2.py）。缺陷 A：merge-tree 的 code=1 承担两种互斥语义 ——「他们冲突」与「git 拒绝回答」，主线把 0 和 1 一起视为「是答案」，于是 code=1 + 空 stdout 走 parseMergeTree 返回 []，被解释为「合并干净」。生产路径可达：scheduler/merge-guard.ts:41 在分支尚未创建时 refs.add(\"HEAD\")，而零提交仓库（createWorktree 注释明确要求至少一个 commit）实测 git merge-tree HEAD HEAD 返回 code=1 + 空 stdout。缺陷 B：主线假设 --write-tree 一定可用；老式 merge-tree 的 `mode oid stage\\tpath` 三行被逐行收成「冲突路径」，把 git 对象哈希当文件名。",
+          "侦察发现现有测试为何漏掉：runtime/merge-guard.test.ts:50 用假造的 code=128 + \"fatal: not a valid ref\"，而实测真实 git 对无效 ref 返回 code=1 且消息走 stderr。测试假造了一个现实中不存在的 (code, stdout) 组合，真实组合因此无人覆盖。",
+          "侦察确认「merge 方式协商」字面不可吸收：支线 AllowedMergeMethods::pick()（github/pull_request.rs:67-101）管理的是「远程仓库允许哪些合并方式」，而主线 packages/workbench/src 全仓 git merge 0 处，10 处 merge 提及全部是 merge-tree 预测或注释。只取其模式内核「不要假设默认参数可用，先问对方允许什么」，落到主线的对应物 = merge-tree --write-tree 的能力假设。",
+          "侦察确认三臂映射的诚实结论：支线实为四臂（Ready/Initializing/Unavailable/Unauthenticated），节点原标题漏写 Initializing；Unauthenticated 在主线无对应物（无远程身份），未硬造。本地化后的枚举按主线真实成因重新划分，不是照搬臂。",
+          "侦察确认编排器边界（探索文档第七部分第 4 问）本节点不触发：它不新增任何交付能力，只把已有预测层的结论表达改好。",
+          "交付（本轮）：新增 packages/workbench/src/git/merge-tree.ts —— probeMergeTree（跑 `git merge-tree --write-tree` 无操作数，看 usage 里有没有 --write-tree；不依赖仓库状态，实测本机 code=129 + supported=true）+ parseMergeTreeOutput（返回 string[] | null：首行必须是 tree oid，逐行指纹认出老式 trivial 格式，认不出来就返回 null 而不是空数组）。",
+          "交付（本轮）：runtime/merge-guard.ts 的 MergePrediction.conflicting: string[] + error?: string 换成 preflight: MergePreflight 四臂（clear / conflicts[paths] / unsupported[reason] / unresolved[reason]）；新增 preflightPair（code=1 时只有解析出【非空】路径列表才算 conflicts，否则 unresolved —— 这是修复的核心一句）；predictConflicts 每轮先探测一次，能力不可用则整轮短路，不让 N² 个 pair 各撞一次墙。",
+          "交付（本轮）：scheduler/merge-guard.ts 改为 match 枚举（新增 summarize 收敛成 clear/conflicts/unanswered 三类），事件 payload 从 predictions/errors 两个计数拆成 pairs/clear/conflicts/unanswered 四个；guardBeforeDispatch 返回 MergePreflightReport（原为 Promise<void>，结论此前只流向副作用、无法被断言）。dispatch 侧未接住返回值：裁决卡仍由 guardBeforeDispatch 内部通过 notify 投递，接住只会多一个没人读的字段。",
+          "对照实验（脚本 .workbuddy/_verify_208.py，同一批真实 git 输出分别喂给旧读法与新读法的逐字移植）：干净 CLEAR→CLEAR、真冲突 CONFLICTS(a.txt)→CONFLICTS(a.txt) 一致（无回归）；ref 不存在 CLEAR→UNRESOLVED、零提交仓库 HEAD CLEAR→UNRESOLVED（修复生效）；老式 trivial 调用 CONFLICTS(把对象哈希当路径)→UNRESOLVED（消除假阳性）。",
+          "读数：runtime 单文件 13 pass / 0 fail（原 9 例重写为 parseMergeTreeOutput 3 例 + 四臂 4 例，并入既有 6 例）；workbench 全量 750 pass / 0 fail（117 文件）= 746 基线 + 净增 4；workbench typecheck exit 0；biome 304 文件 exit 0。"
+        ],
+        "non_goals": [
+          "创建 PR、修 CI、inbox",
+          "不真执行合并、不做语义合并（主线只预测）",
+          "不引入远程身份或凭据概念"
+        ],
+        "progress": 100.0,
+        "requirements": [
+          "预检结论是封闭枚举，每臂自带原因；消费者只做 resolve → match → 映射，不做判断",
+          "能力探测每轮只跑一次，覆盖整轮 N² 扫掠，不让逐个 pair 反复撞同一个墙"
+        ],
+        "summary": "把「git 拒绝回答」从「合并干净」里拆出来。预检结论改成四臂封闭枚举，每臂自带原因；能力不支持时明说，不再解析输出。",
+        "title": "merge-guard 预检结论封闭化：区分「有结论/无结论」，补 merge-tree --write-tree 能力探测"
+      },
+      "id": "TF-0208"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0208",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 79.9
+      },
+      "id": "TF-0201"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 33.2
+      },
+      "id": "TF-0176"
+    }
+  ],
+  "created_at": "2026-09-18T03:35:34.372835Z",
+  "proposal_id": "TFP-2026-09-18-tf0208-landing",
+  "rationale": "TF-0208 按 09-18 侦察确定的边界开工并完成。真实性质是「修主线已存在的缺陷」而非「移植支线模式」：主线 merge-guard 把 git merge-tree 的 code=1 当成冲突答案，于是「git 拒绝回答」（ref 不存在、零提交仓库）被读成 conflicting=[]，即「合并干净」——一个从未被预测过的清白证明。本轮把预检结论改成封闭枚举（clear/conflicts/unsupported/unresolved，每臂自带原因），并补上 merge-tree --write-tree 的能力探测。同时把节点标题改成与实测相符的表述（原标题的「merge 方式协商」在主线字面不可达：全仓 git merge 0 处；「Unauthenticated」在主线无对应物）。进度口径沿用 2026-09-17 建立的口径：分母 = 七个阶段里程碑估时之和（5160），分子 = 已完成具体任务估时之和（1595 + TF-0208 的 120 = 1715）。",
+  "session_id": "session-2026-09-18-nodes-dev",
+  "status": "applied"
+}
