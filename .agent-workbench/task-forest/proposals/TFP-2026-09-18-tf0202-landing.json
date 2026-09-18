@@ -1,0 +1,74 @@
+{
+  "applied_at": "2026-09-18T02:05:06.113524Z",
+  "base_graph_hash": "e03b0d7b5e4f30a371ddf557b42984bc7a567df27d91f9b770d7ac0cc49185d8",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "src-tauri/src/git/ops.rs 对应函数",
+          "报告 §4.2 最大空白",
+          "交付（提交 b1a49c8）：新增 packages/workbench/src/git/worktree.ts —— listWorktrees / parseWorktreeList / worktreeHoldingBranch / removeWorktree / samePath；新增 packages/workbench/src/git/stash.ts —— stashPushIncludeUntracked / stashPop，StashOutcome = nothing | clean | conflict | failed。git/ 由 2 文件扩到 4 文件，全部函数保持 git() 永不抛错的约定（失败是返回值不是异常）。",
+          "派发链路：scheduler/dispatch.ts 在 createWorktree 之前调 worktreeHoldingBranch；被其它 worktree 持有时返回 error.code=branch_in_use，写 dispatch_refused 事件并投一张 workspot_blocked 裁决卡片（causeKey 带 branch_in_use，不与同名工位的其它阻塞合并）；持有者就是本工位自己的 worktree（重派）时不误拒；预检问不出来（git 不可用）只告警不阻塞，与 merge-guard 预检失败同口径。",
+          "验收①「git/ 从 0 测试到有覆盖（临时仓库夹具）」：新增 src/git/worktree.test.ts 共 11 例 —— porcelain 解析（含 detached、含末块无结尾空行）、真实仓库里主检出/新 worktree 的可见性与分支归属、samePath 的相对路径与尾随分隔符、移除 worktree 后目录消失、拒绝把项目根当 worktree 删、stash 三种结局（nothing / clean / pop 冲突且条目保留）。git/ 此前 0 测试。",
+          "验收②「两工位抢同一分支的场景测试被拒绝」：新增 src/scheduler/branch-in-use.test.ts 共 3 例 —— 两工位抢同一分支时第二个被结构化拒绝且 worktrees/ws-b 未被创建（无 half-built worktree）、占用者是自己时不误拒、分支空闲时不产生任何 dispatch_refused 记录。",
+          "读数：workbench 729 pass / 0 fail（114 文件）= 722 基线 + 本节点 14 例（基线 714 见 2026-09-16 收尾扫描，TF-0191 于 3ffec6c 加 1 例 → 715）；根 typecheck exit 0、包 typecheck exit 0、biome 全仓 exit 0。",
+          "偏差（stash 枚举）：requirements 写「StashOutcome = clean | conflict 显式，不靠 exit code」，实现为四值。nothing 与 failed 是必须区分的两种结局 —— git 用「成功 + 无改动」表示前者、用非零退出表示后者，合并任一项都会让调用方把「无事可做」或「条目已丢」当成「保存成功」。"
+        ],
+        "progress": 100.0,
+        "summary": "把支线 Rust 的 worktree 清单/移除原语与结构化 stash 结局翻译成主线的纯 TS 实现，并让派发在建 worktree 之前先回答「这条分支现在被谁持有」，把原本由 git 以 `fatal:` 行报出的占用冲突换成有 code 的结构化拒绝。"
+      },
+      "id": "TF-0202"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0202",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 20.1
+      },
+      "id": "TF-0201"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0201",
+      "status": "in_progress"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 15.1
+      },
+      "id": "TF-0176"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "correction": "接上的时机是两个已有规划节点之一：TF-0203（dispatch 两阶段创建 + 双向回滚）或后续 move-local 通路；在那之前保持导出并在模块头注释里写明它是契约面，不因 knip 扫描把「无调用方」当成删除理由（TF-0217 的清理需排除本项）。",
+        "created_at": "2026-09-18T01:05:00Z",
+        "id": "TFD-9a1c4e70b3",
+        "kind": "unwired_export",
+        "reason": "支线 Rust 侧这两个函数服务于 move-local-to-worktree 通路（把本地未提交改动搬进新 worktree），主线还没有对应通路；TF-0202 的 requirements 明确要求「结构化 stash 结局」，因此在 git/ 层实现并测试，但没有为了消灭「未引用导出」而硬凑一个调用点。",
+        "related_task_ids": [
+          "TF-0202",
+          "TF-0203",
+          "TF-0217"
+        ],
+        "summary": "TF-0202 交付的 stash 原语（stashPushIncludeUntracked / stashPop）目前没有任何生产调用方，只有测试覆盖。"
+      }
+    }
+  ],
+  "created_at": "2026-09-18T00:45:26.524255Z",
+  "proposal_id": "TFP-2026-09-18-tf0202-landing",
+  "rationale": "柏旭「续上最近新提供的节点开发」：本轮开发 TF-0176 吸收计划里阶段 5 的第一个节点 TF-0202（git ops 深化 + 派发前分支占用预检）。上一轮（2026-09-18 00:35–01:51）留下的未提交成果（TF-0191 代码与 TF-0183/0188/0189/0191 的森林状态）已在本次一并落库为提交 3ffec6c，本提案只处理本轮自己完成的部分。进度口径沿用 2026-09-17 建立的口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900 = 5160 分钟），分子 = 已完成的具体任务估时之和。",
+  "session_id": "session-2026-09-18-nodes-dev",
+  "status": "applied"
+}

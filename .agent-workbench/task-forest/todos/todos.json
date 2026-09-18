@@ -368,12 +368,12 @@
     "kind": "milestone",
     "next_action": "补充下一步动作或开始执行",
     "priority": 2,
-    "progress": 0.0,
+    "progress": 20.1,
     "purpose": "",
     "ready": true,
-    "remaining_minutes_max": 1500,
-    "remaining_minutes_min": 1500,
-    "status": "proposed",
+    "remaining_minutes_max": 1199,
+    "remaining_minutes_min": 1199,
+    "status": "in_progress",
     "success_metrics": [],
     "title": "阶段 5：纯 TS 零依赖的可靠性吸收（支线 Rust → 主线 TS 翻译）"
   },
@@ -652,7 +652,7 @@
     "kind": "global_task",
     "next_action": "补充下一步动作或开始执行",
     "priority": 1,
-    "progress": 6.0,
+    "progress": 15.1,
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -752,13 +752,13 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.7,
+    "confidence": 0.65,
     "context_tags": [],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0202",
+    "id": "TF-0203",
     "kind": "task",
-    "next_action": "git/ 从 0 测试到有覆盖（临时仓库夹具）",
+    "next_action": "Phase1/Phase2 之间注入崩溃后 doctor 无孤儿 workspot",
     "priority": 1,
     "progress": 0.0,
     "purpose": "",
@@ -767,7 +767,7 @@
     "remaining_minutes_min": 300,
     "status": "proposed",
     "success_metrics": [],
-    "title": "git ops 深化：worktree_holding_branch / list_worktrees / remove_worktree / 结构化 stash 结局，dispatch 前预检分支占用"
+    "title": "dispatch 两阶段创建 + 双向回滚：Initializing 状态行 → 建 worktree → 激活；崩溃可恢复、启动可清理"
   },
   {
     "alignment": {
@@ -1060,34 +1060,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "L1 摘要生成：账本差 · 写集(N 文件, hash) · 接口 Δ · merge-guard 预测 · Verifier 状态 · 失效前提数，refs 全溯源"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0202"
-    ],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0203",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0202",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 300,
-    "remaining_minutes_min": 300,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "dispatch 两阶段创建 + 双向回滚：Initializing 状态行 → 建 worktree → 激活；崩溃可恢复、启动可清理"
   }
 ]

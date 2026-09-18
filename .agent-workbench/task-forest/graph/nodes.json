@@ -9902,7 +9902,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 6.0,
+    "progress": 15.1,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9919,7 +9919,7 @@
     "success_metrics": [],
     "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-17T16:04:01.719240Z"
+    "updated_at": "2026-09-18T02:05:05.945700Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -11050,18 +11050,18 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 20.1,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
     "summary": "不需要 sidecar，直接提升可靠性。只有 git ops 与 pipeline collapse 是用户能感知的，排前。",
     "title": "阶段 5：纯 TS 零依赖的可靠性吸收（支线 Rust → 主线 TS 翻译）",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-18T02:05:05.945659Z"
   },
   "TF-0202": {
     "acceptance_criteria": [
@@ -11083,19 +11083,27 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-9a1c4e70b3"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 300,
     "evidence": [
       "src-tauri/src/git/ops.rs 对应函数",
-      "报告 §4.2 最大空白"
+      "报告 §4.2 最大空白",
+      "交付（提交 b1a49c8）：新增 packages/workbench/src/git/worktree.ts —— listWorktrees / parseWorktreeList / worktreeHoldingBranch / removeWorktree / samePath；新增 packages/workbench/src/git/stash.ts —— stashPushIncludeUntracked / stashPop，StashOutcome = nothing | clean | conflict | failed。git/ 由 2 文件扩到 4 文件，全部函数保持 git() 永不抛错的约定（失败是返回值不是异常）。",
+      "派发链路：scheduler/dispatch.ts 在 createWorktree 之前调 worktreeHoldingBranch；被其它 worktree 持有时返回 error.code=branch_in_use，写 dispatch_refused 事件并投一张 workspot_blocked 裁决卡片（causeKey 带 branch_in_use，不与同名工位的其它阻塞合并）；持有者就是本工位自己的 worktree（重派）时不误拒；预检问不出来（git 不可用）只告警不阻塞，与 merge-guard 预检失败同口径。",
+      "验收①「git/ 从 0 测试到有覆盖（临时仓库夹具）」：新增 src/git/worktree.test.ts 共 11 例 —— porcelain 解析（含 detached、含末块无结尾空行）、真实仓库里主检出/新 worktree 的可见性与分支归属、samePath 的相对路径与尾随分隔符、移除 worktree 后目录消失、拒绝把项目根当 worktree 删、stash 三种结局（nothing / clean / pop 冲突且条目保留）。git/ 此前 0 测试。",
+      "验收②「两工位抢同一分支的场景测试被拒绝」：新增 src/scheduler/branch-in-use.test.ts 共 3 例 —— 两工位抢同一分支时第二个被结构化拒绝且 worktrees/ws-b 未被创建（无 half-built worktree）、占用者是自己时不误拒、分支空闲时不产生任何 dispatch_refused 记录。",
+      "读数：workbench 729 pass / 0 fail（114 文件）= 722 基线 + 本节点 14 例（基线 714 见 2026-09-16 收尾扫描，TF-0191 于 3ffec6c 加 1 例 → 715）；根 typecheck exit 0、包 typecheck exit 0、biome 全仓 exit 0。",
+      "偏差（stash 枚举）：requirements 写「StashOutcome = clean | conflict 显式，不靠 exit code」，实现为四值。nothing 与 failed 是必须区分的两种结局 —— git 用「成功 + 无改动」表示前者、用非零退出表示后者，合并任一项都会让调用方把「无事可做」或「条目已丢」当成「保存成功」。"
     ],
     "execution_hints": [],
     "id": "TF-0202",
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11106,11 +11114,11 @@
       "StashOutcome = clean | conflict 显式，不靠 exit code"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "把支线 Rust 的 worktree 清单/移除原语与结构化 stash 结局翻译成主线的纯 TS 实现，并让派发在建 worktree 之前先回答「这条分支现在被谁持有」，把原本由 git 以 `fatal:` 行报出的占用冲突换成有 code 的结构化拒绝。",
     "title": "git ops 深化：worktree_holding_branch / list_worktrees / remove_worktree / 结构化 stash 结局，dispatch 前预检分支占用",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-18T02:05:05.945581Z"
   },
   "TF-0203": {
     "acceptance_criteria": [
@@ -11132,7 +11140,9 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-9a1c4e70b3"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 300,
     "evidence": [
@@ -11730,7 +11740,9 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-9a1c4e70b3"
+    ],
     "difficulty": "medium",
     "estimated_total_minutes": 240,
     "evidence": [],
