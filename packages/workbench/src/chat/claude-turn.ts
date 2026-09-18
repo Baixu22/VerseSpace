@@ -65,6 +65,10 @@ export async function runClaudeTurn(
 		try {
 			session.proc.writeStdin(userTurn);
 		} catch (error) {
+			// TF-0205: a failed write to a child that is still around is the
+			// pipe-break signal — name it here so it is a reported outcome
+			// rather than only a raw exception in one turn's error message.
+			session.liveness?.pipeBroken(String(error));
 			emit({
 				type: "error",
 				message: `agent stdin 不可写：${String(error)}`,

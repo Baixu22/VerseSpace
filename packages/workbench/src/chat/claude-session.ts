@@ -1,6 +1,11 @@
 import { join } from "node:path";
 
 import { spawnSupervised } from "../supervisor";
+import {
+	type LivenessVerdict,
+	type LivenessWatch,
+	watchLiveness,
+} from "../supervisor/liveness";
 import { registerTurnRouter } from "./claude-router";
 import type { LiveClaudeSession } from "./claude-types";
 import { capabilitiesOf } from "./provider-capabilities";
@@ -53,6 +58,11 @@ export async function ensureClaudeSession(
 	}
 
 	const initialLines: string[] = [];
+	// TF-0205: the child is watched from the moment it spawns. Every output line
+	// resets the silence window; the exit handler below closes the watch, so an
+	// ordinary end of session never reports as unresponsive. `watch` is assigned
+	// right after spawn because onLine can fire before that assignment.
+	let watch: LivenessWatch | null = null;
 	const proc = spawnSupervised(commandLine, {
 		label: `chat:${id}`,
 		registryDir: join(context.bb.paths.root, "proc"),
@@ -61,6 +71,7 @@ export async function ensureClaudeSession(
 		keepStdinOpen: true,
 		stdinGate: (line) => line.includes('"subtype":"init"'),
 		onLine: (line, kind) => {
+			watch?.note();
 			if (kind === "out") {
 				const router = context.lineRouters.get(id);
 				if (router) {
@@ -78,9 +89,15 @@ export async function ensureClaudeSession(
 			}
 		},
 	});
+	watch = watchLiveness({
+		onVerdict: (verdict) => {
+			void reportLiveness(context, id, verdict);
+		},
+	});
 	context.running.set(id, proc);
 	const session: LiveClaudeSession = {
 		proc,
+		liveness: watch,
 		claudeSessionId,
 		turn: null,
 		initialLines,
@@ -97,6 +114,9 @@ export async function ensureClaudeSession(
 	session.closed = proc
 		.wait()
 		.then(async () => {
+			// The child is gone: this is the authoritative end of the watch, and
+			// the ordinary way a session stops being interesting.
+			watch?.exited("agent 进程已退出");
 			session.closing = true;
 			const active = session.turn;
 			try {
@@ -122,4 +142,57 @@ export async function ensureClaudeSession(
 			console.error(`[chat] 线程 ${id} 退出清理失败:`, error);
 		});
 	return session;
+}
+
+/**
+ * TF-0205: what happens when the watch reports something.
+ *
+ * `stalled` is named but not fatal — the CLI emits nothing during a long tool
+ * call, so silence is not evidence of death. `unresponsive` is the terminal
+ * call, and the whole point of this node is that it becomes a visible error:
+ * before, a wedged CLI ended as a turn that simply never resolved. The child is
+ * asked to leave (stdin closed) rather than tree-killed — a caller with a
+ * better idea about a wedged CLI can still act on it.
+ *
+ * An ordinary exit is not reported: the event log is for things that need
+ * explaining, and "the agent finished" is not one of them. The exception is an
+ * exit that follows a broken pipe, because that combination says the pipe
+ * failure was real after all.
+ */
+async function reportLiveness(
+	context: ThreadContext,
+	id: string,
+	verdict: LivenessVerdict,
+): Promise<void> {
+	const turn = context.live.get(id)?.turn ?? null;
+	const unremarkable = verdict.kind === "exited" && !verdict.afterPipeBreak;
+	if (!unremarkable) {
+		await context.bb.events
+			.append({
+				timestamp: new Date().toISOString(),
+				source: "chat",
+				type: "agent_liveness",
+				payload: { threadId: id, ...verdict },
+			})
+			.catch(() => {});
+	}
+	if (verdict.kind === "stalled") {
+		console.warn(
+			`[chat] 线程 ${id} 的 agent 已静默 ${Math.round(verdict.silentMs / 1000)}s（可能只是长工具调用）`,
+		);
+		return;
+	}
+	if (verdict.kind === "unresponsive") {
+		const seconds = Math.round(verdict.silentMs / 1000);
+		turn?.emit({
+			type: "error",
+			message: `agent 已 ${seconds}s 没有任何输出，判定为无响应；本轮到此结束，可以重试或换一条线程。`,
+		});
+		try {
+			context.live.get(id)?.proc.closeStdin();
+		} catch {
+			// stdin 已经关了——那正是我们想要的状态
+		}
+		turn?.resolve();
+	}
 }

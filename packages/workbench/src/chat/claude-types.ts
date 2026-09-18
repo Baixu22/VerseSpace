@@ -1,6 +1,6 @@
 import type { ParsedStreamFootprint } from "../blackboard/footprint";
 
-import type { ProcHandle } from "../supervisor";
+import type { LivenessWatch, ProcHandle } from "../supervisor";
 
 import type { ForkAgentPlan } from "./fork";
 import type { MessagePart, RunEvent } from "./thread-types";
@@ -25,6 +25,12 @@ export interface ActiveTurn {
 
 export interface LiveClaudeSession {
 	proc: ProcHandle;
+	/**
+	 * TF-0205: silence/broken-pipe watch over this child. Present for the whole
+	 * lifetime of the session; turn code reports a failed stdin write here so a
+	 * broken pipe is a named outcome instead of a bare exception.
+	 */
+	liveness?: LivenessWatch;
 	claudeSessionId: string | undefined;
 	turn: ActiveTurn | null;
 	/** Lines emitted before the first turn is attached (startup race buffer). */
