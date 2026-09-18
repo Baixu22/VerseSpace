@@ -127,3 +127,12 @@ packages/workbench/.evidence-sites/
 /.agent-kernel/
 # WorkBuddy AI project data (session memory, logs)
 /.workbuddy-ai/
+# 2026-09-16 closeout scan: raw report + probe output stay local; the reviewed
+# summary is docs/integrity-fixes-closeout-2026-09-16.md
+/.agent-contexts/integrity-scan-*/
+# 2026-09-17/18 absorption plan: the planning proposal draft and the per-round
+# node-development proposal copies stay local. The applied copies live in
+# .agent-workbench/task-forest/proposals/, and the readings live in node
+# evidence + docs (see docs/absorption-progress-2026-09-18.md).
+/.agent-contexts/absorption-plan-*/
+/.agent-contexts/nodes-dev-*/
