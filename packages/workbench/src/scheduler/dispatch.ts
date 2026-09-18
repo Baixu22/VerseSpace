@@ -3,10 +3,14 @@ import type { Blackboard } from "../blackboard";
 import { generateContext } from "../contextgen/generate";
 import { createWorktree, git } from "../git";
 import { branchNameProblem } from "../git/refname";
-import { samePath, worktreeHoldingBranch } from "../git/worktree";
+import {
+	removeWorktree,
+	samePath,
+	worktreeHoldingBranch,
+} from "../git/worktree";
 import { envelopes } from "../tribunal/envelopes";
 import type { SchedulerPolicy } from "../types/config";
-import type { Workspot } from "../types/workspot";
+import type { Workspot, WorkspotStatus } from "../types/workspot";
 import { guardBeforeDispatch } from "./merge-guard";
 import { type SchedulerNotify, schedulerNotifier } from "./notifications";
 import { type DispatchDecision, type SchedulerState, tick } from "./tick";
@@ -282,28 +286,50 @@ async function performDispatch(
 		console.error(`[scheduler] 合并预检未完成（${workspot.id}）:`, err);
 	});
 
+	// TF-0203 phase 1: write the state row BEFORE touching git. From here on an
+	// interrupted dispatch is visible as `initializing` and `runOnce` can repair
+	// it; the old order (worktree first, row second) left a checkout nobody
+	// owned and a workspot still claiming to be idle.
+	await bb.state.workspots.save(claimOf(workspot, goalId, "initializing"));
+
+	// Phase 2: create the checkout. A git failure rolls the row back, so the
+	// workspot returns to a state the scheduler can pick up again.
 	const worktree = await createWorktree(
 		bb.projectRoot,
 		workspot.worktreePath,
 		workspot.branch,
 	);
 	if (!worktree.ok) {
+		const restored = await restoreIdle(bb, workspot, "worktree_failed");
 		return {
 			ok: false,
 			goalId,
 			workspotId: workspot.id,
 			worktree: worktree.path,
-			reason: worktree.reason,
+			reason: restored
+				? worktree.reason
+				: `${worktree.reason}（状态行回滚失败，sync 会在下一轮把它恢复为 idle）`,
 		};
 	}
 
-	await bb.state.workspots.save({
-		...workspot,
-		status: "active",
-		primaryTask: goalId,
-		currentTask: undefined,
-		binding: "primary",
-	});
+	// Phase 3: activate. If the row cannot be written, undo the checkout: a
+	// worktree with no workspot behind it is worse than no dispatch at all.
+	try {
+		await bb.state.workspots.save(claimOf(workspot, goalId, "active"));
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		const rolled = await removeWorktree(bb.projectRoot, worktree.path, {
+			force: true,
+		});
+		const restored = await restoreIdle(bb, workspot, "activation_failed");
+		return {
+			ok: false,
+			goalId,
+			workspotId: workspot.id,
+			worktree: worktree.path,
+			reason: `工位激活失败：${message}；worktree ${rolled.ok ? "已回滚" : `未移除（${rolled.reason}）`}${restored ? "" : "，状态行回滚也失败"}`,
+		};
+	}
 	await bb.state.queue.dequeue(goalId);
 	await generateContext(bb, workspot.id);
 	await bb.events.append({
@@ -318,6 +344,100 @@ async function performDispatch(
 		},
 	});
 	return { ok: true, goalId, workspotId: workspot.id, worktree: worktree.path };
+}
+
+/** The workspot row dispatch writes in phase 1 and phase 3 — one claim shape. */
+function claimOf(
+	workspot: Workspot,
+	goalId: string,
+	status: WorkspotStatus,
+): Workspot {
+	return {
+		...workspot,
+		status,
+		primaryTask: goalId,
+		currentTask: undefined,
+		binding: "primary",
+	};
+}
+
+/**
+ * Put a workspot back to `idle` after a failed dispatch step.
+ *
+ * Returns false when even the rollback write failed; the caller says so in its
+ * reason instead of pretending the world is clean — `runOnce` is the backstop
+ * either way, because an `initializing` row is exactly what it repairs.
+ */
+async function restoreIdle(
+	bb: Blackboard,
+	workspot: Workspot,
+	cause: string,
+): Promise<boolean> {
+	try {
+		await bb.state.workspots.save({
+			...workspot,
+			status: "idle",
+			currentTask: undefined,
+			binding: "primary",
+		});
+		return true;
+	} catch (error) {
+		await bb.events
+			.append({
+				timestamp: new Date().toISOString(),
+				source: "scheduler",
+				type: "dispatch_rollback_failed",
+				payload: {
+					workspotId: workspot.id,
+					cause,
+					detail: error instanceof Error ? error.message : String(error),
+				},
+			})
+			.catch(() => {});
+		return false;
+	}
+}
+
+/**
+ * TF-0203: repair workspots left mid-dispatch by a crash.
+ *
+ * An `initializing` workspot is invisible to the rest of the system: the
+ * scheduler only dispatches `idle` ones and the automaton only maintains
+ * `active` ones, so without this the row would wait for a human. Called at the
+ * start of every cycle, under the run lock.
+ *
+ * The checkout is deliberately left alone. If phase 2 completed before the
+ * crash the worktree is real and this workspot is its owner — the next
+ * dispatch reuses it (createWorktree is idempotent and the branch-occupancy
+ * pre-check accepts the workspot's own checkout, TF-0202).
+ */
+export async function recoverInterruptedDispatches(
+	bb: Blackboard,
+): Promise<string[]> {
+	const stuck = (await bb.state.workspots.list())
+		.filter((workspot) => workspot.status === "initializing")
+		.sort((a, b) => a.id.localeCompare(b.id));
+	const recovered: string[] = [];
+	for (const workspot of stuck) {
+		await bb.state.workspots.save({
+			...workspot,
+			status: "idle",
+			currentTask: undefined,
+			binding: "primary",
+		});
+		await bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "scheduler",
+			type: "dispatch_recovered",
+			payload: {
+				workspotId: workspot.id,
+				branch: workspot.branch,
+				worktree: workspot.worktreePath,
+			},
+		});
+		recovered.push(workspot.id);
+	}
+	return recovered;
 }
 
 /** Scheduler stage for the Runtime: tick and execute what policy allows. */

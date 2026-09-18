@@ -7,6 +7,15 @@ export type WorkspotBinding = (typeof WORKSPOT_BINDINGS)[number];
 
 export const WORKSPOT_STATUSES = [
 	"idle",
+	/**
+	 * TF-0203: dispatch phase 1 finished (the state row is down) but phase 2
+	 * (the worktree) has not been confirmed yet. A workspot only stays here
+	 * across a crash: in a healthy run it is `initializing` for the width of
+	 * one `git worktree add`. Nothing dispatches it (not `idle`) and the
+	 * automaton does not maintain it (not `active`), so `runOnce` repairs it
+	 * at the start of every cycle — see `recoverInterruptedDispatches`.
+	 */
+	"initializing",
 	"active",
 	"blocked",
 	"completed",

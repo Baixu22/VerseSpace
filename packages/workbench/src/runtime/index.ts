@@ -1,7 +1,11 @@
 import { evaluate } from "../automaton/evaluator";
 import type { Blackboard } from "../blackboard";
 import { acquireRunLock } from "../fs/lockfile";
-import { type DispatchResult, runScheduler } from "../scheduler/dispatch";
+import {
+	type DispatchResult,
+	recoverInterruptedDispatches,
+	runScheduler,
+} from "../scheduler/dispatch";
 import type { WorldSnapshot } from "../types/snapshot";
 import { applyTransition } from "./apply";
 import { event } from "./events";
@@ -41,6 +45,7 @@ export async function runOnce(bb: Blackboard): Promise<RunOnceResult> {
 			verifications: [],
 			reanchored: [],
 			dispatches: [],
+			recovered: [],
 			tribunal: emptyTribunalTally(),
 			busy: true,
 			lockHolder: lock.holder,
@@ -54,6 +59,9 @@ export async function runOnce(bb: Blackboard): Promise<RunOnceResult> {
 }
 
 async function runOnceLocked(bb: Blackboard): Promise<RunOnceResult> {
+	// TF-0203: repair interrupted dispatches before taking the snapshot, so the
+	// automaton and the scheduler both see the repaired world in this cycle.
+	const recovered = await recoverInterruptedDispatches(bb);
 	const snapshot: WorldSnapshot = await bb.snapshot();
 	const transitions = evaluate(snapshot);
 
@@ -127,6 +135,7 @@ async function runOnceLocked(bb: Blackboard): Promise<RunOnceResult> {
 		verifications,
 		reanchored,
 		dispatches,
+		recovered,
 		tribunal: tally,
 	};
 }

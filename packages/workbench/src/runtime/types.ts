@@ -39,6 +39,11 @@ export interface RunOnceResult {
 	reanchored: string[];
 	/** Dispatches executed by the auto scheduler (empty for manual policy). */
 	dispatches: DispatchResult[];
+	/**
+	 * TF-0203: workspots this cycle pulled out of an interrupted dispatch
+	 * (`initializing` → `idle`). Empty in a healthy run.
+	 */
+	recovered: string[];
 	/** Set when another runOnce is already executing — the cycle was skipped. */
 	busy?: boolean;
 	/** pid of the holder when busy. */

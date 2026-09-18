@@ -59,6 +59,9 @@ export async function syncCommand(command: Command): Promise<void> {
 	for (const key of result.reanchored) {
 		console.log(`  ~ 接口 ${key} 已重锚定到最新内容`);
 	}
+	for (const id of result.recovered) {
+		console.log(`  ↩ 工位 ${id} 从被中断的派发中恢复（回到 idle）`);
+	}
 	for (const notification of result.notifications) {
 		const tag =
 			notification.severity === "error"
