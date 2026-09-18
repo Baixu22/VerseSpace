@@ -25,7 +25,10 @@ export const createSendSlice: StateCreator<
 			at: new Date().toISOString(),
 			status: "complete",
 		};
-		const assistantId = `local-a-${Date.now()}`;
+		// TF-0207: replaced by the server's turn id as soon as `turn_started`
+		// arrives; until then the placeholder is what patches address.
+		let assistantId = `local-a-${Date.now()}`;
+		const placeholderId = assistantId;
 		const assistantPlaceholder: StoredMessage = {
 			id: assistantId,
 			role: "assistant",
@@ -85,6 +88,7 @@ export const createSendSlice: StateCreator<
 					const event = JSON.parse(line) as {
 						type: string;
 						text?: string;
+						messageId?: string;
 						message?: StoredMessage;
 						part?: MessagePart;
 						count?: number;
@@ -102,6 +106,23 @@ export const createSendSlice: StateCreator<
 								),
 							},
 						}));
+					} else if (
+						event.type === "turn_started" &&
+						typeof event.messageId === "string"
+					) {
+						// TF-0207: 服务端在回合开始就把消息 id 给了我们 —— 占位立刻
+						// 换成真 id，之后 delta/tool/done 全用同一个 id，
+						// done 到达时不再需要二次匹配（此前是 done 才替换 id）。
+						const realId = event.messageId;
+						set((s) => ({
+							messages: {
+								...s.messages,
+								[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
+									m.id === placeholderId ? { ...m, id: realId } : m,
+								),
+							},
+						}));
+						assistantId = realId;
 					} else if (event.type === "delta" && event.text) {
 						const current = (get().messages[threadId] ?? EMPTY).find(
 							(m) => m.id === assistantId,

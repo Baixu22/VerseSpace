@@ -26,8 +26,13 @@ process.stdin.once("data", () => {
 		await chat.notifySession(thread.id, "前提已变", "notice-test");
 		const events: RunEvent[] = [];
 		await chat.run(thread.id, "执行任务", (event) => events.push(event));
+		// TF-0207: 错误事件同样带着本回合预分配的消息 id
 		expect(events.filter((event) => event.type === "error")).toEqual([
-			{ type: "error", message: "模型没有调用工具" },
+			{
+				type: "error",
+				message: "模型没有调用工具",
+				messageId: expect.any(String),
+			},
 		]);
 		expect(
 			events.some((event) => event.type === "done" || event.type === "delta"),

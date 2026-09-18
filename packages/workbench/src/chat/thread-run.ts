@@ -34,6 +34,17 @@ export function run(
 		const chat = config.chat;
 		const readObservability = readObservabilityOf(chat.provider);
 
+		// TF-0207: the assistant message id is allocated BEFORE the turn runs.
+		// Every streaming event carries it and the message is persisted under the
+		// same id, so a client can render under the real id from the start
+		// instead of patching a placeholder when `done` finally arrives.
+		const assistantMessageId = `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+		emit({ type: "turn_started", messageId: assistantMessageId });
+		// Wrapped once, at the lane boundary: every event a lane emits carries
+		// the turn's id without each emitter having to remember it.
+		const emitTurn = (event: RunEvent): void =>
+			emit({ messageId: assistantMessageId, ...event });
+
 		meta.status = "running";
 		meta.lastRun = {
 			provider: chat.provider,
@@ -91,13 +102,14 @@ export function run(
 			// Notices are folded into the next user turn (append-only, so the
 			// provider's existing context remains cache-safe).
 			try {
-				await runClaudeTurn(context, id, meta, text, emit, {
+				await runClaudeTurn(context, id, meta, text, emitTurn, {
 					resend: Boolean(opts.resend),
 					precedingNotices: notices,
 					onNoticesSent: acknowledgeDelivery,
+					messageId: assistantMessageId,
 				});
 			} catch (error) {
-				emit({ type: "error", message: String(error).slice(0, 400) });
+				emitTurn({ type: "error", message: String(error).slice(0, 400) });
 				// A spawn/finalization failure must not leave the durable thread
 				// marked running forever. The provider notice file remains intact.
 				const failed = await context.store.get(id).catch(() => null);
@@ -126,7 +138,7 @@ export function run(
 				context,
 				chat,
 				id,
-				emit,
+				emitTurn,
 				messageParts,
 				controller.signal,
 				notices,
@@ -139,7 +151,7 @@ export function run(
 				acknowledgeDelivery,
 			);
 		} catch (error) {
-			emit({ type: "error", message: String(error).slice(0, 400) });
+			emitTurn({ type: "error", message: String(error).slice(0, 400) });
 		} finally {
 			context.running.delete(id);
 			const full = messageParts
@@ -150,7 +162,8 @@ export function run(
 				const variants = context.pendingVariants.get(id);
 				context.pendingVariants.delete(id);
 				const assistantMessage: StoredMessage = {
-					id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+					// TF-0207: the id the streaming events already announced.
+					id: assistantMessageId,
 					role: "assistant",
 					text: full,
 					at: new Date().toISOString(),

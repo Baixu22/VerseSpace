@@ -1380,3 +1380,80 @@ process.stdin.once("data", () => {
 		}
 	});
 });
+
+describe("ChatThreads 回合 id 预分配（TF-0207）", () => {
+	test("流式事件与持久化消息是同一个 id：turn_started 先给出，done 不再改", async () => {
+		const ws = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-turnid-agent-"));
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			// 一轮里含工具调用、工具结果与文本，覆盖三条 emit 路径
+			const fake = String.raw`
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "s" });
+process.stdin.setEncoding("utf8");
+process.stdin.once("data", () => {
+  line({ type: "assistant", message: { content: [{ type: "tool_use", id: "r1", name: "Read", input: { file_path: "x.ts" } }] } });
+  line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "r1", content: "ok" }] } });
+  line({ type: "assistant", message: { content: [{ type: "text", text: "看完了" }] } });
+  line({ type: "result", subtype: "success", result: "" });
+  setTimeout(() => process.exit(0), 5);
+});
+`;
+			await writeFile(join(fakeDir, "agent.js"), fake, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+
+			const events: Array<Record<string, unknown>> = [];
+			await chat.run(thread.id, "跑一轮", (event) => {
+				events.push(event as Record<string, unknown>);
+			});
+
+			// 1) 回合一开始就把 id 给出去了
+			const started = events.find((event) => event.type === "turn_started");
+			expect(typeof started?.messageId).toBe("string");
+			const messageId = started?.messageId as string;
+
+			// 2) 之后每条流式事件都带同一个 id（客户端不必先本地编号）。
+			//    `user` 事件讲的是用户那条消息，与助手回合 id 无关，排除在外。
+			const streaming = events.filter(
+				(event) => event.type !== "turn_started" && event.type !== "user",
+			);
+			expect(streaming.length).toBeGreaterThan(0);
+			for (const event of streaming) {
+				expect(event.messageId).toBe(messageId);
+			}
+
+			// 3) done 里的消息 id 与它一致 —— 这就是「免二次匹配」
+			const done = events.find((event) => event.type === "done") as {
+				message: { id: string };
+			};
+			expect(done?.message.id).toBe(messageId);
+
+			// 4) 落盘用的还是它：写下的文件不会骗人
+			const transcript = await readTranscript(ws.workbenchRoot, thread.id);
+			const stored = transcript
+				.split("\n")
+				.filter((line) => line.trim())
+				.map(
+					(line) =>
+						JSON.parse(line) as { id: string; role: string; text: string },
+				);
+			expect(stored.at(-1)?.id).toBe(messageId);
+			expect(
+				stored.some(
+					(message) => message.role === "user" && message.text === "跑一轮",
+				),
+			).toBe(true);
+		} finally {
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	});
+});

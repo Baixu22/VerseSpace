@@ -69,7 +69,12 @@ for await (const line of createInterface({ input: process.stdin })) {
 		expect(
 			await readFile(join(ws.projectDir, "received.jsonl"), "utf8"),
 		).toContain("前提失效");
-		expect(visible).toContainEqual({ type: "notice_delivered", count: 1 });
+		// TF-0207: 每条回合内事件都带本回合预分配的消息 id
+		expect(visible).toContainEqual({
+			type: "notice_delivered",
+			count: 1,
+			messageId: expect.any(String),
+		});
 		expect(
 			await ws.bb.events.query({ type: "premise_notice_delivered" }),
 		).toHaveLength(1);

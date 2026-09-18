@@ -18,6 +18,8 @@ export async function runClaudeTurn(
 		resend: boolean;
 		precedingNotices: string[];
 		onNoticesSent?: () => Promise<boolean>;
+		/** TF-0207: the id this turn's streaming events already announced. */
+		messageId: string;
 	},
 ): Promise<void> {
 	const userTurn = turnLine(promptWithNotices(text, opts.precedingNotices));
@@ -118,7 +120,9 @@ export async function runClaudeTurn(
 	const full = turn.assistantTexts.join("");
 	if (full || turn.messageParts.some((part) => part.type === "tool-call")) {
 		const assistantMessage: StoredMessage = {
-			id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+			// TF-0207: persisted under the id the streaming events announced, so
+			// a client that rendered the stream already holds the real id.
+			id: opts.messageId,
 			role: "assistant",
 			text: full,
 			at: new Date().toISOString(),
