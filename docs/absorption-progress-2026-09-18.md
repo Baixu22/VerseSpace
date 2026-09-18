@@ -8,7 +8,7 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 本轮从「工作区里躺着上一轮未落库的成果」开始：TF-0191 的实现与 TF-0183/0188/0191 的森林状态
 都已做完但没有提交。先验证（四套门禁全绿）再落库，然后继续阶段 5 的开发。
 
-阶段 5 的六个节点（0202–0205、0207、0208）在本轮全部完成；其中 TF-0208 先经一轮纯侦察，
+阶段 5 的七个节点（0202–0208）在本轮全部完成；其中 TF-0208 先经一轮纯侦察，
 把节点标题与实际缺口对齐后才开工。
 
 ## 交付
@@ -24,6 +24,7 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 | TF-0205 | `supervisor/liveness.ts`：15s 心跳 / 45s 软阈值 / 135s 判死 + EPIPE 与「对端真的走了」严格区分；静默不再无声挂死 | `f7c69c5` + `57e31a4` |
 | TF-0207 | 回合 id 预分配：回合一开就广播助手消息 id，流式事件与持久化消息共用它，客户端免二次匹配 | `8b12d56` + `f812a1e` |
 | TF-0208 | 合并预检结论封闭化：`MergePreflight` 四臂（clear / conflicts / unsupported / unresolved）+ `git/merge-tree.ts` 能力探测；「git 拒绝回答」不再被读成「合并干净」 | `cb1e266` + `da3618f` |
+| TF-0206 | Claude 纯渲染归约 + `delta/parts/done` 协议 + read/search/只读 shell 折叠组；19 个真实 fixture 回放与 Workbench UI send/reload 共用 reducer | 工作区（本轮未提交） |
 
 ## 验收读数（本轮实跑）
 
@@ -37,8 +38,10 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 | TF-0207 ①id 一致 | 后端 1 例（工具调用/结果/文本三条路径 + `messages.jsonl` 落盘核对）、UI 1 例（占位 → 真 id → delta 命中 → done 不多出一条） |
 | TF-0208 ①「没有结论」不得伪装成「干净」 | 对照实验（同一批真实 git 输出喂旧/新两种读法）：`ref 不存在` 与 `零提交仓库 HEAD` 旧读法都判 CLEAR，新读法判 UNRESOLVED；`干净` 与 `真冲突` 两行读数不变（无回归） |
 | TF-0208 ②能力缺失时不误解析 | 老式 trivial `merge-tree` 的输出（`<mode> <oid> <stage>\t<path>`）在旧读法下把 git 对象哈希当成冲突路径，新读法判 UNRESOLVED |
-| 全量门禁 | workbench **750 pass / 0 fail**（117 文件）；workbench-ui **34 passed**（12 文件）；根 / workbench / workbench-ui typecheck 全 0；biome 全仓 0 |
-| 森林门禁 | validate / export / 导出回归 / check-landing 全 0（每轮提交后复跑，`done 且晚于 HEAD` 的节点数为 0） |
+| TF-0206 ①真实 fixture 回放 | 19 个 `src-tauri/tests/fixtures/streams/claude/*.jsonl`、763 个事件、28 个 text delta；显式 render decision 的 `undecided=0`，最终 parts 与持久化 done 形状一致 |
+| TF-0206 ②IPC 量化 | 每个流增量比较（不是用户键盘输入）：baseline **206,320 B** → `delta + finalized parts + done` **126,212 B**，节省 **80,108 B**，降幅 **38.83%** |
+| 全量/聚焦门禁 | workbench **843 pass / 0 fail**（126 文件，21 snapshots）；workbench-ui **53 pass / 0 fail**（16 文件）；根与两包 typecheck 0 错；Biome 聚焦 137 files 0 错。同日独立复跑：workbench 843 / UI 53 / 两包 typecheck exit 0 / 根 Biome 1390 files 0 错，逐项一致 |
+| 森林门禁 | 权威副本 `C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py` 的 `validate` / `export` / `check-landing` 均 exit 0；`check-landing` 读出 2 项 done 晚于 HEAD（TF-0201、TF-0206），因本轮改动尚未提交，属预期读数（提交后应收敛）。此前记录的「已安装 CLI 未提供 `check-landing` 子命令」系找错路径（查了不存在的登记副本），已按实测更正 |
 
 ## 节点终态与进度口径
 
@@ -47,12 +50,10 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
   它要的是「有 claude 凭据的环境」这个外部条件，本机（含受控试用机）都没有，留 `proposed`
   只会让它在每轮扫描里假装可开工。阶段 2 的验收（非零 `withFootprints` 与 HTTP 对照组）在拿到
   凭据前无法取证，所以里程碑不结项。
-- 阶段 5（纯 TS 可靠性吸收）：**in_progress 79.9%**。0202 / 0203 / 0204 / 0205 / 0207 / 0208 已 done，
-  **只剩 0206（claude-router 折叠与增量）**。
-  **0206 建议单独一轮做**：支线 `collapse.rs` 单文件 925 行、主线零折叠层，落地要动折叠模块 +
-  终态/增量协议 + UI 消费三处（侦察结论已写进该节点 evidence）。
-- TF-0176 总进度 **33.2%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
-  = 5,160 分钟），分子 = 已完成具体任务的估时和（1,715）。这是 2026-09-17 建立的口径，
+- 阶段 5（纯 TS 可靠性吸收）：**done 100%**。0202–0208 全部 done；0206 以独立一轮完成 Claude 归约、折叠、增量协议和 UI 消费。
+- TF-0176 总进度 **39.0%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
+  = 5,160 分钟），分子 = 已完成具体任务的估时和（2,015），即 2,015 / 5,160 = 39.0%。这是 2026-09-17
+  建立的口径，
   与叶子求和（4,655）不同，改动它就会让历史读数失去可比性。
 
 ## 偏差与未闭合
@@ -72,8 +73,8 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 
 ## 下一轮候选
 
-阶段 5 只剩 TF-0206（claude-router 折叠与增量 —— 见上，**建议单独一轮**）：支线 `collapse.rs`
-单文件 925 行、主线零折叠层，落地要动折叠模块 + 终态/增量协议 + UI 消费三处。
+阶段 5 已完成 TF-0206（claude-router 折叠与增量）：支线 `collapse.rs` 的规则已在主线以纯 TS 归约、
+折叠与协议镜像落地；历史重载直接渲染持久化终态，不在客户端重新推导。
 阶段 6（MCP server）与阶段 7（容器耦合清零与删码）不依赖外部条件，全是本机可做的纯代码工作。
 
 TF-0208 的侦察与落地留了两份可复算材料：结论文档 `docs/tf0208-forge-pattern-recon-2026-09-18.md`、
