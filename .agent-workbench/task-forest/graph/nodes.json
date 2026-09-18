@@ -9890,7 +9890,8 @@
     "evidence": [
       "docs/helmor-absorption-deep-exploration-2026-09-17.md 第 1.3/1.5/1.6/3.3/4.2/6.2/7 节",
       "阶段 1 落地读数：已于 5523f37 提交（TF-0184–0187 + ADR-0013）",
-      "进度按估时加权：已完成 300 分钟 / 计划 5,160 分钟"
+      "进度按估时加权：已完成 300 分钟 / 计划 5,160 分钟",
+      "阶段 5 于 2026-09-18 完成 TF-0206：19 fixture 全量回放，IPC baseline 206,320 B → optimized 126,212 B，节省 80,108 B（38.83%）；Workbench 843 pass、Workbench UI 53 pass、两包 typecheck 与 Biome 聚焦门禁通过。总进度按既有 5,160 分钟口径更新为 2,015 / 5,160 = 39.0%，非目标为 Rust pipeline 与 Rust snapshots。"
     ],
     "execution_hints": [],
     "id": "TF-0176",
@@ -9902,7 +9903,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 33.2,
+    "progress": 39.0,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9919,7 +9920,7 @@
     "success_metrics": [],
     "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-18T03:35:35.900672Z"
+    "updated_at": "2026-09-18T13:33:30.032195Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -11059,24 +11060,26 @@
     ],
     "difficulty": "high",
     "estimated_total_minutes": 1500,
-    "evidence": [],
+    "evidence": [
+      "2026-09-18：TF-0202–TF-0208 全部完成；阶段 5 的 Workbench 纯 TS 可靠性吸收验收闭合。"
+    ],
     "execution_hints": [],
     "id": "TF-0201",
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 79.9,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
     "summary": "不需要 sidecar，直接提升可靠性。只有 git ops 与 pipeline collapse 是用户能感知的，排前。",
     "title": "阶段 5：纯 TS 零依赖的可靠性吸收（支线 Rust → 主线 TS 翻译）",
-    "updated_at": "2026-09-18T03:35:35.900631Z"
+    "updated_at": "2026-09-18T13:33:21.166899Z"
   },
   "TF-0202": {
     "acceptance_criteria": [
@@ -11304,7 +11307,10 @@
   "TF-0206": {
     "acceptance_criteria": [
       "用 tests/fixtures/streams 样本做快照测试",
-      "UI 每按键 IPC 体积下降可量化"
+      "UI 每按键 IPC 体积下降可量化",
+      "19 个 src-tauri/tests/fixtures/streams/claude/*.jsonl 全量回放，未决顶层/stream/content key 硬零断言",
+      "协议快照包含 delta、parts、done checkpoint、终态 parts 类型与折叠摘要",
+      "IPC 基线与 delta + finalized parts + done 的每流增量比较有字节总数与降幅快照"
     ],
     "alignment": {
       "fit": "unknown",
@@ -11327,14 +11333,24 @@
     "evidence": [
       "2026-09-18 侦察（未开工，只记录规模与落点）：支线 src-tauri/src/pipeline/collapse.rs 单文件 925 行 / 32 KB，核心是 build_group_summary（search 的 pattern 去重 + 计数、read 的文件计数、shell 的命令计数，格式对齐 Claude Code TUI 的 getSearchReadSummaryText）与 classify_tool_with_args / is_collapsible_with_args 的分类；主线 packages/workbench/src/chat/claude-router.ts 只有 199 行、逐行 emit，完全没有折叠层。",
       "可用样本：src-tauri/tests/fixtures/streams/claude 下 20 个 .jsonl（tool-use / bash-and-edit / tool-use-summary / mcp-tool / subagent-prompt 等），正是 AC 里说的那批。",
-      "要落地得动三处：新的折叠模块（分类 + 摘要 + 组边界）、终态全量与增量协议（现在每个 text_delta 与每个工具都单发一条事件）、以及 UI 的消费侧（折叠组是新的 part 形状）。三处一起做才叫「用户可感知的 collapse」—— 因此 300 分钟的估时偏乐观，建议单独一轮做，不要和别的节点混在一起。"
+      "要落地得动三处：新的折叠模块（分类 + 摘要 + 组边界）、终态全量与增量协议（现在每个 text_delta 与每个工具都单发一条事件）、以及 UI 的消费侧（折叠组是新的 part 形状）。三处一起做才叫「用户可感知的 collapse」—— 因此 300 分钟的估时偏乐观，建议单独一轮做，不要和别的节点混在一起。",
+      "2026-09-18：19 个 Claude fixture、763 个原始事件、28 个 text delta 全部回放；undecided=0，最终持久化形状与 live projection 一致。",
+      "IPC（每个流增量比较，不是用户键盘输入）：baseline 206,320 B，optimized 126,212 B，节省 80,108 B，降幅 38.83%。",
+      "Workbench 843 pass / 0 fail（126 files，21 snapshots）；Workbench UI 53 pass / 0 fail（16 files）；两包 typecheck 0 错；Biome 137 files 0 错。",
+      "2026-09-18 独立复核（工作区态、未提交）：workbench 843 pass / 0 fail（126 文件、21 snapshots、3,618 expect）；workbench-ui 53 pass / 0 fail（16 文件）；两包 typecheck 各 exit 0；根 Biome 1390 files 0 错。与交付轮读数逐项一致。",
+      "森林门禁复跑（权威副本 C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py）：validate exit 0、export exit 0、check-landing exit 0；check-landing 读出 2 项 done 晚于 HEAD（TF-0201、TF-0206），因本轮改动尚未提交，属预期读数。更正：吸收进展文档此前记录「CLI 未提供 check-landing 子命令」系找错路径（查的是不存在的登记副本），已按实测修正。",
+      "fixture 计数独立复核：19 个 src-tauri/tests/fixtures/streams/claude/*.jsonl、763 个事件、28 个 text delta，与快照 aggregate（fixtures=19 / events=763 / undecided=0）逐项一致。"
     ],
     "execution_hints": [],
     "id": "TF-0206",
     "kind": "task",
-    "non_goals": [],
+    "non_goals": [
+      "不扩展 reasoning UI：thinking / signature / redacted_thinking 等 block 本轮只做显式 NoOp 决策，不进 Workbench 渲染面",
+      "不重写也不移植支线 Rust pipeline/collapse.rs；Rust 管线与 snapshot 本轮零触碰（纯 TS 落点）",
+      "折叠规则不暴露为用户可配置项；历史重载只渲染持久化终态形状，不在客户端重新推导规则"
+    ],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11344,11 +11360,11 @@
       "每种新事件类型必须做一次显式渲染决策（Finalized/StreamingDelta/NoOp）"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "Claude 渲染归约、折叠与增量协议已完成：19 个真实 fixture 全量回放，Workbench UI 的 send/reload 共用 reducer 与折叠组渲染已接通。",
     "title": "claude-router 折叠与增量：连续 read/search/shell 折叠成摘要行；终态全量、delta 只发尾部",
-    "updated_at": "2026-09-18T03:06:18.116343Z"
+    "updated_at": "2026-09-18T14:58:04.984542Z"
   },
   "TF-0207": {
     "acceptance_criteria": [],
