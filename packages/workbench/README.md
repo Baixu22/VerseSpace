@@ -96,6 +96,15 @@ workbench ui --port 8080 --ui-dir ./some-dist
 
 HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必将它写入 `.workbench/workbench.yaml`。已保存的 `chat.apiKey` 优先；删除保存值不会清除进程环境中的密钥。聊天配置与面板状态 API 都只返回 `hasKey`，不返回密钥。OpenRouter 的 `chat.baseUrl` 可填 `https://openrouter.ai/api/v1` 或完整的 `/chat/completions` 地址，粘贴时两端的引号会被清理。
 
+### 两条聊天车道的观测能力
+
+| 车道 | provider | 读集（agent 读了哪些文件） | 前提失效时 |
+| --- | --- | --- | --- |
+| 工具车道 | `claude`（本机 Claude Code） | **可观测**：工具调用留下足迹，可追溯到具体文件 | 能定位受影响的消息，并给出证据 |
+| 纯文本车道 | `openai-chat` / `openai-responses` / `anthropic` | **不可观测**：没有工具通道，读过什么无从得知 | 只能标注「读集不可观测、不参与继承」，不给证据 |
+
+选择建议：要让前提链成立（读集继承、失效定位、分叉时的读集来源），用 `claude`；只做对话、不在意前提链，HTTP 车道可用且不需要本机 Claude 登录。面板线程头按**每一轮实际使用的 provider** 标注可观测性——provider 是全局配置，同一条线程换过 provider 时，标注跟着最后一轮走，不回头改写历史轮次。
+
 ## `.workbench/` 目录结构
 
 ```

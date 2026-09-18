@@ -69,6 +69,18 @@ it("a late save response does not overwrite newer input", async () => {
 	expect(model).toHaveValue("newer-input");
 });
 
+it("HTTP 车道在设置面板写明读集不可观测；claude 车道不加提示", async () => {
+	api.mockResolvedValue(response({ provider: "openai-chat" }));
+	mount();
+	await screen.findByText(/本车道只发纯文本/);
+
+	cleanup();
+	api.mockResolvedValue(response({ provider: "claude" }));
+	mount();
+	await screen.findByLabelText("模型");
+	expect(screen.queryByText(/本车道只发纯文本/)).toBeNull();
+});
+
 it("failed saves keep the input and can be retried", async () => {
 	let fail = true;
 	api.mockImplementation(async (_, init) =>
