@@ -2,11 +2,13 @@ import { describe, expect, test } from "bun:test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { git } from "../git";
+import { parseMergeTreeOutput, probeMergeTree } from "../git/merge-tree";
 import { makeTempWorkbench } from "../test/fixtures";
 import {
+	conflictedPaths,
 	overlappingWrites,
-	parseMergeTree,
 	predictConflicts,
+	preflightPair,
 	recentAuthors,
 	runMergeGuard,
 } from "./merge-guard";
@@ -30,11 +32,7 @@ async function commitAll(ws: Fixture, message: string): Promise<void> {
 	await git(["commit", "-qm", message], ws.projectDir);
 }
 
-describe("parseMergeTree（零误报的冲突预测）", () => {
-	test("干净合并：只有 tree oid，退出码 0", () => {
-		expect(parseMergeTree("9b1f0e...\n", 0)).toEqual([]);
-	});
-
+describe("parseMergeTreeOutput（只在认得出来时才算结论）", () => {
 	test("冲突：oid 之后到空行之间是冲突路径", () => {
 		const stdout = [
 			"7ea203db32989f72a1ade8853596f83bff912ae2",
@@ -44,12 +42,27 @@ describe("parseMergeTree（零误报的冲突预测）", () => {
 			"Auto-merging src/a.ts",
 			"CONFLICT (content): Merge conflict in src/a.ts",
 		].join("\n");
-		expect(parseMergeTree(stdout, 1)).toEqual(["src/a.ts", "src/b.ts"]);
+		expect(parseMergeTreeOutput(stdout)).toEqual(["src/a.ts", "src/b.ts"]);
 	});
 
-	test("退出码非 0/1 是 git 出错，不是冲突", () => {
-		// 调用方负责看 code；这里只保证不会把错误输出当成路径
-		expect(parseMergeTree("fatal: not a valid ref\n", 128)).toEqual([]);
+	test("认不出来时是 null，不是空数组", () => {
+		// 旧实现返回 []，而调用方把 [] 读成「无冲突」—— 两者必须分得开，
+		// 否则「没拿到结论」会被发布成「合并干净」。
+		expect(parseMergeTreeOutput("fatal: not a valid ref\n")).toBeNull();
+		expect(parseMergeTreeOutput("")).toBeNull();
+	});
+
+	test("老式 trivial merge-tree 的三列格式：不把对象哈希当路径", () => {
+		// 实测：git < 2.38 的 merge-tree 输出 `<mode> <oid> <stage>\t<path>`，
+		// 首行同样是 tree oid，所以只有逐行指纹能识破它。
+		const stdout = [
+			"5ae77cff7d6ceb9eeddf12c6b21e4f8ac4add9f6",
+			"100644 495181cc2521585811d0963c45548eca9957c026 1\ta.txt",
+			"100644 3254187abcc8c01382bb24ca6475c88e43f7ce35 2\ta.txt",
+			"",
+			"Auto-merging a.txt",
+		].join("\n");
+		expect(parseMergeTreeOutput(stdout)).toBeNull();
 	});
 });
 
@@ -99,10 +112,12 @@ describe("合并安全网（R2 · TF-0079）", () => {
 			]);
 			const find = (a: string, b: string) =>
 				predictions.find((p) => p.a === a && p.b === b);
-			expect(find("b1", "b2")?.conflicting).toEqual(["src/shared.ts"]);
-			expect(find("b1", "b2")?.error).toBeUndefined();
-			expect(find("b1", "clean")?.conflicting).toEqual([]);
-			expect(find("b2", "clean")?.conflicting).toEqual([]);
+			expect(find("b1", "b2")?.preflight).toEqual({
+				kind: "conflicts",
+				paths: ["src/shared.ts"],
+			});
+			expect(find("b1", "clean")?.preflight).toEqual({ kind: "clear" });
+			expect(find("b2", "clean")?.preflight).toEqual({ kind: "clear" });
 		} finally {
 			await ws.cleanup();
 		}
@@ -131,9 +146,10 @@ describe("合并安全网（R2 · TF-0079）", () => {
 			const predictions = await predictConflicts(ws.projectDir, refs);
 			const elapsed = Date.now() - started;
 			expect(predictions).toHaveLength(10);
-			expect(predictions.flatMap((p) => p.error ?? [])).toEqual([]);
-			// 五个分支各写各的文件：不该有任何冲突
-			expect(predictions.flatMap((p) => p.conflicting)).toEqual([]);
+			// 五个分支各写各的文件：十对都该是「有结论的干净」，不是「没拿到结论」
+			expect(predictions.filter((p) => p.preflight.kind !== "clear")).toEqual(
+				[],
+			);
 			// 本机进程启动约 300ms／次，十对并发约 1–2 秒；
 			// 任务书给的 1 秒是按 33ms／次的机器定的，这里只做宽松上限
 			console.log(`N=5 共 10 对并发预测耗时：${elapsed}ms`);
@@ -280,11 +296,99 @@ describe("合并安全网（R2 · TF-0079）", () => {
 			}
 
 			const result = await runMergeGuard(ws.bb, ["b1", "b2"]);
-			expect(result.predictions[0]?.conflicting).toEqual(["src/conflict.ts"]);
+			expect(result.predictions[0]?.preflight).toEqual({
+				kind: "conflicts",
+				paths: ["src/conflict.ts"],
+			});
 			// 真冲突已经报过了，重叠告警不再重复一遍
 			expect(result.warnings).toHaveLength(0);
 		} finally {
 			await ws.cleanup();
 		}
 	}, 90_000);
+});
+
+/**
+ * TF-0208. These cases come from probing a real git (2.51) rather than from
+ * imagining its output: `merge-tree` answers exit code 1 both for "they
+ * conflict" and for "I won't answer", and the old reader collapsed the second
+ * into an empty conflict list — a clean bill of health nobody issued. Every
+ * assertion below is of the form "must not report clear".
+ */
+describe("预检结论的四臂（没有结论就说没有结论）", () => {
+	test("本机 git 支持 merge-tree --write-tree", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await gitInit(ws);
+			await commitAll(ws, "base");
+			expect(await probeMergeTree(ws.projectDir)).toEqual({
+				kind: "supported",
+			});
+		} finally {
+			await ws.cleanup();
+		}
+	}, 60_000);
+
+	test("ref 不存在 → unresolved，不是「合并干净」", async () => {
+		// 真实 git：code=1、stdout 为空、stderr 里是 "not something we can merge"。
+		const ws = await makeTempWorkbench();
+		try {
+			await gitInit(ws);
+			await commitAll(ws, "base");
+			const support = await probeMergeTree(ws.projectDir);
+			const preflight = await preflightPair(
+				ws.projectDir,
+				"HEAD",
+				"refs/heads/never-created",
+				support,
+			);
+			expect(preflight.kind).toBe("unresolved");
+			const reason = preflight.kind === "unresolved" ? preflight.reason : "";
+			expect(reason).toContain("not something we can merge");
+			// 这条是回归的要害：路径列表必须为空，且不能因此被当成干净
+			expect(conflictedPaths(preflight)).toEqual([]);
+		} finally {
+			await ws.cleanup();
+		}
+	}, 60_000);
+
+	test("零提交仓库里的 HEAD → unresolved（dispatch 的真实路径）", async () => {
+		// scheduler/merge-guard.ts 在分支尚未创建时会 refs.add("HEAD")，
+		// 而 createWorktree 要求仓库至少有一个 commit —— 这条路上
+		// 老实现会报告「合并干净」。
+		const ws = await makeTempWorkbench();
+		try {
+			await gitInit(ws);
+			const support = await probeMergeTree(ws.projectDir);
+			const preflight = await preflightPair(
+				ws.projectDir,
+				"HEAD",
+				"HEAD",
+				support,
+			);
+			expect(preflight.kind).toBe("unresolved");
+			expect(conflictedPaths(preflight)).toEqual([]);
+		} finally {
+			await ws.cleanup();
+		}
+	}, 60_000);
+
+	test("能力不可用时短路：连一个不存在的 ref 也只报 unsupported", async () => {
+		// 若此处仍去跑 git，无效 ref 会把结论变成 unresolved；
+		// 拿到 unsupported 就证明这一对根本没被送进 git。
+		const ws = await makeTempWorkbench();
+		try {
+			await gitInit(ws);
+			const preflight = await preflightPair(ws.projectDir, "no-1", "no-2", {
+				kind: "unsupported",
+				reason: "模拟：这个 git 不认识 --write-tree",
+			});
+			expect(preflight).toEqual({
+				kind: "unsupported",
+				reason: "模拟：这个 git 不认识 --write-tree",
+			});
+		} finally {
+			await ws.cleanup();
+		}
+	}, 60_000);
 });

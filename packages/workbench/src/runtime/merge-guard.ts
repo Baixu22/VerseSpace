@@ -1,5 +1,10 @@
 import type { Blackboard } from "../blackboard";
 import { git } from "../git";
+import {
+	type MergeTreeSupport,
+	parseMergeTreeOutput,
+	probeMergeTree,
+} from "../git/merge-tree";
 
 /**
  * The cheap merge safety net (R2, TF-0079).
@@ -17,6 +22,13 @@ import { git } from "../git";
  *    same file is only news when that file is not normally shared. Notifying
  *    on every overlap trains people to ignore the channel.
  *
+ * TF-0208 adds the outcome this layer used to lack. It knew only "they
+ * conflict" and "git failed", and read exit code 1 as an answer either way —
+ * so a ref git refused to resolve came back as an empty conflict list, a clean
+ * bill of health nobody had issued. `MergePreflight` below makes "no answer"
+ * first-class, and the capability probe makes "this git cannot answer" one
+ * too. The zero-false-positive property is now guarded instead of assumed.
+ *
  * Explicitly not here: semantic merge, LLM conflict resolution (agrees with
  * the developer only 55-59% of the time), constraint scheduling.
  */
@@ -27,10 +39,30 @@ const MAX_CONCURRENCY = 8;
 export interface MergePrediction {
 	a: string;
 	b: string;
-	/** Paths git says would actually conflict. Empty = clean. */
-	conflicting: string[];
-	/** Set when git failed for a reason other than "they conflict". */
-	error?: string;
+	preflight: MergePreflight;
+}
+
+/**
+ * TF-0208: outcome of asking git whether two refs merge cleanly.
+ *
+ * Four arms, each carrying its own reason, so callers map instead of judging.
+ * The split exists because `merge-tree` exit code 1 means two different things
+ * — "they conflict" *and* "I won't answer" (bad ref, empty output). Folding
+ * both into an empty path list published a clean merge nobody had predicted.
+ */
+export type MergePreflight =
+	/** git merged them and reported no conflict. A real answer. */
+	| { kind: "clear" }
+	/** git merged them and these paths would conflict. A real answer. */
+	| { kind: "conflicts"; paths: string[] }
+	/** This git cannot answer at all (`merge-tree --write-tree` unavailable). */
+	| { kind: "unsupported"; reason: string }
+	/** git was asked and did not answer: bad ref, unreadable output, other failure. */
+	| { kind: "unresolved"; reason: string };
+
+/** Paths git says would conflict. Empty for every outcome that is not a conflict answer. */
+export function conflictedPaths(preflight: MergePreflight): string[] {
+	return preflight.kind === "conflicts" ? preflight.paths : [];
 }
 
 export interface OverlapWarning {
@@ -49,32 +81,57 @@ export interface MergeGuardResult {
 }
 
 /**
- * Parse `merge-tree --write-tree --name-only` output. On a clean merge git
- * prints just the tree oid and exits 0. On conflict it prints the oid, then
- * the conflicting paths, then a blank line and the informational messages —
- * and exits 1, which is an answer, not a failure.
+ * Ask git one question about one pair. Failures are answers here, not
+ * exceptions — nothing in this layer throws.
+ *
+ * The `code === 1` branch is where the old code went wrong. git uses it for
+ * both "they conflict" and "not something we can merge" (which it reports on
+ * stderr with an empty stdout). Only a *parsed, non-empty* path list is a
+ * conflict answer; everything else is `unresolved`, because reporting an empty
+ * conflict list would claim a clean merge that was never predicted.
  */
-export function parseMergeTree(stdout: string, code: number | null): string[] {
-	if (code === 0) {
-		return [];
+export async function preflightPair(
+	projectRoot: string,
+	a: string,
+	b: string,
+	support: MergeTreeSupport,
+): Promise<MergePreflight> {
+	if (support.kind === "unsupported") {
+		return { kind: "unsupported", reason: support.reason };
 	}
-	const lines = stdout.split("\n");
-	const paths: string[] = [];
-	for (const line of lines.slice(1)) {
-		const trimmed = line.trim();
-		if (trimmed === "") {
-			break; // end of the name-only section
-		}
-		if (
-			trimmed.startsWith("Auto-merging") ||
-			trimmed.startsWith("CONFLICT") ||
-			trimmed.startsWith("error:")
-		) {
-			break;
-		}
-		paths.push(trimmed);
+	const result = await git(
+		["merge-tree", "--write-tree", "--name-only", a, b],
+		projectRoot,
+	);
+	if (result.code === 0) {
+		return { kind: "clear" };
 	}
-	return paths;
+	if (result.code === null) {
+		return {
+			kind: "unsupported",
+			reason: result.stderr.trim() || "git 没能启动",
+		};
+	}
+	if (result.code !== 1) {
+		return {
+			kind: "unresolved",
+			reason: result.stderr.trim() || `git merge-tree 退出码 ${result.code}`,
+		};
+	}
+	const paths = parseMergeTreeOutput(result.stdout);
+	if (paths === null) {
+		return {
+			kind: "unresolved",
+			reason: result.stderr.trim() || "git 的输出不是可解析的合并结论",
+		};
+	}
+	if (paths.length === 0) {
+		return {
+			kind: "unresolved",
+			reason: result.stderr.trim() || "git 报了冲突但没有列出路径",
+		};
+	}
+	return { kind: "conflicts", paths };
 }
 
 /** Distinct authors of the last `limit` commits touching `path`. */
@@ -156,7 +213,12 @@ async function mapWithLimit<T, R>(
 	return results;
 }
 
-/** Pairwise conflict prediction across refs. N² calls, but run concurrently. */
+/**
+ * Pairwise conflict prediction across refs. N² calls, but run concurrently.
+ *
+ * The capability probe runs once and covers the whole sweep: a git that cannot
+ * answer should be named once, not asked N² times.
+ */
 export async function predictConflicts(
 	projectRoot: string,
 	refs: string[],
@@ -167,21 +229,15 @@ export async function predictConflicts(
 			pairs.push([refs[i]!, refs[j]!]);
 		}
 	}
-	return mapWithLimit(pairs, MAX_CONCURRENCY, async ([a, b]) => {
-		const result = await git(
-			["merge-tree", "--write-tree", "--name-only", a, b],
-			projectRoot,
-		);
-		if (result.code !== 0 && result.code !== 1) {
-			return {
-				a,
-				b,
-				conflicting: [],
-				error: result.stderr.trim() || `git merge-tree 退出码 ${result.code}`,
-			};
-		}
-		return { a, b, conflicting: parseMergeTree(result.stdout, result.code) };
-	});
+	if (pairs.length === 0) {
+		return []; // nothing to ask, so nothing to probe for
+	}
+	const support = await probeMergeTree(projectRoot);
+	return mapWithLimit(pairs, MAX_CONCURRENCY, async ([a, b]) => ({
+		a,
+		b,
+		preflight: await preflightPair(projectRoot, a, b, support),
+	}));
 }
 
 /**
@@ -205,7 +261,9 @@ export async function runMergeGuard(
 
 	// one history query per distinct overlapping path, and only for paths
 	// git did NOT already flag — a predicted conflict is strictly stronger
-	const predicted = new Set(predictions.flatMap((p) => p.conflicting));
+	const predicted = new Set(
+		predictions.flatMap((p) => conflictedPaths(p.preflight)),
+	);
 	const candidates = [
 		...new Set(overlaps.flatMap((overlap) => overlap.paths)),
 	].filter((path) => !predicted.has(path));
