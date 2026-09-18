@@ -54,6 +54,12 @@ export interface ThreadMeta {
 		observedAt?: string;
 		provider?: string;
 	};
+	/** 最近一轮实际使用的 provider 与读集可观测性；从未运行过的线程没有。 */
+	lastRun?: {
+		provider: string;
+		readObservability: "footprint" | "unobservable";
+		at: string;
+	};
 	/** 准备恢复笔记（TF-0097）：离开时 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
 }

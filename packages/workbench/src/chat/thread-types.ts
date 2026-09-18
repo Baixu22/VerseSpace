@@ -1,3 +1,4 @@
+import type { WorkbenchConfig } from "../types/config";
 import type { ForkInheritance, ForkLineage } from "./fork";
 
 import type { PromotionRecord } from "./promote";
@@ -5,6 +6,21 @@ import type { PromotionRecord } from "./promote";
 import type { ResumeNote } from "./resume";
 
 export type PermissionMode = "default" | "plan" | "acceptEdits";
+
+export type ChatProvider = WorkbenchConfig["chat"]["provider"];
+
+/** Whether the provider's reads come back as footprints (claude tool channel) or not at all (HTTP). */
+export type ReadObservability = "footprint" | "unobservable";
+
+export function readObservabilityOf(provider: ChatProvider): ReadObservability {
+	return provider === "claude" ? "footprint" : "unobservable";
+}
+
+export interface ThreadLastRun {
+	provider: ChatProvider;
+	readObservability: ReadObservability;
+	at: string;
+}
 
 export type { ResumeBeat, ResumeNote } from "./resume";
 
@@ -36,6 +52,12 @@ export interface ThreadMeta {
 	forkOf?: ForkLineage;
 	/** 分叉后的真实 provider 继承观测；首次运行前字段为 pending。 */
 	forkInheritance?: ForkInheritance;
+	/**
+	 * 最近一轮实际使用的 provider 与读集可观测性。provider 是全局配置，同一线程
+	 * 的不同轮次可能换过 provider，所以这是每轮记录的事实，不能从当前配置推。
+	 * 从未运行过的线程没有这个字段。
+	 */
+	lastRun?: ThreadLastRun;
 	/** 准备恢复笔记（TF-0097）：离开车道时由 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
 }

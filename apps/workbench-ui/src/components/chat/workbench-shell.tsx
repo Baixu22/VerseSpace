@@ -10,6 +10,7 @@ import { PromoteThread } from "./promote-thread";
 import { SettingsPanel } from "./settings";
 import { ChatThread } from "./thread";
 import { ThreadListSidebar } from "./thread-list";
+import { ThreadObservability } from "./thread-observability";
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 	const { data: config } = useQuery(chatConfigQuery);
@@ -73,7 +74,7 @@ function ChatHeader() {
 					{activeThread?.title || "新对话"}
 				</h1>
 				<p
-					className="mt-0.5 flex items-center gap-1.5 text-small text-fg-muted"
+					className="mt-0.5 flex flex-wrap items-center gap-1.5 text-small text-fg-muted"
 					role="status"
 				>
 					<span
@@ -83,6 +84,7 @@ function ChatHeader() {
 						}
 					/>
 					{running ? "正在回复…" : "准备就绪"}
+					{activeThread ? <ThreadObservability thread={activeThread} /> : null}
 				</p>
 			</div>
 			<PromoteThread key={activeThread?.id} />

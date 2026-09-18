@@ -1316,3 +1316,67 @@ process.stdin.on("data", (chunk) => {
 		}
 	});
 });
+
+describe("ChatThreads 每轮 provider 与读集可观测性（TF-0191）", () => {
+	test("新线程无 lastRun；HTTP 轮次记 unobservable；换成 claude 后同一线程改记 footprint", async () => {
+		const ws = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-lastrun-agent-"));
+		const originalFetch = globalThis.fetch;
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create();
+			expect((await chat.get(thread.id)).lastRun).toBeUndefined();
+
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				chat: { provider: "openai-chat", apiKey: "test-key" },
+			});
+			globalThis.fetch = (async () =>
+				new Response(
+					`data: ${JSON.stringify({ choices: [{ delta: { content: "ok" } }] })}\n\ndata: [DONE]\n\n`,
+					{ status: 200, headers: { "content-type": "text/event-stream" } },
+				)) as unknown as typeof fetch;
+			await chat.run(thread.id, "http turn", () => {});
+			expect((await chat.get(thread.id)).lastRun).toMatchObject({
+				provider: "openai-chat",
+				readObservability: "unobservable",
+			});
+
+			const fake = String.raw`
+const line = (value) => process.stdout.write(JSON.stringify(value) + "\n");
+line({ type: "system", subtype: "init", session_id: "s" });
+process.stdin.setEncoding("utf8");
+process.stdin.once("data", () => {
+  line({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] } });
+  line({ type: "result", subtype: "success", result: "ok" });
+  setTimeout(() => process.exit(0), 5);
+});
+`;
+			await writeFile(join(fakeDir, "agent.js"), fake, "utf8");
+			process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "agent.js")}`;
+			await ws.bb.config.save({
+				...workbenchConfigSchema.parse({}),
+				chat: { provider: "claude" },
+			});
+			await chat.run(thread.id, "claude turn", () => {});
+			for (let attempt = 0; attempt < 40; attempt += 1) {
+				if (!chatContext(chat).live.has(thread.id)) break;
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			}
+			expect((await chat.get(thread.id)).lastRun).toMatchObject({
+				provider: "claude",
+				readObservability: "footprint",
+			});
+		} finally {
+			globalThis.fetch = originalFetch;
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	});
+});

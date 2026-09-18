@@ -5,6 +5,7 @@ import type { ThreadContext } from "./thread-context";
 import { observeForkInheritance } from "./thread-inheritance";
 import { maybePromote } from "./thread-promotion";
 import type { MessagePart, RunEvent, StoredMessage } from "./thread-types";
+import { readObservabilityOf } from "./thread-types";
 
 export function run(
 	context: ThreadContext,
@@ -28,11 +29,18 @@ export function run(
 			//（maybePromote），绝不要求用户先命名或分类。
 		}
 
-		meta.status = "running";
-		await context.store.saveMeta(meta);
-
 		const config = await context.bb.config.load();
 		const chat = config.chat;
+		const readObservability = readObservabilityOf(chat.provider);
+
+		meta.status = "running";
+		meta.lastRun = {
+			provider: chat.provider,
+			readObservability,
+			at: new Date().toISOString(),
+		};
+		await context.store.saveMeta(meta);
+
 		const noticeBatch = await drainNotices(context, id);
 		const selectedNotices = selectNoticeEntries(
 			noticeBatch.entries,
@@ -66,8 +74,7 @@ export function run(
 						// channel. HTTP providers have no tool channel: their
 						// post-notice reads are explicitly unobservable, never
 						// silently assumed observable (TF-0142).
-						readObservability:
-							chat.provider === "claude" ? "footprint" : "unobservable",
+						readObservability,
 					},
 				});
 				return true;
