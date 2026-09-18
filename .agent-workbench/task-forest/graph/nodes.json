@@ -11054,7 +11054,8 @@
     "deprecated_at": null,
     "desired_outcomes": [],
     "deviations": [
-      "TFD-4f8b21c6a9"
+      "TFD-4f8b21c6a9",
+      "TFD-f4659c3a37"
     ],
     "difficulty": "high",
     "estimated_total_minutes": 1500,
@@ -11411,10 +11412,22 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-f4659c3a37"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": 120,
-    "evidence": [],
+    "evidence": [
+      "2026-09-18 侦察（未开工）：结论是「功能层不可吸收、模式层可吸收，但性质是修主线缺陷而非移植」。主线 packages/workbench 对 forge/github/gitlab 零匹配（grep 三处命中全是误报：一处注释文字、一处无关词、一处 URL）；节点自身 non_goals（创建 PR、修 CI、inbox）与探索文档 §4.4「明确不吸收」一致。",
+      "规模切分（先破除「要吸收 12535 行」的误读）：src-tauri/src/forge/ = 33 个 .rs / 12535 行，其中 inbox 3185 + accounts 2379 + actions 941 + detect 470 = 6975 行属明确不吸收；可吸收的模式只在 github/context.rs + gitlab/context.rs，合计 881 行（占目录 7%），且真正要抄的是结构不是代码（枚举本体约 40 行）。",
+      "模式结构读数（这是「把原因变成类型而非散布早返回」的字面含义）：context.rs（构造者）464/417 行、Resolution:: 出现 16 次、早退 5 次；mod.rs（消费者）226/397 行、Resolution:: 出现 11 次、早退 0 次。即 5 个「为什么打不通」的判定收敛进一个 resolver，4 个消费入口、11 个匹配臂、0 早退 —— 消费者只做 resolve → match → 映射成状态形状。",
+      "实测抓到主线两处真缺陷（临时仓库夹具 + 真实 git 2.51 + 逐字移植的 parseMergeTree；脚本 .workbuddy/_probe_mergetree.py、_probe_mergetree2.py）。缺陷 A：git merge-tree 的 code=1 承担两种互斥语义 —— 「他们冲突」（stdout 有路径）与「git 拒绝回答」（stdout 空、stderr 有内容）。主线 merge-guard.ts:175 把 0 和 1 一起视为「是答案」，于是 code=1 + 空 stdout 走 parseMergeTree 返回 []，被解释为「合并干净」——这正是该文件头最自豪的 Zero false positives 不变量的反面。生产路径可达：scheduler/merge-guard.ts:41 在分支尚未创建时 refs.add(\"HEAD\")，而零提交仓库（createWorktree 注释明确要求至少一个 commit）实测 git merge-tree HEAD HEAD 返回 code=1 + 空 stdout → 报告「合并干净」。缺陷 B：主线假设 --write-tree 一定可用；实测老式 merge-tree（git < 2.38 行为）返回 code=1 且输出三行 `mode oid stage\\tpath`，被 parseMergeTree 逐行收成「冲突路径」，把 git 对象哈希当文件名报给用户。",
+      "现有测试为何漏掉：runtime/merge-guard.test.ts:50-53 用假造的 code=128 + \"fatal: not a valid ref\"，而实测真实 git 对无效 ref 返回 code=1 且 stderr 是 `merge-tree: <ref> - not something we can merge`（走 stderr 不走 stdout）。测试假造了一个现实中不存在的 (code, stdout) 组合，真实组合因此无人覆盖；该测试注释「调用方负责看 code」恰好说明设计意图，但调用方 predictConflicts 在 code=1 时认为「这是冲突答案」。",
+      "「merge 方式协商」字面不可吸收：支线 AllowedMergeMethods::pick()（github/pull_request.rs:67-101）管理的是「远程仓库允许哪些合并方式」，而主线 packages/workbench/src 全仓 git merge 0 处，10 处 merge 提及全部是 merge-tree 预测或注释 —— 主线只预测合并、从不执行合并。只能取模式内核「不要假设默认参数可用，先问对方允许什么」，主线对应物是 merge-tree --write-tree 的能力假设（即缺陷 B）。",
+      "三臂映射的诚实结论：支线实为四臂（Ready/Initializing/Unavailable/Unauthenticated），节点标题漏写 Initializing；其中 Unauthenticated 在主线无对应物（无远程身份），不应硬造。本地化后的枚举应按主线真实成因重新划分（有结论 / 环境不支持 / 输入失效 / 部分对未完成），不是照搬臂。",
+      "建议边界（待柏旭确认后开工）：做 —— error?: string 改封闭枚举、让 [] 只表示确实无冲突、补 merge-tree 能力探测、guardBeforeDispatch 返回结论（现为 Promise<void>）、修 test:50 与真实 git 不符的 fixture；不做 —— 不新增入口点/命令/UI、不碰 PR/CI/inbox/多账号、不引入远程身份、不真合并、不做语义合并。full 论证见 docs/tf0208-forge-pattern-recon-2026-09-18.md（含实测主表与可复算命令）。",
+      "编排器边界（探索文档第七部分第 4 问）本节点不触发：它不新增任何交付能力，只把已有预测层的结论表达改好。"
+    ],
     "execution_hints": [],
     "id": "TF-0208",
     "kind": "subtask",
@@ -11433,7 +11446,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "merge-guard 吸收 forge 模式：Resolution 预检枚举（Ready/Unavailable/Unauthenticated）+ merge 方式协商",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-18T03:17:41.640417Z"
   },
   "TF-0209": {
     "acceptance_criteria": [],
