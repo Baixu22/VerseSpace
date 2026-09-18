@@ -3,6 +3,7 @@ import type { Blackboard } from "../blackboard";
 import type { WorkbenchEvent } from "../types/event";
 import { collectDecisionPoints } from "./ledger";
 import type { ChatThreads } from "./threads";
+import { flattenToolParts } from "./tool-collapse";
 
 const PREVIEW_CHARS = 16_000;
 
@@ -96,8 +97,8 @@ export async function resolveThreadEvidence(
 				: unavailable(ref, "当前记录中找不到这个决策锚点。");
 		}
 		const calls = messages.flatMap((message) =>
-			(message.parts ?? [])
-				.filter((item) => item.type === "tool-call" && item.toolCallId === id)
+			flattenToolParts(message.parts)
+				.filter((item) => item.toolCallId === id)
 				.map((part) => ({ messageId: message.id, at: message.at, ...part })),
 		);
 		if (calls.length === 0)

@@ -7,7 +7,7 @@ import { consumeSse, runHttpShadow } from "./http-stream";
 import { promptWithNotices } from "./prompt";
 import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
-import type { MessagePart, RunEvent } from "./thread-types";
+import type { MessagePart, TurnRunEvent } from "./thread-types";
 
 export async function history(
 	context: ThreadContext,
@@ -23,7 +23,7 @@ export async function runHttp(
 	context: ThreadContext,
 	chat: WorkbenchConfig["chat"],
 	id: string,
-	emit: (event: RunEvent) => void,
+	emit: (event: TurnRunEvent) => void,
 	messageParts: MessagePart[],
 	signal: AbortSignal,
 	precedingNotices: string[],

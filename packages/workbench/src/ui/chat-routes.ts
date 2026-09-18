@@ -2,7 +2,7 @@ import type { Blackboard } from "../blackboard";
 
 import { restoreObservationSchema } from "../chat/restore-timing";
 import { collectRestoreView } from "../chat/restore-view";
-import type { ChatThreads } from "../chat/threads";
+import type { ChatThreads, RunEvent } from "../chat/threads";
 
 import { evidenceResponse } from "./evidence-route";
 export async function chatRoute(
@@ -170,7 +170,9 @@ export async function chatRoute(
 					// cancel can resolve the run while a final event is still in
 					// flight — once closed, drop anything late instead of throwing
 					let closed = false;
-					const emit = (event: Record<string, unknown>) => {
+					let messageId: string | undefined;
+					const emit = (event: RunEvent) => {
+						if (event.type === "turn_started") messageId = event.messageId;
 						if (closed) {
 							return;
 						}
@@ -200,7 +202,7 @@ export async function chatRoute(
 						})
 						.then(close)
 						.catch((error) => {
-							emit({ type: "error", message: String(error) });
+							emit({ type: "error", message: String(error), messageId });
 							close();
 						});
 				},

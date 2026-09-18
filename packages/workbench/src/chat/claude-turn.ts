@@ -1,9 +1,13 @@
+import {
+	createClaudeRenderState,
+	finalClaudeParts,
+} from "./claude-render-state";
 import { ensureClaudeSession } from "./claude-session";
 import type { ActiveTurn } from "./claude-types";
 import { promptWithNotices, turnLine } from "./prompt";
 import type { ThreadContext } from "./thread-context";
 import { maybePromote } from "./thread-promotion";
-import type { RunEvent, StoredMessage, ThreadMeta } from "./thread-types";
+import type { StoredMessage, ThreadMeta, TurnRunEvent } from "./thread-types";
 
 export const SESSION_IDLE_CLOSE_MS =
 	Number(process.env.WORKBENCH_SESSION_IDLE_MS) || 5 * 60_000;
@@ -13,7 +17,7 @@ export async function runClaudeTurn(
 	id: string,
 	meta: ThreadMeta,
 	text: string,
-	emit: (event: RunEvent) => void,
+	emit: (event: TurnRunEvent) => void,
 	opts: {
 		resend: boolean;
 		precedingNotices: string[];
@@ -41,8 +45,8 @@ export async function runClaudeTurn(
 		resolveTurn = resolve;
 	});
 	const turn: ActiveTurn = {
-		assistantTexts: [],
-		messageParts: [],
+		...createClaudeRenderState(),
+		undecidedEventTypes: new Set(),
 		stderr: "",
 		pendingFootprints: new Map(),
 		fpQueue: Promise.resolve(),
@@ -117,7 +121,21 @@ export async function runClaudeTurn(
 	// Unfinished tool calls remain in the transcript, never in the read/write
 	// ledger. A result-less attempt is not proof that a tool ran.
 	turn.pendingFootprints.clear();
-	const full = turn.assistantTexts.join("");
+	if (turn.undecidedEventTypes.size > 0) {
+		// An event shape the router has no render decision for is a coverage gap.
+		// It must be audible here — the alternative is output that quietly never
+		// appears after a provider upgrade.
+		console.warn(
+			`[chat] 线程 ${id} 有未建模的流事件类型：${[...turn.undecidedEventTypes].join(", ")}`,
+		);
+	}
+	const full = turn.messageParts
+		.filter(
+			(part): part is { type: "text"; text: string } => part.type === "text",
+		)
+		.map((part) => part.text)
+		.join("");
+	const parts = finalClaudeParts(turn);
 	if (full || turn.messageParts.some((part) => part.type === "tool-call")) {
 		const assistantMessage: StoredMessage = {
 			// TF-0207: persisted under the id the streaming events announced, so
@@ -126,7 +144,7 @@ export async function runClaudeTurn(
 			role: "assistant",
 			text: full,
 			at: new Date().toISOString(),
-			parts: turn.messageParts,
+			parts,
 		};
 		await context.store.appendMessage(id, assistantMessage);
 		emit({ type: "done", message: assistantMessage });

@@ -1,24 +1,31 @@
 import {
 	type ThreadMessage,
+	type ThreadMessageLike,
 	useExternalStoreRuntime,
 	WebSpeechSynthesisAdapter,
 } from "@assistant-ui/react";
 import { useState } from "react";
 import { type StoredMessage, useActiveMessages, useChatStore } from "./store";
 
-function toThreadMessage(m: StoredMessage): ThreadMessage {
+export function toThreadMessage(m: StoredMessage): ThreadMessageLike {
 	const content = (m.parts ?? [{ type: "text", text: m.text }]).map((part) => {
 		if (part.type === "tool-call") {
 			return {
-				type: "tool-call",
+				type: "tool-call" as const,
 				toolCallId: part.toolCallId,
 				toolName: part.toolName,
-				args: part.args,
 				result: part.result,
-				argsText: JSON.stringify(part.args, null, 2),
+				isError: part.isError,
+				argsText: JSON.stringify(part.args, null, 2) ?? "{}",
 			};
 		}
-		return { type: "text", text: part.text };
+		if (part.type === "collapsed-group") {
+			return {
+				type: "data-workbench-collapsed-group" as const,
+				data: part,
+			};
+		}
+		return { type: "text" as const, text: part.text };
 	});
 	// external store rule: status is only supported for assistant messages —
 	// a status on user messages throws at convertMessages
@@ -28,11 +35,16 @@ function toThreadMessage(m: StoredMessage): ThreadMessage {
 		role: m.role === "user" ? "user" : "assistant",
 		content,
 		...(isAssistant
-			? { status: { type: m.status === "running" ? "running" : "complete" } }
+			? {
+					status:
+						m.status === "running"
+							? ({ type: "running" } as const)
+							: ({ type: "complete", reason: "stop" } as const),
+				}
 			: {}),
 		createdAt: new Date(m.at),
 		metadata: { custom: {} },
-	} as unknown as ThreadMessage;
+	};
 }
 
 /**

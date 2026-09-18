@@ -18,7 +18,8 @@
 
 import { collectDecisionPoints } from "./ledger";
 import { suggestNext } from "./suggest";
-import type { MessagePart, StoredMessage, ThreadMeta } from "./threads";
+import type { StoredMessage, ThreadMeta, ToolCallPart } from "./threads";
+import { flattenToolParts } from "./tool-collapse";
 
 export type ResumeBeatKind = "doing" | "decided" | "shifted" | "next";
 
@@ -56,10 +57,7 @@ function truncate(text: string, max = MAX_BEAT_TEXT): string {
 }
 
 /** 从 tool-call 的 args 里提取一个可读的目标（路径/命令），用于 shifted 节拍叙事。 */
-function extractToolTarget(part: MessagePart): string | null {
-	if (part.type !== "tool-call") {
-		return null;
-	}
+function extractToolTarget(part: ToolCallPart): string | null {
 	const args = part.args as Record<string, unknown> | null;
 	if (!args || typeof args !== "object") {
 		return null;
@@ -140,36 +138,28 @@ export function buildResumeNote(
 
 	// 你脚下什么动了：最后一条 assistant 的 tool-call（叙事，不是 diff）
 	const lastAssistant = lastOfRole(messages, "assistant");
-	if (lastAssistant?.parts) {
-		const toolParts = lastAssistant.parts.filter(
-			(p): p is Extract<MessagePart, { type: "tool-call" }> =>
-				p.type === "tool-call",
-		);
-		if (toolParts.length > 0) {
-			const summary = toolParts
-				.slice(0, 3)
-				.map((p) => {
-					const target = extractToolTarget(p);
-					return target ? `${p.toolName}(${truncate(target, 40)})` : p.toolName;
-				})
-				.join("、");
-			beats.push({
-				kind: "shifted",
-				text: `动了 ${toolParts.length} 处：${summary}`,
-				refs: [
-					`message:${lastAssistant.id}`,
-					...toolParts.slice(0, 3).flatMap((part) => {
-						const target = extractToolTarget(part);
-						return target
-							? [
-									`tool:${part.toolCallId}`,
-									`path:${target.replace(/\\/g, "/")}`,
-								]
-							: [`tool:${part.toolCallId}`];
-					}),
-				],
-			});
-		}
+	const toolParts = flattenToolParts(lastAssistant?.parts);
+	if (toolParts.length > 0) {
+		const summary = toolParts
+			.slice(0, 3)
+			.map((p) => {
+				const target = extractToolTarget(p);
+				return target ? `${p.toolName}(${truncate(target, 40)})` : p.toolName;
+			})
+			.join("、");
+		beats.push({
+			kind: "shifted",
+			text: `动了 ${toolParts.length} 处：${summary}`,
+			refs: [
+				...(lastAssistant ? [`message:${lastAssistant.id}`] : []),
+				...toolParts.slice(0, 3).flatMap((part) => {
+					const target = extractToolTarget(part);
+					return target
+						? [`tool:${part.toolCallId}`, `path:${target.replace(/\\/g, "/")}`]
+						: [`tool:${part.toolCallId}`];
+				}),
+			],
+		});
 	}
 
 	// 下一步是什么：复用 suggestNext 的第一条

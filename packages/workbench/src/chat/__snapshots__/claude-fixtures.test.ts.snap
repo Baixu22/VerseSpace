@@ -1,0 +1,2575 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: api-retry.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 2,
+    "noop": 3,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.api_retry": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 125,
+      "bytes": 125,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 4,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 5,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 21,
+        "type": "text",
+      },
+    ],
+    "textChars": 21,
+  },
+  "ipc": {
+    "baselineBytes": 614,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 262,
+    "finalizedPartsBytes": 125,
+    "optimizedBytes": 614,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "api-retry.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: assistant-error-max-tokens.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 1,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 166,
+      "bytes": 166,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 2,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 62,
+        "type": "text",
+      },
+    ],
+    "textChars": 62,
+  },
+  "ipc": {
+    "baselineBytes": 737,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 344,
+    "finalizedPartsBytes": 166,
+    "optimizedBytes": 737,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "assistant-error-max-tokens.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: assistant-error-rate-limit.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 1,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 133,
+      "bytes": 133,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 2,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 29,
+        "type": "text",
+      },
+    ],
+    "textChars": 29,
+  },
+  "ipc": {
+    "baselineBytes": 638,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 278,
+    "finalizedPartsBytes": 133,
+    "optimizedBytes": 638,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "assistant-error-rate-limit.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: auth-status.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 2,
+    "noop": 3,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "auth_status": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 128,
+      "bytes": 128,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 4,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 5,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 24,
+        "type": "text",
+      },
+    ],
+    "textChars": 24,
+  },
+  "ipc": {
+    "baselineBytes": 623,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 268,
+    "finalizedPartsBytes": 128,
+    "optimizedBytes": 623,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "auth-status.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: bash-and-edit.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 18,
+    "noop": 134,
+    "streaming-delta": 9,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.thinking": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "assistant.content.tool_use": {
+      "count": 8,
+      "decision": "finalized",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "rate_limit_event": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "stream_event.content_block_delta.input_json_delta": {
+      "count": 89,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.signature_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.text_delta": {
+      "count": 9,
+      "decision": "streaming-delta",
+    },
+    "stream_event.content_block_start.text": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.thinking": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.tool_use": {
+      "count": 8,
+      "decision": "noop",
+    },
+    "stream_event.content_block_stop": {
+      "count": 10,
+      "decision": "noop",
+    },
+    "stream_event.message_delta": {
+      "count": 5,
+      "decision": "noop",
+    },
+    "stream_event.message_start": {
+      "count": 5,
+      "decision": "noop",
+    },
+    "stream_event.message_stop": {
+      "count": 5,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.status": {
+      "count": 5,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 8,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 9,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 257,
+      "bytes": 257,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 28,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 355,
+      "bytes": 355,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 32,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 451,
+      "bytes": 451,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 42,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 491,
+      "bytes": 491,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 49,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 716,
+      "bytes": 716,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 50,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 754,
+      "bytes": 754,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 55,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 853,
+      "bytes": 853,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 60,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 892,
+      "bytes": 892,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 63,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1015,
+      "bytes": 1015,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 75,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1416,
+      "bytes": 1416,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 80,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1519,
+      "bytes": 1519,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 85,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 2295,
+      "bytes": 2295,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 90,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 2399,
+      "bytes": 2399,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 95,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 2564,
+      "bytes": 2564,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 98,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 2873,
+      "bytes": 2873,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 139,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 2954,
+      "bytes": 2954,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 143,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 2984,
+      "bytes": 82,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 147,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3056,
+      "bytes": 150,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 148,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3105,
+      "bytes": 127,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 149,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3179,
+      "bytes": 152,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 150,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3249,
+      "bytes": 148,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 151,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3317,
+      "bytes": 146,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 152,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3404,
+      "bytes": 165,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 153,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3532,
+      "bytes": 206,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 154,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 3569,
+      "bytes": 115,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 155,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+  ],
+  "eventCount": 161,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "collapsed-group",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "toolu_1",
+        "isError": true,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "active": false,
+        "category": "mixed",
+        "id": "group:toolu_2",
+        "summary": "搜索过 3 个模式，读取 3 个文件",
+        "tools": 6,
+        "type": "collapsed-group",
+      },
+      {
+        "id": "toolu_8",
+        "isError": false,
+        "name": "Edit",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 570,
+        "type": "text",
+      },
+    ],
+    "textChars": 570,
+  },
+  "ipc": {
+    "baselineBytes": 55700,
+    "baselineEvents": 28,
+    "controlBytes": 227,
+    "doneBytes": 4274,
+    "finalizedPartsBytes": 21804,
+    "optimizedBytes": 27596,
+    "optimizedEvents": 28,
+    "reductionPercent": 50.46,
+    "savedBytes": 28104,
+  },
+  "name": "bash-and-edit.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: compact-boundary.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 3,
+    "noop": 2,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.compact_boundary": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 129,
+      "bytes": 129,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.text",
+    },
+    {
+      "baselineBytes": 154,
+      "bytes": 154,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 4,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 5,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 50,
+        "type": "text",
+      },
+    ],
+    "textChars": 50,
+  },
+  "ipc": {
+    "baselineBytes": 830,
+    "baselineEvents": 5,
+    "controlBytes": 227,
+    "doneBytes": 320,
+    "finalizedPartsBytes": 283,
+    "optimizedBytes": 830,
+    "optimizedEvents": 5,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "compact-boundary.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: compaction-block.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 2,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.compaction+text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 140,
+      "bytes": 140,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.compaction+text",
+    },
+  ],
+  "eventCount": 3,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 36,
+        "type": "text",
+      },
+    ],
+    "textChars": 36,
+  },
+  "ipc": {
+    "baselineBytes": 659,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 292,
+    "finalizedPartsBytes": 140,
+    "optimizedBytes": 659,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "compaction-block.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: container-upload.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 2,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.container_upload+text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 151,
+      "bytes": 151,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.container_upload+text",
+    },
+  ],
+  "eventCount": 3,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 47,
+        "type": "text",
+      },
+    ],
+    "textChars": 47,
+  },
+  "ipc": {
+    "baselineBytes": 692,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 314,
+    "finalizedPartsBytes": 151,
+    "optimizedBytes": 692,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "container-upload.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: fable5-omitted-thinking-edits.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 27,
+    "noop": 223,
+    "streaming-delta": 9,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "assistant.content.thinking": {
+      "count": 12,
+      "decision": "noop",
+    },
+    "assistant.content.tool_use": {
+      "count": 12,
+      "decision": "finalized",
+    },
+    "contextUsageUpdated": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "rate_limit_event": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "stream_event.content_block_delta.input_json_delta": {
+      "count": 66,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.signature_delta": {
+      "count": 12,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.text_delta": {
+      "count": 9,
+      "decision": "streaming-delta",
+    },
+    "stream_event.content_block_delta.thinking_delta": {
+      "count": 17,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.text": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.thinking": {
+      "count": 12,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.tool_use": {
+      "count": 12,
+      "decision": "noop",
+    },
+    "stream_event.content_block_stop": {
+      "count": 26,
+      "decision": "noop",
+    },
+    "stream_event.message_delta": {
+      "count": 10,
+      "decision": "noop",
+    },
+    "stream_event.message_start": {
+      "count": 10,
+      "decision": "noop",
+    },
+    "stream_event.message_stop": {
+      "count": 10,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.status": {
+      "count": 10,
+      "decision": "noop",
+    },
+    "system.thinking_tokens": {
+      "count": 20,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 12,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 9,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 177,
+      "bytes": 177,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 14,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 285,
+      "bytes": 285,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 20,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 512,
+      "bytes": 512,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 21,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 615,
+      "bytes": 615,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 24,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 733,
+      "bytes": 733,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 32,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 958,
+      "bytes": 958,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 36,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1077,
+      "bytes": 1077,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 39,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1336,
+      "bytes": 1336,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 42,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1602,
+      "bytes": 1602,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 85,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1765,
+      "bytes": 1765,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 91,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1947,
+      "bytes": 1947,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 94,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 2029,
+      "bytes": 2029,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 98,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 2409,
+      "bytes": 2409,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 118,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 2572,
+      "bytes": 2572,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 121,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 2790,
+      "bytes": 2790,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 146,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 2953,
+      "bytes": 2953,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 149,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 3202,
+      "bytes": 3202,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 169,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 3366,
+      "bytes": 3366,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 173,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 3770,
+      "bytes": 3770,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 196,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 3934,
+      "bytes": 3934,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 199,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 4131,
+      "bytes": 4131,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 210,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 4355,
+      "bytes": 4355,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 214,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 4403,
+      "bytes": 100,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 227,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 4427,
+      "bytes": 102,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 228,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 4636,
+      "bytes": 4636,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 238,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 4675,
+      "bytes": 4675,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 242,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 4702,
+      "bytes": 79,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 246,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 4790,
+      "bytes": 166,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 247,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 4881,
+      "bytes": 169,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 248,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 4961,
+      "bytes": 158,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 249,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 5037,
+      "bytes": 154,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 250,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 5117,
+      "bytes": 158,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 251,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 5174,
+      "bytes": 135,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 252,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+  ],
+  "eventCount": 259,
+  "finalMessage": {
+    "partTypes": [
+      "collapsed-group",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "text",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "active": false,
+        "category": "read",
+        "id": "group:toolu_1",
+        "summary": "读取 4 个文件",
+        "tools": 4,
+        "type": "collapsed-group",
+      },
+      {
+        "id": "toolu_5",
+        "isError": false,
+        "name": "Edit",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_6",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_7",
+        "isError": false,
+        "name": "Edit",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_8",
+        "isError": false,
+        "name": "Edit",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_9",
+        "isError": false,
+        "name": "Edit",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_10",
+        "isError": false,
+        "name": "Edit",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_11",
+        "isError": true,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 20,
+        "type": "text",
+      },
+      {
+        "id": "toolu_12",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 299,
+        "type": "text",
+      },
+    ],
+    "textChars": 319,
+  },
+  "ipc": {
+    "baselineBytes": 105357,
+    "baselineEvents": 36,
+    "controlBytes": 227,
+    "doneBytes": 5809,
+    "finalizedPartsBytes": 55829,
+    "optimizedBytes": 63086,
+    "optimizedEvents": 36,
+    "reductionPercent": 40.12,
+    "savedBytes": 42271,
+  },
+  "name": "fable5-omitted-thinking-edits.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: mcp-tool.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 5,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.mcp_tool_result": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "assistant.content.mcp_tool_use": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.mcp_tool_use+text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 268,
+      "bytes": 268,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.mcp_tool_use+text",
+    },
+    {
+      "baselineBytes": 314,
+      "bytes": 314,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 3,
+      "path": "assistant.content.mcp_tool_result",
+    },
+    {
+      "baselineBytes": 431,
+      "bytes": 431,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 4,
+      "path": "assistant.content.mcp_tool_use",
+    },
+    {
+      "baselineBytes": 508,
+      "bytes": 508,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 5,
+      "path": "assistant.content.mcp_tool_result",
+    },
+  ],
+  "eventCount": 6,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+      "tool-call",
+      "tool-call",
+    ],
+    "parts": [
+      {
+        "chars": 54,
+        "type": "text",
+      },
+      {
+        "id": "toolu_mcp_aaa",
+        "isError": false,
+        "name": "read_text_file",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_mcp_bbb",
+        "isError": true,
+        "name": "write_file",
+        "settled": true,
+        "type": "tool-call",
+      },
+    ],
+    "textChars": 54,
+  },
+  "ipc": {
+    "baselineBytes": 2426,
+    "baselineEvents": 7,
+    "controlBytes": 227,
+    "doneBytes": 678,
+    "finalizedPartsBytes": 1521,
+    "optimizedBytes": 2426,
+    "optimizedEvents": 7,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "mcp-tool.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: stop-reason-context-exceeded.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 1,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 126,
+      "bytes": 126,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 2,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 22,
+        "type": "text",
+      },
+    ],
+    "textChars": 22,
+  },
+  "ipc": {
+    "baselineBytes": 617,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 264,
+    "finalizedPartsBytes": 126,
+    "optimizedBytes": 617,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "stop-reason-context-exceeded.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: stop-reason-refusal.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 1,
+    "noop": 1,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 135,
+      "bytes": 135,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 2,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 31,
+        "type": "text",
+      },
+    ],
+    "textChars": 31,
+  },
+  "ipc": {
+    "baselineBytes": 644,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 282,
+    "finalizedPartsBytes": 135,
+    "optimizedBytes": 644,
+    "optimizedEvents": 4,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "stop-reason-refusal.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: subagent-prompt.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 5,
+    "noop": 4,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "assistant.content.tool_use": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_notification": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "user.content.text": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 1,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 202,
+      "bytes": 202,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 260,
+      "bytes": 260,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 5,
+      "path": "assistant.content.text",
+    },
+    {
+      "baselineBytes": 318,
+      "bytes": 318,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 7,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 352,
+      "bytes": 352,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 8,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 9,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "tu_task_1",
+        "isError": false,
+        "name": "Task",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 66,
+        "type": "text",
+      },
+    ],
+    "textChars": 66,
+  },
+  "ipc": {
+    "baselineBytes": 1893,
+    "baselineEvents": 7,
+    "controlBytes": 227,
+    "doneBytes": 534,
+    "finalizedPartsBytes": 1132,
+    "optimizedBytes": 1893,
+    "optimizedEvents": 7,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "subagent-prompt.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: task-plan.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 16,
+    "noop": 92,
+    "streaming-delta": 5,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 3,
+      "decision": "finalized",
+    },
+    "assistant.content.thinking": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "assistant.content.tool_use": {
+      "count": 6,
+      "decision": "finalized",
+    },
+    "rate_limit_event": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "stream_event.content_block_delta.input_json_delta": {
+      "count": 26,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.signature_delta": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.text_delta": {
+      "count": 5,
+      "decision": "streaming-delta",
+    },
+    "stream_event.content_block_delta.thinking_delta": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.text": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.thinking": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.tool_use": {
+      "count": 6,
+      "decision": "noop",
+    },
+    "stream_event.content_block_stop": {
+      "count": 12,
+      "decision": "noop",
+    },
+    "stream_event.message_delta": {
+      "count": 7,
+      "decision": "noop",
+    },
+    "stream_event.message_start": {
+      "count": 7,
+      "decision": "noop",
+    },
+    "stream_event.message_stop": {
+      "count": 7,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.status": {
+      "count": 7,
+      "decision": "noop",
+    },
+    "system.thinking_tokens": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 6,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 5,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 210,
+      "bytes": 210,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 16,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 339,
+      "bytes": 339,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 18,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 402,
+      "bytes": 115,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 32,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 607,
+      "bytes": 607,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 40,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 685,
+      "bytes": 685,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 43,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 866,
+      "bytes": 866,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 57,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 943,
+      "bytes": 943,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 60,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1139,
+      "bytes": 1139,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 70,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1218,
+      "bytes": 1218,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 73,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1249,
+      "bytes": 83,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 78,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 1298,
+      "bytes": 127,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 79,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 1411,
+      "bytes": 1411,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 87,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1461,
+      "bytes": 1461,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 90,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1572,
+      "bytes": 1572,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 99,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1622,
+      "bytes": 1622,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 102,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1653,
+      "bytes": 83,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 107,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 1701,
+      "bytes": 126,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 108,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+  ],
+  "eventCount": 113,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "text",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "text",
+      "tool-call",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "toolu_1",
+        "isError": false,
+        "name": "ToolSearch",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 37,
+        "type": "text",
+      },
+      {
+        "id": "toolu_2",
+        "isError": false,
+        "name": "TaskCreate",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_3",
+        "isError": false,
+        "name": "TaskCreate",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_4",
+        "isError": false,
+        "name": "TaskCreate",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 54,
+        "type": "text",
+      },
+      {
+        "id": "toolu_5",
+        "isError": false,
+        "name": "TaskUpdate",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_6",
+        "isError": false,
+        "name": "TaskUpdate",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 53,
+        "type": "text",
+      },
+    ],
+    "textChars": 144,
+  },
+  "ipc": {
+    "baselineBytes": 20564,
+    "baselineEvents": 20,
+    "controlBytes": 227,
+    "doneBytes": 1961,
+    "finalizedPartsBytes": 12073,
+    "optimizedBytes": 14795,
+    "optimizedEvents": 20,
+    "reductionPercent": 28.05,
+    "savedBytes": 5769,
+  },
+  "name": "task-plan.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: thinking-text.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 2,
+    "noop": 11,
+    "streaming-delta": 1,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text+thinking": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.thinking": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "stream_event.content_block_delta.signature_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.text_delta": {
+      "count": 1,
+      "decision": "streaming-delta",
+    },
+    "stream_event.content_block_delta.thinking_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.text": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.thinking": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_stop": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "stream_event.message_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.message_start": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.message_stop": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 1,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 123,
+      "bytes": 97,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 9,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+  ],
+  "eventCount": 14,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 19,
+        "type": "text",
+      },
+    ],
+    "textChars": 19,
+  },
+  "ipc": {
+    "baselineBytes": 608,
+    "baselineEvents": 4,
+    "controlBytes": 227,
+    "doneBytes": 258,
+    "finalizedPartsBytes": 0,
+    "optimizedBytes": 582,
+    "optimizedEvents": 4,
+    "reductionPercent": 4.28,
+    "savedBytes": 26,
+  },
+  "name": "thinking-text.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: todo-plan.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 6,
+    "noop": 130,
+    "streaming-delta": 3,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.thinking": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "assistant.content.tool_use": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "rate_limit_event": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "stream_event.content_block_delta.input_json_delta": {
+      "count": 105,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.signature_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.text_delta": {
+      "count": 3,
+      "decision": "streaming-delta",
+    },
+    "stream_event.content_block_start.text": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.thinking": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.tool_use": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "stream_event.content_block_stop": {
+      "count": 4,
+      "decision": "noop",
+    },
+    "stream_event.message_delta": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "stream_event.message_start": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "stream_event.message_stop": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.status": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 2,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 3,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 198,
+      "bytes": 198,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 19,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 275,
+      "bytes": 275,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 22,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1032,
+      "bytes": 1032,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 123,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 1220,
+      "bytes": 1220,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 126,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 1251,
+      "bytes": 83,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 131,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 1287,
+      "bytes": 114,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 132,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+    {
+      "baselineBytes": 1312,
+      "bytes": 103,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 133,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+  ],
+  "eventCount": 139,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "toolu_1",
+        "isError": false,
+        "name": "ToolSearch",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "toolu_2",
+        "isError": false,
+        "name": "TodoWrite",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 66,
+        "type": "text",
+      },
+    ],
+    "textChars": 66,
+  },
+  "ipc": {
+    "baselineBytes": 8296,
+    "baselineEvents": 10,
+    "controlBytes": 227,
+    "doneBytes": 1494,
+    "finalizedPartsBytes": 2725,
+    "optimizedBytes": 4746,
+    "optimizedEvents": 10,
+    "reductionPercent": 42.79,
+    "savedBytes": 3550,
+  },
+  "name": "todo-plan.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: tool-use-summary.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 4,
+    "noop": 2,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.tool_use": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "tool_use_summary": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 1,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 170,
+      "bytes": 170,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 221,
+      "bytes": 221,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 3,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 277,
+      "bytes": 277,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 5,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 6,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "toolu_xxx",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 30,
+        "type": "text",
+      },
+    ],
+    "textChars": 30,
+  },
+  "ipc": {
+    "baselineBytes": 1318,
+    "baselineEvents": 6,
+    "controlBytes": 227,
+    "doneBytes": 423,
+    "finalizedPartsBytes": 668,
+    "optimizedBytes": 1318,
+    "optimizedEvents": 6,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "tool-use-summary.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: tool-use.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 4,
+    "noop": 12,
+    "streaming-delta": 1,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.tool_use": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "stream_event.content_block_delta.input_json_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_delta.text_delta": {
+      "count": 1,
+      "decision": "streaming-delta",
+    },
+    "stream_event.content_block_start.text": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_start.tool_use": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.content_block_stop": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "stream_event.message_delta": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "stream_event.message_start": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "stream_event.message_stop": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_notification": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 1,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 1,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 291,
+      "bytes": 291,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 5,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 440,
+      "bytes": 440,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 9,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 554,
+      "bytes": 166,
+      "decision": "streaming-delta",
+      "emission": "delta",
+      "line": 12,
+      "path": "stream_event.content_block_delta.text_delta",
+    },
+  ],
+  "eventCount": 17,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "toolu_1",
+        "isError": false,
+        "name": "Task",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 88,
+        "type": "text",
+      },
+    ],
+    "textChars": 88,
+  },
+  "ipc": {
+    "baselineBytes": 2270,
+    "baselineEvents": 6,
+    "controlBytes": 227,
+    "doneBytes": 758,
+    "finalizedPartsBytes": 731,
+    "optimizedBytes": 1882,
+    "optimizedEvents": 6,
+    "reductionPercent": 17.09,
+    "savedBytes": 388,
+  },
+  "name": "tool-use.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: workflow.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "finalized": 4,
+    "noop": 6,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "assistant.content.text": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "assistant.content.tool_use": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "result.success": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "system.init": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_notification": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_progress": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "system.task_updated": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "user.content.tool_result": {
+      "count": 1,
+      "decision": "finalized",
+    },
+  },
+  "deltaCount": 0,
+  "emissionCheckpoints": [
+    {
+      "baselineBytes": 248,
+      "bytes": 248,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 2,
+      "path": "assistant.content.tool_use",
+    },
+    {
+      "baselineBytes": 367,
+      "bytes": 367,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 4,
+      "path": "user.content.tool_result",
+    },
+    {
+      "baselineBytes": 423,
+      "bytes": 423,
+      "decision": "finalized",
+      "emission": "parts",
+      "line": 7,
+      "path": "assistant.content.text",
+    },
+  ],
+  "eventCount": 10,
+  "finalMessage": {
+    "partTypes": [
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "id": "toolu_1",
+        "isError": false,
+        "name": "Workflow",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 30,
+        "type": "text",
+      },
+    ],
+    "textChars": 30,
+  },
+  "ipc": {
+    "baselineBytes": 1834,
+    "baselineEvents": 6,
+    "controlBytes": 227,
+    "doneBytes": 569,
+    "finalizedPartsBytes": 1038,
+    "optimizedBytes": 1834,
+    "optimizedEvents": 6,
+    "reductionPercent": 0,
+    "savedBytes": 0,
+  },
+  "name": "workflow.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decisions, matching wire projections and IPC savings: aggregate NDJSON IPC totals 1`] = `
+{
+  "baselineBytes": 206320,
+  "events": 763,
+  "fixtures": 19,
+  "multiDeltaFixtures": [
+    "bash-and-edit.jsonl",
+    "fable5-omitted-thinking-edits.jsonl",
+    "task-plan.jsonl",
+    "todo-plan.jsonl",
+  ],
+  "optimizedBytes": 126212,
+  "reductionPercent": 38.83,
+  "savedBytes": 80108,
+  "textDeltas": 28,
+  "undecided": 0,
+}
+`;

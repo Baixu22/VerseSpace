@@ -1,10 +1,11 @@
 import { AuiIf, MessagePrimitive } from "@assistant-ui/react";
-import { useId, useState } from "react";
-import { ChevronDown, Command, Loader2, Terminal } from "@/components/icon";
+import { useState } from "react";
+import { ChevronDown, Command, Loader2 } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";
 import { AnimatedDisclosure } from "./animated-disclosure";
+import { CollapsedToolGroup, isCollapsedGroup } from "./collapsed-tool-group";
 import { MarkdownText } from "./markdown-text";
 import {
 	AssistantActions,
@@ -12,6 +13,7 @@ import {
 	ForkAction,
 	ForkAnchor,
 } from "./message-actions";
+import { ToolCallCard } from "./tool-call-card";
 
 export function UserMessage({ messageId }: { messageId: string }) {
 	return (
@@ -31,56 +33,6 @@ export function UserMessage({ messageId }: { messageId: string }) {
 				<ForkAction messageId={messageId} />
 			</div>
 		</MessagePrimitive.Root>
-	);
-}
-
-function ToolCallCard({
-	toolName,
-	args,
-	result,
-}: {
-	toolName: string;
-	args: unknown;
-	result?: unknown;
-}) {
-	const [open, setOpen] = useState(false);
-	const contentId = useId();
-	return (
-		<div className="my-2 min-w-0 overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-			<button
-				type="button"
-				aria-expanded={open}
-				aria-controls={contentId}
-				onClick={() => setOpen(!open)}
-				className="ui-control flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-small hover:bg-muted/50"
-			>
-				<Terminal className="size-3.5 shrink-0 text-fg-muted" />
-				<span className="shrink-0 font-medium">{toolName}</span>
-				<span className="min-w-0 flex-1 truncate font-mono text-fg-muted">
-					{(JSON.stringify(args) ?? "").slice(0, 90)}
-				</span>
-				<ChevronDown
-					className={
-						"ui-control size-3.5 shrink-0 text-fg-muted " +
-						(open ? "rotate-180" : "")
-					}
-				/>
-			</button>
-			<AnimatedDisclosure open={open}>
-				<div id={contentId} className="border-t border-border-subtle">
-					<pre className="max-h-60 overflow-auto px-3 py-3 font-mono text-small text-fg-muted">
-						{JSON.stringify(args, null, 2)}
-					</pre>
-					{result !== undefined ? (
-						<pre className="max-h-60 overflow-auto border-t border-border-subtle px-3 py-3 font-mono text-small text-fg-muted">
-							{typeof result === "string"
-								? result
-								: JSON.stringify(result, null, 2)}
-						</pre>
-					) : null}
-				</div>
-			</AnimatedDisclosure>
-		</div>
 	);
 }
 
@@ -138,14 +90,16 @@ export function AssistantMessage({ messageId }: { messageId: string }) {
 					{({ part }) => {
 						if (part.type === "text")
 							return part.text ? <MarkdownText /> : null;
-						if (part.type === "tool-call")
+						if (part.type === "tool-call") return <ToolCallCard {...part} />;
+						if (
+							part.type === "data" &&
+							part.name === "workbench-collapsed-group" &&
+							isCollapsedGroup(part.data)
+						) {
 							return (
-								<ToolCallCard
-									toolName={part.toolName}
-									args={part.args}
-									result={part.result}
-								/>
+								<CollapsedToolGroup key={part.data.id} group={part.data} />
 							);
+						}
 						return null;
 					}}
 				</MessagePrimitive.Parts>

@@ -5,7 +5,12 @@ import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
 import { observeForkInheritance } from "./thread-inheritance";
 import { maybePromote } from "./thread-promotion";
-import type { MessagePart, RunEvent, StoredMessage } from "./thread-types";
+import type {
+	MessagePart,
+	RunEvent,
+	StoredMessage,
+	TurnRunEvent,
+} from "./thread-types";
 import { readObservabilityOf } from "./thread-types";
 
 export function run(
@@ -42,7 +47,7 @@ export function run(
 		emit({ type: "turn_started", messageId: assistantMessageId });
 		// Wrapped once, at the lane boundary: every event a lane emits carries
 		// the turn's id without each emitter having to remember it.
-		const emitTurn = (event: RunEvent): void =>
+		const emitTurn = (event: TurnRunEvent): void =>
 			emit({ messageId: assistantMessageId, ...event });
 
 		meta.status = "running";
@@ -171,7 +176,7 @@ export function run(
 					...(variants?.length ? { variants } : {}),
 				};
 				await context.store.appendMessage(id, assistantMessage);
-				emit({ type: "done", message: assistantMessage });
+				emitTurn({ type: "done", message: assistantMessage });
 			} else {
 				context.pendingVariants.delete(id);
 			}

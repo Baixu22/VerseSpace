@@ -44,7 +44,7 @@ it("流事件显示真实送达条数，切换后旧对话的事件不能串入�
 	const emit = (count: number) =>
 		controller.enqueue(
 			new TextEncoder().encode(
-				`${JSON.stringify({ type: "notice_delivered", count })}\n`,
+				`${JSON.stringify({ type: "notice_delivered", count, messageId: "assistant-1" })}\n`,
 			),
 		);
 	emit(2);

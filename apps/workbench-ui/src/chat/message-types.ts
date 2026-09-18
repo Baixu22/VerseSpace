@@ -1,14 +1,27 @@
 import type { ResumeNote } from "./resume-types";
 
+export interface ToolCallPart {
+	type: "tool-call";
+	toolCallId: string;
+	toolName: string;
+	args: unknown;
+	result?: unknown;
+	isError?: boolean;
+}
+
+export interface CollapsedGroupPart {
+	type: "collapsed-group";
+	id: string;
+	category: "search" | "read" | "shell" | "mixed";
+	tools: ToolCallPart[];
+	active: boolean;
+	summary: string;
+}
+
 export type MessagePart =
 	| { type: "text"; text: string }
-	| {
-			type: "tool-call";
-			toolCallId: string;
-			toolName: string;
-			args: unknown;
-			result?: unknown;
-	  };
+	| ToolCallPart
+	| CollapsedGroupPart;
 
 export interface StoredMessage {
 	id: string;
@@ -20,6 +33,18 @@ export interface StoredMessage {
 	/** 扇出的备选文本（TF-0094）：不含主回答，消息上的 chip 一击展开。 */
 	variants?: string[];
 }
+
+export type AssistantRunEvent =
+	| { type: "delta"; text: string; messageId: string }
+	| { type: "parts"; parts: MessagePart[]; messageId: string }
+	| { type: "done"; message: StoredMessage; messageId: string }
+	| { type: "error"; message: string; messageId?: string };
+
+export type ChatRunEvent =
+	| AssistantRunEvent
+	| { type: "user"; message: StoredMessage }
+	| { type: "turn_started"; messageId: string }
+	| { type: "notice_delivered"; count: number; messageId: string };
 
 export type PermissionMode = "default" | "plan" | "acceptEdits";
 

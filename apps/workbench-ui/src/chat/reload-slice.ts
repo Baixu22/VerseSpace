@@ -1,9 +1,10 @@
 import type { StateCreator } from "zustand";
 import { apiFetch } from "../auth";
-import type { StoredMessage } from "./message-types";
+import type { ChatRunEvent } from "./message-types";
 import { EMPTY } from "./message-types";
 import { refreshThread } from "./refresh-thread";
 import type { ChatState } from "./store-types";
+import { applyAssistantRunEvent, isAssistantRunEvent } from "./stream-reducer";
 export const createReloadSlice: StateCreator<
 	ChatState,
 	[],
@@ -34,24 +35,20 @@ export const createReloadSlice: StateCreator<
 			messages: {
 				...s.messages,
 				[threadId]: (s.messages[threadId] ?? EMPTY).map((m, index, all) =>
-					index === all.length - 1 &&
-					m.status === "complete" &&
-					m.role === "assistant"
-						? { ...m, text: "", parts: [], status: "running" as const }
+					index === all.length - 1 && m.role === "assistant"
+						? {
+								id: m.id,
+								role: m.role,
+								text: "",
+								at: new Date().toISOString(),
+								parts: [],
+								status: "running" as const,
+							}
 						: m,
 				),
 			},
 		}));
-		const assistantId = (get().messages[threadId] ?? EMPTY).at(-1)?.id;
-		const patchAssistant = (patch: Partial<StoredMessage>) =>
-			set((s) => ({
-				messages: {
-					...s.messages,
-					[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
-						m.id === assistantId ? { ...m, ...patch } : m,
-					),
-				},
-			}));
+		let assistantId = (get().messages[threadId] ?? EMPTY).at(-1)?.id;
 		try {
 			const response = await apiFetch(
 				`/api/chat/threads/${threadId}/messages`,
@@ -79,29 +76,37 @@ export const createReloadSlice: StateCreator<
 					if (!line.trim()) {
 						continue;
 					}
-					const event = JSON.parse(line) as {
-						type: string;
-						text?: string;
-						message?: StoredMessage;
-					};
-					if (event.type === "delta" && event.text) {
-						const current = (get().messages[threadId] ?? EMPTY).find(
-							(m) => m.id === assistantId,
-						);
-						patchAssistant({ text: (current?.text ?? "") + event.text });
-					} else if (event.type === "done" && event.message) {
-						patchAssistant({
-							id: event.message.id,
-							text: event.message.text,
-							parts: event.message.parts,
-							variants: event.message.variants,
-							status: "complete",
-						});
-					} else if (event.type === "error") {
-						patchAssistant({
-							text: `⚠ ${event.text ?? "重载失败"}`,
-							status: "complete",
-						});
+					const event = JSON.parse(line) as ChatRunEvent;
+					if (
+						event.type === "turn_started" &&
+						assistantId &&
+						event.messageId !== assistantId
+					) {
+						const previousId = assistantId;
+						assistantId = event.messageId;
+						set((state) => ({
+							messages: {
+								...state.messages,
+								[threadId]: (state.messages[threadId] ?? EMPTY).map(
+									(message) =>
+										message.id === previousId
+											? { ...message, id: event.messageId }
+											: message,
+								),
+							},
+						}));
+					} else if (isAssistantRunEvent(event)) {
+						set((state) => ({
+							messages: {
+								...state.messages,
+								[threadId]: (state.messages[threadId] ?? EMPTY).map(
+									(message) =>
+										message.id === assistantId
+											? applyAssistantRunEvent(message, event)
+											: message,
+								),
+							},
+						}));
 					}
 				}
 			}

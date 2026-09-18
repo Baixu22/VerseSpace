@@ -130,11 +130,27 @@ export async function runE2E(
 					].join("\n"),
 				);
 				const types = events.map((e) => e.type);
-				for (const expected of ["user", "delta", "done"]) {
+				for (const expected of ["user", "turn_started", "parts", "done"]) {
 					if (!types.includes(expected)) {
 						throw new Error(`事件流缺 ${expected}：${types.join(",")}`);
 					}
 				}
+				const visibleText = events.some((event) =>
+					event.type === "delta"
+						? typeof event.text === "string" && !!event.text
+						: event.type === "parts" &&
+							Array.isArray(event.parts) &&
+							event.parts.some(
+								(part) =>
+									part.type === "text" &&
+									typeof part.text === "string" &&
+									!!part.text,
+							),
+				);
+				const done = events.find((event) => event.type === "done");
+				const message = done?.message as { text?: string } | undefined;
+				if (!visibleText || !message?.text?.trim())
+					throw new Error("助手文本未在终态前可见或最终回复为空");
 				const onDisk = await readFile(
 					join(ws.projectDir, "src", "alpha.ts"),
 					"utf8",

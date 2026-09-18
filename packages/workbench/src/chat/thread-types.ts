@@ -61,26 +61,64 @@ export interface ThreadMeta {
 	resumeNote?: ResumeNote;
 }
 
-export type MessagePart =
-	| { type: "text"; text: string }
-	| {
-			type: "tool-call";
-			toolCallId: string;
-			toolName: string;
-			args: unknown;
-			/** tool_result 回填后可展示 */
-			result?: unknown;
-	  };
+export type ToolCallPart = {
+	type: "tool-call";
+	toolCallId: string;
+	toolName: string;
+	args: unknown;
+	/** tool_result 回填后可展示 */
+	result?: unknown;
+	/** Provider reported that the tool result is an error. */
+	isError?: boolean;
+};
+
+/** Presentation-only grouping; all original tool facts remain available in tools. */
+export interface CollapsedGroupPart {
+	type: "collapsed-group";
+	id: string;
+	category: "search" | "read" | "shell" | "mixed";
+	tools: ToolCallPart[];
+	/** Whether the last tool in the group is still executing. */
+	active: boolean;
+	/** Human-readable summary, e.g. `搜索 'foo'（2×），读取 3 个文件`. */
+	summary: string;
+}
+
+export type MessagePart = { type: "text"; text: string } | ToolCallPart;
+
+/**
+ * What a stored message part may be: a basic part, or a folded group wrapping
+ * several tool calls. `collapseParts` turns the former into the latter, and it
+ * is the post-collapse shape that is persisted — the client renders exactly
+ * what was stored instead of re-deriving it.
+ */
+export type StoredPart = MessagePart | CollapsedGroupPart;
 
 export interface StoredMessage {
 	id: string;
 	role: "user" | "assistant";
 	text: string;
 	at: string;
-	/** assistant 消息的结构化内容（text / tool-call）；user 消息省略 */
-	parts?: MessagePart[];
+	/** assistant 消息的结构化内容（text / tool-call / collapsed-group）；user 消息省略 */
+	parts?: StoredPart[];
 	/** 扇出的备选文本（TF-0094）：不含主回答，最多 fanout-1 条。 */
 	variants?: string[];
 }
 
-export type RunEvent = Record<string, unknown>;
+export type TurnRunEvent =
+	/** Newly received text only; never the accumulated projection. */
+	| { type: "delta"; text: string }
+	/** Complete folded snapshot after a visible structural change. */
+	| { type: "parts"; parts: StoredPart[] }
+	/** Authoritative message, identical to the persisted transcript entry. */
+	| { type: "done"; message: StoredMessage }
+	| { type: "error"; message: string }
+	| { type: "notice_delivered"; count: number };
+
+/** NDJSON events exposed by the Workbench chat route. */
+export type RunEvent =
+	| { type: "user"; message: StoredMessage }
+	| { type: "turn_started"; messageId: string }
+	/** Request failures may precede allocation of an assistant message. */
+	| { type: "error"; message: string; messageId?: string }
+	| (Exclude<TurnRunEvent, { type: "error" }> & { messageId: string });
