@@ -139,6 +139,39 @@ function invalidBranchName(
 	};
 }
 
+/**
+ * TF-0202: the branch this workspot carries is already checked out in another
+ * worktree, and git refuses to check one branch out twice. Same shape as
+ * invalidBranchName — reused `workspot_blocked` kind with its own cause key —
+ * because the workspot genuinely cannot start, and it must not fold into an
+ * unrelated block on the same lane.
+ */
+function branchInUse(
+	workspotId: string,
+	branch: string,
+	holder: string,
+	goalId: string,
+): TribunalEnvelope {
+	return {
+		kind: "workspot_blocked",
+		subject: workspotId,
+		causeKey: `workspot_blocked:branch_in_use:${workspotId}:${branch}`,
+		action: {
+			label: `把 ${goalId} 派发到另一个空闲工位（${branch} 已被占用）`,
+			command: `workbench dispatch ${goalId} <idle-workspot>`,
+		},
+		sbar: {
+			situation: `工位 ${workspotId} 的分支 ${branch} 已被 worktree ${holder} 检出`,
+			background:
+				"同一条分支不能被两个 worktree 同时检出；派发在建 worktree 之前预检，" +
+				"因此本次没有留下半个 worktree，工位状态未变",
+			assessment: `不改分支或不释放占用者，${workspotId} 每次派发都会在同一处失败`,
+			recommendation: `换一个空闲工位派发 ${goalId}；确实要用这个工位，就先释放 ${holder}`,
+		},
+		evidence: { commands: ["git worktree list --porcelain"] },
+	};
+}
+
 function checkpointWithoutPolicy(
 	cpId: string,
 	workspot?: string,
@@ -261,6 +294,7 @@ export const envelopes = {
 	orphanTask,
 	blockedWorkspot,
 	invalidBranchName,
+	branchInUse,
 	checkpointWithoutPolicy,
 	checkpointAwaitingReview,
 	staleQueueEntries,

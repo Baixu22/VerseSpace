@@ -3,6 +3,7 @@ import type { Blackboard } from "../blackboard";
 import { generateContext } from "../contextgen/generate";
 import { createWorktree, git } from "../git";
 import { branchNameProblem } from "../git/refname";
+import { samePath, worktreeHoldingBranch } from "../git/worktree";
 import { envelopes } from "../tribunal/envelopes";
 import type { SchedulerPolicy } from "../types/config";
 import type { Workspot } from "../types/workspot";
@@ -18,11 +19,18 @@ export interface DispatchResult {
 	worktree?: string;
 	reason?: string;
 	/**
-	 * TF-0117: a machine-readable refusal, so a caller can branch on the cause
-	 * instead of matching substrings in `reason`. Present only on failures that
-	 * were diagnosed rather than relayed from git's stderr.
+	 * TF-0117 / TF-0202: a machine-readable refusal, so a caller can branch on
+	 * the cause instead of matching substrings in `reason`. Present only on
+	 * failures that were diagnosed rather than relayed from git's stderr.
 	 */
-	error?: { code: "invalid_branch_name"; branch: string; detail: string };
+	error?:
+		| { code: "invalid_branch_name"; branch: string; detail: string }
+		| {
+				code: "branch_in_use";
+				branch: string;
+				holder: string;
+				detail: string;
+		  };
 }
 
 /**
@@ -206,6 +214,66 @@ async function performDispatch(
 				code: "invalid_branch_name",
 				branch: workspot.branch,
 				detail: branchProblem,
+			},
+		};
+	}
+
+	// TF-0202: git refuses to check one branch out in two worktrees at once.
+	// Asking first turns that `fatal:` line into a named refusal; asking after
+	// means the answer arrives as an opaque string from `git worktree add`.
+	const holder = await worktreeHoldingBranch(bb.projectRoot, workspot.branch);
+	if (!holder.ok) {
+		// "Could not ask" is not "nobody holds it": warn and proceed, the same
+		// way a failed merge pre-flight does not block dispatch (TF-0083).
+		await options.notify(
+			`工位 ${workspot.id} 的分支占用预检未完成：${holder.reason ?? "未知原因"}`,
+			"warning",
+		);
+	} else if (
+		holder.path !== null &&
+		!samePath(bb.projectRoot, holder.path, workspot.worktreePath)
+	) {
+		// Another worktree holds the branch. Unless it is this workspot's own
+		// checkout (a re-dispatch is idempotent), refuse without creating anything.
+		const detail = `分支已被 ${holder.path} 检出`;
+		await bb.tribunal
+			.submit(
+				envelopes.branchInUse(
+					workspot.id,
+					workspot.branch,
+					holder.path,
+					goalId,
+				),
+			)
+			.catch((err) => {
+				console.error(
+					`[scheduler] 分支占用拒派告警投递失败（${workspot.id}）:`,
+					err,
+				);
+			});
+		await bb.events.append({
+			timestamp: new Date().toISOString(),
+			source: "scheduler",
+			type: "dispatch_refused",
+			payload: {
+				goalId,
+				workspotId: workspot.id,
+				branch: workspot.branch,
+				reason: "branch_in_use",
+				holder: holder.path,
+				detail,
+			},
+		});
+		return {
+			ok: false,
+			goalId,
+			workspotId: workspot.id,
+			reason: `工位 ${workspot.id} 的分支 ${workspot.branch} 已被 worktree ${holder.path} 占用`,
+			error: {
+				code: "branch_in_use",
+				branch: workspot.branch,
+				holder: holder.path,
+				detail,
 			},
 		};
 	}
