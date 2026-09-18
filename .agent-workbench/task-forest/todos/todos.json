@@ -341,11 +341,11 @@
     "kind": "milestone",
     "next_action": "补充下一步动作或开始执行",
     "priority": 2,
-    "progress": 20.1,
+    "progress": 40.3,
     "purpose": "",
     "ready": true,
-    "remaining_minutes_max": 1199,
-    "remaining_minutes_min": 1199,
+    "remaining_minutes_max": 896,
+    "remaining_minutes_min": 896,
     "status": "in_progress",
     "success_metrics": [],
     "title": "阶段 5：纯 TS 零依赖的可靠性吸收（支线 Rust → 主线 TS 翻译）"
@@ -625,7 +625,7 @@
     "kind": "global_task",
     "next_action": "补充下一步动作或开始执行",
     "priority": 1,
-    "progress": 16.0,
+    "progress": 21.8,
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -687,33 +687,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "前置：checkpoint 与 thread/writer 链接（Verifier 状态生产者）+ thread.merged_back 进事件白名单"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0203",
-    "kind": "task",
-    "next_action": "Phase1/Phase2 之间注入崩溃后 doctor 无孤儿 workspot",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 300,
-    "remaining_minutes_min": 300,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "dispatch 两阶段创建 + 双向回滚：Initializing 状态行 → 建 worktree → 激活；崩溃可恢复、启动可清理"
   },
   {
     "alignment": {

@@ -1,0 +1,53 @@
+{
+  "applied_at": "2026-09-18T02:18:39.982644Z",
+  "base_graph_hash": "af1525386c162c79ca349d262d1c7833b36baa1ddc53fdd06eefd782f9fb13c2",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "src-tauri/src/workspace/lifecycle.rs、branching.rs rollback_continue_branch",
+          "交付（提交 7bf4d5d）：types/workspot.ts 新增 initializing 状态（注释写明它只应跨崩溃存在，健康运行时宽度为一次 git worktree add）；scheduler/dispatch.ts 改为三段时间线 —— phase 1 写状态行（claimOf）→ phase 2 建 worktree → phase 3 激活。旧顺序是先建 worktree 再写状态行，中途崩溃会同时留下「有检出没人管」与「工位还自称 idle」。",
+          "验收①「Phase1/Phase2 之间注入崩溃后 doctor 无孤儿 workspot」：新增 src/scheduler/dispatch-recovery.test.ts —— 直接造一个 initializing 工位（等价于 phase 1 写完状态行后进程死掉，无 worktree）→ runOnce 恢复为 idle（run.recovered = [\"ws-a\"]，dispatch_recovered 事件 1 条）→ 之后 runDoctor 不再报 interrupted_dispatch；恢复幂等（第二轮 recovered = []，事件仍只有 1 条）。",
+          "验收②「回滚路径有测试」：两条 —— (a) git 建 worktree 失败：状态行当场回滚，写状态序列 = initializing → idle，且不产生 dispatch_recovered（没等 runOnce 兜底）；(b) 激活写入失败：撤掉刚建的 worktree 并把状态行回滚，写状态序列 = initializing → active → idle，worktrees/ws-a 目录不存在，返回值里写明「已回滚」。两条断言的都是写状态序列而不是退出码 —— 两阶段是否真的分两段，看的就是这个序列。",
+          "回滚的失败也要能被看见：restoreIdle 在回滚写本身失败时记 dispatch_rollback_failed 事件，调用方在 reason 里说明「状态行回滚失败，sync 会在下一轮恢复」，不假装世界干净。",
+          "runOnce 的恢复放在取快照之前，因此同一轮里 automaton 与 scheduler 看到的是修好的世界；检出故意不动 —— 若 phase 2 已完成，下一次派发复用它（createWorktree 幂等，TF-0202 的分支占用预检认得该工位自己的 worktree）。",
+          "配套：doctor 新增 interrupted_dispatch（severity warning；恢复后消失）；commands/sync 打印恢复行；runtime/types.ts 的 RunOnceResult 新增 recovered: string[]（busy 分支同样置空）。",
+          "读数：workbench 734 pass / 0 fail（115 文件 = 729 + 本节点 5）；workbench 与 workbench-ui typecheck exit 0；biome exit 0。"
+        ],
+        "progress": 100.0,
+        "summary": "把派发拆成「先写状态行、再建 worktree、最后激活」三段，两头都能往回走：崩溃留下的中间态由 runOnce 每轮开头收掉，不需要人来发现。"
+      },
+      "id": "TF-0203"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0203",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 40.3
+      },
+      "id": "TF-0201"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 21.8
+      },
+      "id": "TF-0176"
+    }
+  ],
+  "created_at": "2026-09-18T02:18:38.920228Z",
+  "proposal_id": "TFP-2026-09-18-tf0203-landing",
+  "rationale": "阶段 5 第二个节点 TF-0203（派发两阶段创建 + 双向回滚）本机已做完并提交 7bf4d5d，落库状态与读数。进度口径沿用 2026-09-17 建立的口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900 = 5160 分钟），分子 = 已完成的具体任务估时之和（825 + TF-0203 的 300 = 1125）。",
+  "session_id": "session-2026-09-18-nodes-dev",
+  "status": "applied"
+}
