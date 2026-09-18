@@ -5,6 +5,7 @@ import { buildVariants, clampFanout } from "./fanout";
 import { buildHttpRequest } from "./http-request";
 import { consumeSse, runHttpShadow } from "./http-stream";
 import { promptWithNotices } from "./prompt";
+import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
 import type { MessagePart, RunEvent } from "./thread-types";
 
@@ -31,7 +32,7 @@ export async function runHttp(
 ): Promise<void> {
 	const provider = chat.provider;
 	const key = chatApiKey(chat);
-	if (!key && provider !== "claude") {
+	if (capabilitiesOf(provider).requiresApiKey && !key) {
 		emit({
 			type: "error",
 			message: "未配置 API Key——在 设置 中填写后重试",

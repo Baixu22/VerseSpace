@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { spawnSupervised } from "../supervisor";
 import { registerTurnRouter } from "./claude-router";
 import type { LiveClaudeSession } from "./claude-types";
+import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
 import type { ThreadMeta } from "./thread-types";
 
@@ -23,10 +24,14 @@ export async function ensureClaudeSession(
 		return existing;
 	}
 	const claudeSessionId: string | undefined = meta.claudeSessionId;
+	// TF-0204: the plan records the provider that produced it; ask that
+	// provider's capabilities instead of comparing its name here.
+	const agentPlan = meta.forkOf?.agentContextPlan;
 	const forkPlan =
 		!meta.hasResumableSession &&
-		meta.forkOf?.agentContextPlan?.provider === "claude"
-			? meta.forkOf.agentContextPlan
+		agentPlan !== undefined &&
+		capabilitiesOf(agentPlan.provider).supportsFork
+			? agentPlan
 			: undefined;
 	let agentContextMode: LiveClaudeSession["agentContextMode"] = "fresh";
 	let commandLine = chatCommand();

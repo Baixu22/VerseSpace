@@ -1,20 +1,19 @@
-import type { WorkbenchConfig } from "../types/config";
 import type { ForkInheritance, ForkLineage } from "./fork";
 
 import type { PromotionRecord } from "./promote";
+
+import type { ChatProvider, ReadObservability } from "./provider-capabilities";
+import { readObservabilityOf } from "./provider-capabilities";
 
 import type { ResumeNote } from "./resume";
 
 export type PermissionMode = "default" | "plan" | "acceptEdits";
 
-export type ChatProvider = WorkbenchConfig["chat"]["provider"];
-
-/** Whether the provider's reads come back as footprints (claude tool channel) or not at all (HTTP). */
-export type ReadObservability = "footprint" | "unobservable";
-
-export function readObservabilityOf(provider: ChatProvider): ReadObservability {
-	return provider === "claude" ? "footprint" : "unobservable";
-}
+// TF-0204: the provider vocabulary lives in `provider-capabilities.ts` so that
+// "what can this provider do" has exactly one answer. Re-exported here because
+// this module is where the thread model's consumers already import it from.
+export type { ChatProvider, ReadObservability };
+export { readObservabilityOf };
 
 export interface ThreadLastRun {
 	provider: ChatProvider;

@@ -2,6 +2,15 @@ import type { WorkbenchConfig } from "../types/config";
 
 import { httpEndpoint } from "./http-endpoint";
 
+/**
+ * TF-0204: the `provider === "…"` comparisons in this file (and in
+ * `http-stream.ts` / `http-run.ts`) are deliberately NOT part of the
+ * capabilities table. They choose a wire format — which request body to send
+ * and which response shape to parse — and two providers that differ here can
+ * still be identical on every capability. Moving them into the table would
+ * make it "everything we know about a provider", which is the shape that rots;
+ * a capability belongs there only when a *behaviour* branches on it.
+ */
 export function buildHttpRequest(
 	provider: WorkbenchConfig["chat"]["provider"],
 	key: string,

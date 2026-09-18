@@ -10,6 +10,8 @@ import {
 
 import { deriveTitle } from "./promote";
 
+import { capabilitiesOf } from "./provider-capabilities";
+
 import type { ThreadContext } from "./thread-context";
 
 import { turnInFlight } from "./thread-lifecycle";
@@ -40,7 +42,7 @@ export async function fork(
 		// anchor is the current tail and the parent has a resumable session.
 		// Older/mid-transcript forks stay fresh rather than claiming inheritance.
 		const agentContextPlan: ForkAgentPlan | undefined =
-			config.chat.provider === "claude" &&
+			capabilitiesOf(config.chat.provider).supportsFork &&
 			!context.live.get(id) &&
 			source.hasResumableSession === true &&
 			typeof source.claudeSessionId === "string" &&

@@ -1,6 +1,7 @@
 import { runClaudeTurn } from "./claude-turn";
 import { runHttp } from "./http-run";
 import { ackNotices, drainNotices, selectNoticeEntries } from "./notice-queue";
+import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
 import { observeForkInheritance } from "./thread-inheritance";
 import { maybePromote } from "./thread-promotion";
@@ -86,7 +87,7 @@ export function run(
 			}
 		};
 
-		if (chat.provider === "claude") {
+		if (capabilitiesOf(chat.provider).channel === "local-cli") {
 			// Notices are folded into the next user turn (append-only, so the
 			// provider's existing context remains cache-safe).
 			try {

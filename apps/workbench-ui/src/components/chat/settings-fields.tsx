@@ -5,22 +5,22 @@ const PROVIDERS = [
 	{
 		value: "claude",
 		label: "Claude Code · 本机",
-		description: "使用本机登录信息，无需 API Key。读集可观测，可参与前提继承。",
+		description: "使用本机登录信息，无需 API Key。",
 	},
 	{
 		value: "openai-chat",
 		label: "OpenAI · Chat Completions",
-		description: "支持 OpenAI 及兼容服务。纯文本通道，读集不可观测。",
+		description: "支持 OpenAI 及兼容服务。",
 	},
 	{
 		value: "openai-responses",
 		label: "OpenAI · Responses",
-		description: "支持推理力度与 Responses 接口。纯文本通道，读集不可观测。",
+		description: "支持推理力度与 Responses 接口。",
 	},
 	{
 		value: "anthropic",
 		label: "Anthropic · Messages",
-		description: "通过 Anthropic 接口使用 Claude。纯文本通道，读集不可观测。",
+		description: "通过 Anthropic 接口使用 Claude。",
 	},
 ] as const;
 
@@ -63,7 +63,7 @@ export function SettingsFields({
 							?.description
 					}
 				</p>
-				{config.provider !== "claude" ? (
+				{config.capabilities && !config.capabilities.observesFootprint ? (
 					<p className={hint}>
 						本车道只发纯文本：agent
 						读了哪些文件不会留下足迹，前提失效时无法判断本线程是否受影响，也不能作为分叉继承的读集来源。同模型不同车道也适用——Anthropic

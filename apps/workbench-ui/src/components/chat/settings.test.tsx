@@ -70,12 +70,41 @@ it("a late save response does not overwrite newer input", async () => {
 });
 
 it("HTTP 车道在设置面板写明读集不可观测；claude 车道不加提示", async () => {
-	api.mockResolvedValue(response({ provider: "openai-chat" }));
+	api.mockResolvedValue(
+		response({
+			provider: "openai-chat",
+			capabilities: {
+				channel: "http",
+				observesFootprint: false,
+				supportsFork: false,
+				supportsStreamJson: false,
+				requiresApiKey: true,
+			},
+		}),
+	);
 	mount();
 	await screen.findByText(/本车道只发纯文本/);
 
 	cleanup();
-	api.mockResolvedValue(response({ provider: "claude" }));
+	api.mockResolvedValue(
+		response({
+			provider: "claude",
+			capabilities: {
+				channel: "local-cli",
+				observesFootprint: true,
+				supportsFork: true,
+				supportsStreamJson: true,
+				requiresApiKey: false,
+			},
+		}),
+	);
+	mount();
+	await screen.findByLabelText("模型");
+	expect(screen.queryByText(/本车道只发纯文本/)).toBeNull();
+});
+
+it("响应里没有能力表时不标注能力（无证据不渲染）", async () => {
+	api.mockResolvedValue(response({ provider: "openai-chat" }));
 	mount();
 	await screen.findByLabelText("模型");
 	expect(screen.queryByText(/本车道只发纯文本/)).toBeNull();
