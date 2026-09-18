@@ -9902,7 +9902,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 28.6,
+    "progress": 30.9,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9919,7 +9919,7 @@
     "success_metrics": [],
     "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-18T02:47:21.626467Z"
+    "updated_at": "2026-09-18T03:06:18.116465Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -11064,7 +11064,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 63.8,
+    "progress": 71.8,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11075,7 +11075,7 @@
     "success_metrics": [],
     "summary": "不需要 sidecar，直接提升可靠性。只有 git ops 与 pipeline collapse 是用户能感知的，排前。",
     "title": "阶段 5：纯 TS 零依赖的可靠性吸收（支线 Rust → 主线 TS 翻译）",
-    "updated_at": "2026-09-18T02:47:21.626406Z"
+    "updated_at": "2026-09-18T03:06:18.116399Z"
   },
   "TF-0202": {
     "acceptance_criteria": [
@@ -11323,7 +11323,11 @@
     "deviations": [],
     "difficulty": "medium",
     "estimated_total_minutes": 300,
-    "evidence": [],
+    "evidence": [
+      "2026-09-18 侦察（未开工，只记录规模与落点）：支线 src-tauri/src/pipeline/collapse.rs 单文件 925 行 / 32 KB，核心是 build_group_summary（search 的 pattern 去重 + 计数、read 的文件计数、shell 的命令计数，格式对齐 Claude Code TUI 的 getSearchReadSummaryText）与 classify_tool_with_args / is_collapsible_with_args 的分类；主线 packages/workbench/src/chat/claude-router.ts 只有 199 行、逐行 emit，完全没有折叠层。",
+      "可用样本：src-tauri/tests/fixtures/streams/claude 下 20 个 .jsonl（tool-use / bash-and-edit / tool-use-summary / mcp-tool / subagent-prompt 等），正是 AC 里说的那批。",
+      "要落地得动三处：新的折叠模块（分类 + 摘要 + 组边界）、终态全量与增量协议（现在每个 text_delta 与每个工具都单发一条事件）、以及 UI 的消费侧（折叠组是新的 part 形状）。三处一起做才叫「用户可感知的 collapse」—— 因此 300 分钟的估时偏乐观，建议单独一轮做，不要和别的节点混在一起。"
+    ],
     "execution_hints": [],
     "id": "TF-0206",
     "kind": "task",
@@ -11343,7 +11347,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "claude-router 折叠与增量：连续 read/search/shell 折叠成摘要行；终态全量、delta 只发尾部",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-18T03:06:18.116343Z"
   },
   "TF-0207": {
     "acceptance_criteria": [],
@@ -11365,24 +11369,30 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 120,
-    "evidence": [],
+    "evidence": [
+      "交付（提交 8b12d56）：thread-run 在回合开始分配助手消息 id 并 emit `turn_started`，之后车道发出的每条事件由一层包装带上它（写一次，不在每个 emit 点重复）。两条车道落盘都用同一个 id —— claude-turn 用 opts.messageId，HTTP 车道用 thread-run 里的同一变量。UI 收到 turn_started 就把占位 id 换成服务端 id，delta / tool / tool_result / done 随后全落在同一条消息上。",
+      "判据（该节点的 acceptance_criteria 原本为空，本轮给定并全部实测）：一轮之内 ①每条流式事件带同一个 messageId ②done 的 message.id 与它相同 ③messages.jsonl 里落盘的消息 id 也是它。user 事件按语义排除在外 —— 它讲的是用户那条消息，与助手回合 id 无关。",
+      "测试：后端 threads.test.ts 新增 1 例（假 agent 一轮里发工具调用 / 工具结果 / 文本，覆盖三条 emit 路径，并核对落盘文件）；UI 新增 turn-id.test.ts 1 例（占位 → turn_started 换真 id → delta 命中同一条 → done 不多出一条消息）。",
+      "契约变化让两处既有断言从严更新（把新字段钉进断言，而不是放宽匹配）：provider-result.test.ts 的 error 事件、git-pull-notice.test.ts 的 notice_delivered 事件现在都要求 messageId 存在。这两条也是最先抓到「事件多了一个字段」的地方 —— 先红再改，正好证明断言没被顺手放过。",
+      "读数：workbench 746 pass / 0 fail（117 文件）；workbench-ui 34 passed（12 文件）；workbench 与 workbench-ui typecheck exit 0；biome exit 0。"
+    ],
     "execution_hints": [],
     "id": "TF-0207",
     "kind": "subtask",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "回合一开始就把助手消息 id 定下来并告诉客户端，流式事件与落盘共用它；客户端不再需要「先本地编号、done 时再换回来」。",
     "title": "turn id 预分配：流式事件 id 与 messages.jsonl 持久化 id 对齐，前端免二次匹配",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-18T03:06:18.116280Z"
   },
   "TF-0208": {
     "acceptance_criteria": [],
