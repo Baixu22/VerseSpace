@@ -27,13 +27,6 @@ export interface JsonRpcRequest {
 	params?: unknown;
 }
 
-/** 通知：没有 id，不需要回包。 */
-export interface JsonRpcNotification {
-	jsonrpc: string;
-	method: string;
-	params?: unknown;
-}
-
 /** 响应：要么 result，要么 error，两者互斥。 */
 export interface JsonRpcResponse {
 	jsonrpc: string;

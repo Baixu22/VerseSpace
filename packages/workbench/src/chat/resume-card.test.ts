@@ -203,25 +203,6 @@ describe("buildResumeCard (TF-0128)", () => {
 		]);
 	});
 
-	test("R7: reverted promotion annotates decided without rewriting it", () => {
-		const card = buildResumeCard({
-			note: note([
-				{
-					kind: "decided",
-					text: "\u547d\u540d\u4e3a\u300cauth\u300d",
-					refs: ["promotion:auth"],
-				},
-			]),
-			diff: null,
-			promotionReverted: true,
-		});
-		expect(card!.narrative[0]!.text).toBe("\u547d\u540d\u4e3a\u300cauth\u300d");
-		expect(card!.narrative[0]!.annotation).toEqual({
-			rule: "R7",
-			label: "\u5df2\u64a4\u9500",
-		});
-	});
-
 	test("R8: next step is annotated when a referenced file went stale", () => {
 		const card = buildResumeCard({
 			note: note([

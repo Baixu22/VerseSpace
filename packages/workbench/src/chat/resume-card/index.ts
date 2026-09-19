@@ -148,7 +148,6 @@ export function buildResumeCard(input: {
 	note: ResumeNote | null;
 	diff: ReadSetDiff | null;
 	dismissed?: boolean;
-	promotionReverted?: boolean;
 	branchFacts?: FactRow[];
 }): ResumeCardView | null {
 	const dismissed = Boolean(input.dismissed);
@@ -229,9 +228,6 @@ export function buildResumeCard(input: {
 					kind: "decided",
 					text: beat.text,
 					refs,
-					...(input.promotionReverted
-						? { annotation: { rule: "R7", label: "已撤销" } }
-						: {}),
 				});
 				continue;
 			}
