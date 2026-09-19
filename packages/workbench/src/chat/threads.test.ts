@@ -9,6 +9,7 @@ import { makeTempWorkbench } from "../test/fixtures";
 import { workbenchConfigSchema } from "../types/config";
 import { ackNotices, drainNotices } from "./notice-queue";
 import { UNNAMED_TITLE } from "./promote";
+import { adoptThread, revertAdopt } from "./thread-promotion";
 import { ChatThreads, type StoredMessage } from "./threads";
 
 function msg(role: "user" | "assistant", text: string): StoredMessage {
@@ -309,6 +310,83 @@ process.stdin.on("data", (chunk) => {
 			}
 			await rm(fakeDir, { recursive: true, force: true });
 			await ws.cleanup();
+		}
+	});
+});
+
+describe("ChatThreads 收养（TF-0200）", () => {
+	async function makeForked(workbenchRoot: string, chat: ChatThreads) {
+		const source = await chat.create();
+		const m1 = msg("user", "调研收养语义");
+		const m2 = msg("assistant", "好");
+		await appendMessages(workbenchRoot, source.id, [m1, m2]);
+		return { source, child: (await chat.fork(source.id, m2.id)).thread! };
+	}
+
+	test("adopt：子线程清 forkOf，源线程归档挂快照且内容不变，落 thread.adopted", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const { source, child } = await makeForked(workbenchRoot, chat);
+			const before = await readTranscript(workbenchRoot, source.id);
+
+			await adoptThread(chatContext(chat), child.id);
+
+			expect((await chat.get(child.id)).forkOf).toBeUndefined();
+			const src = await chat.get(source.id);
+			expect(src.archived).toBe(true);
+			expect(src.adoptSnapshot?.adoptedThreadId).toBe(child.id);
+			// 改身份不改内容：源线程 messages.jsonl 逐字节不变
+			expect(await readTranscript(workbenchRoot, source.id)).toBe(before);
+			const events = await bb.events.query({ type: "thread.adopted" });
+			expect(events).toHaveLength(1);
+			expect(events[0]!.payload).toMatchObject({
+				newMainThreadId: child.id,
+				sourceThreadId: source.id,
+			});
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("revert：复原双方身份、清空快照，落 thread.adoption_reverted", async () => {
+		const { workbenchRoot, bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const { source, child } = await makeForked(workbenchRoot, chat);
+			await adoptThread(chatContext(chat), child.id);
+
+			await revertAdopt(chatContext(chat), source.id);
+
+			expect((await chat.get(child.id)).forkOf).toMatchObject({
+				sourceThreadId: source.id,
+			});
+			const src = await chat.get(source.id);
+			expect(src.archived).toBe(false);
+			expect(src.adoptSnapshot).toBeUndefined();
+			const events = await bb.events.query({
+				type: "thread.adoption_reverted",
+			});
+			expect(events).toHaveLength(1);
+			expect(events[0]!.payload).toMatchObject({
+				sourceThreadId: source.id,
+				adoptedThreadId: child.id,
+			});
+		} finally {
+			await cleanup();
+		}
+	});
+
+	test("无快照 revert 抛错", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			const thread = await chat.create();
+			expect(revertAdopt(chatContext(chat), thread.id)).rejects.toThrow(
+				"无可反转的收养快照",
+			);
+		} finally {
+			await cleanup();
 		}
 	});
 });

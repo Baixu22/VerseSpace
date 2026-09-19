@@ -40,12 +40,14 @@
 4. **产品缺口（真实）**：服务器死亡/进程树被杀后，线程 meta 永久卡 running，无恢复路径（今天操作员手修两次）。
 5. 长流消费在 Bun 客户端偶发 DATA_CLONE_ERR/ECONNRESET——驱动器改为 fire-and-poll（POST → 轮询 meta → 读转录），服务端语义不受影响。
 
-## 配额进度（第二次更新，循环 C 后）
+| 7 | 09-19 | 循环 D：主线程侦察测试布局 → fork D1 写 adopt/revert 测试（fork 首轮也遇一次拒写，重试通过——漂移是间歇性的）→ 测试 38 pass / 0 fail → 主线程卡双 read-set 行（我直补的白名单编辑诚实显示「写者未知」）→ 信息全吸收后 dismiss | 测试实跑通过；卡上无新信息 |
 
-- restores 147（基线 140，+7）· resumeActions 13（基线 1，+12）· withFootprints 8/15
-- branchEngagement：4 窗 / 5 行渲染 / 4 行消费 / ratio=0.8
-- 熔断器：6 样本（消费 4 / dismiss 2），rate=0.33，closed
-- 距配额：带卡恢复 +23（消费与 dismiss 均已达标）
+## 配额进度（第三次更新，循环 D 后）
+
+- restores 148（基线 140，+8）· resumeActions 14（基线 1，+13）· withFootprints 9/16
+- branchEngagement：5 窗 / 6 行渲染 / 4 行消费 / ratio=0.67（两次 dismiss 的窗拉低——真实分布）
+- 熔断器：7 样本（消费 4 / dismiss 3），rate=0.43，closed——逼近 0.5 但未触发；负样本上升是「评审前移到 git diff、卡片变通知」的真实使用形状
+- 距配额：带卡恢复 +22
 
 | 4 | 09-19 | 循环 A：主线程侦察 promote/archived → fork A1（「事件与日志」节）+ A2（「恢复面呈现」节）→ 主线程卡双分支行（A2 行带「分支自身 1 个前提已失效」）→ expand×2 + bopen×2 审两节 → 都吸收后诚实 dismiss | 卡片对已吸收的工作不再有新信息 |
 | 5 | 09-19 | 循环 B：主线程读 thread-promotion.ts（回合内 claude 自己发现设计文档前提失效并重读——前提守护端到端生效）→ fork B1 起草 adoptThread() 初稿 → 主线程卡点亮（写集/足迹 L1）→ expand+bopen 审 diff → 评审发现两问题（白名单缺失/快照未持久化）→ 修整轮（3 文件修好，typecheck 0 错）→ 回主线程看更新后 L1（5 文件写集）→ expand → 吸收后 dismiss | 草稿→评审→修整的真实迭代；typecheck 0 错 |

@@ -1,0 +1,7 @@
+你在分支线程里，仓库 D:/helmor-main。主线已确认测试落点：threads.test.ts 新增 describe（makeTempWorkbench + chat.fork 夹具，断言身份翻转与 messages.jsonl 逐字节不变）。
+
+任务：给 adoptThread/revertAdopt 补测试。用 Read 读 packages/workbench/src/chat/threads.test.ts 的既有 describe 结构与 thread-promotion.ts 的两个函数，然后用 Edit 在 threads.test.ts 末尾追加（≤60 行）：
+1. adopt：fork → adoptThread → 断言子线程 forkOf 清空、源线程 archived=true 且 adoptSnapshot 存在、thread.adopted 事件已落；
+2. revert：接 adopt 后 revertAdopt → 断言双方身份复原、快照清空、thread.adoption_reverted 已落；
+3. 无快照 revert 抛错。
+只改这一个文件，风格对齐既有测试。完成后一句话说明。
