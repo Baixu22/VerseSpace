@@ -26,6 +26,7 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 | TF-0208 | 合并预检结论封闭化：`MergePreflight` 四臂（clear / conflicts / unsupported / unresolved）+ `git/merge-tree.ts` 能力探测；「git 拒绝回答」不再被读成「合并干净」 | `cb1e266` + `da3618f` |
 | TF-0206 | Claude 纯渲染归约 + `delta/parts/done` 协议 + read/search/只读 shell 折叠组；19 个真实 fixture 回放与 Workbench UI send/reload 共用 reducer | `d20205a` + `492dfdb` + `94dfd92` |
 | TF-0190 | 受控试用取证：UI claude 车道真实回合产生足迹（`withFootprints=1`），HTTP 对照组为 0；可复算脚本与证据在 `.agent-contexts/tf0190-trial/` | 本轮（见下） |
+| TF-0198 | 渲染门与熔断：`resume-card/circuit.ts` 熔断器投影（dismiss 率 >50% 分支行降 L0 指针，可自恢复）+ `mergeBranchFactRows` 渲染门（≥3 分支折叠一行，refs 并集保留）+ dismiss 清注入队列（`clearNotices` + `dismissResumeCard`，路由返回即队列已空）+ `stats.lifecycle.resumeCardCircuit` 与渲染共用同一读法 | 本轮（见下） |
 
 ## 验收读数（本轮实跑）
 
@@ -43,7 +44,10 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 | TF-0206 ②IPC 量化 | 每个流增量比较（不是用户键盘输入）：baseline **206,320 B** → `delta + finalized parts + done` **126,212 B**，节省 **80,108 B**，降幅 **38.83%** |
 | TF-0190 ①claude 车道非零足迹 | 受控试用（`.agent-contexts/tf0190-trial/ui-lane-trial.ts`，复用 `scripts/e2e` driver）：真实 claude CLI 在临时 git 仓库完成「Read×2 + Write×1」的 UI 回合，工具调用 Read×2 / Write×1；`stats --json` → `threads.withFootprints=1`（total=1，footprintCoverage=1），`.workbench/events` 落 2 条 footprint 事件 |
 | TF-0190 ②HTTP 对照组仍为 0 | 同一提示词走 HTTP 车道（provider=openai-chat，DPAPI 凭据 senseaudio-s2-flash）：回合正常完成、tool-call part 0 个；`stats --json` → `threads.withFootprints=0`（对照通过，确认 HTTP 读集不可观测是产品边界而非缺陷） |
-| 全量/聚焦门禁 | workbench **843 pass / 0 fail**（126 文件，21 snapshots）；workbench-ui **53 pass / 0 fail**（16 文件）；根与两包 typecheck 0 错；Biome 聚焦 137 files 0 错。同日独立复跑：workbench 843 / UI 53 / 两包 typecheck exit 0 / 根 Biome 1390 files 0 错，逐项一致 |
+| TF-0198 ①dismiss 后注入队列空 | 通知 ×2 入队 → `resume-note/dismiss` → 通知文件被撤（ENOENT）+ `resume_card_dismissed` 观测落事件 + 空队列再 dismiss 不报错；清的是未投递部分（已投递在投递时已被 ack 移除），符合 D3-Q2「未投递时完全撤」 |
+| TF-0198 ②熔断记录且可恢复 | 3 次 dismiss-only 恢复 → `stats.lifecycle.resumeCardCircuit` state=open / dismissRate=1（渲染面同步降 L0 指针行：链接与溯源保留、L1 细节撤下）；3 次消费后 → closed 且 L1 回来。7 例单测覆盖：无样本 rate=null、样本不足不熔断、50% 开区间、消费过不算负样本、消费不护短、switch 关窗、滑动窗口 |
+| TF-0198 渲染门 ≥3 合并 | 2 分支 → 2 行不变；3 分支 → 1 行折叠（`分支 · 3 个分支有动静`），逐分支写集足迹 ref 在并集、合并行不带单一 branch 链接、stale 文件行独立渲染 |
+| 全量/聚焦门禁 | workbench **877 pass / 0 fail**（130 文件，21 snapshots，biome 修复后连续两轮全绿）；workbench-ui **53 pass / 0 fail**（16 文件）；typecheck 五包 0 错；Biome 聚焦 0 错 |
 | 森林门禁 | 权威副本 `C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py` 的 `validate` / `export` / `check-landing` 均 exit 0；`check-landing` 读出 2 项 done 晚于 HEAD（TF-0201、TF-0206），因本轮改动尚未提交，属预期读数（提交后应收敛）。此前记录的「已安装 CLI 未提供 `check-landing` 子命令」系找错路径，已按实测更正；误导来源（`report-2026-08-29.md` 里 `.agents/skills/.../task_forest.py` 这个不存在的缩写路径，实为 `C:/Users/27933/.workbuddy/skills/...`）已一并修正，同类过期指针不再引后来者偏离 |
 
 ## 节点终态与进度口径
@@ -59,13 +63,15 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 - 阶段 5（纯 TS 可靠性吸收）：**done 100%**。0202–0208 全部 done；0206 以独立一轮完成 Claude 归约、折叠、增量协议和 UI 消费。
 - 阶段 6（MCP server）：**done 100%**。TF-0210（stdio JSON-RPC 2.0 骨架）、TF-0211（五条只读工具 + 体积控制）、TF-0212（Claude Code 接入验证 + README）全部完成；`workbench mcp` 已被 Claude Code 实际连接（✔ Connected），零新依赖。
 - 阶段 7（容器耦合清零与删码）：**done 100%**。TF-0220（杂物治理）、TF-0214（postinstall 去 sidecar）、TF-0215（pre-commit 分车道）、TF-0216（图标生成参数化）、TF-0217（L3 残留清除）、TF-0218（删除 apps/marketing 与 apps/registry）、TF-0219（退役闸门 ADR-0014）全部完成；四项容器耦合清零（ADR-0014 决策 2），`apps/` 下只剩 workbench-ui。
-- 阶段 4（D3-Q2 分支动静）：**前置完成（TF-0196/0197 done），渲染门与前端已解锁可直接开工**。
+- 阶段 4（D3-Q2 分支动静）：**TF-0198 done，剩 TF-0199（前端）与 TF-0200/TF-0223**。
   TF-0196 补齐 TF-0132 废止缺口（checkpoint 会话链接 + merged_back 白名单）；TF-0197 落地分支 L1 结构摘要
-  （账本差/写集/接口Δ/merge-guard 预测/Verifier 状态/失效前提数，refs 全溯源，R3 措辞互斥，空分支零痕迹）。
-  TF-0198 以临时阈值（dismiss 率 >50% 降 L0）开工，熔断器 stats 即持续采集器；精确展开/点击比例埋点随
-  TF-0199 落地，阶段 3 配额窗与开发窗重叠执行。
-- TF-0176 总进度 **76.3%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
-  = 5,160 分钟），分子 = 已完成具体任务的估时和（3,335 + 阶段 4 前置的 600 = 3,935），即 3,935 / 5,160 = 76.3%。这是 2026-09-17
+  （账本差/写集/接口Δ/merge-guard 预测/Verifier 状态/失效前提数，refs 全溯源，R3 措辞互斥，空分支零痕迹）；
+  TF-0198 落地渲染门与熔断（≥3 分支折叠一行、dismiss 清注入队列、dismiss 率 >50% 降 L0 且可恢复）。
+  风险节点 TF-0223（「dismiss 率 >50% 被降回 L0」）的缓解已内建：降级是设计内出口，是否触发由阶段 3
+  配额窗的真实数据回答。TF-0199 落地精确展开/点击埋点后，配额窗的读数才有分母。
+- TF-0176 总进度 **79.7%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
+  = 5,160 分钟），分子 = 已完成具体任务的估时和（3,335 + 阶段 4 前置的 600 + TF-0198 的 180 = 4,115），
+  即 4,115 / 5,160 = 79.7%。这是 2026-09-17
   建立的口径，
   与叶子求和（4,655）不同，改动它就会让历史读数失去可比性。
 
@@ -98,10 +104,10 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 
 阶段 5、阶段 6、阶段 7 已全部结项。吸收计划（TF-0176）剩两块：**阶段 3（自用观察窗）**已改规格为样本配额窗
 （t0 基线保留在 `docs/fit-ledger-2026-09-19-phase3-t0.md`，按 TF-0194 修订协议开窗、先登记配额），
-**阶段 4（D3-Q2 分支动静）**前置 TF-0196/0197 已完成，依赖降级后不再等观察窗——TF-0198（渲染门与熔断）
-以临时阈值直接开工，TF-0199（前端 resume-card 升级）落地精确展开/点击埋点；两者可与阶段 3 配额窗重叠
-（用主线 UI claude 车道跑自身的开发轮，开发窗即采集窗）。存量删除（src/src-tauri/sidecar）条件已满足，
-按 ADR-0014 决策 3 留待独立执行轮。
+**阶段 4（D3-Q2 分支动静）**剩 TF-0199（前端 resume-card 升级 + 精确展开/点击埋点）与 TF-0200（以分支为主线
+手势）、TF-0223（风险观察：熔断是否真的触发，由配额窗数据回答）。TF-0198 已把渲染门与熔断落地——
+后续开发轮继续用主线 UI claude 车道跑，dismiss/消费事件会持续喂给熔断器与配额窗。存量删除
+（src/src-tauri/sidecar）条件已满足，按 ADR-0014 决策 3 留待独立执行轮。
 
 阶段 4 前置的可复算材料：`packages/workbench/src/chat/resume-card/l1-summary.ts`（+ 7 例测试）、
 `.agent-contexts/tf0217-scan/`（ts-prune 报告 + 结论）、`.agent-contexts/tf0190-trial/`（各阶段落库提案副本）。
