@@ -185,16 +185,22 @@ Root Vitest uses two workers on Windows. The full UI suite otherwise exceeded th
 
 ### 本机注入的 HTTP_PROXY 会让 loopback 测试 ConnectionRefused
 
-宿主环境会向每个 shell 会话注入 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`（指向一个本地代理端口；2026-09-19 用户反馈端口从 7890 换到 7897，但注入的变量可能仍是旧值）。Bun 的 `fetch` 会把 `127.0.0.1` 的请求也走这个代理——代理没起来时，`workbench` 里所有基于 HTTP 的测试（`ui/server.test.ts`、`chat/threads.test.ts` 的 resume 路由、`ui/chat-routes` 等）会批量 `ConnectionRefused` 失败，且错误 `errno: 0` 极容易误判成服务器没绑定。**这不是代码回归。**
+宿主（ZCode 父进程）会向每个 shell 会话注入 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`，指向一个本地代理端口。该变量在会话启动时捕获，**不会随用户改代理端口而更新**——2026-09-19 实测注入值仍是 `http://127.0.0.1:7890`（已死的旧端口），而用户当前代理实际运行在 `http://127.0.0.1:7897`（`netstat` 可见监听，`curl -x http://127.0.0.1:7897 https://example.com` → 200）。变量不在用户 profile、Windows 用户/机器环境或 shell 快照里，无法在仓库内永久清除，只能在使用时覆盖或旁路。
 
-修复：跑测试时给 loopback 加旁路，让测试不依赖代理端口/状态：
+Bun 的 `fetch` 会把 `127.0.0.1` 的请求也走这个代理：代理变量指向死端口时，`workbench` 里所有基于 HTTP 的测试（`ui/server.test.ts`、`chat/threads.test.ts` 的 resume 路由、`ui/chat-routes` 等）会批量 `ConnectionRefused` 失败（`errno: 0`，极易误判成「服务器没绑定」）。**这不是代码回归。**
+
+两种跑法都能全绿（859 pass / 0 fail 实测）：
 
 ```bash
-NO_PROXY="127.0.0.1,localhost,::1" bun test   # 在 packages/workbench 下
+# ① 代理活着且端口正确时，直接用当前代理（用户当前端口 7897）
+HTTP_PROXY=http://127.0.0.1:7897 HTTPS_PROXY=http://127.0.0.1:7897 ALL_PROXY=http://127.0.0.1:7897 bun test
+
+# ② 不依赖代理端口/状态：给 loopback 加旁路（推荐，注入值过期时最稳）
+NO_PROXY="127.0.0.1,localhost,::1" bun test
 # 或 env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY bun test
 ```
 
-`NO_PROXY` 方案在代理变量残留旧值时也有效（已实测 859 pass / 0 fail）。代理变量不在用户 profile 或 Windows 用户/机器环境里，无法在仓库内永久清除，只能按此旁路。
+注意：`curl http://127.0.0.1:<port>` 返回 000 **不代表代理没开**——普通代理对无目标 URL 的裸 GET 会直接断开，探活要用 `curl -x http://127.0.0.1:<port> https://example.com`。
 
 ## Key conventions
 
