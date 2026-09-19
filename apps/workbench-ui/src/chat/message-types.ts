@@ -87,6 +87,11 @@ export interface ThreadMeta {
 	};
 	/** 准备恢复笔记（TF-0097）：离开时 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
+	/**
+	 * 收养身份快照（TF-0200）：收养时挂在被归档的源线程上。存在即表示本线程
+	 * 是被「以分支为主线」归档的源线程——反转手势可用；普通手动归档没有此字段。
+	 */
+	adoptSnapshot?: { id: string; adoptedThreadId: string; at: string };
 }
 
 export interface Suggestion {

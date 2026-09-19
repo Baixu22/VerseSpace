@@ -92,6 +92,12 @@ export interface ChatState {
 	 * 成功后跳转到这条新主线。
 	 */
 	adoptBranch(threadId: string): Promise<void>;
+	/**
+	 * TF-0200 反转收养：撤销「以分支为主线」——POST 到被归档源线程的 revert
+	 * 路由（threadId 是源线程，据其 adoptSnapshot 反查被收养分支并复归双方
+	 * 身份），成功后刷新这条重新成为主线的源线程。
+	 */
+	revertAdoption(threadId: string): Promise<void>;
 	/** TF-0142：关掉送达提示（短暂可见后自动消失）。 */
 	dismissNoticeDelivered(): void;
 	/** TF-0092：手动晋升——一个手势给无名对话命名。 */

@@ -21,6 +21,7 @@ export const createResumeSlice: StateCreator<
 		| "recordResumeAction"
 		| "reportResumeCardShown"
 		| "adoptBranch"
+		| "revertAdoption"
 		| "dismissNoticeDelivered"
 		| "promoteActive"
 	>
@@ -138,6 +139,18 @@ export const createResumeSlice: StateCreator<
 		});
 		if (!response.ok) throw new Error("以分支为主线失败，请重试");
 		// 收养翻转了两条线程的 archived/forkOf；跳到新主线即触发其 GET 刷新投影。
+		await get().switchThread(threadId);
+	},
+
+	async revertAdoption(threadId) {
+		// threadId 是被归档的源线程本身：revert 路由据其 adoptSnapshot 反查被收养
+		// 分支，复归双方身份（源线程解档、分支还原 forkOf）。
+		const response = await apiFetch(`/api/chat/threads/${threadId}/revert`, {
+			method: "POST",
+		});
+		if (!response.ok) throw new Error("反转收养失败，请重试");
+		// 反转翻回了两条线程的 archived/forkOf；停在这条重新成为主线的源线程并
+		// 触发其 GET 刷新投影。
 		await get().switchThread(threadId);
 	},
 

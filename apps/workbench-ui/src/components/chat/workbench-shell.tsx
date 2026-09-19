@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Command, HardDrive, PanelLeft, Settings2 } from "@/components/icon";
+import {
+	Command,
+	HardDrive,
+	PanelLeft,
+	RotateCcw,
+	Settings2,
+} from "@/components/icon";
 import { chatConfigQuery } from "../../chat/config";
 import { useChatStore } from "../../chat/store";
 import { Button } from "../ui/button";
@@ -66,13 +72,25 @@ function ChatHeader() {
 		(state) =>
 			state.activeId !== null && state.runningThreadId === state.activeId,
 	);
+	const revertAdoption = useChatStore((state) => state.revertAdoption);
+	const archived = activeThread?.archived ?? false;
+	// 只有被「以分支为主线」归档的源线程带 adoptSnapshot——反转手势对它才有意义；
+	// 普通手动归档的线程没有此字段，不显示反转按钮。
+	const revertable = archived && Boolean(activeThread?.adoptSnapshot);
 	return (
 		<header className="flex h-16 shrink-0 items-center gap-3 border-b border-border-subtle px-4 sm:px-6">
 			<MobileSidebar />
 			<div className="min-w-0 flex-1">
-				<h1 className="truncate text-title font-medium">
-					{activeThread?.title || "新对话"}
-				</h1>
+				<div className="flex min-w-0 items-center gap-2">
+					<h1 className="truncate text-title font-medium">
+						{activeThread?.title || "新对话"}
+					</h1>
+					{archived ? (
+						<span className="shrink-0 rounded-md bg-bg-elevated px-1.5 py-0.5 text-mini text-fg-muted">
+							已归档
+						</span>
+					) : null}
+				</div>
 				<p
 					className="mt-0.5 flex flex-wrap items-center gap-1.5 text-small text-fg-muted"
 					role="status"
@@ -87,6 +105,23 @@ function ChatHeader() {
 					{activeThread ? <ThreadObservability thread={activeThread} /> : null}
 				</p>
 			</div>
+			{revertable ? (
+				<Tooltip
+					content="撤销「以分支为主线」，让本线程重新成为主线"
+					side="bottom"
+				>
+					<Button
+						variant="outline"
+						size="sm"
+						className="shrink-0 gap-1.5"
+						onClick={() => {
+							if (activeThread) void revertAdoption(activeThread.id);
+						}}
+					>
+						<RotateCcw className="size-3.5" /> 反转收养
+					</Button>
+				</Tooltip>
+			) : null}
 			<PromoteThread key={activeThread?.id} />
 			<Sheet>
 				<Tooltip content="对话设置" side="bottom">
