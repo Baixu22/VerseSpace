@@ -43,6 +43,10 @@ export const THREAD_EVENT_TYPES = new Set([
 	// 发生的展示，不是手势：单独成类，不混进 resume_action（否则「返回后
 	// 第一动作」会被渲染事件污染）。
 	"thread.resume_card_shown",
+	// 收养（TF-0200）：观察「子线程被提升为主线、源线程就地归档」这一身份
+	// 迁移事实。仍是观察——不搬内容、不带裁决，refs 溯源回指触发手势的来源，
+	// snapshotVersion 供反转定位快照。
+	"thread.adopted",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([

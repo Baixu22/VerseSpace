@@ -1,0 +1,6 @@
+你在 git 仓库 D:/helmor-main 里，继续 workbench 自身开发（TF-0200 adopt 手势）的只读侦察。
+
+任务：用 Read 读 packages/workbench/src/chat/thread-promotion.ts（全文）和 packages/workbench/src/chat/promote.ts 里 promote() 的主流程。回答（合计不超过 10 行）：
+1. adopt 若实现为「提升分支 + 归档源线程」，promote() 里哪几步可以复用、哪几步必须新写？
+2. 归档（archived 字段）目前被哪些读方消费？
+不要修改任何文件。

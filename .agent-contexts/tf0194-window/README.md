@@ -36,8 +36,21 @@
 - branchEngagement：1 窗 / 1 行渲染 / 1 行消费 / ratio=1.0
 - 距配额：带卡恢复 +27、消费 +3、dismiss +2
 
+| 4 | 09-19 | 循环 A：主线程侦察 promote/archived → fork A1（「事件与日志」节）+ A2（「恢复面呈现」节）→ 主线程卡双分支行（A2 行带「分支自身 1 个前提已失效」）→ expand×2 + bopen×2 审两节 → 都吸收后诚实 dismiss | 卡片对已吸收的工作不再有新信息 |
+| 5 | 09-19 | 循环 B：主线程读 thread-promotion.ts（回合内 claude 自己发现设计文档前提失效并重读——前提守护端到端生效）→ fork B1 起草 adoptThread() 初稿 → 主线程卡点亮（写集/足迹 L1）→ expand+bopen 审 diff → 评审发现两问题（白名单缺失/快照未持久化）→ 修整轮（3 文件修好，typecheck 0 错）→ 回主线程看更新后 L1（5 文件写集）→ expand → 吸收后 dismiss | 草稿→评审→修整的真实迭代；typecheck 0 错 |
+
+## 配额进度（快照读数）
+
+- restores 146（基线 140，+6）· resumeActions 12（基线 1，+11）· withFootprints 6/13
+- branchEngagement：3 窗 / 4 行渲染 / 4 行消费 / ratio=1.0
+- 熔断器：5 样本（消费 4 / dismiss 1），rate=0.2，closed——负样本与健康信号都在流动
+- 距配额：带卡恢复 +24、dismiss +1（消费动作已达标）
+
 ## 运行备注
 
 - ui 服务以后台任务常驻（`serve.ts`，端口/token 在 `server.json`）；会话重启后重跑 serve.ts 即可，线程与事件都在真实黑板里。
 - 所有 fetch 必须 `NO_PROXY="127.0.0.1,localhost,::1"`（本机注入的 HTTP_PROXY 指向死端口，Bun fetch 连 127.0.0.1 也会走代理——AGENTS.md 已记的同款坑）。
-- 主线程 c710d715（recon/评审，default 模式）；设计分支 cd431e9d 与设计线程 e75ffa39（acceptEdits，写文档）。
+- **流健壮性观察**：较长回合（>1 分钟）客户端流偶发中断（DATA_CLONE_ERR / ECONNRESET），但服务端回合总是完整落盘——验证一律以 git/黑板状态为准，不信任客户端流。值得开 follow-up 节点查 ui 服务器的长流连接管理。
+- **权限模式观察**：acceptEdits 必须在线程首次回合前设置；续接会话沿用出生时的权限模式，事后 PATCH 不生效。
+- 线程：主 c710d715（default）· 设计 e75ffa39 · A1 67c81234 · A2 e0d9a402 · B1 30a7b99f（acceptEdits）。
+- adoptThread 初稿 + 白名单 + ThreadMeta.adoptSnapshot 已落工作区（TF-0200 真实进度，WIP）；revert、测试、路由接线未做。

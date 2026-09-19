@@ -59,6 +59,11 @@ export interface ThreadMeta {
 	lastRun?: ThreadLastRun;
 	/** 准备恢复笔记（TF-0097）：离开车道时由 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
+	/**
+	 * 收养身份快照（TF-0200）：收养时挂在被归档的源线程上，供一次性反转定位。
+	 * 只记常数大小的指针身份（id / version），反转成本与消息量无关。
+	 */
+	adoptSnapshot?: { id: string; version: number; at: string };
 }
 
 export type ToolCallPart = {
