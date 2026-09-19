@@ -47,6 +47,9 @@ export const THREAD_EVENT_TYPES = new Set([
 	// 迁移事实。仍是观察——不搬内容、不带裁决，refs 溯源回指触发手势的来源，
 	// snapshotVersion 供反转定位快照。
 	"thread.adopted",
+	// 收养反转（TF-0200）：观察「快照被消费、双方身份复归」这一事实。与
+	// thread.adopted 对称——仍是观察，snapshotId 回指被消费的快照。
+	"thread.adoption_reverted",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([

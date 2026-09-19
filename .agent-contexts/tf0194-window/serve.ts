@@ -62,11 +62,11 @@ await writeFile(
 	JSON.stringify({ port, token, pid: proc.pid, startedAt: new Date().toISOString() }, null, 2),
 );
 console.log(`[window] ui 服务就绪：port=${port} pid=${proc.pid}`);
-proc.on("exit", async () => {
+proc.on("exit", async (code, signal) => {
+	console.log(`[window] ui 服务退出：code=${code} signal=${signal} @ ${new Date().toISOString()}`);
 	try {
 		await import("node:fs/promises").then((fs) => fs.rm(STATE, { force: true }));
 	} catch {
 		// best effort
 	}
-	console.log("[window] ui 服务退出");
 });

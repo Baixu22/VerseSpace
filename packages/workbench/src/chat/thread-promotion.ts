@@ -77,6 +77,7 @@ export interface AdoptSnapshot {
 	sourceArchivedBefore: boolean;
 	adoptedThreadId: string;
 	adoptedForkOfBefore: ForkLineage;
+	adoptedArchivedBefore: boolean;
 	/** 锚点：源线程收养时刻的末条消息 id，界定其后哪些消息不并入。 */
 	anchorMessageId?: string;
 	at: string;
@@ -109,6 +110,7 @@ export async function adoptThread(
 			sourceArchivedBefore: source.archived ?? false,
 			adoptedThreadId: adopted.id,
 			adoptedForkOfBefore: lineage,
+			adoptedArchivedBefore: adopted.archived ?? false,
 			anchorMessageId: anchor?.id,
 			at: new Date().toISOString(),
 		};
@@ -116,13 +118,10 @@ export async function adoptThread(
 		adopted.forkOf = undefined;
 		adopted.archived = false;
 		await context.store.saveMeta(adopted);
-		// 源线程就地归档：仍可见、可检索，不删内容。快照挂在源线程上供反转定位。
+		// 源线程就地归档：仍可见、可检索，不删内容。整份快照挂在源线程上供反转
+		// 定位——revert 需要 adoptedThreadId / *Before 才能还原身份，只存指针不够。
 		source.archived = true;
-		source.adoptSnapshot = {
-			id: snapshot.id,
-			version: snapshot.version,
-			at: snapshot.at,
-		};
+		source.adoptSnapshot = snapshot;
 		await context.store.saveMeta(source);
 		await context.store.appendThreadEvent("thread.adopted", adopted.id, {
 			newMainThreadId: adopted.id,
@@ -132,5 +131,45 @@ export async function adoptThread(
 			refs,
 		});
 		return snapshot.id;
+	});
+}
+
+/**
+ * 反转收养：消费源线程上的整份快照，把双方身份复归收养前——源线程解档、
+ * 子线程还原 forkOf 与 archived、清空快照，落 thread.adoption_reverted。
+ * 单事务原子完成；无快照即抛错。TODO：`thread.adoption_reverted` 须先登记进
+ * 事件白名单（types/event.ts），否则 validateThreadEvent 拦截丢弃。
+ */
+export async function revertAdopt(
+	context: ThreadContext,
+	sourceThreadId: string,
+	refs: string[] = [],
+): Promise<void> {
+	return context.store.enqueue(sourceThreadId, async () => {
+		const source = await context.store.get(sourceThreadId);
+		if (!source.adoptSnapshot) {
+			throw new Error("无可反转的收养快照");
+		}
+		// adoptThread 落盘的是整份 AdoptSnapshot；窄类型字段结构化收窄，读回还原。
+		const snapshot = source.adoptSnapshot as AdoptSnapshot;
+		const adopted = await context.store.get(snapshot.adoptedThreadId);
+		// 子线程降回：还原血统与归档态。
+		adopted.forkOf = snapshot.adoptedForkOfBefore;
+		adopted.archived = snapshot.adoptedArchivedBefore;
+		await context.store.saveMeta(adopted);
+		// 源线程复归：还原归档态，清空快照（一次性消费）。
+		source.archived = snapshot.sourceArchivedBefore;
+		source.adoptSnapshot = undefined;
+		await context.store.saveMeta(source);
+		await context.store.appendThreadEvent(
+			"thread.adoption_reverted",
+			source.id,
+			{
+				sourceThreadId: source.id,
+				adoptedThreadId: snapshot.adoptedThreadId,
+				snapshotId: snapshot.id,
+				refs,
+			},
+		);
 	});
 }

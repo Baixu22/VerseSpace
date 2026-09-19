@@ -142,55 +142,48 @@ switch (command) {
 		console.log(created.id);
 		break;
 	}
-	case "send": {
+	case "send":
+	case "resend": {
+		// 发出回合后不消费流（长流在 Bun 客户端偶发 DATA_CLONE_ERR/ECONNRESET，
+		// 服务端总是完整落盘）——轮询 meta 至 idle，再从磁盘读转录。
 		const [threadId, promptFile] = args;
 		const text = (await readFile(promptFile!, "utf8")).trim();
-		console.log(`[send] ${threadId} ← ${text.length} 字提示词`);
+		const resend = command === "resend";
+		console.log(`[send] ${threadId} ← ${text.length} 字${resend ? "（resend）" : ""}`);
 		const res = await api(`/api/chat/threads/${threadId}/messages`, {
 			method: "POST",
-			body: JSON.stringify({ text }),
-			signal: AbortSignal.timeout(590_000),
+			body: JSON.stringify({ text, resend }),
 		});
-		if (!res.ok || !res.body) {
+		if (!res.ok) {
 			throw new Error(`messages ${res.status}：${await res.text()}`);
 		}
-		const reader = res.body.getReader();
-		const decoder = new TextDecoder();
-		let buffer = "";
-		let tools = 0;
-		let finalText = "";
-		let finished = false;
-		while (!finished) {
-			const { value, done } = await reader.read();
-			if (done) break;
-			buffer += decoder.decode(value, { stream: true });
-			const lines = buffer.split("\n");
-			buffer = lines.pop() ?? "";
-			for (const line of lines) {
-				if (!line.trim()) continue;
-				const event = JSON.parse(line) as Record<string, unknown>;
-				if (event.type === "error") {
-					throw new Error(`回合错误：${String(event.message)}`);
-				}
-				if (event.type === "parts" && Array.isArray(event.parts)) {
-					for (const part of event.parts as Array<Record<string, unknown>>) {
-						if (part.type === "tool-call") {
-							tools += 1;
-							console.log(`  tool: ${String(part.toolName)}`);
-						}
-						if (part.type === "text" && typeof part.text === "string") {
-							finalText = part.text;
-						}
-					}
-				}
-				if (event.type === "done") {
-					finished = true;
-					break;
-				}
+		await res.body?.cancel().catch(() => {});
+		const metaPath = join(ROOT, ".workbench", "threads", threadId!, "meta.json");
+		const transcriptPath = join(ROOT, ".workbench", "threads", threadId!, "messages.jsonl");
+		const deadline = Date.now() + 600_000;
+		let status = "";
+		while (Date.now() < deadline) {
+			await new Promise((r) => setTimeout(r, 5_000));
+			try {
+				status = (JSON.parse(await readFile(metaPath, "utf8")) as { status?: string }).status ?? "";
+			} catch {
+				// 瞬态读失败继续轮询
+			}
+			if (status === "idle") break;
+			if (status === "" ) continue;
+			if (status !== "running") {
+				console.log(`[send] 状态 ${status}，停止等待`);
+				break;
 			}
 		}
-		console.log(`[send] 回合完成：tool-call ${tools} 个`);
-		console.log(finalText.slice(0, 600));
+		const lines = (await readFile(transcriptPath, "utf8"))
+			.trim()
+			.split(/\r?\n/)
+			.filter((line) => line.trim())
+			.map((line) => JSON.parse(line) as { role?: string; text?: string });
+		const lastAssistant = [...lines].reverse().find((m) => m.role === "assistant");
+		console.log(`[send] 结束（status=${status}）：转录 ${lines.length} 条`);
+		console.log((lastAssistant?.text ?? "（无 assistant 消息）").slice(0, 400));
 		break;
 	}
 	case "fork": {

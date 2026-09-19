@@ -1,0 +1,1 @@
+你在分支线程里，仓库 D:/helmor-main。只做一件事：用 Read 读 packages/workbench/src/chat/thread-promotion.ts 的 adoptThread() 函数（约 91 行起）和 thread-types.ts 里 adoptSnapshot 字段，然后用 Edit 在 thread-promotion.ts 末尾追加 revertAdopt(context, sourceThreadId) 函数（≤40 行）：读 source.adoptSnapshot，不存在则抛错；存在则恢复源线程 archived、恢复子线程 forkOf 与 archived、置空快照、落 thread.adoption_reverted 事件（refs 溯源）。只改这一个文件。

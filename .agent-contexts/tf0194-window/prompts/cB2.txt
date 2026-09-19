@@ -1,0 +1,6 @@
+你在分支线程里，仓库 D:/helmor-main。主线已确认 revertAdopt 的语义：消费 source.adoptSnapshot 恢复身份指针。
+
+任务：用 Read 读 thread-promotion.ts（adoptThread 部分）与 types/event.ts 的白名单，然后用 Edit：
+1. thread-promotion.ts 追加 revertAdopt(context, sourceThreadId)：读 source.adoptSnapshot → 恢复双方身份（源线程取消归档、子线程恢复 forkOf 与 archived）→ 消费快照（置空）→ 落 thread.adoption_reverted 事件（refs 溯源）→ 校验 version 防重复反转；
+2. types/event.ts 白名单登记 thread.adoption_reverted（照既有注释风格）。
+只改这两个文件，风格对齐。完成后一句话说明。

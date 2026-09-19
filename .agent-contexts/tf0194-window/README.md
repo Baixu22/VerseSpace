@@ -30,11 +30,22 @@
 | 2 | 09-19 | 设计分支线程（acceptEdits）写入 docs/tf0200-adopt-design.md | 真实交付物；发现产品观察：acceptEdits 须在线程首次回合前设置，续接会话沿用出生时的权限模式 |
 | 3 | 09-19 | 主线程读文档+评审轮 → leave → fork 出分支 → 分支追加「快照可逆语义」章节 → leave → restore 主线 | 卡片首次出现分支行（L1：账本 3 足迹/写集 1 文件/未经 Verifier）+ shown 自动上报；我需要审分支改动 → expand + bopen（真实消费）→ diff 审查通过 |
 
-## 配额进度（快照读数）
+| 6 | 09-19 | 循环 C：B2（fork-resume）连挂 3 次（会话回「No response requested.」、工作台回合永等）→ 弃用 B2；B1 resumed 会话拒写（`system.permission_denied`，昨日同类会话可写——环境漂移）→ **绕行定式：每个写任务开全新 fork**；B3 首轮写成 revertAdopt()（typecheck 0 错），白名单 4 行由操作员直补；卡片消费后诚实 dismiss（dismiss#2 达标） | 卡上改动已通过 git 评审完整吸收，无新信息 |
 
-- restores 143（基线 140，+3）· resumeActions 3（基线 1，+2）· withFootprints 3/10
-- branchEngagement：1 窗 / 1 行渲染 / 1 行消费 / ratio=1.0
-- 距配额：带卡恢复 +27、消费 +3、dismiss +2
+## 今日环境观察（2026-09-19 下午，follow-up 节点候选）
+
+1. **fork-resume 会话中毒**：被杀轮次的 claude 会话残留 queued 状态，fork-session resume 后模型回「No response requested.」而工作台回合永等（3 次复现）。工作台对「子进程活着但流无结果」没有超时出口。
+2. **resumed 会话权限漂移**：昨日 resumed 会话可写，今日一律 `system.permission_denied`（版本未变 2.1.251）。绕行：写任务全部用全新 fork 首轮。
+3. **长驻服务不可托管**：本会话环境下后台/长驻进程在调用边界被回收（服务三次静默消失，无 stderr、无事件日志）→ 驱动器改为 `step.ts` 单步自包含（服务只在一次调用内存活）。
+4. **产品缺口（真实）**：服务器死亡/进程树被杀后，线程 meta 永久卡 running，无恢复路径（今天操作员手修两次）。
+5. 长流消费在 Bun 客户端偶发 DATA_CLONE_ERR/ECONNRESET——驱动器改为 fire-and-poll（POST → 轮询 meta → 读转录），服务端语义不受影响。
+
+## 配额进度（第二次更新，循环 C 后）
+
+- restores 147（基线 140，+7）· resumeActions 13（基线 1，+12）· withFootprints 8/15
+- branchEngagement：4 窗 / 5 行渲染 / 4 行消费 / ratio=0.8
+- 熔断器：6 样本（消费 4 / dismiss 2），rate=0.33，closed
+- 距配额：带卡恢复 +23（消费与 dismiss 均已达标）
 
 | 4 | 09-19 | 循环 A：主线程侦察 promote/archived → fork A1（「事件与日志」节）+ A2（「恢复面呈现」节）→ 主线程卡双分支行（A2 行带「分支自身 1 个前提已失效」）→ expand×2 + bopen×2 审两节 → 都吸收后诚实 dismiss | 卡片对已吸收的工作不再有新信息 |
 | 5 | 09-19 | 循环 B：主线程读 thread-promotion.ts（回合内 claude 自己发现设计文档前提失效并重读——前提守护端到端生效）→ fork B1 起草 adoptThread() 初稿 → 主线程卡点亮（写集/足迹 L1）→ expand+bopen 审 diff → 评审发现两问题（白名单缺失/快照未持久化）→ 修整轮（3 文件修好，typecheck 0 错）→ 回主线程看更新后 L1（5 文件写集）→ expand → 吸收后 dismiss | 草稿→评审→修整的真实迭代；typecheck 0 错 |
