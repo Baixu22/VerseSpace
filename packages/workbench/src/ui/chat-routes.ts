@@ -110,7 +110,8 @@ export async function chatRoute(
 			return Response.json({ ok: true });
 		}
 		if (sub === "resume-note/dismiss" && request.method === "POST") {
-			await chat.recordResumeAction(threadId, "resume_card_dismissed");
+			// TF-0198：dismiss 记观测并清空模型侧注入队列——返回即队列已空。
+			await chat.dismissResumeCard(threadId);
 			return Response.json({ ok: true });
 		}
 		if (sub === "resume-action" && request.method === "POST") {
