@@ -19,6 +19,7 @@ export const createResumeSlice: StateCreator<
 		| "dismissResumeCard"
 		| "revealResumeCard"
 		| "recordResumeAction"
+		| "reportResumeCardShown"
 		| "dismissNoticeDelivered"
 		| "promoteActive"
 	>
@@ -105,7 +106,7 @@ export const createResumeSlice: StateCreator<
 		set({ resumeCardRevealed: true });
 	},
 
-	async recordResumeAction(action) {
+	async recordResumeAction(action, label?) {
 		const threadId = get().activeId;
 		if (!threadId) {
 			return;
@@ -113,7 +114,19 @@ export const createResumeSlice: StateCreator<
 		await apiFetch(`/api/chat/threads/${threadId}/resume-action`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ action }),
+			body: JSON.stringify(label ? { action, label } : { action }),
+		}).catch(() => {});
+	},
+
+	async reportResumeCardShown(branchRows) {
+		const threadId = get().activeId;
+		if (!threadId || branchRows.length === 0) {
+			return;
+		}
+		await apiFetch(`/api/chat/threads/${threadId}/resume-card/shown`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ branchRows }),
 		}).catch(() => {});
 	},
 

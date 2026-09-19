@@ -97,9 +97,32 @@ export async function recordResumeAction(
 	context: ThreadContext,
 	threadId: string,
 	action: string,
+	/** 可选归属标签（TF-0199）：分支行记 `branch:<threadId>`，文件行记路径。 */
+	label?: string,
 ): Promise<void> {
 	await context.store.appendThreadEvent("thread.resume_action", threadId, {
 		action,
+		...(label ? { label } : {}),
+	});
+}
+
+/**
+ * 恢复卡展示观测（TF-0199）：UI 在渲染出带分支行的恢复卡时报告本次展示了
+ * 哪些行（`branch:<threadId>` 标签）。这是 fit 指标 7 的分母来源——服务端
+ * GET 只读不落事件，渲染发生在客户端，所以由 UI 落这条观察。重复刷新由
+ * UI 侧按恢复边界去重；折叠只做形状消毒，不替 UI 判断真假。
+ */
+export async function recordResumeCardShown(
+	context: ThreadContext,
+	threadId: string,
+	branchRows: string[],
+): Promise<void> {
+	const rows = [...new Set(branchRows.filter((row) => row.trim()))].slice(
+		0,
+		32,
+	);
+	await context.store.appendThreadEvent("thread.resume_card_shown", threadId, {
+		branchRows: rows,
 	});
 }
 

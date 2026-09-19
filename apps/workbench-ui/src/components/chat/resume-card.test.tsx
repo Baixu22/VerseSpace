@@ -1,8 +1,10 @@
 /**
- * 恢复卡交互（TF-0128/TF-0151 的 UI 面）：分支行的「查看分支」是
+ * 恢复卡交互（TF-0128/TF-0151/TF-0199 的 UI 面）：分支行的「查看分支」是
  * resume_branch_opened 记账探针的 UI 源头（先记再切），dismiss/reveal
  * 决定恢复卡下一轮是否注入，「及另 N 条」是超预算折叠不静默丢弃的
- * UI 镜像。这些手势此前零测试——它们错，租户样本和样本窗口就跟着错。
+ * UI 镜像。TF-0199 起分支行折叠面只露一行 L1 摘要、展开区给全部行并标
+ * 「由足迹拼接」，渲染与手势都带行标签（fit 指标 7 的分子/分母）。这些
+ * 手势此前零测试——它们错，租户样本和样本窗口就跟着错。
  */
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -304,5 +306,77 @@ describe("ResumeCard 交互", () => {
 		installRoutes();
 		const view = render(<ResumeCard />, { wrapper: TooltipProvider });
 		expect(view.container.firstChild).toBeNull();
+	});
+
+	it("TF-0199：分支行折叠面只露一行 L1 摘要，展开区给全部行并标「由足迹拼接」", async () => {
+		const calls = installRoutes();
+		seedCard(
+			cardWith([
+				{
+					...BRANCH_FACT,
+					summary:
+						"账本新增 2 条足迹\n写集 1 文件：src/alpha.ts@h3\n未经 Verifier",
+				},
+			]),
+		);
+
+		render(<ResumeCard />, { wrapper: TooltipProvider });
+		expect(screen.getByText("账本新增 2 条足迹")).toBeTruthy();
+		expect(screen.getByText(/还有 2 行/)).toBeTruthy();
+		expect(screen.queryByText("未经 Verifier")).toBeNull();
+		expect(screen.queryByText("由足迹拼接")).toBeNull();
+
+		screen.getByRole("button", { name: /src\/alpha\.ts/ }).click();
+		await waitFor(() => {
+			expect(screen.getByText("未经 Verifier")).toBeTruthy();
+		});
+		expect(screen.getByText("写集 1 文件：src/alpha.ts@h3")).toBeTruthy();
+		expect(screen.getByText("由足迹拼接")).toBeTruthy();
+		expect(
+			calls.find(
+				(c) =>
+					c.path === "/api/chat/threads/thread-1/resume-action" &&
+					c.body?.action === "resume_fact_opened" &&
+					c.body?.label === "branch:branch-1",
+			),
+		).toBeDefined();
+	});
+
+	it("TF-0199：渲染带分支行的卡片上报 shown（按恢复边界去重），手势带行标签", async () => {
+		const calls = installRoutes();
+		seedCard(cardWith([BRANCH_FACT]));
+
+		const view = render(<ResumeCard />, { wrapper: TooltipProvider });
+		await waitFor(() => {
+			expect(
+				calls.find(
+					(c) =>
+						c.path === "/api/chat/threads/thread-1/resume-card/shown" &&
+						JSON.stringify(c.body?.branchRows) ===
+							JSON.stringify(["branch:branch-1"]),
+				),
+			).toBeDefined();
+		});
+		// 同一卡片对象重渲染（后台刷新 / reveal）不重复上报。
+		view.rerender(<ResumeCard />);
+		view.rerender(<ResumeCard />);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(
+			calls.filter((c) => c.path.endsWith("/resume-card/shown")),
+		).toHaveLength(1);
+
+		// 查看分支手势带行标签（fit 指标 7 的分子）。
+		screen.getByText("查看分支").click();
+		await waitFor(() => {
+			expect(useChatStore.getState().activeId).toBe("branch-1");
+		});
+		expect(
+			calls.find(
+				(c) =>
+					c.path === "/api/chat/threads/thread-1/resume-action" &&
+					c.body?.action === "resume_branch_opened" &&
+					c.body?.label === "branch:branch-1",
+			),
+		).toBeDefined();
 	});
 });

@@ -17,6 +17,7 @@ import {
 	recordMergedBack,
 	recordRestored,
 	recordResumeAction,
+	recordResumeCardShown,
 	recordResumeNoteConsumed,
 	recordSwitch,
 	setResumeNote,
@@ -119,8 +120,20 @@ export class ChatThreads {
 		return recordResumeNoteConsumed(this.context, threadId, surface);
 	}
 
-	async recordResumeAction(threadId: string, action: string): Promise<void> {
-		return recordResumeAction(this.context, threadId, action);
+	async recordResumeAction(
+		threadId: string,
+		action: string,
+		label?: string,
+	): Promise<void> {
+		return recordResumeAction(this.context, threadId, action, label);
+	}
+
+	/** TF-0199：恢复卡展示观测——fit 指标 7 的分母（渲染了才计数）。 */
+	async recordResumeCardShown(
+		threadId: string,
+		branchRows: string[],
+	): Promise<void> {
+		return recordResumeCardShown(this.context, threadId, branchRows);
 	}
 
 	/** TF-0198：dismiss 记观测并撤回未投递注入；返回即队列已空。 */

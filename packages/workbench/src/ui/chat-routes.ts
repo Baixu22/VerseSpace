@@ -23,7 +23,7 @@ export async function chatRoute(
 	}
 
 	const chatMatch = url.pathname.match(
-		/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-action|evidence))?$/,
+		/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-card\/shown|resume-action|evidence))?$/,
 	);
 
 	if (chatMatch) {
@@ -114,9 +114,23 @@ export async function chatRoute(
 			await chat.dismissResumeCard(threadId);
 			return Response.json({ ok: true });
 		}
+		if (sub === "resume-card/shown" && request.method === "POST") {
+			// TF-0199：恢复卡展示观测——fit 指标 7 的分母（渲染了才计数）。
+			const body = (await request.json().catch(() => ({}))) as {
+				branchRows?: unknown;
+			};
+			const rows = Array.isArray(body.branchRows)
+				? body.branchRows.filter(
+						(row): row is string => typeof row === "string",
+					)
+				: [];
+			await chat.recordResumeCardShown(threadId, rows);
+			return Response.json({ ok: true });
+		}
 		if (sub === "resume-action" && request.method === "POST") {
 			const body = (await request.json().catch(() => ({}))) as {
 				action?: string;
+				label?: string;
 			};
 			if (typeof body.action !== "string" || !body.action.trim()) {
 				return Response.json(
@@ -124,7 +138,11 @@ export async function chatRoute(
 					{ status: 400 },
 				);
 			}
-			await chat.recordResumeAction(threadId, body.action.slice(0, 80));
+			const label =
+				typeof body.label === "string" && body.label.trim()
+					? body.label.trim().slice(0, 120)
+					: undefined;
+			await chat.recordResumeAction(threadId, body.action.slice(0, 80), label);
 			return Response.json({ ok: true });
 		}
 		if (sub === "resume-note" && request.method === "PATCH") {

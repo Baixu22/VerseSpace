@@ -23,6 +23,16 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 	const [open, setOpen] = useState(false);
 	const recordAction = useChatStore((s) => s.recordResumeAction);
 	const switchThread = useChatStore((s) => s.switchThread);
+	// TF-0197 的分支行摘要是多行 L1 结构摘要；折叠面按设计只露一行指针，
+	// 其余行进展开区（「叙事永远折叠并标注来源」）。文件行摘要本来就是单行。
+	const isBranchRow = fact.source === "branch" && fact.branch != null;
+	const rowLabel = fact.branch ? `branch:${fact.branch.threadId}` : fact.path;
+	const l1Lines = fact.summary
+		.split("\n")
+		.map((line) => line.trim())
+		.filter(Boolean);
+	const collapsedSummary = l1Lines[0] ?? fact.summary;
+	const hiddenLines = Math.max(0, l1Lines.length - 1);
 	return (
 		<motion.li
 			variants={STAGGER_CHILD}
@@ -37,7 +47,7 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 						className="flex min-w-0 flex-1 cursor-pointer items-start gap-2 text-left"
 						onClick={() => {
 							setOpen((value) => !value);
-							if (!open) void recordAction("resume_fact_opened");
+							if (!open) void recordAction("resume_fact_opened", rowLabel);
 						}}
 					>
 						<motion.span
@@ -51,8 +61,14 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 							<span className="block truncate font-medium text-fg-muted">
 								{fact.path}
 							</span>
-							<span className="mt-0.5 block text-fg-subtle">
-								{fact.summary}
+							<span className="mt-0.5 block truncate text-fg-subtle">
+								{collapsedSummary}
+								{!open && hiddenLines > 0 ? (
+									<span className="text-fg-subtle/70">
+										{" "}
+										· 还有 {hiddenLines} 行
+									</span>
+								) : null}
 							</span>
 						</span>
 					</button>
@@ -64,7 +80,7 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 						size="xs"
 						className="shrink-0 text-accent-default"
 						onClick={async () => {
-							await recordAction("resume_branch_opened");
+							await recordAction("resume_branch_opened", rowLabel);
 							await switchThread(fact.branch!.threadId);
 						}}
 					>
@@ -83,6 +99,17 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 			) : null}
 			<AnimatedDisclosure open={open}>
 				<div className="border-t border-border-subtle px-3 py-2 text-fg-subtle">
+					{isBranchRow && l1Lines.length > 0 ? (
+						<div className="mb-2">
+							<ul className="space-y-0.5">
+								{l1Lines.map((line) => (
+									<li key={line}>{line}</li>
+								))}
+							</ul>
+							{/* D3-Q2：叙事永远折叠并标注来源——这些行由足迹拼接，不注入模型。 */}
+							<p className="mt-1 text-nano text-fg-subtle/70">由足迹拼接</p>
+						</div>
+					) : null}
 					{fact.branch ? (
 						<ul className="max-h-40 space-y-1 overflow-auto">
 							{fact.branch.paths.map((path) => (

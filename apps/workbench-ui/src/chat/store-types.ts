@@ -79,7 +79,13 @@ export interface ChatState {
 	consumeResumeNote(surface: string): Promise<void>;
 	dismissResumeCard(): Promise<void>;
 	revealResumeCard(): void;
-	recordResumeAction(action: string): Promise<void>;
+	recordResumeAction(action: string, label?: string): Promise<void>;
+	/**
+	 * TF-0199：恢复卡展示观测——渲染出带分支行的恢复卡时上报本次展示的
+	 * 行标签（`branch:<threadId>`）。fit 指标 7 的分母，重复刷新由调用方
+	 * 按恢复边界去重。
+	 */
+	reportResumeCardShown(branchRows: string[]): Promise<void>;
 	/** TF-0142：关掉送达提示（短暂可见后自动消失）。 */
 	dismissNoticeDelivered(): void;
 	/** TF-0092：手动晋升——一个手势给无名对话命名。 */

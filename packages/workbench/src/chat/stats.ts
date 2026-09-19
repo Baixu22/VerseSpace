@@ -12,6 +12,7 @@ import {
 import { foldSealDecisions } from "../runtime/seal-counts";
 import { sealReviewTotals } from "../runtime/seal-review";
 import type { WorkbenchEvent } from "../types/event";
+import { foldBranchEngagement } from "./branch-engagement";
 import { restoreFirstActions } from "./restore-actions";
 import { foldRestoreTimings } from "./restore-timing";
 import { resumeCardCircuit } from "./resume-card/circuit";
@@ -180,6 +181,7 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 				messagesByThread,
 			),
 			resumeCardCircuit: resumeCardCircuit(events),
+			branchEngagement: foldBranchEngagement(events),
 		},
 		siblingAlternation: alternation,
 		premises: foldPremisePasses(events),

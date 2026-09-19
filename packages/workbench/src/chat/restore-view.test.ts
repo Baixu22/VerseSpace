@@ -276,6 +276,73 @@ test("TF-0198 验收①：dismiss 后模型侧注入队列为空", async () => {
 	}
 });
 
+test("TF-0199：resume-card/shown 落展示观测，stats 读出展开/点击比例", async () => {
+	const ws = await makeTempWorkbench();
+	const chat = new ChatThreads(ws.bb);
+	const server = await createUiServer(ws.bb, 0);
+	try {
+		const source = await sourceThread(ws, chat);
+		const branch = (await chat.fork(source.id, "m-1")).thread!;
+		await readA(ws, source.id);
+		await chat.leave(source.id);
+		await writeA(ws, branch.id, 3);
+		const path = `/api/chat/threads/${source.id}`;
+		const request = (suffix: string, method = "GET", body?: unknown) =>
+			server.handle(
+				new Request(`http://127.0.0.1:${server.port}${path}${suffix}`, {
+					method,
+					headers: {
+						"x-workbench-token": server.authToken,
+						...(body ? { "content-type": "application/json" } : {}),
+					},
+					...(body ? { body: JSON.stringify(body) } : {}),
+				}),
+			);
+		// 恢复 → 渲染出分支行 → UI 上报展示 → 用户展开该行。
+		await chat.recordRestored(source.id);
+		expect(
+			(
+				await request("/resume-card/shown", "POST", {
+					branchRows: [`branch:${branch.id}`],
+				})
+			).ok,
+		).toBe(true);
+		expect(
+			(
+				await request("/resume-action", "POST", {
+					action: "resume_fact_opened",
+					label: `branch:${branch.id}`,
+				})
+			).ok,
+		).toBe(true);
+		const events = await ws.bb.events.all();
+		const shownEvent = events.find(
+			(event) => event.type === "thread.resume_card_shown",
+		);
+		expect(shownEvent).toBeDefined();
+		expect(shownEvent!.payload).toMatchObject({
+			threadId: source.id,
+			branchRows: [`branch:${branch.id}`],
+		});
+		const expandEvent = events.find(
+			(event) =>
+				event.type === "thread.resume_action" &&
+				(event.payload as { action?: string }).action === "resume_fact_opened",
+		);
+		expect(expandEvent!.payload).toMatchObject({
+			label: `branch:${branch.id}`,
+		});
+		// 验收判据：展开/被点比例可从 stats --json 读出。
+		const stats = await collectChatStats(ws.bb);
+		expect(stats.lifecycle.branchEngagement.branchRowsShown).toBe(1);
+		expect(stats.lifecycle.branchEngagement.branchRowsEngaged).toBe(1);
+		expect(stats.lifecycle.branchEngagement.ratio).toBe(1);
+	} finally {
+		server.stop(true);
+		await ws.cleanup();
+	}
+});
+
 test("R10: siblings share the source lineage; unrelated writes, missing baselines and unreferenced lineage stay silent", async () => {
 	const ws = await makeTempWorkbench();
 	const chat = new ChatThreads(ws.bb);

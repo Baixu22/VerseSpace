@@ -6,6 +6,7 @@ import type { NoticeOutcomeTotals } from "../runtime/notice-outcome";
 import type { PremisePassTotals } from "../runtime/premise-counts";
 import type { SealTotals } from "../runtime/seal-counts";
 import type { SealReviewTotals } from "../runtime/seal-review";
+import type { BranchEngagementStats } from "./branch-engagement";
 import type { RestoreTimingStats } from "./restore-timing";
 import type { ResumeCardCircuitState } from "./resume-card/circuit";
 
@@ -54,6 +55,12 @@ export interface ChatStats {
 		 * 正在降为 L0 指针；窗口内行为变好则自动回到 closed（可恢复，无需手势）。
 		 */
 		resumeCardCircuit: ResumeCardCircuitState;
+		/**
+		 * 分支行展开/点击读数（TF-0199，D3-Q2 fit 指标 7）：渲染的分支行中
+		 * 被展开或指针被点的比例。分母来自 UI 的 resume_card_shown 观测
+		 * （渲染了才计数），分子是同恢复窗内带行标签的展开/点击动作。
+		 */
+		branchEngagement: BranchEngagementStats;
 	};
 	siblingAlternation: {
 		available: boolean;

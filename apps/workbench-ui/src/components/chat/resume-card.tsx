@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RotateCcw, X } from "@/components/icon";
 import { useChatStore } from "../../chat/store";
 import { FADE_IN, STAGGER_PARENT, TWEEN_DISCLOSURE } from "../../lib/motion";
@@ -16,9 +16,31 @@ export function ResumeCard() {
 	const delta = useChatStore((s) => s.resumeDelta);
 	const dismissed = useChatStore((s) => s.resumeCardDismissed);
 	const revealed = useChatStore((s) => s.resumeCardRevealed);
+	const readSetDiff = useChatStore((s) => s.readSetDiff);
 	const consume = useChatStore((s) => s.consumeResumeNote);
 	const dismiss = useChatStore((s) => s.dismissResumeCard);
+	const reportShown = useChatStore((s) => s.reportResumeCardShown);
 	const [factsExpanded, setFactsExpanded] = useState(false);
+	// TF-0199 展示观测：渲染出带分支行的卡片就上报（fit 指标 7 的分母）。
+	// 按恢复边界去重——同一 baseline + 同一组行只报一次，后台刷新与
+	// StrictMode 双跑都不会重复计数；换恢复基线（新一次离开）才再报。
+	const shownKeyRef = useRef<string | null>(null);
+	useEffect(() => {
+		if (!card || dismissed) return;
+		const branchRows = card.facts.filter(
+			(fact) => fact.source === "branch" && fact.branch,
+		);
+		if (branchRows.length === 0) return;
+		const threadId = useChatStore.getState().activeId;
+		const key = `${threadId}|${readSetDiff?.baseline?.eventId ?? ""}|${branchRows
+			.map((fact) => fact.branch!.threadId)
+			.join(",")}`;
+		if (shownKeyRef.current === key) return;
+		shownKeyRef.current = key;
+		void reportShown(
+			branchRows.map((fact) => `branch:${fact.branch!.threadId}`),
+		);
+	}, [card, dismissed, readSetDiff, reportShown]);
 	if (!card || (dismissed && !revealed)) return null;
 
 	// 预览条数随卡片载荷下发（服务端 FACTS_PREVIEW_COUNT 是唯一来源）——

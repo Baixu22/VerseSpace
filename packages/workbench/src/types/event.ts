@@ -38,6 +38,11 @@ export const THREAD_EVENT_TYPES = new Set([
 	// 结构摘要已并入父线程恢复面」这一事实。仍然只是观察——结论键照常拒绝，
 	// 摘要内容以 refs 溯源，不自带裁决。
 	"thread.merged_back",
+	// 恢复卡展示观测（TF-0199）：UI 报告「这次恢复面渲染了哪些分支行」——
+	// fit 指标 7（渲染的分支行中被展开或被点的比例）的分母。渲染是真实
+	// 发生的展示，不是手势：单独成类，不混进 resume_action（否则「返回后
+	// 第一动作」会被渲染事件污染）。
+	"thread.resume_card_shown",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([
