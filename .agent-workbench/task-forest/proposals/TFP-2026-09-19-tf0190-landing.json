@@ -1,0 +1,73 @@
+{
+  "applied_at": "2026-09-19T00:57:51.910361Z",
+  "base_graph_hash": "6f9c68da37cb926359234ed107a869061603fc30bb82742934b28a42e0022395",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "本机（以及受控试用机）都没有 claude 凭据，产生不了 footprintSeq > 0 的真实读数：这个节点要的是「有凭据的环境」这个外部条件，不是代码改动，所以谁在本机都开不了工。",
+          "按 blocked 挂起而不是留 proposed：留 proposed 会让它每轮扫描都被列为可开工项，实际不可开工；blocked 才如实反映「等外部条件」。",
+          "验收仍未取证：stats --json 的非零 withFootprints、以及同一试用在 HTTP provider 下的 0 对照。拿到凭据环境后按 requirements 复用 d419223 的 UI 车道脚本即可执行，不需要额外开发。",
+          "2026-09-19 阻塞解除：本机 `claude auth status` → loggedIn=true（oauth_token, firstParty），claude CLI 2.1.251 可用，不再缺「有凭据的环境」。",
+          "受控试用·claude 车道（脚本 `.agent-contexts/tf0190-trial/ui-lane-trial.ts`，复用 `scripts/e2e` 的 driver/fixtures）：真实 claude CLI 在临时 git 仓库跑一个「Read 两个文件 + Write 一个文件」的 UI 回合，工具调用 Read×2 / Write×1；`stats --json` → `threads.withFootprints=1`（total=1，footprintCoverage=1）；`.workbench/events` 落 2 条 footprint 事件（Read src/alpha.ts、src/notes.md）。",
+          "对照组·HTTP 车道（provider=openai-chat，DPAPI 凭据 senseaudio-s2-flash）：同一提示词回合正常完成，tool-call part 0 个；`stats --json` → `threads.withFootprints=0`（对照通过，确认 HTTP 读集不可观测是产品边界而非缺陷）。",
+          "验收闭合：① stats --json 非零 withFootprints ✓（claude=1）；② 同一试用 HTTP provider 下仍为 0 ✓。可复算材料在 `.agent-contexts/tf0190-trial/`（脚本 + evidence/*.json）。"
+        ],
+        "progress": 100,
+        "summary": "受控试用完成：UI claude 车道真实回合产生足迹（withFootprints=1），HTTP 对照组为 0；claude 车道可观测性验证闭合。"
+      },
+      "id": "TF-0190"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0190",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "TF-0191 done；TF-0190 需 claude 凭据环境，本机无；TF-0192 文档待做。",
+          "2026-09-18 收尾：TF-0192 完成（提交 f08267b）—— README 对照表 + 设置面板当场提示。阶段 2 至此只剩 TF-0190 一项。",
+          "TF-0190 转 blocked：卡的是外部条件（有 claude 凭据的环境），本机不可推进；阶段 2 的验收（非零 withFootprints 与 HTTP 对照）在拿到凭据前无法取证，因此本里程碑保持 in_progress 而不是 done。",
+          "不计入验收的旁证：受控试用实测过 HTTP provider 的读集不可观测（footprintSeq = 0、withFootprints = 0），确认这是产品边界而非缺陷；该结论已写进 README 与设置面板。",
+          "2026-09-19 TF-0190 完成：本机 claude 已登录（oauth_token），受控试用 claude 车道 `withFootprints=1`、HTTP 对照 `0`；阶段 2 验收（非零 withFootprints 与 HTTP 对照）取证闭合。",
+          "阶段 2 三项子任务全部 done：TF-0191（UI 线程头诚实标注）、TF-0192（README 与设置面板）、TF-0190（claude 车道足迹验证）。里程碑结项。"
+        ],
+        "progress": 100,
+        "summary": "阶段 2 完成：claude 车道足迹验证取证闭合（TF-0190），UI 诚实标注（TF-0191）与文档（TF-0192）已就绪。"
+      },
+      "id": "TF-0189"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0189",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/helmor-absorption-deep-exploration-2026-09-17.md 第 1.3/1.5/1.6/3.3/4.2/6.2/7 节",
+          "阶段 1 落地读数：已于 5523f37 提交（TF-0184–0187 + ADR-0013）",
+          "进度按估时加权：已完成 300 分钟 / 计划 5,160 分钟",
+          "阶段 5 于 2026-09-18 完成 TF-0206：19 fixture 全量回放，IPC baseline 206,320 B → optimized 126,212 B，节省 80,108 B（38.83%）；Workbench 843 pass、Workbench UI 53 pass、两包 typecheck 与 Biome 聚焦门禁通过。总进度按既有 5,160 分钟口径更新为 2,015 / 5,160 = 39.0%，非目标为 Rust pipeline 与 Rust snapshots。",
+          "2026-09-19 阶段 2 完成（TF-0190 受控试用取证闭合）：claude 车道 withFootprints=1、HTTP 对照 0，验收两项判据均满足。总进度按既有 5,160 分钟口径更新为 2,105 / 5,160 = 40.8%。"
+        ],
+        "progress": 40.8
+      },
+      "id": "TF-0176"
+    }
+  ],
+  "created_at": "2026-09-19T00:57:41.014998Z",
+  "proposal_id": "TFP-2026-09-19-tf0190-landing",
+  "rationale": "阶段 2（足迹命门轻路）的最后一个子节点 TF-0190 完成取证：本机 claude CLI 已登录（oauth_token），受控试用走 UI claude 车道产生真实足迹（stats.threads.withFootprints=1，Read×2），同一试用在 HTTP provider 下为 0（对照组）。阶段 2 三项子任务全部 done，里程碑结项；TF-0176 总进度按既有 5,160 分钟口径更新为 2,105/5,160=40.8%。",
+  "session_id": "session-2026-09-19-phase2-closeout",
+  "status": "applied"
+}

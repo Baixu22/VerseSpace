@@ -252,6 +252,33 @@
       "why_this_task": ""
     },
     "blocked_by": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "low",
+    "id": "TF-0194",
+    "kind": "task",
+    "next_action": "fit-ledger 新增一行带日期与四个读数",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": 120,
+    "remaining_minutes_min": 120,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
     "confidence": 0.65,
     "context_tags": [],
     "desired_outcomes": [],
@@ -463,7 +490,7 @@
     "kind": "global_task",
     "next_action": "补充下一步动作或开始执行",
     "priority": 1,
-    "progress": 39.0,
+    "progress": 40.8,
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -471,33 +498,6 @@
     "status": "in_progress",
     "success_metrics": [],
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0189",
-    "kind": "milestone",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 360,
-    "remaining_minutes_min": 360,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "阶段 2：足迹命门轻路——验证 claude 车道 + UI 诚实标注可观测性"
   },
   {
     "alignment": {
@@ -654,35 +654,6 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0190"
-    ],
-    "confidence": 0.6,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0194",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0190",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 120,
-    "remaining_minutes_min": 120,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
       "TF-0197"
     ],
     "confidence": 0.65,
@@ -759,33 +730,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "工具目录：premises 查询 / 足迹读取 / 恢复卡 / tribunal 列表 / 通知投递；响应体积控制（白名单 + 去 null + 截断）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0190",
-    "kind": "task",
-    "next_action": "澄清阻塞原因并决定解除或废止",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 90,
-    "remaining_minutes_min": 90,
-    "status": "blocked",
-    "success_metrics": [],
-    "title": "在有 claude 凭据的环境验证 UI chat 走 claude 车道产生足迹（footprintSeq > 0）"
   },
   {
     "alignment": {
