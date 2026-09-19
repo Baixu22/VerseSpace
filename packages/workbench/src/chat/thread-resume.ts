@@ -101,3 +101,24 @@ export async function recordResumeAction(
 		action,
 	});
 }
+
+/**
+ * 分支摘要折回（TF-0196 白名单，TF-0197 提供内容）：在父线程上记录
+ * 「子分支的结构摘要已并入本线程恢复面」。payload 是观察不是结论——
+ * 结构摘要的每条事实以 refs 溯源（世界事件 seq / 账本条目 / diff），
+ * `refs` 由 validateThreadEvent 强制为字符串数组。
+ */
+export async function recordMergedBack(
+	context: ThreadContext,
+	threadId: string,
+	payload: {
+		fromThreadId: string;
+		refs?: string[];
+	} & Record<string, unknown>,
+): Promise<void> {
+	await context.store.appendThreadEvent(
+		"thread.merged_back",
+		threadId,
+		payload,
+	);
+}

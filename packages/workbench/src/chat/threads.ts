@@ -13,6 +13,7 @@ import { promote } from "./thread-promotion";
 import { ThreadRepository } from "./thread-repository";
 import {
 	leave,
+	recordMergedBack,
 	recordRestored,
 	recordResumeAction,
 	recordResumeNoteConsumed,
@@ -119,6 +120,16 @@ export class ChatThreads {
 
 	async recordResumeAction(threadId: string, action: string): Promise<void> {
 		return recordResumeAction(this.context, threadId, action);
+	}
+
+	async recordMergedBack(
+		threadId: string,
+		payload: {
+			fromThreadId: string;
+			refs?: string[];
+		} & Record<string, unknown>,
+	): Promise<void> {
+		return recordMergedBack(this.context, threadId, payload);
 	}
 
 	async remove(id: string): Promise<{ ok: boolean; reason?: string }> {

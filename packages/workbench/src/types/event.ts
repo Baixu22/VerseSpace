@@ -34,6 +34,10 @@ export const THREAD_EVENT_TYPES = new Set([
 	"thread.resume_note_consumed",
 	"thread.inheritance_observed",
 	"thread.resume_action",
+	// 分支摘要折回（TF-0196，恢复 TF-0132 的白名单半成品）：观察「子分支的
+	// 结构摘要已并入父线程恢复面」这一事实。仍然只是观察——结论键照常拒绝，
+	// 摘要内容以 refs 溯源，不自带裁决。
+	"thread.merged_back",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([

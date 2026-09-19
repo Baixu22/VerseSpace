@@ -271,11 +271,27 @@ describe("events blackboard API", () => {
 		}
 	});
 
-	test("deprecated thread.merged_back is rejected; unknown thread types still throw", async () => {
+	test("thread.merged_back is whitelisted as an observation; verdict keys and unknown types still throw", async () => {
 		const { bb, cleanup } = await makeTempWorkbench();
 		try {
-			// TF-0132 deprecated merge-back and issue #4 removed it from the
-			// whitelist: production has no writer, so the type must refuse.
+			// TF-0196 恢复 TF-0132 的白名单半成品：merged_back 是「摘要已折回」
+			// 的观察事件，可以携带 refs 溯源，但依旧不得携带结论键。
+			await bb.events.append({
+				timestamp: new Date().toISOString(),
+				source: "threads",
+				type: "thread.merged_back",
+				payload: {
+					threadId: "thread-parent",
+					fromThreadId: "thread-child",
+					level: "summary",
+					refs: ["e-1"],
+				},
+			});
+			const all = await bb.events.all();
+			expect(all).toHaveLength(1);
+			expect(all[0]!.type).toBe("thread.merged_back");
+
+			// 结论键照常拒绝：摘要内容必须以 refs 溯源，不自带裁决。
 			await expect(
 				bb.events.append({
 					timestamp: new Date().toISOString(),
@@ -283,13 +299,11 @@ describe("events blackboard API", () => {
 					type: "thread.merged_back",
 					payload: {
 						threadId: "thread-parent",
-						from: "thread-child",
-						into: "thread-parent",
-						level: "summary",
-						facts: { ledgerDiffRefs: ["e-1"] },
+						fromThreadId: "thread-child",
+						verdict: "clean",
 					},
 				}),
-			).rejects.toThrow("未知线程生命周期事件");
+			).rejects.toThrow("verdict");
 
 			await expect(
 				bb.events.append({
@@ -299,7 +313,7 @@ describe("events blackboard API", () => {
 					payload: { threadId: "t" },
 				}),
 			).rejects.toThrow("未知线程生命周期事件");
-			expect(await bb.events.all()).toEqual([]);
+			expect(await bb.events.all()).toHaveLength(1);
 		} finally {
 			await cleanup();
 		}

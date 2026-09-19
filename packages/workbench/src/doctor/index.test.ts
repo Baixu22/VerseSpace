@@ -192,4 +192,34 @@ describe("runDoctor", () => {
 			await ws.cleanup();
 		}
 	});
+
+	test("old checkpoints without thread/writer link parse and stay clean (TF-0196)", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const goal = await ws.bb.goals.add({ title: "A" });
+			await seedWorkspot(ws, "ws-a", goal.id);
+			// 旧数据形状：无 threadId/writerId。可选字段缺失必须照常解析，
+			// doctor 不得因缺失会话链接而报错。
+			const legacy: Checkpoint = {
+				...checkpointOf("cp-legacy", goal.id),
+				verification: { strategy: "test", command: "bun test", timeout: 60 },
+			};
+			await ws.bb.checkpoints.save(legacy, "staging");
+			// 新形状：带会话链接。两种形状并存时 doctor 同样不报错。
+			const linked: Checkpoint = {
+				...checkpointOf("cp-linked", goal.id),
+				verification: { strategy: "test", command: "bun test", timeout: 60 },
+				threadId: "thread-1",
+				writerId: "thread-1",
+			};
+			await ws.bb.checkpoints.save(linked, "staging");
+			const report = await runDoctor(ws.bb);
+			expect(report).toEqual({ ok: true, issues: [] });
+			const all = await ws.bb.checkpoints.scanZone("staging");
+			expect(all.find((c) => c.id === "cp-legacy")?.threadId).toBeUndefined();
+			expect(all.find((c) => c.id === "cp-linked")?.threadId).toBe("thread-1");
+		} finally {
+			await ws.cleanup();
+		}
+	});
 });

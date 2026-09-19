@@ -93,6 +93,13 @@ export const checkpointSchema = z.object({
 	blackboardEffects: blackboardEffectsSchema.optional(),
 	unblocks: z.array(unblockEntrySchema).default([]),
 	ephemeralGoal: z.string().optional(),
+	/**
+	 * 会话链接（TF-0196）：checkpoint 由哪个线程/写者产生。旧 checkpoint
+	 * 没有这两个字段——可选即兼容，doctor 与所有读侧不得因缺失而报错。
+	 * 这是 Verifier 状态的生产者侧链接：验证结论从此可以归因到会话。
+	 */
+	threadId: z.string().min(1).optional(),
+	writerId: z.string().min(1).optional(),
 	/** Archived outcome of the last verification run (milestone 6 executor). */
 	verificationResult: z
 		.object({

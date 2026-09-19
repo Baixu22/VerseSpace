@@ -895,6 +895,31 @@ describe("ChatThreads 生命周期事件", () => {
 			await cleanup();
 		}
 	});
+
+	test("recordMergedBack 落 merged_back 事件，threadId 由服务端钉死（TF-0196）", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(bb);
+			await chat.recordMergedBack("thread-parent", {
+				threadId: "thread-injected",
+				fromThreadId: "thread-child",
+				level: "summary",
+				refs: ["e-1", "fp-2"],
+			});
+
+			const events = await bb.events.query({ type: "thread.merged_back" });
+			expect(events).toHaveLength(1);
+			expect(events[0]!.payload).toMatchObject({
+				// 调用方 payload 里的 threadId 不生效：事件归属由 appendThreadEvent 钉死
+				threadId: "thread-parent",
+				fromThreadId: "thread-child",
+				level: "summary",
+				refs: ["e-1", "fp-2"],
+			});
+		} finally {
+			await cleanup();
+		}
+	});
 });
 
 describe("通知通道语义（TF-0142：live / idle / 多通知 / turn-in-flight）", () => {
