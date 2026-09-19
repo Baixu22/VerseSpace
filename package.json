@@ -168,7 +168,7 @@
 		"*.{ts,tsx,js,jsx,json,css}": [
 			"biome check --write --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true --config-path=./biome.json"
 		],
-		"*.rs": [
+		"src-tauri/**/*.rs": [
 			"bash -c 'cargo fmt --manifest-path src-tauri/Cargo.toml --all'",
 			"bash -c 'cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings'"
 		]
