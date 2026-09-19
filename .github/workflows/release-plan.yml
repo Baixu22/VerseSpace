@@ -10,11 +10,11 @@ name: Release Plan
 #    → changesets/action runs the `publish:` command below, which is
 #      `bun run release:tag` — a custom script that reads the root
 #      package.json version and creates a single `v<version>` git tag.
-#    → Why NOT `changeset tag`: once we added `apps/marketing` to the
-#      workspace, `@manypkg/get-packages` flips changesets into monorepo
-#      mode and tags become `<name>@<version>` (e.g. `helmor@0.2.0`),
+#    → Why NOT `changeset tag`: with multiple publishable packages in the
+#      workspace, `@manypkg/get-packages` keeps changesets in monorepo
+#      mode and tags become `<name>@<version>` (e.g. `workbench@0.3.0`),
 #      which (a) doesn't match publish.yml's `tags: v*` trigger and
-#      (b) additionally tags `@helmor/marketing@...` which we don't want.
+#      (b) tags every publishable package, which we don't want.
 #
 # 3. The tag push triggers `publish.yml` for signed/notarized macOS DMGs,
 #    macOS updater artifacts, and the Windows NSIS installer, which attach

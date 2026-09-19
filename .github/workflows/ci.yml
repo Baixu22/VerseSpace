@@ -2,7 +2,7 @@ name: CI
 
 # Single PR/push pipeline: one `changes` job evaluates path filters, every
 # downstream job gates on exactly one output, so a change only runs the suites
-# it can affect (a marketing-only PR runs just Biome; a Rust-only PR skips the
+# it can affect (a docs-only PR runs just Biome; a Rust-only PR skips the
 # frontend/sidecar/e2e lanes; etc.).
 #
 # Filters compose via YAML anchors — `global` (CI config, lockfile, root

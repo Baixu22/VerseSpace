@@ -19,3 +19,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0011](./0011-legacy-retention.md) | v0.1.0 后保留三块存量，按实际引用抽取，主题仍复用 | 已接受 | TF-0055 |
 | [0012](./0012-gui-write-endpoint-admission.md) | GUI 写操作端点准入：四条判据逐端点收口 ADR-0005 的「后续逐个评估」；线程删除为唯一不可撤销操作，附条件准入 | 已接受 | TF-0174 |
 | [0013](./0013-workbench-identity-and-compliance.md) | 主线身份 = 保留 monorepo + 改名 + 翻转叙事；合规三件一次做完；sidecar 触发条件 = 第二个需观测足迹的 provider；退役条件 = 四项容器耦合清零 | 已接受 | TF-0187（阶段 TF-0183） |
+| [0014](./0014-legacy-retirement-gate.md) | 存量退役闸门核查 = 四项耦合清零（已满足）；删除支线外围 apps/marketing 与 apps/registry；三块存量暂保留为行为参考 | 已接受 | TF-0218 / TF-0219（阶段 TF-0213） |

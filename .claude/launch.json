@@ -20,12 +20,6 @@
 			"port": 6006
 		},
 		{
-			"name": "marketing",
-			"runtimeExecutable": "bun",
-			"runtimeArgs": ["--cwd", "apps/marketing", "run", "dev"],
-			"port": 3000
-		},
-		{
 			"name": "workbench-api",
 			"runtimeExecutable": "bun",
 			"runtimeArgs": ["packages/workbench/src/index.ts", "ui", "--port", "7700", "--no-open"],
