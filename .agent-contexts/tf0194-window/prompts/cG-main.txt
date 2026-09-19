@@ -1,0 +1,3 @@
+你在 git 仓库 D:/helmor-main 里，继续 TF-0200。adopt/revert 已有门面 + 路由（threads.ts / chat-routes.ts）。
+
+任务：为路由层补集成测试做侦察。用 Read 读 packages/workbench/src/ui/promotion-route.test.ts 的结构（server.handle 夹具、断言风格），回答（≤6 行）：adopt/revert 的路由测试该怎么写——URL、请求体、断言哪些身份字段与事件？错误臂（无 forkOf / 无快照）怎么测？不要修改任何文件。

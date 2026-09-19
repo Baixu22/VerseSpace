@@ -1,0 +1,7 @@
+你在分支线程里，仓库 D:/helmor-main。主线已确认路由测试写法：promotion-route.test.ts 的 server.handle 夹具，POST 后断言身份字段与事件，错误臂断 400。
+
+任务：给 adopt/revert 路由补集成测试。用 Read 读 packages/workbench/src/ui/promotion-route.test.ts 全文，然后用 Edit 在该文件末尾追加（≤50 行）：
+1. adopt 臂：create 源 + 灌消息 + fork → POST /api/chat/threads/{child}/adopt → 200 → 断言源 archived、子 forkOf 清空、thread.adopted 事件在；
+2. revert 臂：接 adopt 后 POST /threads/{source}/revert → 200 → 断言身份复原、thread.adoption_reverted 在；
+3. 错误臂：对无 forkOf 的线程 POST adopt → 400。
+只改这一个文件，夹具与断言风格对齐全文。完成后一句话说明。
