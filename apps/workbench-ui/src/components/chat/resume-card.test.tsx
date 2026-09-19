@@ -379,4 +379,30 @@ describe("ResumeCard 交互", () => {
 			),
 		).toBeDefined();
 	});
+
+	it("TF-0200：点『以分支为主线』先 POST /adopt 再 switch，收养先于切换", async () => {
+		const calls = installRoutes();
+		seedCard(cardWith([BRANCH_FACT]));
+
+		render(<ResumeCard />, { wrapper: TooltipProvider });
+		screen.getByText("以分支为主线").click();
+
+		await waitFor(() => {
+			expect(useChatStore.getState().activeId).toBe("branch-1");
+		});
+		// adopt 打在被收养的分支线程上（不是活动的源线程）。
+		const adopt = calls.findIndex(
+			(c) =>
+				c.path === "/api/chat/threads/branch-1/adopt" && c.method === "POST",
+		);
+		const switchCall = calls.findIndex(
+			(c) => c.path === "/api/chat/threads/branch-1/switch",
+		);
+		expect(adopt).toBeGreaterThanOrEqual(0);
+		expect(switchCall).toBeGreaterThan(adopt);
+		// 循环守卫与「查看分支」同源：手势不许把 React 打进 #185。
+		expect(
+			consoleErrors.filter((m) => /Maximum update depth|#185/.test(m)),
+		).toEqual([]);
+	});
 });

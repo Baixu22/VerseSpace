@@ -1,0 +1,3 @@
+你在分支线程里，仓库 D:/helmor-main。主线已确认：种子 seedCard(cardWith([BRANCH_FACT]))，点击「以分支为主线」，断言 POST /threads/branch-1/adopt → 拉取 branch-1 → switch 的顺序。
+
+任务：给 adoptBranch 手势补 UI 测试。用 Read 读 apps/workbench-ui/src/components/chat/resume-card.test.tsx 的「查看分支」用例与 installRoutes，然后用 Edit 在 describe 内追加一个 it（≤35 行）：点击「以分支为主线」→ 断言 adopt POST 发生且 switch 跟随（adopt 先于 switch）、无 React 循环报错。只改这一个文件，风格对齐。

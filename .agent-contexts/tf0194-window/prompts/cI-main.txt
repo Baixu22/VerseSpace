@@ -1,0 +1,3 @@
+你在 git 仓库 D:/helmor-main 里，继续 TF-0200。「以分支为主线」手势已实现（resume-card-rows.tsx 按钮 + adoptBranch store 动作，POST /adopt 后 switchThread）。
+
+任务：为该手势补 UI 交互测试做侦察。用 Read 读 apps/workbench-ui/src/components/chat/resume-card.test.tsx 的「查看分支」测试（第一个 it：先记账再切换）与 installRoutes mock 模式，回答（≤6 行）：adoptBranch 的测试该怎么写——点击哪个按钮、断言哪些调用顺序（POST /adopt → GET threads/{branch} → /switch）、需要 mock 哪些路由？不要修改任何文件。
