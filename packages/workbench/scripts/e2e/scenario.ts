@@ -269,6 +269,69 @@ export async function runE2E(
 		});
 
 		const branches = await verifyRestoration(ws, server, threadId, step);
+
+		await step(
+			"S6b 收养：fork → adopt 翻转身份 → revert 复原（TF-0200）",
+			async () => {
+				// 列表返回完整 ThreadMeta（含 archived/forkOf），是身份翻转的公开断言面
+				const list = async () =>
+					(await (await api(server, "/api/chat/threads")).json()) as {
+						id: string;
+						archived?: boolean;
+						forkOf?: { sourceThreadId: string };
+					}[];
+				// 取主线末条消息作锚点，走公开表面做一次追溯式分叉
+				const view = (await (
+					await api(server, `/api/chat/threads/${threadId}`)
+				).json()) as { messages: { id: string }[] };
+				const anchor = view.messages.at(-1)?.id;
+				if (!anchor) throw new Error("主线没有可作锚点的消息");
+				const forked = (await (
+					await api(server, `/api/chat/threads/${threadId}/fork`, {
+						method: "POST",
+						body: JSON.stringify({ anchorMessageId: anchor }),
+					})
+				).json()) as { ok: boolean; thread?: { id: string } };
+				const branchId = forked.thread?.id;
+				if (!forked.ok || !branchId) throw new Error("fork 未产出分支");
+
+				// adopt：入口是分支 id——分支升主线、源线程就地归档
+				const adopt = await api(server, `/api/chat/threads/${branchId}/adopt`, {
+					method: "POST",
+				});
+				if (!adopt.ok) throw new Error(`adopt 请求失败：${adopt.status}`);
+				const afterAdopt = await list();
+				if (afterAdopt.find((t) => t.id === threadId)?.archived !== true)
+					throw new Error("源线程未被归档");
+				if (afterAdopt.find((t) => t.id === branchId)?.forkOf)
+					throw new Error("被收养线程 forkOf 未清空");
+				// thread.* 事件按 threadId 归属，不带 writer，故不按 writerId 过滤
+				const adopted = await lastEventFor(ws, "thread.adopted");
+				if (adopted?.payload.newMainThreadId !== branchId)
+					throw new Error("thread.adopted 事件缺失或主线不符");
+
+				// revert：入口是源线程 id——双方身份复原，本步自我闭环不留副作用
+				const revert = await api(
+					server,
+					`/api/chat/threads/${threadId}/revert`,
+					{ method: "POST" },
+				);
+				if (!revert.ok) throw new Error(`revert 请求失败：${revert.status}`);
+				const afterRevert = await list();
+				if (afterRevert.find((t) => t.id === threadId)?.archived)
+					throw new Error("源线程未解档");
+				if (
+					afterRevert.find((t) => t.id === branchId)?.forkOf?.sourceThreadId !==
+					threadId
+				)
+					throw new Error("被收养线程血统未复原");
+				const reverted = await lastEventFor(ws, "thread.adoption_reverted");
+				if (reverted?.payload.sourceThreadId !== threadId)
+					throw new Error("thread.adoption_reverted 事件缺失");
+				return { branchId, adopted: adopted.id, reverted: reverted.id };
+			},
+		);
+
 		await step("S6c 三路分叉：家族折叠且保留各写者的前提", () =>
 			verifyFamilyNotices(ws, server, threadId, [
 				branches.branchId,

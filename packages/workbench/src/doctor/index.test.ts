@@ -193,6 +193,87 @@ describe("runDoctor", () => {
 		}
 	});
 
+	test("detects dangling adopt snapshot and half-adopted source (TF-0200)", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const { mkdir, writeFile } = await import("node:fs/promises");
+			const writeThread = async (meta: Record<string, unknown>) => {
+				const dir = join(ws.workbenchRoot, "threads", meta.id as string);
+				await mkdir(dir, { recursive: true });
+				await writeFile(
+					join(dir, "meta.json"),
+					JSON.stringify(meta, null, 2),
+					"utf8",
+				);
+			};
+			const snapshot = {
+				id: "snap-1",
+				version: 1,
+				sourceThreadId: "thread-src",
+				sourceArchivedBefore: false,
+				adoptedThreadId: "thread-child",
+				adoptedForkOfBefore: {
+					sourceThreadId: "thread-src",
+					sourceTitle: "源",
+					anchorMessageId: "m-1",
+					inheritedMessages: 1,
+					at: new Date().toISOString(),
+				},
+				adoptedArchivedBefore: false,
+				anchorMessageId: "m-1",
+				at: new Date().toISOString(),
+			};
+
+			// 悬空快照：快照挂在一个未归档的线程上（revert 半途 / 手改 meta）
+			await writeThread({
+				id: "thread-dangling",
+				title: "悬空",
+				createdAt: new Date().toISOString(),
+				status: "idle",
+				permissionMode: "default",
+				archived: false,
+				adoptSnapshot: snapshot,
+			});
+
+			// 半收养：源线程无 adoptSnapshot，却存在 thread.adopted 事件且无反转事件
+			await writeThread({
+				id: "thread-src",
+				title: "源",
+				createdAt: new Date().toISOString(),
+				status: "idle",
+				permissionMode: "default",
+			});
+			await ws.bb.events.appendThread("thread.adopted", {
+				newMainThreadId: "thread-child",
+				sourceThreadId: "thread-src",
+				anchorMessageId: "m-1",
+				snapshotVersion: 1,
+				threadId: "thread-child",
+			});
+
+			const report = await runDoctor(ws.bb);
+			const checks = report.issues.map((issue) => issue.check);
+			expect(checks).toContain("dangling_adopt_snapshot");
+			expect(checks).toContain("half_adopted");
+			// 悬空快照是 error，半收养是 warning → 报告整体不 ok
+			expect(report.ok).toBe(false);
+
+			// 反转后：源线程重挂快照或事件落地 thread.adoption_reverted，半收养消失
+			await ws.bb.events.appendThread("thread.adoption_reverted", {
+				sourceThreadId: "thread-src",
+				adoptedThreadId: "thread-child",
+				snapshotId: "snap-1",
+				threadId: "thread-src",
+			});
+			const afterRevert = await runDoctor(ws.bb);
+			expect(afterRevert.issues.map((i) => i.check)).not.toContain(
+				"half_adopted",
+			);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
 	test("old checkpoints without thread/writer link parse and stay clean (TF-0196)", async () => {
 		const ws = await makeTempWorkbench();
 		try {
