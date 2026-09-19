@@ -1,0 +1,72 @@
+{
+  "applied_at": "2026-09-19T02:49:57.883609Z",
+  "base_graph_hash": "2e5938df3ea1384a6af179b2377f628c437de6875c8845cbf4b86deaa6ccb486",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "TF-0132 废止证据两条",
+          "2026-09-19 落地（提交 43b5b79）：checkpoint schema 增加可选 threadId/writerId（旧 checkpoint 无此字段照常解析）；THREAD_EVENT_TYPES 恢复 thread.merged_back（TF-0132 白名单半成品），validateThreadEvent 的结论键拒绝与 threadId 钉死不变——方向性不变量不破；ChatThreads.recordMergedBack 生产者就位。",
+          "验收：events.test 改写 merged_back 用例（观察事件可落、verdict 键拒绝、未知类型拒绝）+ threads.test 新增 recordMergedBack 用例（threadId 不被调用方覆盖、refs 溯源）+ doctor.test 新增旧 checkpoint 兼容用例（无 threadId 的旧数据 doctor 全干净，报告 {ok:true,issues:[]}）；workbench typecheck exit 0。"
+        ],
+        "progress": 100,
+        "summary": "checkpoint 会话链接与 merged_back 白名单就位，TF-0132 废止缺口全部补齐，Verifier 状态有了生产者侧归因。"
+      },
+      "id": "TF-0196"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0196",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-19 落地（提交见 feat(workbench): TF-0197）：新增 chat/resume-card/l1-summary.ts——分支 L1 结构摘要六字段：账本差（边界后足迹条目数）、写集(N 文件, hash)（generated claims 带版本 hash）、接口 Δ（写的路径撞注册接口且 contentHash 漂移）、merge-guard 预测（写集重叠臂——线程无独立 git 分支，不假造 merge-tree 结论）、Verifier 状态（经 TF-0196 的 threadId 链接读 checkpoint）、失效前提数（premise_stale writer=分支）。",
+          "requirement ①每行事实带 refs：全部行 refs 非空（事件 id / eventSeq / iface 键 / checkpoint id），l1SummaryRefs 并集断言完整性。",
+          "requirement ②R3 措辞互斥：引用 checkpoint 用「Verifier 已验证（checkpoint cp-x）」或「checkpoint cp-x 无验证结论」，「未经 Verifier」只在无 checkpoint 时出现（tests 断言互斥）。",
+          "requirement ③有 verified@ 必并列「分支自身 k 个前提已失效」：k=0 也并列（tests 断言）。",
+          "AC①渲染输出 refs 完整性：renderL1Summary 多行文本 + l1SummaryRefs 并集，7 例 tests 断言；AC②空分支零痕迹：无边界后活动 → 零行、渲染空串、不建恢复卡行，投影只读不落事件（restore-view GET 既有断言保持）。",
+          "R10 行升级：summary 由单句变 L1 多行摘要，refs 并入行级溯源；行触发语义不变（分支写集撞本线程失效读集才成行，噪声门留给 TF-0198）。workbench 全量 867 pass / 0 fail（129 文件）。"
+        ],
+        "progress": 100,
+        "summary": "分支 L1 结构摘要落地：六字段全溯源，R3 措辞互斥与空分支零痕迹有测试钉住。"
+      },
+      "id": "TF-0197"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0197",
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/helmor-absorption-deep-exploration-2026-09-17.md 第 1.3/1.5/1.6/3.3/4.2/6.2/7 节",
+          "阶段 1 落地读数：已于 5523f37 提交（TF-0184–0187 + ADR-0013）",
+          "进度按估时加权：已完成 300 分钟 / 计划 5,160 分钟",
+          "阶段 5 于 2026-09-18 完成 TF-0206：19 fixture 全量回放，IPC baseline 206,320 B → optimized 126,212 B，节省 80,108 B（38.83%）；Workbench 843 pass、Workbench UI 53 pass、两包 typecheck 与 Biome 聚焦门禁通过。总进度按既有 5,160 分钟口径更新为 2,015 / 5,160 = 39.0%，非目标为 Rust pipeline 与 Rust snapshots。",
+          "2026-09-19 阶段 2 完成（TF-0190 受控试用取证闭合）：claude 车道 withFootprints=1、HTTP 对照 0，验收两项判据均满足。总进度按既有 5,160 分钟口径更新为 2,105 / 5,160 = 40.8%。",
+          "2026-09-19 阶段 6 完成（MCP server）：TF-0210/0211/0212 全部 done，`workbench mcp` 已被 Claude Code 连接（✔ Connected），五条只读工具上线（premises/footprints/resume_cards/tribunal/notices），零新依赖。总进度 = (2,105 + 600) / 5,160 = 52.4%。",
+          "2026-09-19 阶段 7 完成（容器耦合清零与删码）：四项耦合清零、apps/marketing 与 apps/registry 删除、L3 残留清除、ADR-0014 落库。七项任务估时 30+60+60+60+240+90+90=630。总进度 = (2,705 + 630) / 5,160 = 64.6%。",
+          "2026-09-19 阶段 4 前置完成：TF-0196（checkpoint 会话链接 + merged_back 白名单）与 TF-0197（L1 结构摘要）done，估时 240+360=600。阶段 4 剩 TF-0198（渲染门与熔断）与 TF-0199（前端），依赖阶段 3 观察窗基线。总进度 = (3,335 + 600) / 5,160 = 76.3%。"
+        ],
+        "progress": 76.3
+      },
+      "id": "TF-0176"
+    }
+  ],
+  "created_at": "2026-09-19T02:49:57.622925Z",
+  "proposal_id": "TFP-2026-09-19-phase4-pre-landing",
+  "rationale": "阶段 4（D3-Q2 分支动静）的两个前置节点完成：TF-0196 补齐 TF-0132 废止时的三个缺口之二（checkpoint 无会话链接、白名单缺 merged_back），TF-0197 落地 L1 结构摘要（账本差/写集/接口Δ/merge-guard 预测/Verifier 状态/失效前提数，refs 全溯源，R3 措辞互斥，空分支零痕迹）。TF-0176 总进度 = (3,335+600)/5,160 = 76.3%。TF-0198（渲染门与熔断）与 TF-0199（前端）仍等阶段 3 观察窗基线。",
+  "session_id": "session-2026-09-19-phase4-pre-landing",
+  "status": "applied"
+}

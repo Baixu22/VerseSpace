@@ -217,6 +217,60 @@
   },
   {
     "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.65,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0198",
+    "kind": "task",
+    "next_action": "dismiss 后模型侧注入队列为空（测试）",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "渲染门与熔断：≥3 分支合并一行、dismiss ≤2s 清注入队列、dismiss 率 >50% 自动降 L0"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.65,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0199",
+    "kind": "task",
+    "next_action": "展开/被点比例可从 stats --json 读出",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": 240,
+    "remaining_minutes_min": 240,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "前端：resume-card 展示分支动静行 + 展开区叙事 + 埋点（展开/点击比例）"
+  },
+  {
+    "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.8,
       "user_goal": "把 Helmor 仓库里的 Workbench 主线做成一个身份清晰、合规、可靠、可被别的 agent 直接使用的产品",
@@ -247,7 +301,7 @@
     "kind": "global_task",
     "next_action": "补充下一步动作或开始执行",
     "priority": 1,
-    "progress": 64.6,
+    "progress": 76.3,
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -255,33 +309,6 @@
     "status": "in_progress",
     "success_metrics": [],
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0196",
-    "kind": "task",
-    "next_action": "chat/threads.test 与 blackboard/events.test 新增用例通过",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 240,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "前置：checkpoint 与 thread/writer 链接（Verifier 状态生产者）+ thread.merged_back 进事件白名单"
   },
   {
     "alignment": {
@@ -351,64 +378,6 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0197"
-    ],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0198",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0197",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 180,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "渲染门与熔断：≥3 分支合并一行、dismiss ≤2s 清注入队列、dismiss 率 >50% 自动降 L0"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0197"
-    ],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0199",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0197",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 240,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "前端：resume-card 展示分支动静行 + 展开区叙事 + 埋点（展开/点击比例）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
       "TF-0194"
     ],
     "confidence": 0.65,
@@ -427,34 +396,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "阶段 4：D3-Q2 分支动静——恢复卡上的 L1 结构摘要（复活 TF-0132）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0196"
-    ],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0197",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0196",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 360,
-    "remaining_minutes_min": 360,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "L1 摘要生成：账本差 · 写集(N 文件, hash) · 接口 Δ · merge-guard 预测 · Verifier 状态 · 失效前提数，refs 全溯源"
   }
 ]
