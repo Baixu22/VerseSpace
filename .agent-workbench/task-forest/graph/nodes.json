@@ -10741,7 +10741,9 @@
   "TF-0194": {
     "acceptance_criteria": [
       "fit-ledger 新增一行带日期与四个读数",
-      "恢复卡展开率有分母（restores）与分子（resumeActions）"
+      "恢复卡展开率有分母（restores）与分子（resumeActions）",
+      "样本配额达成：高强度窗口内新增 ≥30 次带卡恢复（分母）、≥5 次消费动作（分子，含展开/点击/笔记），其中 dismiss ≥2 次——dismiss 是 TF-0198 熔断器的一等信号，不是实验失败",
+      "来源诚实可核查：fit-ledger 行声明高强度窗（n=1 运行者、起止日期），与历史自然窗口分开读数；无脚本回放凑数（账本纪律 2 不变）"
     ],
     "alignment": {
       "fit": "unknown",
@@ -10752,7 +10754,9 @@
       "why_this_task": ""
     },
     "alignment_records": [],
-    "assumptions": [],
+    "assumptions": [
+      "n=1：运行者是唯一使用者，无人群代表性要求；重度使用的分布即目标分布"
+    ],
     "confidence": 0.6,
     "context_tags": [],
     "created_at": "2026-09-17T14:52:13.552703Z",
@@ -10764,25 +10768,33 @@
     "evidence": [
       "2026-09-19 启动：t0 基线已记录（见 TF-0193 evidence 与 `docs/fit-ledger-2026-09-19-phase3-t0.md`）。",
       "采集协议：一周后重跑 `workbench --json stats` 取 threads.lifecycle.restores / threads.lifecycle.resumeActions / threads.withFootprints，展开率=resumeActions/restores；并重跑 fit-ledger 快照得到带日期与四个读数的行。",
-      "2026-09-19 用户决定暂时 pass：观察窗挂起，节点退回 proposed。"
+      "2026-09-19 用户决定暂时 pass：观察窗挂起，节点退回 proposed。",
+      "2026-09-19 规格修订（用户确认「高强度使用代替长周期使用」）：日历窗 → 样本配额窗；同步把 TFE-0315（TF-0195 depends_on TF-0194）降级为 related_to——依赖部分循环（精确展开率埋点在 TF-0199 才存在），TF-0198 带临时阈值直接开工。修订记录：docs/absorption-progress-2026-09-18.md 偏差条目 observation_window_rescoped。",
+      "采集协议（配额版）：开窗前登记配额；窗口内用主线 UI claude 车道跑真实开发轮；窗口关闭后重跑 workbench --json stats 取 threads.lifecycle.restores / .resumeActions / threads.withFootprints（粗展开率=resumeActions/restores，只对比增量），并重跑 fit-ledger 快照得到带日期与来源声明的行。"
     ],
     "execution_hints": [],
     "id": "TF-0194",
     "kind": "task",
-    "non_goals": [],
+    "non_goals": [
+      "TF-0136 判决四的 14 天自然使用门（L3）不在本任务范围——留在判决里记录，不并入观察窗（工程开发照常推进）",
+      "不为 TF-0136 判决一的 resumeNotesConsumed/restores ≥ 0.3 门凑数；精确展开/点击比例埋点是 TF-0199 的交付物，本任务只产粗基线"
+    ],
     "priority": 2,
     "progress": 0.0,
     "progress_source": "manual",
-    "purpose": "",
+    "purpose": "给 TF-0198（熔断阈值初始标定）与 TF-0199（重设计前后对比）提供恢复/消费事件的粗基线；窗口长度服从样本配额，不服从日历。",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "requirements": [],
+    "requirements": [
+      "真实手势优先：开发轮走 claude 车道（TF-0190 后产生真实足迹）；配额只能由真实使用凑出，不能用脚本回放制造",
+      "开窗前先登记配额目标与验收，防「知道被测量」的需求效应污染展开率"
+    ],
     "source_sessions": [],
     "status": "proposed",
     "success_metrics": [],
-    "summary": "观察窗已挂起（用户暂时 pass）：t0 基线已记录，退回 proposed。",
-    "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线",
-    "updated_at": "2026-09-19T01:16:10.243369Z"
+    "summary": "2026-09-19 规格修订：日历窗（一周）→ 样本配额窗。依据：本节点验收从不含日历判据（「一周」只在标题）；唯一使用者是运行者本人（n=1），不存在总体代表性问题，要的是事件密度不是日历跨度；TF-0198 熔断阈值（dismiss 率 >50%）是初始参数，落地后由熔断器自身 stats 持续采集。观察窗与阶段 4 开发重叠执行：用主线 UI 的 claude 车道跑 TF-0198/0199 自身的开发，开发窗口即采集窗口。",
+    "title": "用主线跑自身开发（样本配额窗），采集 restores / resumeActions / withFootprints / 恢复卡展开率基线",
+    "updated_at": "2026-09-19T09:09:56.179570Z"
   },
   "TF-0195": {
     "acceptance_criteria": [],
@@ -10805,7 +10817,8 @@
     "difficulty": "high",
     "estimated_total_minutes": 1200,
     "evidence": [
-      "docs/fable-brief/05-review/D3-Q2-merge-back.md"
+      "docs/fable-brief/05-review/D3-Q2-merge-back.md",
+      "2026-09-19 依赖降级：TFE-0315（depends_on TF-0194）→ related_to。阶段 4 不再等观察窗结项：TF-0198 以临时阈值（dismiss 率 >50% 降 L0）开工，熔断器 stats 即持续采集器；阶段 3 转为样本配额窗，与开发窗重叠。"
     ],
     "execution_hints": [],
     "id": "TF-0195",
@@ -10830,7 +10843,7 @@
     "success_metrics": [],
     "summary": "设计完成度最高、只差实现。前提账本向人交付价值的瞬间（R2′）。",
     "title": "阶段 4：D3-Q2 分支动静——恢复卡上的 L1 结构摘要（复活 TF-0132）",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-19T09:10:05.486018Z"
   },
   "TF-0196": {
     "acceptance_criteria": [

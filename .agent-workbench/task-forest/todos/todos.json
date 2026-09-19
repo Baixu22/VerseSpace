@@ -207,13 +207,13 @@
     "next_action": "fit-ledger 新增一行带日期与四个读数",
     "priority": 2,
     "progress": 0.0,
-    "purpose": "",
+    "purpose": "给 TF-0198（熔断阈值初始标定）与 TF-0199（重设计前后对比）提供恢复/消费事件的粗基线；窗口长度服从样本配额，不服从日历。",
     "ready": true,
     "remaining_minutes_max": 120,
     "remaining_minutes_min": 120,
     "status": "proposed",
     "success_metrics": [],
-    "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线"
+    "title": "用主线跑自身开发（样本配额窗），采集 restores / resumeActions / withFootprints / 恢复卡展开率基线"
   },
   {
     "alignment": {
@@ -314,6 +314,33 @@
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.65,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "high",
+    "id": "TF-0195",
+    "kind": "milestone",
+    "next_action": "补充下一步动作或开始执行",
+    "priority": 1,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": 1200,
+    "remaining_minutes_min": 1200,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "阶段 4：D3-Q2 分支动静——恢复卡上的 L1 结构摘要（复活 TF-0132）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
       "user_goal": "确定历史故障的真实原因，避免误报修复。",
       "validation_plan": [
         "取得原始或新的 Git dump 后分析堆异常与加载模块。"
@@ -367,34 +394,5 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "adopt「以分支为主线」手势：拓扑操作、改身份不改内容、快照可逆（复活 TF-0146）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0194"
-    ],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0195",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0194",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 1200,
-    "remaining_minutes_min": 1200,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "阶段 4：D3-Q2 分支动静——恢复卡上的 L1 结构摘要（复活 TF-0132）"
   }
 ]

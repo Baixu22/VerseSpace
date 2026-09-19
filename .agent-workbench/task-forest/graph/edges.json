@@ -3719,18 +3719,6 @@
     "type": "depends_on",
     "updated_at": "2026-09-17T14:52:13.593012Z"
   },
-  "TFE-0315": {
-    "blocking": false,
-    "confidence": 0.6,
-    "created_at": "2026-09-17T14:52:13.593012Z",
-    "created_from_session": null,
-    "from": "TF-0195",
-    "id": "TFE-0315",
-    "reason": "fit 门需要恢复卡展开率基线",
-    "to": "TF-0194",
-    "type": "depends_on",
-    "updated_at": "2026-09-17T14:52:13.593012Z"
-  },
   "TFE-0316": {
     "blocking": false,
     "confidence": 0.8,
@@ -4114,5 +4102,17 @@
     "to": "TF-0099",
     "type": "related_to",
     "updated_at": "2026-09-17T14:52:13.609494Z"
+  },
+  "TFE-0348": {
+    "blocking": false,
+    "confidence": 0.6,
+    "created_at": "2026-09-19T09:10:31.952629Z",
+    "created_from_session": null,
+    "from": "TF-0195",
+    "id": "TFE-0348",
+    "reason": "2026-09-19 降级：依赖部分循环（精确展开/点击比例埋点是 TF-0199 的交付物，在 TF-0199 落地前不可能存在）；TF-0198 的两条验收测试可验证，>50% dismiss 阈值是初始参数。阶段 3 改样本配额窗与开发窗重叠，不再阻塞阶段 4。",
+    "to": "TF-0194",
+    "type": "related_to",
+    "updated_at": "2026-09-19T09:10:31.952629Z"
   }
 }
