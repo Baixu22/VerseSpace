@@ -70,3 +70,10 @@
 - **权限模式观察**：acceptEdits 必须在线程首次回合前设置；续接会话沿用出生时的权限模式，事后 PATCH 不生效。
 - 线程：主 c710d715（default）· 设计 e75ffa39 · A1 67c81234 · A2 e0d9a402 · B1 30a7b99f（acceptEdits）。
 - adoptThread 初稿 + 白名单 + ThreadMeta.adoptSnapshot 已落工作区（TF-0200 真实进度，WIP）；revert、测试、路由接线未做。
+
+## 配额进度（第五次更新，循环 G 后）
+
+- restores 150（基线 140，+10）· resumeActions 19（基线 1，+18）· withFootprints 12/19
+- 熔断器：9 样本（消费 6 / dismiss 3），rate=0.33，closed
+- 距配额：带卡恢复 +20
+- 循环 G 记录：G1 写路由集成测试 3 例（adopt 臂/revert 臂/400 错误臂）全绿；还发现真陷阱——createUiServer 自建 ChatThreads 且仓储缓存优先，跨实例断言会读到旧缓存
