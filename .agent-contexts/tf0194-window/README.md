@@ -97,3 +97,30 @@
 - 循环 K：K1 修复「服务器死亡后线程永久卡 running」产品缺口——createUiServer 启动清扫 reconcileRunningOnStartup()，13 测试绿（今天两次手修的缺陷被窗口自己的工作修掉了）
 - 循环 L：L1 给 workbench README 补「以分支为主线（收养 adopt）」使用文档（主线程 resumed 会话照例拒写 → 新 fork L1 执行）
 - 距配额：带卡恢复 +15
+
+## 轮次记录（循环 M/N/O，追加）
+
+| # | 时间 | 动作 | 判断依据 |
+| --- | --- | --- | --- |
+| 10 | 09-19/20 | 循环 M：主线程侦察 e2e 场景结构 → fork M1 给 `scripts/e2e/scenario.ts` 补 S6b「收养：fork → adopt → revert」 | 断言走**公开路由**（`/adopt`、`/revert`）的外部可见身份翻转，不读内部状态；S6b 由包内 `scripts/e2e/e2e.test.ts` 真跑 |
+| 11 | 09-19/20 | 循环 N：主线程侦察 doctor 报告结构 → fork N1 加「收养一致性」两项检查 | 悬空快照（error）+ 半收养（warning），风格对齐既有条目；缺 threads 目录 / 坏 meta.json 返回空而不抛 |
+| 12 | 09-19/20 | 循环 O：主线程侦察硬阈值动作落点 → fork O1 实现 `terminate`/`judged_silent` → O2 收敛范围 | 见下「操作员验收」——这一轮 fork 交的是一把没接上的刀 |
+
+## 操作员验收（循环 M/N/O，代理亲自跑）
+
+三处 fork 产出**都不能直接落库**；操作员逐个复验后补齐：
+
+1. **e2e S6b（M）**：`src/ui/chat-routes.ts` 的路由正则确含 `adopt|revert`，`promotion-route.test.ts` 已覆盖 adopt/revert/400 三臂；S6b 由包内 e2e 测试真跑 —— 通过。
+2. **doctor 两项检查（N）**：`listThreadMetas` 只读扫 `threads/*/meta.json`，缺目录、坏 JSON 都返回空而不抛；新用例在真 workspace 上跑 —— 通过。
+3. **硬阈值动作（O）——本轮真正的缺口**：
+   - fork 在 `liveness.ts` 加了 opt-in 的 `terminate` 与 `judged_silent` 结局，**却没有任何调用方传 `terminate`**（`claude-session.ts` 只传 `onVerdict`，`reportLiveness` 也没有 `judged_silent` 分支）→ **产品行为零变化，「回合永挂」根本没修**。操作员补：接线 `closeStdin → 宽限 5s → 树杀`，并让 `judged_silent` 同样落 error 事件 + 收尾回合。
+   - **对照实验**（同一批输入，摘掉接线重跑）：红，且红在 `EBUSY: resource busy or locked` —— 旧行为下子进程**根本没死，还锁着临时目录**。这就是「线程永久卡 running」的物证，不是「测试通过」式的自证。
+   - fork 还把既有测试的断言从 `["stalled","stalled"]` 改成 `["stalled"]`（软警告只报一次）却**没改实现** → 测试与实现打架。按 O2 已登记的设计决策（只警告一次）补实现侧，转绿。
+   - 阈值改为**按轮次读 env**（`WORKBENCH_LIVENESS_{STALL,UNRESPONSIVE,KILL_GRACE}_MS`，含与阈值同步的 tick 推导；默认值下 tick 与行为逐字不变），新增端到端测试 `src/chat/claude-liveness.integration.test.ts`：冻结假 CLI（读着 stdin、永不输出、永不退出）→ 断言回合收尾 / error 事件 / `judged_silent` / 真子进程消失 / 线程回 idle。
+
+## 配额进度（第九次更新，循环 M/N/O 后）
+
+- restores 157（基线 140，+17）· resumeActions 30（基线 1，+29）· withFootprints 21（台账 `stats.threads.withFootprints`）
+- shown-state 新增 2 行（共 16 条）
+- 距配额：带卡恢复 +13（目标 +30）
+- 读数来源：现场 `bun run scripts/fit-ledger.ts`（生成时间 2026-09-19T16:28Z，黑板 `D:\helmor-main\.workbench`）
