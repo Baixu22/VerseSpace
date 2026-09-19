@@ -63,6 +63,33 @@
       "why_this_task": ""
     },
     "blocked_by": [],
+    "confidence": 0.55,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "medium",
+    "id": "TF-0200",
+    "kind": "task",
+    "next_action": "adopt 后回退快照逐项一致（测试）",
+    "priority": 3,
+    "progress": 0.0,
+    "purpose": "",
+    "ready": true,
+    "remaining_minutes_max": 180,
+    "remaining_minutes_min": 180,
+    "status": "proposed",
+    "success_metrics": [],
+    "title": "adopt「以分支为主线」手势：拓扑操作、改身份不改内容、快照可逆（复活 TF-0146）"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
     "confidence": 0.8,
     "context_tags": [],
     "desired_outcomes": [],
@@ -217,33 +244,6 @@
   },
   {
     "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0199",
-    "kind": "task",
-    "next_action": "展开/被点比例可从 stats --json 读出",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 240,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "前端：resume-card 展示分支动静行 + 展开区叙事 + 埋点（展开/点击比例）"
-  },
-  {
-    "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.8,
       "user_goal": "把 Helmor 仓库里的 Workbench 主线做成一个身份清晰、合规、可靠、可被别的 agent 直接使用的产品",
@@ -338,34 +338,5 @@
     "status": "blocked",
     "success_metrics": [],
     "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0199"
-    ],
-    "confidence": 0.55,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0200",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0199",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 180,
-    "remaining_minutes_min": 180,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "adopt「以分支为主线」手势：拓扑操作、改身份不改内容、快照可逆（复活 TF-0146）"
   }
 ]

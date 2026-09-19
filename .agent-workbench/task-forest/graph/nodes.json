@@ -11018,13 +11018,18 @@
     "deviations": [],
     "difficulty": "medium",
     "estimated_total_minutes": 240,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交见 feat(workbench-ui): TF-0199）：分支行折叠面按 D3-Q2 形态收敛为「指针 + 一行结构摘要」（多行 L1 只露首行 + 「还有 N 行」提示），展开区给全部 L1 行 + 「由足迹拼接」来源标注 + 写集路径 + EvidenceRefs——叙事永远折叠并标注来源；分支动静本身从不注入模型（注入队列只承载 premise 通知，TB-0198 的 dismiss 撤回覆盖它）。",
+      "埋点：新白名单事件 thread.resume_card_shown（UI 渲染出带分支行的恢复卡时上报本次展示的 branch:<threadId> 行标签，按恢复边界去重，StrictMode 双跑安全）——fit 指标 7 的分母，渲染了才计数；resume_action 动作新增可选 label（展开=branch:<id>，查看分支=branch:<id>）。restoreFirstActions 与熔断器只读 resume_action 的动作键，展示事件不污染「返回后第一动作」。",
+      "AC 展开/被点比例可从 stats --json 读出：新折叠 branch-engagement.ts（与熔断器同窗配对：restore 开窗 / switch·left·下次恢复关窗），stats.lifecycle.branchEngagement = {restoresWithBranchRows, branchRowsShown, branchRowsEngaged, ratio}；分子=同窗带标签的展开/点击 ∩ 渲染行，无标签动作（文件行/旧数据）不进分子，无渲染 ratio=null（不可计算不是 0）。端到端测试：shown 路由落事件 → 展开 → stats 读出 ratio=1。",
+      "门禁读数：workbench 885 pass / 0 fail（131 文件）；workbench-ui 55 pass / 0 fail（16 文件，恢复卡 8 例）；typecheck 五包 0 错；Biome 408 files 0 错。"
+    ],
     "execution_hints": [],
     "id": "TF-0199",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11034,11 +11039,11 @@
       "埋点进交互事件日志供 fit 指标计算"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "",
     "title": "前端：resume-card 展示分支动静行 + 展开区叙事 + 埋点（展开/点击比例）",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-19T10:19:01.129368Z"
   },
   "TF-0200": {
     "acceptance_criteria": [
