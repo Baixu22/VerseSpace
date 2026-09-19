@@ -1,0 +1,3 @@
+你在 git 仓库 D:/helmor-main 里，TF-0200 adopt/revert 已全部落地（后端 + 路由 + UI + 测试 + 启动清扫）。
+
+任务：补用户文档。用 Read 读 packages/workbench/README.md 的结构（找聊天/线程相关章节），然后用 Edit 在合适位置追加一小节（≤20 行）：收养（adopt）——「以分支为主线」手势怎么用（恢复卡分支行按钮 / POST /threads/:id/adopt）、反转（revert）怎么用（归档线程头部按钮 / POST /threads/:id/revert）、快照语义一句话、已归档线程的呈现。只改这一个文件，风格对齐 README 现有章节。
