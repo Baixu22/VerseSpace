@@ -23,7 +23,7 @@ export async function chatRoute(
 	}
 
 	const chatMatch = url.pathname.match(
-		/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-card\/shown|resume-action|evidence))?$/,
+		/^\/api\/chat\/threads\/([^/]+)(\/(messages|cancel|reload|promote|fork|adopt|revert|leave|switch|restore|resume-note(?:\/consume|\/dismiss)?|resume-card\/shown|resume-action|evidence))?$/,
 	);
 
 	if (chatMatch) {
@@ -71,6 +71,30 @@ export async function chatRoute(
 				);
 			}
 			return Response.json(await chat.fork(threadId, body.anchorMessageId));
+		}
+		if (sub === "adopt" && request.method === "POST") {
+			// TF-0200：由分支线程发起收养——:id 是分支，源线程从血统反查。
+			try {
+				const snapshotId = await chat.adopt(threadId);
+				return Response.json({ ok: true, snapshotId });
+			} catch (error) {
+				return Response.json(
+					{ ok: false, reason: String(error) },
+					{ status: 400 },
+				);
+			}
+		}
+		if (sub === "revert" && request.method === "POST") {
+			// TF-0200：由源线程发起反转——:id 是源，被收养线程从快照反查。
+			try {
+				await chat.revert(threadId);
+				return Response.json({ ok: true });
+			} catch (error) {
+				return Response.json(
+					{ ok: false, reason: String(error) },
+					{ status: 400 },
+				);
+			}
 		}
 		if (sub === "leave" && request.method === "POST") {
 			// TF-0097：离开车道时生成恢复笔记（agent 起草），空对话返回 null

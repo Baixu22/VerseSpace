@@ -21,6 +21,23 @@ export interface ThreadLastRun {
 	at: string;
 }
 
+/**
+ * 收养身份快照（TF-0200）：只记身份指针，恒为常数大小，反转成本与消息量无关。
+ * 收养时挂在被归档的源线程上，revert 一次性消费它把双方身份复归收养前。
+ */
+export interface AdoptSnapshot {
+	id: string;
+	version: number;
+	sourceThreadId: string;
+	sourceArchivedBefore: boolean;
+	adoptedThreadId: string;
+	adoptedForkOfBefore: ForkLineage;
+	adoptedArchivedBefore: boolean;
+	/** 锚点：源线程收养时刻的末条消息 id，界定其后哪些消息不并入。 */
+	anchorMessageId?: string;
+	at: string;
+}
+
 export type { ResumeBeat, ResumeNote } from "./resume";
 
 export interface ThreadMeta {
@@ -61,9 +78,9 @@ export interface ThreadMeta {
 	resumeNote?: ResumeNote;
 	/**
 	 * 收养身份快照（TF-0200）：收养时挂在被归档的源线程上，供一次性反转定位。
-	 * 只记常数大小的指针身份（id / version），反转成本与消息量无关。
+	 * 整份快照存下 revert 还原身份所需的 *Before 字段与锚点。
 	 */
-	adoptSnapshot?: { id: string; version: number; at: string };
+	adoptSnapshot?: AdoptSnapshot;
 }
 
 export type ToolCallPart = {

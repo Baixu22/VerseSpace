@@ -1,0 +1,7 @@
+你在分支线程里，仓库 D:/helmor-main。主线已定修法：把 AdoptSnapshot 接口挪进 thread-types.ts（照 PromotionRecord/ForkLineage 的既有范式），revertAdopt 与测试去掉强转。
+
+任务：用 Edit 完成：
+1. thread-types.ts：定义并导出 AdoptSnapshot 接口（从 thread-promotion.ts 挪入），ThreadMeta.adoptSnapshot 类型改为 AdoptSnapshot；
+2. thread-promotion.ts：删本地接口、改 import、去掉 revertAdopt 里的 as 强转；
+3. 确认 threads.test.ts 不再报错（不改它）。
+只改这两个文件。完成后一句话说明。

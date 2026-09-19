@@ -1,7 +1,5 @@
 import { randomUUID } from "node:crypto";
 
-import type { ForkLineage } from "./fork";
-
 import {
 	collectSignals,
 	countUserTurns,
@@ -13,7 +11,7 @@ import {
 
 import type { ThreadContext } from "./thread-context";
 
-import type { ThreadMeta } from "./thread-types";
+import type { AdoptSnapshot, ThreadMeta } from "./thread-types";
 
 export async function maybePromote(
 	context: ThreadContext,
@@ -63,24 +61,6 @@ export async function promote(
 		await context.store.saveMeta(meta);
 		return meta;
 	});
-}
-
-/**
- * 身份快照（TF-0200）：只记身份指针，恒为常数大小，反转成本与消息量无关。
- * 下轮 revert 消费它复归指针。TODO：字段应挂进 `ThreadMeta.adoptSnapshot`
- * （thread-types.ts），本轮先本地定型。
- */
-export interface AdoptSnapshot {
-	id: string;
-	version: number;
-	sourceThreadId: string;
-	sourceArchivedBefore: boolean;
-	adoptedThreadId: string;
-	adoptedForkOfBefore: ForkLineage;
-	adoptedArchivedBefore: boolean;
-	/** 锚点：源线程收养时刻的末条消息 id，界定其后哪些消息不并入。 */
-	anchorMessageId?: string;
-	at: string;
 }
 
 /**
@@ -150,8 +130,7 @@ export async function revertAdopt(
 		if (!source.adoptSnapshot) {
 			throw new Error("无可反转的收养快照");
 		}
-		// adoptThread 落盘的是整份 AdoptSnapshot；窄类型字段结构化收窄，读回还原。
-		const snapshot = source.adoptSnapshot as AdoptSnapshot;
+		const snapshot = source.adoptSnapshot;
 		const adopted = await context.store.get(snapshot.adoptedThreadId);
 		// 子线程降回：还原血统与归档态。
 		adopted.forkOf = snapshot.adoptedForkOfBefore;

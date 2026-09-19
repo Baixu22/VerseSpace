@@ -1,0 +1,6 @@
+你在分支线程里，仓库 D:/helmor-main。主线已确认接线方案：门面照 promote/fork 范式，adopt 由子线程发起（POST /threads/:id/adopt，:id=分支）、revert 由源线程发起（POST /threads/:id/revert，:id=源）。
+
+任务：用 Read 读 threads.ts 的 promote/fork 门面与 chat-routes.ts 的对应路由，然后用 Edit：
+1. threads.ts 门面加 adopt(id) / revert(id)，转发 thread-promotion 的 adoptThread/revertAdopt（用 chatContext 取 context——照测试的做法）；
+2. chat-routes.ts 加两个路由分支（POST，sub === "adopt" / "revert"，错误抛 400 带 reason）。
+只改这两个文件。完成后一句话说明。

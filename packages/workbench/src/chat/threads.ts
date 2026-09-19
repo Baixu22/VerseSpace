@@ -9,7 +9,7 @@ import type { ResumeBeat, ResumeNote } from "./resume";
 import type { ThreadContext } from "./thread-context";
 import { fork } from "./thread-fork";
 import { cancel, reload, remove } from "./thread-lifecycle";
-import { promote } from "./thread-promotion";
+import { adoptThread, promote, revertAdopt } from "./thread-promotion";
 import { ThreadRepository } from "./thread-repository";
 import {
 	dismissResumeCard,
@@ -96,6 +96,22 @@ export class ChatThreads {
 
 	async fork(id: string, anchorMessageId: string): Promise<ForkOutcome> {
 		return fork(this.context, id, anchorMessageId);
+	}
+
+	/**
+	 * TF-0200 收养：由分支线程发起，把自己升为主线、源线程就地归档。
+	 * `id` 是被收养的分支线程 id；源线程从其 forkOf 血统反查。返回快照 id。
+	 */
+	async adopt(id: string, refs: string[] = []): Promise<string> {
+		return adoptThread(this.context, id, refs);
+	}
+
+	/**
+	 * TF-0200 反转收养：由源线程发起，消费其上的快照把双方身份复归收养前。
+	 * `id` 是源线程 id；被收养线程从快照 adoptedThreadId 反查。
+	 */
+	async revert(id: string, refs: string[] = []): Promise<void> {
+		return revertAdopt(this.context, id, refs);
 	}
 
 	async recordSwitch(

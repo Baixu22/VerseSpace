@@ -42,12 +42,15 @@
 
 | 7 | 09-19 | 循环 D：主线程侦察测试布局 → fork D1 写 adopt/revert 测试（fork 首轮也遇一次拒写，重试通过——漂移是间歇性的）→ 测试 38 pass / 0 fail → 主线程卡双 read-set 行（我直补的白名单编辑诚实显示「写者未知」）→ 信息全吸收后 dismiss | 测试实跑通过；卡上无新信息 |
 
-## 配额进度（第三次更新，循环 D 后）
+| 8 | 09-19 | 循环 E：主线程侦察路由 → fork E1 接线（门面 adopt/revert + 路由）→ 评审抓到窄类型问题（B1 当初的 TODO 爆了：tsc threads.test.ts(338)） |
+| 9 | 09-19 | 循环 F：主线程给修法（AdoptSnapshot 挪 thread-types.ts，照 PromotionRecord 范式）→ fork E2 修类型（还顺手补了 adoptedArchivedBefore——比操作员原稿完整）→ tsc 0 错 + 38 测试全绿 → 卡片 5 行已变（含「未知」写者：提交时 biome 重排格式，当前 hash 不匹配任何足迹声明——投影如实说不知道）→ 消费后 dismiss |
 
-- restores 148（基线 140，+8）· resumeActions 14（基线 1，+13）· withFootprints 9/16
-- branchEngagement：5 窗 / 6 行渲染 / 4 行消费 / ratio=0.67（两次 dismiss 的窗拉低——真实分布）
-- 熔断器：7 样本（消费 4 / dismiss 3），rate=0.43，closed——逼近 0.5 但未触发；负样本上升是「评审前移到 git diff、卡片变通知」的真实使用形状
-- 距配额：带卡恢复 +22
+## 配额进度（第四次更新，循环 F 后）
+
+- restores 149（基线 140，+9）· resumeActions 17（基线 1，+16）· withFootprints 11/18
+- branchEngagement：6 窗 / 7 行渲染 / 5 行消费 / ratio=0.71
+- 熔断器：8 样本（消费 5 / dismiss 3），rate=0.375，closed
+- 距配额：带卡恢复 +21
 
 | 4 | 09-19 | 循环 A：主线程侦察 promote/archived → fork A1（「事件与日志」节）+ A2（「恢复面呈现」节）→ 主线程卡双分支行（A2 行带「分支自身 1 个前提已失效」）→ expand×2 + bopen×2 审两节 → 都吸收后诚实 dismiss | 卡片对已吸收的工作不再有新信息 |
 | 5 | 09-19 | 循环 B：主线程读 thread-promotion.ts（回合内 claude 自己发现设计文档前提失效并重读——前提守护端到端生效）→ fork B1 起草 adoptThread() 初稿 → 主线程卡点亮（写集/足迹 L1）→ expand+bopen 审 diff → 评审发现两问题（白名单缺失/快照未持久化）→ 修整轮（3 文件修好，typecheck 0 错）→ 回主线程看更新后 L1（5 文件写集）→ expand → 吸收后 dismiss | 草稿→评审→修整的真实迭代；typecheck 0 错 |
