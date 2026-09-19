@@ -283,60 +283,6 @@
     "context_tags": [],
     "desired_outcomes": [],
     "difficulty": "medium",
-    "id": "TF-0209",
-    "kind": "milestone",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 600,
-    "remaining_minutes_min": 600,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "阶段 6：MCP server——让 Claude Code / Cursor 直接调用前提账本（R2 通道）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.7,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0210",
-    "kind": "task",
-    "next_action": "workbench mcp 子命令可被 MCP Inspector 握手",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": 200,
-    "remaining_minutes_min": 200,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "stdio JSON-RPC 2.0 骨架：initialize / ping / tools/list / tools/call，零新依赖，直接 openBlackboard"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
     "id": "TF-0213",
     "kind": "milestone",
     "next_action": "补充下一步动作或开始执行",
@@ -490,7 +436,7 @@
     "kind": "global_task",
     "next_action": "补充下一步动作或开始执行",
     "priority": 1,
-    "progress": 40.8,
+    "progress": 52.4,
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -594,35 +540,6 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0211"
-    ],
-    "confidence": 0.7,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0212",
-    "kind": "subtask",
-    "next_action": "先完成依赖：TF-0211",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 100,
-    "remaining_minutes_min": 100,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "Claude Code 与 Cursor 接入验证 + README 配置片段"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
       "TF-0214",
       "TF-0215",
       "TF-0216"
@@ -701,35 +618,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "前端：resume-card 展示分支动静行 + 展开区叙事 + 埋点（展开/点击比例）"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0210"
-    ],
-    "confidence": 0.65,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0211",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0210",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": false,
-    "remaining_minutes_max": 300,
-    "remaining_minutes_min": 300,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "工具目录：premises 查询 / 足迹读取 / 恢复卡 / tribunal 列表 / 通知投递；响应体积控制（白名单 + 去 null + 截断）"
   },
   {
     "alignment": {
