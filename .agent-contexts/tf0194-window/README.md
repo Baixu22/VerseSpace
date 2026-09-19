@@ -83,3 +83,10 @@
 - restores 151（基线 140，+11）· resumeActions 21（基线 1，+20）· footprints 13/20
 - 循环 H 记录：H1 完成 workbench-ui 的「以分支为主线」手势（resume-card-rows 分支行按钮 + adoptBranch store 动作 + POST /adopt），UI typecheck 0 错、8 测试绿
 - 距配额：带卡恢复 +19
+
+## 配额进度（第七次更新，循环 I/J 后）
+
+- restores 152（基线 140，+12）· resumeActions 22（基线 1，+21）· footprints 14/21
+- 循环 I：I1 补 adopt 手势 UI 交互测试（9 绿）
+- 循环 J：J1 实现归档呈现（侧栏「已归档」徽章 + 降透明度）与线程头「反转收养」手势（revertAdoption store 动作 → POST /revert），UI typecheck 0 错、56 测试绿
+- 距配额：带卡恢复 +18
