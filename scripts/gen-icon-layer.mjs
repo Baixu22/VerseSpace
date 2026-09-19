@@ -1,15 +1,25 @@
 // Generates the unified icon layer modules from a single authoritative mapping.
-// Re-run with: node .icon-audit/gen-icons.mjs
+// Re-run with: node scripts/gen-icon-layer.mjs [--target src|workbench-ui|all]
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
 // Both frontends are separate builds with their own node_modules resolution, so
 // each gets its own copy of the layer, generated from this one mapping.
-const OUT_DIRS = [
-	join(ROOT, "src/components/icon"),
-	join(ROOT, "apps/workbench-ui/src/components/icon"),
-];
+// --target lets a mainline-only regeneration avoid rewriting the legacy Helmor
+// icon layer (TF-0216). The mapping table below stays the single source.
+const TARGET_ARG = process.argv.indexOf("--target");
+const TARGET =
+	TARGET_ARG >= 0 ? (process.argv[TARGET_ARG + 1] ?? "all") : "all";
+const OUT_DIRS =
+	TARGET === "workbench-ui"
+		? [join(ROOT, "apps/workbench-ui/src/components/icon")]
+		: TARGET === "src"
+			? [join(ROOT, "src/components/icon")]
+			: [
+					join(ROOT, "src/components/icon"),
+					join(ROOT, "apps/workbench-ui/src/components/icon"),
+				];
 
 // --- authoritative reicon name list --------------------------------------
 const reiconIndex = readFileSync(
