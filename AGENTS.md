@@ -183,6 +183,19 @@ Pinned to **1.3.14** in `package.json` (`packageManager`), `.github/actions/setu
 
 Root Vitest uses two workers on Windows. The full UI suite otherwise exceeded the local process/memory budget and timed out three tests at the existing 5-second limit. All 1,692 tests pass with two workers; assertions and timeouts are unchanged. Audit copies under `.workbuddy`, `.agent-contexts` and `.evidence-sites` are excluded from collection. Keep heavy Rust builds and the full UI suite separate on this 16 GB machine; use `-j 1` for Rust verification.
 
+### 本机注入的 HTTP_PROXY 会让 loopback 测试 ConnectionRefused
+
+宿主环境会向每个 shell 会话注入 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`（指向一个本地代理端口；2026-09-19 用户反馈端口从 7890 换到 7897，但注入的变量可能仍是旧值）。Bun 的 `fetch` 会把 `127.0.0.1` 的请求也走这个代理——代理没起来时，`workbench` 里所有基于 HTTP 的测试（`ui/server.test.ts`、`chat/threads.test.ts` 的 resume 路由、`ui/chat-routes` 等）会批量 `ConnectionRefused` 失败，且错误 `errno: 0` 极容易误判成服务器没绑定。**这不是代码回归。**
+
+修复：跑测试时给 loopback 加旁路，让测试不依赖代理端口/状态：
+
+```bash
+NO_PROXY="127.0.0.1,localhost,::1" bun test   # 在 packages/workbench 下
+# 或 env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY bun test
+```
+
+`NO_PROXY` 方案在代理变量残留旧值时也有效（已实测 859 pass / 0 fail）。代理变量不在用户 profile 或 Windows 用户/机器环境里，无法在仓库内永久清除，只能按此旁路。
+
 ## Key conventions
 
 - **Path alias**: `@/` maps to `src/`
