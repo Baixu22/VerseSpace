@@ -67,6 +67,25 @@ export class ChatThreads {
 		return this.context.store.messages(id);
 	}
 
+	/**
+	 * 启动清扫：ui 服务器进程若在回合中途死亡，线程 meta 会永久卡在
+	 * status=running——重启后没有恢复路径，busy 判定再也回不去。建 server
+	 * 时扫一遍 list，把 running 复位 idle 并落盘，返回复位数量（0 表示无孤儿）。
+	 */
+	async reconcileRunningOnStartup(): Promise<number> {
+		const threads = await this.context.store.list();
+		let reset = 0;
+		for (const meta of threads) {
+			if (meta.status !== "running") {
+				continue;
+			}
+			meta.status = "idle";
+			await this.context.store.saveMeta(meta);
+			reset += 1;
+		}
+		return reset;
+	}
+
 	cancel(id: string): void {
 		cancel(this.context, id);
 	}

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ChatThreads } from "../chat/threads";
 import { acquirePidLock } from "../fs/lockfile";
 import { isProcessAlive } from "../supervisor";
 import { makeTempWorkbench, type TempWorkbench } from "../test/fixtures";
@@ -173,6 +174,58 @@ describe("ui server", () => {
 			).toBe(200);
 		} finally {
 			server.stop(true);
+			await ws.cleanup();
+		}
+	});
+
+	test("startup sweep resets threads left running by a dead process", async () => {
+		const ws: TempWorkbench = await makeTempWorkbench();
+		try {
+			const seed = new ChatThreads(ws.bb);
+			const stuck = await seed.create();
+			const healthy = await seed.create();
+			// simulate a crash mid-turn: the meta on disk stays pinned at running,
+			// with no live process left to ever move it back to idle
+			const pinRunning = async (id: string) => {
+				const file = join(ws.workbenchRoot, "threads", id, "meta.json");
+				const meta = JSON.parse(await readFile(file, "utf8")) as {
+					status: string;
+				};
+				meta.status = "running";
+				await writeFile(file, JSON.stringify(meta, null, 2), "utf8");
+			};
+			await pinRunning(stuck.id);
+
+			// booting the server runs the sweep once; its fresh ChatThreads reads
+			// the pinned meta off disk and resets it
+			const server = await createUiServer(ws.bb, 0);
+			try {
+				const base = `http://127.0.0.1:${server.port}`;
+				const token = await fetch(`${base}/api/bootstrap`)
+					.then((r) => r.json())
+					.then((b: { token: string }) => b.token);
+				const auth = { "x-workbench-token": token };
+				const list = (await fetch(`${base}/api/chat/threads`, {
+					headers: auth,
+				}).then((r) => r.json())) as Array<{ id: string; status: string }>;
+				const statusById = new Map(list.map((t) => [t.id, t.status]));
+				expect(statusById.get(stuck.id)).toBe("idle");
+				// an already-idle thread is left as-is
+				expect(statusById.get(healthy.id)).toBe("idle");
+
+				// the facade reports how many it reset: pin a fresh orphan, sweep once
+				await pinRunning(healthy.id);
+				expect(await new ChatThreads(ws.bb).reconcileRunningOnStartup()).toBe(
+					1,
+				);
+				// idempotent: a second sweep finds nothing left running
+				expect(await new ChatThreads(ws.bb).reconcileRunningOnStartup()).toBe(
+					0,
+				);
+			} finally {
+				server.stop(true);
+			}
+		} finally {
 			await ws.cleanup();
 		}
 	});

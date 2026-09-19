@@ -30,6 +30,11 @@ export async function createUiServer(
 
 	const chat = new ChatThreads(bb);
 
+	// Startup sweep: a ui process that died mid-turn leaves thread meta pinned
+	// at status=running, and nothing else ever resets it (busy checks stay
+	// stuck). Reconcile once on boot so a restart is the recovery path.
+	await chat.reconcileRunningOnStartup();
+
 	const token = randomUUID();
 
 	let reconcileFailures = 0;
