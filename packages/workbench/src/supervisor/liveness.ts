@@ -19,9 +19,12 @@
  * - a broken pipe is reported as `pipe_broken` and does NOT end anything; it is
  *   folded into `exited` only when the child actually exits.
  *
- * Callers stay in charge of the response: this module never kills a process.
- * A long tool call and a frozen CLI look identical from the outside, so the
- * decision to terminate belongs to the caller that knows the stakes.
+ * The caller still owns the decision to terminate — a long tool call and a
+ * frozen CLI look identical from the outside. The module kills nothing on its
+ * own; a caller that knows the stakes opts in by passing `terminate`, and only
+ * then does the hard threshold kill the child and name the outcome
+ * `judged_silent` (distinct from the report-only `unresponsive`). The child's
+ * real exit that follows then runs the caller's ordinary exit cleanup.
  */
 
 /** Expected gap between producer events, and therefore the check rhythm. */
@@ -34,8 +37,13 @@ export const UNRESPONSIVE_MS = 3 * STALL_MS;
 export type LivenessVerdict =
 	/** Silent long enough to be worth naming; possibly just a long tool call. */
 	| { kind: "stalled"; silentMs: number; lastEventAt: number | null }
-	/** Silent long enough that waiting longer is not defensible. Terminal. */
+	/** Silent long enough that waiting longer is not defensible. Terminal.
+	 *  Report-only: reached when no `terminate` action was wired. */
 	| { kind: "unresponsive"; silentMs: number; lastEventAt: number | null }
+	/** Hard threshold reached AND the caller-provided `terminate` action was
+	 *  invoked to kill the child. Terminal — distinct from `unresponsive` (same
+	 *  silence, no kill) and from `pipe_broken` (never terminal). */
+	| { kind: "judged_silent"; silentMs: number; lastEventAt: number | null }
 	/** A write to the child failed (EPIPE). Recoverable; not proof of death. */
 	| { kind: "pipe_broken"; detail: string }
 	/** The child is gone (exit observed). Authoritative. */
@@ -47,6 +55,14 @@ export interface LivenessOptions {
 	stallMs?: number;
 	/** Set to 0 to report `stalled` only and never call the child unresponsive. */
 	unresponsiveMs?: number;
+	/**
+	 * Hard-threshold action. When provided, reaching `unresponsiveMs` invokes it
+	 * to kill the child and the terminal verdict is `judged_silent` instead of
+	 * the report-only `unresponsive`. The child's real exit then runs the
+	 * caller's ordinary exit cleanup (error event + status idle). Omit to keep
+	 * the pure report-only behaviour.
+	 */
+	terminate?: () => void | Promise<void>;
 	now?: () => number;
 	onVerdict: (verdict: LivenessVerdict) => void;
 }
@@ -99,7 +115,15 @@ export function watchLiveness(options: LivenessOptions): LivenessWatch {
 			if (!reportedUnresponsive) {
 				reportedUnresponsive = true;
 				stopClock();
-				finish({ kind: "unresponsive", silentMs, lastEventAt });
+				if (options.terminate) {
+					// The caller wired a kill: do it, then name the outcome
+					// `judged_silent` so the exit that follows reads as a deliberate
+					// termination rather than a bare report-only `unresponsive`.
+					void Promise.resolve(options.terminate()).catch(() => {});
+					finish({ kind: "judged_silent", silentMs, lastEventAt });
+				} else {
+					finish({ kind: "unresponsive", silentMs, lastEventAt });
+				}
 			}
 			return;
 		}
@@ -119,9 +143,14 @@ export function watchLiveness(options: LivenessOptions): LivenessWatch {
 				return;
 			}
 			lastEventAt = at ?? now();
-			// Events after a stall report mean the child was merely busy: the
-			// next silence gets its own report rather than staying suppressed.
-			reportedStall = false;
+			// `reportedStall` is intentionally NOT reset here. A long run
+			// interleaves tool output with silences, so resetting on every event
+			// let a busy-but-quiet child re-trip the soft warning again and again
+			// and flood the log. One soft `stalled` per watch is enough to name
+			// the silence; the terminal `unresponsive` verdict is what acts. Note
+			// still moves `lastEventAt`, so real activity keeps pushing the
+			// unresponsive deadline out — a genuine long tool call is never judged
+			// dead, it just doesn't get a second warning.
 		},
 		pipeBroken(detail: string) {
 			if (stopped || pipeBrokenDetail !== null) {

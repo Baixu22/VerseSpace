@@ -62,6 +62,76 @@ describe("supervisor 存活心跳（TF-0205）", () => {
 		}
 	});
 
+	test("判死接了 terminate：kill 一次，结局命名 judged_silent 而非 unresponsive", async () => {
+		const clock = fakeClock();
+		const verdicts: LivenessVerdict[] = [];
+		let terminateCalls = 0;
+		const watch = watchLiveness({
+			tickMs: 5,
+			stallMs: 40,
+			unresponsiveMs: 120,
+			now: clock.now,
+			terminate: () => {
+				terminateCalls += 1;
+			},
+			onVerdict: (v) => verdicts.push(v),
+		});
+		try {
+			// 软阈值仍先报一次 stalled——接了 terminate 也不改软阈值的形状
+			clock.advance(50);
+			await sleep(20);
+			expect(verdicts.map((v) => v.kind)).toEqual(["stalled"]);
+
+			// 硬阈值：杀一次，结局是 judged_silent（不是 unresponsive）
+			clock.advance(200);
+			await sleep(20);
+			expect(verdicts.map((v) => v.kind)).toEqual(["stalled", "judged_silent"]);
+			expect(terminateCalls).toBe(1);
+
+			// 判死之后继续静默：不重复杀、不重复报
+			clock.advance(500);
+			await sleep(20);
+			expect(verdicts).toHaveLength(2);
+			expect(terminateCalls).toBe(1);
+		} finally {
+			watch.stop();
+		}
+	});
+
+	test("判死接了 terminate：真子进程被杀，wait() 收尾，结局是 judged_silent", async () => {
+		const verdicts: LivenessVerdict[] = [];
+		let watch: ReturnType<typeof watchLiveness> | null = null;
+		// 冻结的 CLI 形状：读着 stdin 却永不输出、永不自行退出。只有 kill 能让
+		// wait() 落地——这正是硬阈值动作要覆盖的真实死法。
+		const proc = spawnSupervised(
+			[
+				process.execPath,
+				"-e",
+				String.raw`process.stdin.resume(); setInterval(() => {}, 1000);`,
+			],
+			{ label: "liveness-kill-test" },
+		);
+		watch = watchLiveness({
+			tickMs: 5,
+			stallMs: 20,
+			unresponsiveMs: 60,
+			terminate: () => {
+				void proc.kill();
+			},
+			onVerdict: (v) => verdicts.push(v),
+		});
+		try {
+			const outcome = await proc.wait();
+			// terminate 真的把子进程杀了：wait() 以 killed 收尾，走既有退出路径
+			expect(outcome.killed).toBe(true);
+			expect(verdicts.map((v) => v.kind)).toContain("judged_silent");
+			expect(verdicts.map((v) => v.kind)).not.toContain("unresponsive");
+		} finally {
+			watch.stop();
+			await proc.kill();
+		}
+	}, 10000);
+
 	test("有事件就把静默窗口清零：长工具调用不会被误报", async () => {
 		const clock = fakeClock();
 		const verdicts: LivenessVerdict[] = [];
@@ -80,14 +150,16 @@ describe("supervisor 存活心跳（TF-0205）", () => {
 			}
 			expect(verdicts).toHaveLength(0);
 
-			// stalled 上报之后如果又来事件，下一次静默要重新报，而不是永久闭嘴
+			// 软阈值只警告一次：中途来了事件、之后再次静默，也不再重复刷屏。
+			// 长回合不断穿插工具输出与静默，重复的软警告只会淹没日志——命名一次
+			// 就够，真正动手的是硬阈值。
 			clock.advance(50);
 			await sleep(20);
 			expect(verdicts.map((v) => v.kind)).toEqual(["stalled"]);
 			watch.note();
 			clock.advance(50);
 			await sleep(20);
-			expect(verdicts.map((v) => v.kind)).toEqual(["stalled", "stalled"]);
+			expect(verdicts.map((v) => v.kind)).toEqual(["stalled"]);
 		} finally {
 			watch.stop();
 		}

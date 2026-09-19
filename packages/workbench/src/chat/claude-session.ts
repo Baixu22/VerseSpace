@@ -2,8 +2,11 @@ import { join } from "node:path";
 
 import { spawnSupervised } from "../supervisor";
 import {
+	HEARTBEAT_INTERVAL_MS,
 	type LivenessVerdict,
 	type LivenessWatch,
+	STALL_MS,
+	UNRESPONSIVE_MS,
 	watchLiveness,
 } from "../supervisor/liveness";
 import { registerTurnRouter } from "./claude-router";
@@ -17,6 +20,25 @@ export const CHAT_COMMAND_DEFAULT =
 
 export const chatCommand = () =>
 	process.env.WORKBENCH_CHAT_COMMAND ?? CHAT_COMMAND_DEFAULT;
+
+/**
+ * TF-0200 follow-up: the silence windows are read per run (not once at import)
+ * so a test can drive a frozen child through the hard threshold without idling
+ * 135 real seconds. Same shape as SESSION_IDLE_CLOSE_MS in claude-turn.ts.
+ */
+const chatStallMs = () =>
+	Number(process.env.WORKBENCH_LIVENESS_STALL_MS) || STALL_MS;
+const chatUnresponsiveMs = () =>
+	Number(process.env.WORKBENCH_LIVENESS_UNRESPONSIVE_MS) || UNRESPONSIVE_MS;
+/** Check rhythm. At the default stall window this is exactly the 15s heartbeat
+ *  (STALL_MS is 3× it); a shortened stall window for a test shortens the tick
+ *  with it, instead of leaving the check longer than the window it measures. */
+const chatTickMs = () =>
+	Math.max(1, Math.min(HEARTBEAT_INTERVAL_MS, Math.floor(chatStallMs() / 3)));
+/** How long a judged-silent child gets to leave on its own after stdin closes,
+ *  before the whole process tree is taken down. */
+const chatKillGraceMs = () =>
+	Number(process.env.WORKBENCH_LIVENESS_KILL_GRACE_MS) || 5_000;
 
 export async function ensureClaudeSession(
 	context: ThreadContext,
@@ -90,6 +112,26 @@ export async function ensureClaudeSession(
 		},
 	});
 	watch = watchLiveness({
+		tickMs: chatTickMs(),
+		stallMs: chatStallMs(),
+		unresponsiveMs: chatUnresponsiveMs(),
+		// TF-0200 follow-up: naming the silence was not enough. Observed three
+		// times on 2026-09-19 — a wedged CLI ignores stdin EOF, so closing
+		// stdin (the old terminal action) left the turn open forever. The hard
+		// threshold now escalates: ask the child to leave, then tree-kill
+		// whatever is still there. That settles the handle, so the ordinary
+		// exit cleanup runs (error event + status back to idle).
+		terminate: async () => {
+			try {
+				proc.closeStdin();
+			} catch {
+				// stdin 已经关了——那正是我们想要的状态
+			}
+			await new Promise((resolve) => setTimeout(resolve, chatKillGraceMs()));
+			// Idempotent: a child that left during the grace has already
+			// settled the handle, which makes this a no-op.
+			await proc.kill().catch(() => {});
+		},
 		onVerdict: (verdict) => {
 			void reportLiveness(context, id, verdict);
 		},
@@ -145,14 +187,15 @@ export async function ensureClaudeSession(
 }
 
 /**
- * TF-0205: what happens when the watch reports something.
+ * TF-0205 / TF-0200 follow-up: what happens when the watch reports something.
  *
  * `stalled` is named but not fatal — the CLI emits nothing during a long tool
- * call, so silence is not evidence of death. `unresponsive` is the terminal
- * call, and the whole point of this node is that it becomes a visible error:
- * before, a wedged CLI ended as a turn that simply never resolved. The child is
- * asked to leave (stdin closed) rather than tree-killed — a caller with a
- * better idea about a wedged CLI can still act on it.
+ * call, so silence is not evidence of death. The terminal call is
+ * `judged_silent`: the hard threshold fired and the `terminate` action wired
+ * above took the child down. (`unresponsive` is the same silence with no
+ * terminate wired, kept for report-only callers.) The whole point of this node
+ * is that the terminal call becomes a visible error: before, a wedged CLI
+ * ended as a turn that simply never resolved.
  *
  * An ordinary exit is not reported: the event log is for things that need
  * explaining, and "the agent finished" is not one of them. The exception is an
@@ -182,11 +225,14 @@ async function reportLiveness(
 		);
 		return;
 	}
-	if (verdict.kind === "unresponsive") {
+	if (verdict.kind === "unresponsive" || verdict.kind === "judged_silent") {
 		const seconds = Math.round(verdict.silentMs / 1000);
 		turn?.emit({
 			type: "error",
-			message: `agent 已 ${seconds}s 没有任何输出，判定为无响应；本轮到此结束，可以重试或换一条线程。`,
+			message:
+				verdict.kind === "judged_silent"
+					? `agent 已 ${seconds}s 没有任何输出，判定为无响应并已强制结束该进程；可以重试或换一条线程。`
+					: `agent 已 ${seconds}s 没有任何输出，判定为无响应；本轮到此结束，可以重试或换一条线程。`,
 		});
 		try {
 			context.live.get(id)?.proc.closeStdin();
