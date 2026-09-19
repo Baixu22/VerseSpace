@@ -86,6 +86,12 @@ export interface ChatState {
 	 * 按恢复边界去重。
 	 */
 	reportResumeCardShown(branchRows: string[]): Promise<void>;
+	/**
+	 * TF-0200「以分支为主线」：收养一个分支线程使其成为主线——POST 到该
+	 * 分支线程的 adopt 路由（threadId 是被收养的分支，不是当前活动线程），
+	 * 成功后跳转到这条新主线。
+	 */
+	adoptBranch(threadId: string): Promise<void>;
 	/** TF-0142：关掉送达提示（短暂可见后自动消失）。 */
 	dismissNoticeDelivered(): void;
 	/** TF-0092：手动晋升——一个手势给无名对话命名。 */

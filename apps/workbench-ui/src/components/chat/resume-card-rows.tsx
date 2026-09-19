@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { ChevronRight, GitBranch } from "@/components/icon";
+import { ChevronRight, GitBranch, GitMerge } from "@/components/icon";
 import type {
 	ResumeCardFactRow,
 	ResumeCardNarrativeRow,
@@ -23,6 +23,7 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 	const [open, setOpen] = useState(false);
 	const recordAction = useChatStore((s) => s.recordResumeAction);
 	const switchThread = useChatStore((s) => s.switchThread);
+	const adoptBranch = useChatStore((s) => s.adoptBranch);
 	// TF-0197 的分支行摘要是多行 L1 结构摘要；折叠面按设计只露一行指针，
 	// 其余行进展开区（「叙事永远折叠并标注来源」）。文件行摘要本来就是单行。
 	const isBranchRow = fact.source === "branch" && fact.branch != null;
@@ -74,22 +75,39 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 					</button>
 				</Tooltip>
 				{fact.branch ? (
-					<Button
-						type="button"
-						variant="ghost"
-						size="xs"
-						className="shrink-0 text-accent-default"
-						onClick={async () => {
-							await recordAction("resume_branch_opened", rowLabel);
-							await switchThread(fact.branch!.threadId);
-						}}
-					>
-						<GitBranch className="size-3" />
-						查看分支
-						<motion.span className="inline-flex" transition={TWEEN_FAST}>
-							<ChevronRight className="size-3" />
-						</motion.span>
-					</Button>
+					<div className="flex shrink-0 items-start gap-1">
+						<Button
+							type="button"
+							variant="ghost"
+							size="xs"
+							className="shrink-0 text-accent-default"
+							onClick={async () => {
+								await recordAction("resume_branch_opened", rowLabel);
+								await switchThread(fact.branch!.threadId);
+							}}
+						>
+							<GitBranch className="size-3" />
+							查看分支
+							<motion.span className="inline-flex" transition={TWEEN_FAST}>
+								<ChevronRight className="size-3" />
+							</motion.span>
+						</Button>
+						<Tooltip content="这条分支成为主线，源线程归档但可反转">
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="shrink-0 text-fg-muted"
+								onClick={async () => {
+									await recordAction("resume_branch_adopted", rowLabel);
+									await adoptBranch(fact.branch!.threadId);
+								}}
+							>
+								<GitMerge className="size-3" />
+								以分支为主线
+							</Button>
+						</Tooltip>
+					</div>
 				) : null}
 			</div>
 			{fact.annotation ? (

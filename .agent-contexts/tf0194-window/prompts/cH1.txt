@@ -1,0 +1,6 @@
+你在分支线程里，仓库 D:/helmor-main。主线已定：按钮加在 ResumeFactRow 的 branch 块内「查看分支」旁，点击调新 store 动作 adoptBranch(branchThreadId) → POST /api/chat/threads/{branchThreadId}/adopt。
+
+任务：用 Read 读 apps/workbench-ui/src/chat/resume-slice.ts、store-types.ts、resume-card-rows.tsx 的相关段，然后用 Edit：
+1. resume-slice.ts：加 adoptBranch(threadId)（照 recordResumeAction 模式 POST，成功后调既有 switchThread(threadId) 跳到新主线）；store-types.ts 加签名；
+2. resume-card-rows.tsx：「查看分支」旁加「以分支为主线」按钮（ghost xs，图标用 @/components/icon 里现成的 GitMerge 或 GitBranch），onClick 调 adoptBranch。
+只改这三个文件，风格对齐。完成后一句话说明。

@@ -1,0 +1,6 @@
+你在 git 仓库 D:/helmor-main 里，继续 TF-0200。后端 adopt/revert 已全通（门面/路由/测试）。
+
+任务：为前端手势做只读侦察。用 Read 读 apps/workbench-ui/src/components/chat/resume-card-rows.tsx 的 ResumeFactRow（branch 按钮区）与 apps/workbench-ui/src/chat/resume-slice.ts 的动作模式，回答（≤8 行）：
+1. 「以分支为主线」按钮加在 ResumeFactRow 的哪个位置（branch 按钮旁）？点击后调什么（POST /threads/{branch}/adopt）？
+2. store 动作怎么加（照 recordResumeAction/reportResumeCardShown 的模式）？store-types.ts 要动哪几行？
+不要修改任何文件。

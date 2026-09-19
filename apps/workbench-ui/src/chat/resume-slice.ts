@@ -20,6 +20,7 @@ export const createResumeSlice: StateCreator<
 		| "revealResumeCard"
 		| "recordResumeAction"
 		| "reportResumeCardShown"
+		| "adoptBranch"
 		| "dismissNoticeDelivered"
 		| "promoteActive"
 	>
@@ -128,6 +129,16 @@ export const createResumeSlice: StateCreator<
 			headers: { "content-type": "application/json" },
 			body: JSON.stringify({ branchRows }),
 		}).catch(() => {});
+	},
+
+	async adoptBranch(threadId) {
+		// threadId 是被收养的分支线程本身：adopt 路由据其 forkOf 反查源线程并归档。
+		const response = await apiFetch(`/api/chat/threads/${threadId}/adopt`, {
+			method: "POST",
+		});
+		if (!response.ok) throw new Error("以分支为主线失败，请重试");
+		// 收养翻转了两条线程的 archived/forkOf；跳到新主线即触发其 GET 刷新投影。
+		await get().switchThread(threadId);
 	},
 
 	dismissNoticeDelivered() {
