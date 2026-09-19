@@ -90,3 +90,10 @@
 - 循环 I：I1 补 adopt 手势 UI 交互测试（9 绿）
 - 循环 J：J1 实现归档呈现（侧栏「已归档」徽章 + 降透明度）与线程头「反转收养」手势（revertAdoption store 动作 → POST /revert），UI typecheck 0 错、56 测试绿
 - 距配额：带卡恢复 +18
+
+## 配额进度（第八次更新，循环 K/L 后）
+
+- restores 155（基线 140，+15）· resumeActions 28（基线 1，+27）· footprints 17/24
+- 循环 K：K1 修复「服务器死亡后线程永久卡 running」产品缺口——createUiServer 启动清扫 reconcileRunningOnStartup()，13 测试绿（今天两次手修的缺陷被窗口自己的工作修掉了）
+- 循环 L：L1 给 workbench README 补「以分支为主线（收养 adopt）」使用文档（主线程 resumed 会话照例拒写 → 新 fork L1 执行）
+- 距配额：带卡恢复 +15
