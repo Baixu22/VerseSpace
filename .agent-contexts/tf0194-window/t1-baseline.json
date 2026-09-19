@@ -1,0 +1,234 @@
+{
+  "threads": {
+    "total": 7,
+    "withMessages": 6,
+    "withFootprints": 0,
+    "withResumeNotes": 4,
+    "forked": 4,
+    "resumeNoteCoverage": 0.5714285714285714,
+    "footprintCoverage": 0
+  },
+  "forks": {
+    "total": 4,
+    "perWeek": 1.52,
+    "depth": {
+      "min": 1,
+      "max": 4,
+      "average": 2.5
+    },
+    "families": {
+      "count": 1,
+      "largestSize": 5
+    }
+  },
+  "observation": {
+    "startedAt": "2026-08-30T08:28:54.895Z",
+    "endedAt": "2026-09-17T17:46:56.061Z",
+    "days": 18.38751349537037
+  },
+  "lifecycle": {
+    "switches": 140,
+    "restores": 140,
+    "resumeNotesConsumed": 0,
+    "resumeActions": 1,
+    "restoreFirstAction": {
+      "observed": 1,
+      "known": 1,
+      "unknown": 139,
+      "byKind": {
+        "resume card dismissed": 1
+      }
+    },
+    "restoreToMessage": {
+      "windowDays": 7,
+      "withCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "withoutCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "unknownCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "incomplete": 16,
+      "medianChangeRatio": null,
+      "exceeds20Percent": null
+    },
+    "resumeCardCircuit": {
+      "state": "closed",
+      "dismissRate": 1,
+      "samples": 1,
+      "dismissed": 1,
+      "consumed": 0,
+      "window": 10,
+      "minSamples": 3,
+      "limit": 0.5
+    },
+    "branchEngagement": {
+      "restoresWithBranchRows": 0,
+      "branchRowsShown": 0,
+      "branchRowsEngaged": 0,
+      "ratio": null
+    }
+  },
+  "siblingAlternation": {
+    "available": false,
+    "reason": "尚未观测到同一家族兄弟切换",
+    "families": 1,
+    "alternatingFamilies": 0,
+    "rate": null,
+    "transitions": 0,
+    "windowMinutes": 30
+  },
+  "premises": {
+    "overlaps": 0,
+    "suppressedL1": 0,
+    "suppressedL2": 0,
+    "suppressedL3": 0,
+    "suppressedDedup": 0,
+    "notified": 0,
+    "writers": 0,
+    "passes": 0,
+    "notifiedRatio": null,
+    "band": {
+      "low": 0.1,
+      "high": 0.3
+    },
+    "verdict": "no-sample",
+    "advice": "尚无重叠样本：还没有任何一次 reconcile 观测到读集与写入重叠，notified / overlaps 无法计算（不是 0%）。",
+    "l3EverSuppressed": false
+  },
+  "premisesRecent": {
+    "windowDays": 7,
+    "passes": 0,
+    "overlaps": 0,
+    "notified": 0,
+    "ratio": null
+  },
+  "seal": {
+    "decisions": 0,
+    "blocked": 0,
+    "warned": 0,
+    "passed": 0,
+    "hits": 0,
+    "hitsAllowed": 0,
+    "downgraded": 0,
+    "byMode": {
+      "block": 0,
+      "warn": 0,
+      "off": 0
+    },
+    "lastDecisionAt": null,
+    "reviews": {
+      "total": 0,
+      "correct": 0,
+      "incorrect": 0
+    }
+  },
+  "noticeOutcomes": {
+    "agent": {
+      "delivered": 0,
+      "repaired": 0,
+      "ignored": 0,
+      "sealed": 0,
+      "dismissed": 0,
+      "unknown": 0,
+      "unknownBy": {
+        "unobservable": 0,
+        "no-later-activity": 0,
+        "unresolved-paths": 0
+      }
+    },
+    "human": {
+      "notesConsumed": 0,
+      "dismissed": 1,
+      "actions": 1,
+      "byAction": {
+        "resume_card_dismissed": 1
+      }
+    },
+    "rows": 1,
+    "ignoredRatio": null,
+    "dismissedRatio": null
+  },
+  "landmarkReviews": {
+    "endorsed": 0,
+    "rejected": 0,
+    "lastAt": null,
+    "current": {
+      "total": 0,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "session-top-k",
+      "topK": 3,
+      "requireEdits": true,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": null,
+      "reviewedCoverage": null,
+      "byWriter": []
+    },
+    "threshold": {
+      "total": 0,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "threshold",
+      "topK": 3,
+      "requireEdits": true,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": null,
+      "reviewedCoverage": null,
+      "byWriter": []
+    },
+    "steward": {
+      "total": 0,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "session-top-k",
+      "topK": 3,
+      "requireEdits": true,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": null,
+      "reviewedCoverage": null,
+      "byWriter": []
+    },
+    "unfiltered": {
+      "total": 0,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "session-top-k",
+      "topK": 3,
+      "requireEdits": false,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": null,
+      "reviewedCoverage": null,
+      "byWriter": []
+    },
+    "coverage": {
+      "denominator": "session-top-k",
+      "k": 3,
+      "sessions": 0,
+      "withSet": 0,
+      "items": 0,
+      "share": null,
+      "distinctHandles": 0,
+      "gatedWriters": 0
+    }
+  },
+  "dataQuality": {
+    "insufficientHistory": true,
+    "reasons": [
+      "no thread footprints"
+    ]
+  }
+}

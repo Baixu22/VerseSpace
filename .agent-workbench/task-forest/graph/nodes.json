@@ -10770,7 +10770,8 @@
       "采集协议：一周后重跑 `workbench --json stats` 取 threads.lifecycle.restores / threads.lifecycle.resumeActions / threads.withFootprints，展开率=resumeActions/restores；并重跑 fit-ledger 快照得到带日期与四个读数的行。",
       "2026-09-19 用户决定暂时 pass：观察窗挂起，节点退回 proposed。",
       "2026-09-19 规格修订（用户确认「高强度使用代替长周期使用」）：日历窗 → 样本配额窗；同步把 TFE-0315（TF-0195 depends_on TF-0194）降级为 related_to——依赖部分循环（精确展开率埋点在 TF-0199 才存在），TF-0198 带临时阈值直接开工。修订记录：docs/absorption-progress-2026-09-18.md 偏差条目 observation_window_rescoped。",
-      "采集协议（配额版）：开窗前登记配额；窗口内用主线 UI claude 车道跑真实开发轮；窗口关闭后重跑 workbench --json stats 取 threads.lifecycle.restores / .resumeActions / threads.withFootprints（粗展开率=resumeActions/restores，只对比增量），并重跑 fit-ledger 快照得到带日期与来源声明的行。"
+      "采集协议（配额版）：开窗前登记配额；窗口内用主线 UI claude 车道跑真实开发轮；窗口关闭后重跑 workbench --json stats 取 threads.lifecycle.restores / .resumeActions / threads.withFootprints（粗展开率=resumeActions/restores，只对比增量），并重跑 fit-ledger 快照得到带日期与来源声明的行。",
+      "2026-09-19 开窗（t1）：基线快照 .agent-contexts/tf0194-window/t1-baseline.json（restores=140 / resumeActions=1 / withFootprints=0/7，与 t0 同源同值）。运行者变更经用户确认：由人类运行者改为代理运行（steward 口径，账本行单独标注、不冒充人类使用）；配额目标与纪律开窗前登记于 .agent-contexts/tf0194-window/README.md；主车道 claude（CLI 2.1.251 已探活在 PATH），项目=本仓库 TF-0200 开发工作。"
     ],
     "execution_hints": [],
     "id": "TF-0194",
@@ -10794,7 +10795,7 @@
     "success_metrics": [],
     "summary": "2026-09-19 规格修订：日历窗（一周）→ 样本配额窗。依据：本节点验收从不含日历判据（「一周」只在标题）；唯一使用者是运行者本人（n=1），不存在总体代表性问题，要的是事件密度不是日历跨度；TF-0198 熔断阈值（dismiss 率 >50%）是初始参数，落地后由熔断器自身 stats 持续采集。观察窗与阶段 4 开发重叠执行：用主线 UI 的 claude 车道跑 TF-0198/0199 自身的开发，开发窗口即采集窗口。",
     "title": "用主线跑自身开发（样本配额窗），采集 restores / resumeActions / withFootprints / 恢复卡展开率基线",
-    "updated_at": "2026-09-19T09:09:56.179570Z"
+    "updated_at": "2026-09-19T10:36:55.455866Z"
   },
   "TF-0195": {
     "acceptance_criteria": [],
