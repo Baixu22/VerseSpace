@@ -3,6 +3,10 @@
 		"reicon": {
 			"command": "node",
 			"args": ["scripts/reicon-mcp.mjs"]
+		},
+		"workbench": {
+			"command": "bun",
+			"args": ["packages/workbench/src/index.ts", "mcp"]
 		}
 	}
 }

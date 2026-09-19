@@ -123,6 +123,41 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 
 派发时 Workbench 在工位 worktree 内生成 `.agent-context.md`（按工位声明的 `contextNeeds` 组装任务、验收条件、相关决策与接口）。让 Agent 阅读该文件即可——不侵入任何 Agent，利用已有的项目指令机制。调度策略由 `workbench.yaml` 控制：`manual`（默认，人工派发）/ `semi-auto`（提示建议）/ `auto`（自动填充空闲工位，受并发上限约束）。
 
+### MCP（前提账本只读通道）
+
+`workbench mcp` 在 stdio 上以 MCP 协议暴露**五条只读工具**（JSON-RPC 2.0，零 SDK 依赖）：
+
+| 工具 | 回答的问题 |
+| --- | --- |
+| `premises` | 哪些写者读过的文件已被其他写者修改（待投递的前提失效通知） |
+| `footprints` | agent 实际读/写了哪些文件（足迹账本） |
+| `resume_cards` | 线程在离开期间发生了什么（读集 diff、恢复笔记、分支动静） |
+| `tribunal` | 裁决队列里有什么在等人类决策 |
+| `notices` | 通知投递情况（已投递 / 待投递） |
+
+工具只读账本，不暴露编排动作；每个响应默认截断到 ≤2000 字符，防止把模型上下文吃光。运行目录需要有 `.workbench/`（`workbench init` 初始化）。
+
+**Claude Code**：在项目根 `.mcp.json` 添加：
+
+```json
+{
+  "mcpServers": {
+    "workbench": {
+      "command": "bun",
+      "args": ["packages/workbench/src/index.ts", "mcp"]
+    }
+  }
+}
+```
+
+已安装单文件二进制时把 `command` 换成 `workbench`、`args` 只留 `["mcp"]`。也可用命令注册到用户级：
+
+```bash
+claude mcp add workbench -- bun /abs/path/to/packages/workbench/src/index.ts mcp
+```
+
+**Cursor**：Settings → MCP → Add global MCP server，command 填 `bun`，arguments 填 `["/abs/path/to/packages/workbench/src/index.ts", "mcp"]`；或使用项目 `.mcp.json`（Cursor 支持 `.cursor/mcp.json`，形状同上）。
+
 ## 开发
 
 ```bash
