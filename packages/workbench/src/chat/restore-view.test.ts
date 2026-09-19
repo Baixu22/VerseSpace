@@ -143,19 +143,26 @@ test("R10: siblings share the source lineage; unrelated writes, missing baseline
 				?.threadId,
 		).toBe(right.id);
 		const input = {
+			bb: ws.bb,
 			threadId: left.id,
 			threads: await chat.list(),
 			events: await ws.bb.events.all(),
 			diff: view.readSetDiff,
 		};
 		expect(
-			branchResumeFacts({ ...input, diff: { ...input.diff, baseline: null } }),
+			await branchResumeFacts({
+				...input,
+				diff: { ...input.diff, baseline: null },
+			}),
 		).toEqual([]);
 		expect(
-			branchResumeFacts({ ...input, diff: { ...input.diff, stale: [] } }),
+			await branchResumeFacts({
+				...input,
+				diff: { ...input.diff, stale: [] },
+			}),
 		).toEqual([]);
 		expect(
-			branchResumeFacts({
+			await branchResumeFacts({
 				...input,
 				events: input.events.filter((event) => event.type !== "thread.forked"),
 			}),

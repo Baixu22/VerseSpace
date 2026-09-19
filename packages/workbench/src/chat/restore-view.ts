@@ -28,6 +28,15 @@ export async function collectRestoreView(
 		threadId,
 		readSetDiff.baseline?.eventId,
 	);
+	// TF-0197：分支行的 L1 摘要要读接口注册表与 checkpoint（async），先算好
+	// 再进卡片。投影仍然只读——GET 不落任何事件。
+	const branchFacts = await branchResumeFacts({
+		bb,
+		threadId,
+		threads,
+		diff: readSetDiff,
+		events,
+	});
 	return {
 		meta,
 		messages,
@@ -47,12 +56,7 @@ export async function collectRestoreView(
 			note: meta.resumeNote ?? null,
 			diff: readSetDiff,
 			dismissed: resumeCardDismissed,
-			branchFacts: branchResumeFacts({
-				threadId,
-				threads,
-				diff: readSetDiff,
-				events,
-			}),
+			branchFacts,
 		}),
 		resumeCardDismissed,
 	};

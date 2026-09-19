@@ -1,6 +1,12 @@
+import type { Blackboard } from "../../blackboard";
 import type { ReadSetDiff } from "../../runtime/read-set-diff";
 import type { WorkbenchEvent } from "../../types/event";
 import type { ThreadMeta } from "../threads";
+import {
+	buildBranchL1Summary,
+	l1SummaryRefs,
+	renderL1Summary,
+} from "./l1-summary";
 import type { FactRow } from "./types";
 
 const normalize = (path: string) => path.replace(/\\/g, "/");
@@ -23,14 +29,21 @@ function eventRef(event: WorkbenchEvent): string | null {
  * Card rule R10 (TF-0151), distinct from the product's no-orchestrator R10.
  * A read-only join: fork lineage + post-leave writes + currently stale reads.
  * Forking alone never creates a row, and no verifier verdict is inferred.
+ *
+ * TF-0197: the row's summary is now the branch's L1 structural summary
+ * (账本差 · 写集 · 接口 Δ · merge-guard 预测 · Verifier 状态 · 失效前提数),
+ * every line traced by refs. Row-firing semantics are unchanged — a branch
+ * still only surfaces when its post-leave writes touch this thread's stale
+ * reads; TF-0198 owns the wider noise gates.
  */
-export function branchResumeFacts(input: {
+export async function branchResumeFacts(input: {
+	bb: Blackboard;
 	threadId: string;
 	threads: Pick<ThreadMeta, "id" | "title" | "forkOf">[];
 	diff: ReadSetDiff;
 	events: WorkbenchEvent[];
-}): FactRow[] {
-	const { threadId, threads, diff, events } = input;
+}): Promise<FactRow[]> {
+	const { bb, threadId, threads, diff, events } = input;
 	if (
 		diff.status !== "available" ||
 		!diff.baseline ||
@@ -58,6 +71,20 @@ export function branchResumeFacts(input: {
 	const staleByPath = new Map(
 		diff.stale.map((fact) => [normalize(fact.path), fact]),
 	);
+	// merge-guard 预测的对照面：本线程在同一边界之后的写集。
+	const counterpartyWrites = new Set<string>();
+	for (const [index, event] of events.entries()) {
+		if (event.type !== "footprint" || !afterLeave(event, index)) continue;
+		const payload = payloadOf(event);
+		if (payload.writer !== threadId || !Array.isArray(payload.generated)) {
+			continue;
+		}
+		for (const claim of payload.generated) {
+			if (claim && typeof claim.path === "string") {
+				counterpartyWrites.add(normalize(claim.path));
+			}
+		}
+	}
 	const rows: FactRow[] = [];
 	for (const branch of branches) {
 		const lineage = events.find((event) => {
@@ -126,13 +153,19 @@ export function branchResumeFacts(input: {
 			if (ref) refs.add(ref);
 		}
 		const written = [...paths].sort();
-		const preview = written.slice(0, 3).map(compact).join("、");
-		const remaining =
-			written.length > 3 ? `，及另 ${written.length - 3} 个` : "";
+		const l1 = await buildBranchL1Summary({
+			bb,
+			branch: { id: branch.id, title: branch.title },
+			isAfterLeave: afterLeave,
+			events,
+			counterpartyWrites,
+		});
+		// 空分支零痕迹：没有边界后活动的分支不产出行（本投影只读，不落事件）。
+		if (l1.lines.length === 0) continue;
 		rows.push({
 			path: `分支 · ${compact(branch.title)}`,
-			summary: `离开后改动读集中的 ${written.length} 个文件：${preview}${remaining}；账本新增分叉记录 ${newForks} 条`,
-			refs: [...refs],
+			summary: renderL1Summary(l1),
+			refs: [...new Set([...refs, ...l1SummaryRefs(l1)])],
 			writerId: branch.id,
 			writerLabel: branch.title,
 			source: "branch",
