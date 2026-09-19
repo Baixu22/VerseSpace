@@ -1,0 +1,13 @@
+{
+  "messageCount": 2,
+  "toolCalls": [
+    {
+      "toolName": "Write",
+      "toolCallId": "toolu_bdrk_01WiX3FrNEoqHFzmzZaNCs8K",
+      "args": {
+        "file_path": "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-Wm4sjw\\src\\alpha.ts",
+        "content": "export const alpha = \"v2\";\n"
+      }
+    }
+  ]
+}

@@ -24,7 +24,8 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 | TF-0205 | `supervisor/liveness.ts`：15s 心跳 / 45s 软阈值 / 135s 判死 + EPIPE 与「对端真的走了」严格区分；静默不再无声挂死 | `f7c69c5` + `57e31a4` |
 | TF-0207 | 回合 id 预分配：回合一开就广播助手消息 id，流式事件与持久化消息共用它，客户端免二次匹配 | `8b12d56` + `f812a1e` |
 | TF-0208 | 合并预检结论封闭化：`MergePreflight` 四臂（clear / conflicts / unsupported / unresolved）+ `git/merge-tree.ts` 能力探测；「git 拒绝回答」不再被读成「合并干净」 | `cb1e266` + `da3618f` |
-| TF-0206 | Claude 纯渲染归约 + `delta/parts/done` 协议 + read/search/只读 shell 折叠组；19 个真实 fixture 回放与 Workbench UI send/reload 共用 reducer | 工作区（本轮未提交） |
+| TF-0206 | Claude 纯渲染归约 + `delta/parts/done` 协议 + read/search/只读 shell 折叠组；19 个真实 fixture 回放与 Workbench UI send/reload 共用 reducer | `d20205a` + `492dfdb` + `94dfd92` |
+| TF-0190 | 受控试用取证：UI claude 车道真实回合产生足迹（`withFootprints=1`），HTTP 对照组为 0；可复算脚本与证据在 `.agent-contexts/tf0190-trial/` | 本轮（见下） |
 
 ## 验收读数（本轮实跑）
 
@@ -40,19 +41,19 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 | TF-0208 ②能力缺失时不误解析 | 老式 trivial `merge-tree` 的输出（`<mode> <oid> <stage>\t<path>`）在旧读法下把 git 对象哈希当成冲突路径，新读法判 UNRESOLVED |
 | TF-0206 ①真实 fixture 回放 | 19 个 `src-tauri/tests/fixtures/streams/claude/*.jsonl`、763 个事件、28 个 text delta；显式 render decision 的 `undecided=0`，最终 parts 与持久化 done 形状一致 |
 | TF-0206 ②IPC 量化 | 每个流增量比较（不是用户键盘输入）：baseline **206,320 B** → `delta + finalized parts + done` **126,212 B**，节省 **80,108 B**，降幅 **38.83%** |
+| TF-0190 ①claude 车道非零足迹 | 受控试用（`.agent-contexts/tf0190-trial/ui-lane-trial.ts`，复用 `scripts/e2e` driver）：真实 claude CLI 在临时 git 仓库完成「Read×2 + Write×1」的 UI 回合，工具调用 Read×2 / Write×1；`stats --json` → `threads.withFootprints=1`（total=1，footprintCoverage=1），`.workbench/events` 落 2 条 footprint 事件 |
+| TF-0190 ②HTTP 对照组仍为 0 | 同一提示词走 HTTP 车道（provider=openai-chat，DPAPI 凭据 senseaudio-s2-flash）：回合正常完成、tool-call part 0 个；`stats --json` → `threads.withFootprints=0`（对照通过，确认 HTTP 读集不可观测是产品边界而非缺陷） |
 | 全量/聚焦门禁 | workbench **843 pass / 0 fail**（126 文件，21 snapshots）；workbench-ui **53 pass / 0 fail**（16 文件）；根与两包 typecheck 0 错；Biome 聚焦 137 files 0 错。同日独立复跑：workbench 843 / UI 53 / 两包 typecheck exit 0 / 根 Biome 1390 files 0 错，逐项一致 |
-| 森林门禁 | 权威副本 `C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py` 的 `validate` / `export` / `check-landing` 均 exit 0；`check-landing` 读出 2 项 done 晚于 HEAD（TF-0201、TF-0206），因本轮改动尚未提交，属预期读数（提交后应收敛）。此前记录的「已安装 CLI 未提供 `check-landing` 子命令」系找错路径（查了不存在的登记副本），已按实测更正 |
+| 森林门禁 | 权威副本 `C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py` 的 `validate` / `export` / `check-landing` 均 exit 0；`check-landing` 读出 2 项 done 晚于 HEAD（TF-0201、TF-0206），因本轮改动尚未提交，属预期读数（提交后应收敛）。此前记录的「已安装 CLI 未提供 `check-landing` 子命令」系找错路径，已按实测更正；误导来源（`report-2026-08-29.md` 里 `.agents/skills/.../task_forest.py` 这个不存在的缩写路径，实为 `C:/Users/27933/.workbuddy/skills/...`）已一并修正，同类过期指针不再引后来者偏离 |
 
 ## 节点终态与进度口径
 
 - 阶段 1（合规与身份）：**done**（TF-0183，含 0184–0188）。
-- 阶段 2（足迹命门轻路）：**in_progress**。TF-0191、TF-0192 已 done；**TF-0190 转 blocked**——
-  它要的是「有 claude 凭据的环境」这个外部条件，本机（含受控试用机）都没有，留 `proposed`
-  只会让它在每轮扫描里假装可开工。阶段 2 的验收（非零 `withFootprints` 与 HTTP 对照组）在拿到
-  凭据前无法取证，所以里程碑不结项。
+- 阶段 2（足迹命门轻路）：**done**。TF-0191（UI 诚实标注）、TF-0192（README/设置面板）、TF-0190（claude 车道足迹验证）三项全部完成。
+  2026-09-19 受控试用取证闭合：claude 车道 `withFootprints=1`、HTTP 对照组 `0`，验收两项判据均满足。
 - 阶段 5（纯 TS 可靠性吸收）：**done 100%**。0202–0208 全部 done；0206 以独立一轮完成 Claude 归约、折叠、增量协议和 UI 消费。
-- TF-0176 总进度 **39.0%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
-  = 5,160 分钟），分子 = 已完成具体任务的估时和（2,015），即 2,015 / 5,160 = 39.0%。这是 2026-09-17
+- TF-0176 总进度 **40.8%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
+  = 5,160 分钟），分子 = 已完成具体任务的估时和（2,015 + TF-0190 的 90 = 2,105），即 2,105 / 5,160 = 40.8%。这是 2026-09-17
   建立的口径，
   与叶子求和（4,655）不同，改动它就会让历史读数失去可比性。
 
@@ -69,13 +70,21 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
   **修主线已存在的缺陷**——旧代码把 `merge-tree` 的 `code=1` 一律当冲突答案，「git 拒绝回答」（ref 不存在、
   零提交仓库里的 `HEAD`）因此被读成「合并干净」。标题里「merge 方式协商」在主线字面不可达（全仓 `git merge`
   0 处，主线只预测合并、从不执行合并），`Unauthenticated` 在主线无对应物。标题已按实测修正。
+- `fit_ledger_scope`：TF-0190 的 requirement「记录到 `docs/fit-ledger.md`」按字面不可达——fit 账本的 scope 根是
+  TF-0120 产品树（`scripts/fit-ledger/ledger.ts loadScope(workspace, "TF-0120")`），吸收计划（TF-0176）节点不在
+  账本行集内；且账本纪律 2「测试通过不算使用」要求受控试用（scripted）不把 fit 推离 `unknown`。验收读数因此记录在
+  本文档与任务森林节点 evidence，未手改自动生成的 `docs/fit-ledger.md`（其头部明令「不要手工编辑」）。
 - 本机提交链尚未推送远端（远端 main 落后于这条 feat 分支）。npm 发布与 GitHub Actions 仍受账单阻塞。
 
 ## 下一轮候选
 
 阶段 5 已完成 TF-0206（claude-router 折叠与增量）：支线 `collapse.rs` 的规则已在主线以纯 TS 归约、
 折叠与协议镜像落地；历史重载直接渲染持久化终态，不在客户端重新推导。
-阶段 6（MCP server）与阶段 7（容器耦合清零与删码）不依赖外部条件，全是本机可做的纯代码工作。
+阶段 2 已结项，阶段 3（一周自用观察窗）的外部依赖（TF-0190 的 claude 凭据环境）已解除——
+本机 claude 已登录，`live-entry.ts development` 可直接产出带足迹的真实读数；阶段 4 依赖阶段 3 的
+恢复卡展开率基线，阶段 6（MCP server）与阶段 7（容器耦合清零与删码）不依赖外部条件，全是本机可做的纯代码工作。
 
-TF-0208 的侦察与落地留了两份可复算材料：结论文档 `docs/tf0208-forge-pattern-recon-2026-09-18.md`、
-对照实验脚本 `.workbuddy/_verify_208.py`（旧读法与新读法并排喂同一批真实 git 输出）。
+TF-0190 的可复算材料：受控试用脚本 `.agent-contexts/tf0190-trial/ui-lane-trial.ts`（复用 `scripts/e2e` 的
+driver/fixtures，`bun <脚本> claude|http` 即复跑）与 evidence 快照（claude/http stats、footprint 事件、
+tool-call 摘要、事件类型）。TF-0208 的侦察与落地留了两份可复算材料：结论文档
+`docs/tf0208-forge-pattern-recon-2026-09-18.md`、对照实验脚本 `.workbuddy/_verify_208.py`（旧读法与新读法并排喂同一批真实 git 输出）。

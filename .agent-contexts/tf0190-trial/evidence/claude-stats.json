@@ -1,0 +1,255 @@
+{
+  "threads": {
+    "total": 1,
+    "withMessages": 1,
+    "withFootprints": 1,
+    "withResumeNotes": 0,
+    "forked": 0,
+    "resumeNoteCoverage": 0,
+    "footprintCoverage": 1
+  },
+  "forks": {
+    "total": 0,
+    "perWeek": null,
+    "depth": {
+      "min": 0,
+      "max": 0,
+      "average": 0
+    },
+    "families": {
+      "count": 0,
+      "largestSize": 1
+    }
+  },
+  "observation": {
+    "startedAt": "2026-09-18T15:18:39.360Z",
+    "endedAt": "2026-09-18T15:23:08.932Z",
+    "days": 0.003120046296296296
+  },
+  "lifecycle": {
+    "switches": 0,
+    "restores": 0,
+    "resumeNotesConsumed": 0,
+    "resumeActions": 0,
+    "restoreFirstAction": {
+      "observed": 0,
+      "known": 0,
+      "unknown": 0,
+      "byKind": {}
+    },
+    "restoreToMessage": {
+      "windowDays": 7,
+      "withCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "withoutCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "unknownCard": {
+        "samples": 0,
+        "medianMs": null
+      },
+      "incomplete": 0,
+      "medianChangeRatio": null,
+      "exceeds20Percent": null
+    }
+  },
+  "siblingAlternation": {
+    "available": false,
+    "reason": "没有可比较的分叉家族",
+    "families": 0,
+    "alternatingFamilies": 0,
+    "rate": null,
+    "transitions": 0,
+    "windowMinutes": 30
+  },
+  "premises": {
+    "overlaps": 0,
+    "suppressedL1": 0,
+    "suppressedL2": 0,
+    "suppressedL3": 0,
+    "suppressedDedup": 0,
+    "notified": 0,
+    "writers": 0,
+    "passes": 0,
+    "notifiedRatio": null,
+    "band": {
+      "low": 0.1,
+      "high": 0.3
+    },
+    "verdict": "no-sample",
+    "advice": "尚无重叠样本：还没有任何一次 reconcile 观测到读集与写入重叠，notified / overlaps 无法计算（不是 0%）。",
+    "l3EverSuppressed": false
+  },
+  "premisesRecent": {
+    "windowDays": 7,
+    "passes": 0,
+    "overlaps": 0,
+    "notified": 0,
+    "ratio": null
+  },
+  "seal": {
+    "decisions": 0,
+    "blocked": 0,
+    "warned": 0,
+    "passed": 0,
+    "hits": 0,
+    "hitsAllowed": 0,
+    "downgraded": 0,
+    "byMode": {
+      "block": 0,
+      "warn": 0,
+      "off": 0
+    },
+    "lastDecisionAt": null,
+    "reviews": {
+      "total": 0,
+      "correct": 0,
+      "incorrect": 0
+    }
+  },
+  "noticeOutcomes": {
+    "agent": {
+      "delivered": 0,
+      "repaired": 0,
+      "ignored": 0,
+      "sealed": 0,
+      "dismissed": 0,
+      "unknown": 0,
+      "unknownBy": {
+        "unobservable": 0,
+        "no-later-activity": 0,
+        "unresolved-paths": 0
+      }
+    },
+    "human": {
+      "notesConsumed": 0,
+      "dismissed": 0,
+      "actions": 0,
+      "byAction": {}
+    },
+    "rows": 0,
+    "ignoredRatio": null,
+    "dismissedRatio": null
+  },
+  "landmarkReviews": {
+    "endorsed": 0,
+    "rejected": 0,
+    "lastAt": null,
+    "current": {
+      "total": 2,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "session-top-k",
+      "topK": 3,
+      "requireEdits": true,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": 0,
+      "reviewedCoverage": 0,
+      "byWriter": [
+        {
+          "writer": "6ea1da2d-6489-4371-b9ef-db9d31ef84d9",
+          "total": 2,
+          "reviewed": 0,
+          "endorsed": 0,
+          "rejected": 0,
+          "endorsedShare": 0,
+          "reviewedCoverage": 0
+        }
+      ]
+    },
+    "threshold": {
+      "total": 0,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "threshold",
+      "topK": 3,
+      "requireEdits": true,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": null,
+      "reviewedCoverage": null,
+      "byWriter": [
+        {
+          "writer": "6ea1da2d-6489-4371-b9ef-db9d31ef84d9",
+          "total": 0,
+          "reviewed": 0,
+          "endorsed": 0,
+          "rejected": 0,
+          "endorsedShare": null,
+          "reviewedCoverage": null
+        }
+      ]
+    },
+    "steward": {
+      "total": 2,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "session-top-k",
+      "topK": 3,
+      "requireEdits": true,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": 0,
+      "reviewedCoverage": 0,
+      "byWriter": [
+        {
+          "writer": "6ea1da2d-6489-4371-b9ef-db9d31ef84d9",
+          "total": 2,
+          "reviewed": 0,
+          "endorsed": 0,
+          "rejected": 0,
+          "endorsedShare": 0,
+          "reviewedCoverage": 0
+        }
+      ]
+    },
+    "unfiltered": {
+      "total": 2,
+      "reviewed": 0,
+      "endorsed": 0,
+      "rejected": 0,
+      "denominator": "session-top-k",
+      "topK": 3,
+      "requireEdits": false,
+      "gatedWriters": 0,
+      "legacyReviews": 0,
+      "endorsedShare": 0,
+      "reviewedCoverage": 0,
+      "byWriter": [
+        {
+          "writer": "6ea1da2d-6489-4371-b9ef-db9d31ef84d9",
+          "total": 2,
+          "reviewed": 0,
+          "endorsed": 0,
+          "rejected": 0,
+          "endorsedShare": 0,
+          "reviewedCoverage": 0
+        }
+      ]
+    },
+    "coverage": {
+      "denominator": "session-top-k",
+      "k": 3,
+      "sessions": 1,
+      "withSet": 1,
+      "items": 2,
+      "share": 1,
+      "distinctHandles": 2,
+      "gatedWriters": 0
+    }
+  },
+  "dataQuality": {
+    "insufficientHistory": true,
+    "reasons": [
+      "no restore cycle observed",
+      "no thread.switch observations"
+    ]
+  }
+}
