@@ -17,6 +17,7 @@ describe("buildProgram", () => {
 			"agent",
 			"sessions",
 			"premises",
+			"mcp",
 			// R3: the human channel, the flow limit, and the lane meters
 			"tribunal",
 			"wip",

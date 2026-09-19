@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { registerAgents } from "./cli/agents";
 import { registerFoundation } from "./cli/foundation";
+import { registerMcp } from "./cli/mcp";
 import { registerTribunal } from "./cli/tribunal";
 import { registerWorkspace } from "./cli/workspace";
 import { WORKBENCH_VERSION } from "./version";
@@ -14,6 +15,7 @@ export function buildProgram(): Command {
 		.option("--quiet", "suppress human-readable output");
 	registerFoundation(program);
 	registerAgents(program);
+	registerMcp(program);
 	registerTribunal(program);
 	registerWorkspace(program);
 	return program;
