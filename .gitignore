@@ -111,6 +111,8 @@ packages/workbench/.evidence-sites/
 # local session work log + scratch scripts (tf-* probes, tmp-* exit codes,
 # repin.py, scan reports) — personal workspace state, not repo history
 /.workbuddy/
+# ZCode agent-local scratch (session plans + test logs, e.g. .zcode/plans)
+/.zcode/
 # closeout scan rounds (integrity reports + test logs); curated findings are
 # transcribed into docs/ reports and task-forest node evidence
 /.agent-contexts/closeout-*/
