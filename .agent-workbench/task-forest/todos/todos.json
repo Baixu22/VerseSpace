@@ -238,7 +238,7 @@
     "ready": true,
     "remaining_minutes_max": 120,
     "remaining_minutes_min": 120,
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
     "title": "阶段 3：一周自用观察窗——首次产生带足迹的真实读数"
   },
@@ -265,7 +265,7 @@
     "ready": true,
     "remaining_minutes_max": 120,
     "remaining_minutes_min": 120,
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
     "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线"
   },

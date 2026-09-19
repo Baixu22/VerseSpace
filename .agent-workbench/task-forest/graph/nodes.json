@@ -10711,7 +10711,11 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 120,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 启动：前置 TF-0190（claude 车道足迹验证）已完成，本机 claude 已登录；仓库根自用黑板 `.workbench` 的 chat.provider=claude，具备产生足迹的条件。",
+      "t0 基线快照：`docs/fit-ledger-2026-09-19-phase3-t0.md`（由 `scripts/fit-ledger.ts --blackboard .workbench --scope . --evidence-kind live-model` 生成）。t0 读数（2026-09-19）：restores=140、resumeActions=1、withFootprints=0、恢复卡展开率=1/140≈0.007。",
+      "观察协议：未来一周用主线（`workbench ui`）在 helmor-main 仓库做真实自身开发；一周后重跑 `workbench --json stats` 与同参数 fit-ledger 快照，以 t0 为基线采集 Δrestores / ΔresumeActions / ΔwithFootprints / 展开率（ΔresumeActions/Δrestores），并把带日期的四个读数写入 fit-ledger 快照与本文档。"
+    ],
     "execution_hints": [],
     "id": "TF-0193",
     "kind": "milestone",
@@ -10724,11 +10728,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
-    "summary": "阶段 1/2 之后才第一次有真实足迹数据；D3-Q2 的 fit 门需要这个基线。与 TF-0159/0161（L1 分母与地标投影）在同一观察窗内并行。",
+    "summary": "观察窗已启动：t0 基线已记录（restores=140 / resumeActions=1 / withFootprints=0），等待一周真实自用后采集增量读数。",
     "title": "阶段 3：一周自用观察窗——首次产生带足迹的真实读数",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-19T01:10:47.089301Z"
   },
   "TF-0194": {
     "acceptance_criteria": [
@@ -10753,7 +10757,10 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 120,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 启动：t0 基线已记录（见 TF-0193 evidence 与 `docs/fit-ledger-2026-09-19-phase3-t0.md`）。",
+      "采集协议：一周后重跑 `workbench --json stats` 取 threads.lifecycle.restores / threads.lifecycle.resumeActions / threads.withFootprints，展开率=resumeActions/restores；并重跑 fit-ledger 快照得到带日期与四个读数的行。"
+    ],
     "execution_hints": [],
     "id": "TF-0194",
     "kind": "task",
@@ -10766,11 +10773,11 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "in_progress",
     "success_metrics": [],
-    "summary": "",
+    "summary": "观察窗口进行中：t0 基线已记录，等待一周真实自用后采集四个读数。",
     "title": "用主线跑自身开发一周，采集 restores / resumeActions / withFootprints / 恢复卡展开率基线",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-19T01:10:47.089301Z"
   },
   "TF-0195": {
     "acceptance_criteria": [],
