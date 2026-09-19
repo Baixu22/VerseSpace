@@ -77,3 +77,9 @@
 - 熔断器：9 样本（消费 6 / dismiss 3），rate=0.33，closed
 - 距配额：带卡恢复 +20
 - 循环 G 记录：G1 写路由集成测试 3 例（adopt 臂/revert 臂/400 错误臂）全绿；还发现真陷阱——createUiServer 自建 ChatThreads 且仓储缓存优先，跨实例断言会读到旧缓存
+
+## 配额进度（第六次更新，循环 H 后）
+
+- restores 151（基线 140，+11）· resumeActions 21（基线 1，+20）· footprints 13/20
+- 循环 H 记录：H1 完成 workbench-ui 的「以分支为主线」手势（resume-card-rows 分支行按钮 + adoptBranch store 动作 + POST /adopt），UI typecheck 0 错、8 测试绿
+- 距配额：带卡恢复 +19
