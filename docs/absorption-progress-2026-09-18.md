@@ -56,8 +56,9 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
   用户决定暂时不做数据沉淀；t0 快照与采集协议保留在节点 evidence，后续要启动可直接沿用。
 - 阶段 5（纯 TS 可靠性吸收）：**done 100%**。0202–0208 全部 done；0206 以独立一轮完成 Claude 归约、折叠、增量协议和 UI 消费。
 - 阶段 6（MCP server）：**done 100%**。TF-0210（stdio JSON-RPC 2.0 骨架）、TF-0211（五条只读工具 + 体积控制）、TF-0212（Claude Code 接入验证 + README）全部完成；`workbench mcp` 已被 Claude Code 实际连接（✔ Connected），零新依赖。
-- TF-0176 总进度 **52.4%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
-  = 5,160 分钟），分子 = 已完成具体任务的估时和（2,105 + 阶段 6 的 600 = 2,705），即 2,705 / 5,160 = 52.4%。这是 2026-09-17
+- 阶段 7（容器耦合清零与删码）：**done 100%**。TF-0220（杂物治理）、TF-0214（postinstall 去 sidecar）、TF-0215（pre-commit 分车道）、TF-0216（图标生成参数化）、TF-0217（L3 残留清除）、TF-0218（删除 apps/marketing 与 apps/registry）、TF-0219（退役闸门 ADR-0014）全部完成；四项容器耦合清零（ADR-0014 决策 2），`apps/` 下只剩 workbench-ui。
+- TF-0176 总进度 **64.6%**。口径：分母 = 七个阶段里程碑估时之和（480+360+120+1200+1500+600+900
+  = 5,160 分钟），分子 = 已完成具体任务的估时和（2,705 + 阶段 7 的 630 = 3,335），即 3,335 / 5,160 = 64.6%。这是 2026-09-17
   建立的口径，
   与叶子求和（4,655）不同，改动它就会让历史读数失去可比性。
 
@@ -82,15 +83,12 @@ TF-0176「主线收口与支线吸收」的执行记录。规划背景见
 
 ## 下一轮候选
 
-阶段 5 已完成 TF-0206（claude-router 折叠与增量）：支线 `collapse.rs` 的规则已在主线以纯 TS 归约、
-折叠与协议镜像落地；历史重载直接渲染持久化终态，不在客户端重新推导。
-阶段 2、阶段 6 已结项；阶段 3（一周自用观察窗）被用户暂时 pass（t0 基线保留）。**阶段 7（容器耦合清零与删码）
-是下一项纯本地代码工作**：postinstall 去 sidecar（TF-0214）、pre-commit 分车道（TF-0215）、gen-icon-layer 参数化
-（TF-0216）、删残留代码（TF-0217）、删 apps/marketing+registry（TF-0218）、退役闸门（TF-0219）、根目录杂物治理（TF-0220）。
-阶段 4 依赖阶段 3 的恢复卡展开率基线，待观察窗重启后再做。
+阶段 5、阶段 6、阶段 7 已全部结项。吸收计划（TF-0176）剩两块：**阶段 3（一周自用观察窗）**被用户暂时 pass
+（t0 基线保留在 `docs/fit-ledger-2026-09-19-phase3-t0.md`，随时可重启），**阶段 4（D3-Q2 分支动静）**依赖阶段 3 的
+恢复卡展开率基线——但其前置 TF-0196（checkpoint 与 thread/writer 链接）与 TF-0197（L1 摘要生成）是纯后端代码，
+不依赖观察窗数据，可先做。存量删除（src/src-tauri/sidecar）条件已满足，按 ADR-0014 决策 3 留待独立执行轮。
 
-阶段 6 的可复算材料：`packages/workbench/src/mcp/`（protocol/server/tools + 16 测试）、`.mcp.json` 的 workbench 服务器、
-`claude mcp get workbench` → ✔ Connected。TF-0190 的可复算材料：受控试用脚本
-`.agent-contexts/tf0190-trial/ui-lane-trial.ts`（复用 `scripts/e2e` 的 driver/fixtures，`bun <脚本> claude|http` 即复跑）
-与 evidence 快照。TF-0208 的侦察与落地留了两份可复算材料：结论文档 `docs/tf0208-forge-pattern-recon-2026-09-18.md`、
-对照实验脚本 `.workbuddy/_verify_208.py`（旧读法与新读法并排喂同一批真实 git 输出）。
+阶段 7 的可复算材料：`.agent-contexts/tf0217-scan/`（ts-prune 报告 + 结论）、`.agent-contexts/tf0190-trial/`（各阶段落库提案副本）。
+TF-0190 的受控试用脚本 `.agent-contexts/tf0190-trial/ui-lane-trial.ts`（`bun <脚本> claude|http` 即复跑）。
+TF-0208 的侦察与落地留了两份可复算材料：结论文档 `docs/tf0208-forge-pattern-recon-2026-09-18.md`、
+对照实验脚本 `.workbuddy/_verify_208.py`。
