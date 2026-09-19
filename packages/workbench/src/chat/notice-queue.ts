@@ -216,3 +216,18 @@ export async function ackNotices(
 	});
 	return true;
 }
+
+/**
+ * 恢复卡 dismiss 的注入撤回（TF-0198，D3-Q2「未投递时完全撤」）：投递时
+ * 已被 ack 移除，所以留在队列里的恰是未投递部分——整队清空即精确撤回。
+ * dismiss 路由同步调用它：路由返回即队列已空（≤2s 语义由同步性保证）。
+ */
+export async function clearNotices(
+	context: ThreadContext,
+	id: string,
+): Promise<void> {
+	const noticeFile = noticesFile(context, id);
+	await withPidLock(`${noticeFile}.lock`, async () => {
+		await rm(noticeFile, { force: true });
+	});
+}

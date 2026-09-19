@@ -19,6 +19,33 @@ export * from "./types";
 
 const PATH_RE = /(?:[\w.-]+\/)+[\w.-]+\.\w+/g;
 
+/**
+ * 渲染门（TF-0198，D3-Q2「≥3 合并」）：分支行达到 3 条就折成一行。
+ * 三个分支同时有动静说明恢复面在被分支行淹没——把行数还给文件事实，
+ * 每条 ref 仍全部保留（溯源不折叠）。合并行不带单一 branch 链接；
+ * 展开区经 EvidenceRefs 仍可核对每条证据。
+ */
+export const BRANCH_ROWS_MERGE_LIMIT = 3;
+
+export function mergeBranchFactRows(rows: FactRow[]): FactRow[] {
+	const branchRows = rows.filter((row) => row.source === "branch");
+	if (branchRows.length < BRANCH_ROWS_MERGE_LIMIT) {
+		return rows;
+	}
+	const titles = branchRows.map((row) => row.writerLabel ?? row.path);
+	const merged: FactRow = {
+		path: `分支 · ${branchRows.length} 个分支有动静`,
+		summary: `分支动静已折叠：${titles.join("、")}`,
+		refs: [...new Set(branchRows.flatMap((row) => row.refs))],
+		source: "branch",
+		annotation: {
+			rule: "R10",
+			label: "相关前提已变；分支动静已折叠，证据可展开核对",
+		},
+	};
+	return [...rows.filter((row) => row.source !== "branch"), merged];
+}
+
 export function extractPaths(text: string): string[] {
 	const found = text.match(PATH_RE) ?? [];
 	return [...new Set(found.map((path) => path.replace(/\\/g, "/")))];
@@ -257,10 +284,11 @@ export function buildResumeCard(input: {
 		// card that has no content.
 		return null;
 	}
+	const gatedFacts = mergeBranchFactRows(facts);
 	return {
 		coverage: coverageOf(input.diff, stale.length),
 		narrative,
-		facts,
+		facts: gatedFacts,
 		dismissed,
 		inject: !dismissed,
 		// 预览条数随载荷下发：客户端直接读它，不再自带一份同值常量

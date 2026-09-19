@@ -12,6 +12,7 @@ import { cancel, reload, remove } from "./thread-lifecycle";
 import { promote } from "./thread-promotion";
 import { ThreadRepository } from "./thread-repository";
 import {
+	dismissResumeCard,
 	leave,
 	recordMergedBack,
 	recordRestored,
@@ -120,6 +121,11 @@ export class ChatThreads {
 
 	async recordResumeAction(threadId: string, action: string): Promise<void> {
 		return recordResumeAction(this.context, threadId, action);
+	}
+
+	/** TF-0198：dismiss 记观测并撤回未投递注入；返回即队列已空。 */
+	async dismissResumeCard(threadId: string): Promise<void> {
+		return dismissResumeCard(this.context, threadId);
 	}
 
 	async recordMergedBack(

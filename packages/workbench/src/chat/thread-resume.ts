@@ -1,3 +1,4 @@
+import { clearNotices } from "./notice-queue";
 import type { RestoreObservation } from "./restore-timing";
 import { buildResumeNote, type ResumeBeat, type ResumeNote } from "./resume";
 import type { ThreadContext } from "./thread-context";
@@ -100,6 +101,18 @@ export async function recordResumeAction(
 	await context.store.appendThreadEvent("thread.resume_action", threadId, {
 		action,
 	});
+}
+
+/**
+ * 恢复卡 dismiss（TF-0198）：动作先落事件（notice-outcome 与熔断器共用的
+ * 观测），随后同步清空该线程的模型侧注入队列——路由返回即队列已空。
+ */
+export async function dismissResumeCard(
+	context: ThreadContext,
+	threadId: string,
+): Promise<void> {
+	await recordResumeAction(context, threadId, "resume_card_dismissed");
+	await clearNotices(context, threadId);
 }
 
 /**

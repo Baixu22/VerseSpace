@@ -14,6 +14,7 @@ import { sealReviewTotals } from "../runtime/seal-review";
 import type { WorkbenchEvent } from "../types/event";
 import { restoreFirstActions } from "./restore-actions";
 import { foldRestoreTimings } from "./restore-timing";
+import { resumeCardCircuit } from "./resume-card/circuit";
 import { orderedEvents } from "./stats-events";
 import { familyRoot, forkDepth, siblingAlternation } from "./stats-forks";
 import type { ChatStats } from "./stats-types";
@@ -178,6 +179,7 @@ export async function collectChatStats(bb: Blackboard): Promise<ChatStats> {
 				orderedEvents(events),
 				messagesByThread,
 			),
+			resumeCardCircuit: resumeCardCircuit(events),
 		},
 		siblingAlternation: alternation,
 		premises: foldPremisePasses(events),

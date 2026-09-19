@@ -2,6 +2,7 @@ import type { Blackboard } from "../../blackboard";
 import type { ReadSetDiff } from "../../runtime/read-set-diff";
 import type { WorkbenchEvent } from "../../types/event";
 import type { ThreadMeta } from "../threads";
+import { resumeCardCircuit } from "./circuit";
 import {
 	buildBranchL1Summary,
 	l1SummaryRefs,
@@ -34,7 +35,12 @@ function eventRef(event: WorkbenchEvent): string | null {
  * (账本差 · 写集 · 接口 Δ · merge-guard 预测 · Verifier 状态 · 失效前提数),
  * every line traced by refs. Row-firing semantics are unchanged — a branch
  * still only surfaces when its post-leave writes touch this thread's stale
- * reads; TF-0198 owns the wider noise gates.
+ * reads.
+ *
+ * TF-0198 noise gates: when the dismissal circuit is open (recent dismiss
+ * rate >50%), rows degrade to L0 pointers — one factual line per branch,
+ * lineage ref and 查看分支 link kept, no L1 detail. The ≥3-rows render merge
+ * lives in the card builder (buildResumeCard).
  */
 export async function branchResumeFacts(input: {
 	bb: Blackboard;
@@ -51,6 +57,8 @@ export async function branchResumeFacts(input: {
 	) {
 		return [];
 	}
+	// 熔断器与 stats 共用同一投影读法；open 时本轮直接产 L0 指针行。
+	const circuit = resumeCardCircuit(events);
 	const boundary = diff.baseline;
 	const leaveIndex = boundary.eventId
 		? events.findIndex((event) => event.id === boundary.eventId)
@@ -153,6 +161,27 @@ export async function branchResumeFacts(input: {
 			if (ref) refs.add(ref);
 		}
 		const written = [...paths].sort();
+		const branchField = {
+			threadId: branch.id,
+			anchorMessageId: branch.forkOf!.anchorMessageId,
+			paths: written,
+			newForks,
+		};
+		if (circuit.state === "open") {
+			// L0 指针行：一行事实 + 溯源 + 查看分支链接；不读接口表与
+			// checkpoint——降级同时省掉 L1 的两个投影读。
+			rows.push({
+				path: `分支 · ${compact(branch.title)}`,
+				summary: `自 #${branch.forkOf!.anchorMessageId.slice(0, 12)} 分出，写了 ${paths.size} 个你将读的文件${newForks > 0 ? `，${newForks} 个新分叉` : ""}`,
+				refs: [...refs],
+				writerId: branch.id,
+				writerLabel: branch.title,
+				source: "branch",
+				annotation: { rule: "R10", label: "相关前提已变，查看分支与文件证据" },
+				branch: branchField,
+			});
+			continue;
+		}
 		const l1 = await buildBranchL1Summary({
 			bb,
 			branch: { id: branch.id, title: branch.title },
@@ -170,12 +199,7 @@ export async function branchResumeFacts(input: {
 			writerLabel: branch.title,
 			source: "branch",
 			annotation: { rule: "R10", label: "相关前提已变，查看分支与文件证据" },
-			branch: {
-				threadId: branch.id,
-				anchorMessageId: branch.forkOf!.anchorMessageId,
-				paths: written,
-				newForks,
-			},
+			branch: branchField,
 		});
 	}
 	return rows;

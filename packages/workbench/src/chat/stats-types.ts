@@ -7,6 +7,7 @@ import type { PremisePassTotals } from "../runtime/premise-counts";
 import type { SealTotals } from "../runtime/seal-counts";
 import type { SealReviewTotals } from "../runtime/seal-review";
 import type { RestoreTimingStats } from "./restore-timing";
+import type { ResumeCardCircuitState } from "./resume-card/circuit";
 
 export interface ChatStats {
 	threads: {
@@ -48,6 +49,11 @@ export interface ChatStats {
 			unknown: number;
 			byKind: Record<string, number>;
 		};
+		/**
+		 * 恢复卡熔断器读数（TF-0198）：与渲染路径共用同一投影——open 即分支行
+		 * 正在降为 L0 指针；窗口内行为变好则自动回到 closed（可恢复，无需手势）。
+		 */
+		resumeCardCircuit: ResumeCardCircuitState;
 	};
 	siblingAlternation: {
 		available: boolean;
