@@ -9893,7 +9893,8 @@
       "进度按估时加权：已完成 300 分钟 / 计划 5,160 分钟",
       "阶段 5 于 2026-09-18 完成 TF-0206：19 fixture 全量回放，IPC baseline 206,320 B → optimized 126,212 B，节省 80,108 B（38.83%）；Workbench 843 pass、Workbench UI 53 pass、两包 typecheck 与 Biome 聚焦门禁通过。总进度按既有 5,160 分钟口径更新为 2,015 / 5,160 = 39.0%，非目标为 Rust pipeline 与 Rust snapshots。",
       "2026-09-19 阶段 2 完成（TF-0190 受控试用取证闭合）：claude 车道 withFootprints=1、HTTP 对照 0，验收两项判据均满足。总进度按既有 5,160 分钟口径更新为 2,105 / 5,160 = 40.8%。",
-      "2026-09-19 阶段 6 完成（MCP server）：TF-0210/0211/0212 全部 done，`workbench mcp` 已被 Claude Code 连接（✔ Connected），五条只读工具上线（premises/footprints/resume_cards/tribunal/notices），零新依赖。总进度 = (2,105 + 600) / 5,160 = 52.4%。"
+      "2026-09-19 阶段 6 完成（MCP server）：TF-0210/0211/0212 全部 done，`workbench mcp` 已被 Claude Code 连接（✔ Connected），五条只读工具上线（premises/footprints/resume_cards/tribunal/notices），零新依赖。总进度 = (2,105 + 600) / 5,160 = 52.4%。",
+      "2026-09-19 阶段 7 完成（容器耦合清零与删码）：四项耦合清零、apps/marketing 与 apps/registry 删除、L3 残留清除、ADR-0014 落库。七项任务估时 30+60+60+60+240+90+90=630。总进度 = (2,705 + 630) / 5,160 = 64.6%。"
     ],
     "execution_hints": [],
     "id": "TF-0176",
@@ -9905,7 +9906,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 52.4,
+    "progress": 64.6,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9922,7 +9923,7 @@
     "success_metrics": [],
     "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-19T01:34:51.553492Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -11692,24 +11693,27 @@
     "deviations": [],
     "difficulty": "medium",
     "estimated_total_minutes": 900,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 阶段 7 完成：TF-0220（杂物治理）、TF-0214（postinstall 去 sidecar）、TF-0215（pre-commit 分车道）、TF-0216（图标生成参数化）、TF-0217（残留代码清除）、TF-0218（外围目录删除）、TF-0219（退役闸门 ADR-0014）全部 done。",
+      "四项容器耦合清零（ADR-0014 决策 2）；apps/ 下只剩 workbench-ui。"
+    ],
     "execution_hints": [],
     "id": "TF-0213",
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "四项容器耦合逐项清零 + 删除已废止节点对应的残留代码与无引用的支线外围目录。每项删除前核查引用（ADR-0011）。",
+    "summary": "阶段 7 完成：容器耦合清零，外围目录与残留代码已删，退役闸门 ADR-0014 落库。",
     "title": "阶段 7：容器耦合清零与不必要代码删除（支线退役准备）",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0214": {
     "acceptance_criteria": [
@@ -11734,24 +11738,28 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 60,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交 e7c4a27）：根 postinstall 移除 `cd sidecar && bun install` 与 sccache 提示；新增 `install:legacy` 脚本供支线（legacy Helmor）使用，原行为完整保留在该脚本。",
+      "验收①主线 bun install 不再拉 agent SDK：实测根 `bun install` 成功且不触碰 sidecar（sidecar 非 workspace 成员，唯一入口是 postinstall，已移除）；AGENTS.md 安装说明同步更新。",
+      "验收②install:legacy 就位：`package.json` scripts 含 install:legacy（sidecar 安装 + sccache 提示）。"
+    ],
     "execution_hints": [],
     "id": "TF-0214",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "postinstall 已去 sidecar：主线安装零 agent SDK，支线用 install:legacy。",
     "title": "postinstall 去掉 cd sidecar && bun install 与 sccache 提示；支线依赖改为按需脚本",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0215": {
     "acceptance_criteria": [
@@ -11775,24 +11783,27 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 60,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交 7062814）：lint-staged 的 Rust 车道由 `*.rs` 显式限定为 `src-tauri/**/*.rs`，车道归属清晰。",
+      "验收「仅改 packages/ 或 apps/workbench-ui 的提交 hook 耗时不含 cargo」：本轮多笔纯 TS 提交（TF-0220/0214/0216/0217）实测 lint-staged 输出 Rust 车道 0 文件跳过、hook 只跑 biome；全仓 .rs 文件均在 src-tauri/ 下，与限定一致。"
+    ],
     "execution_hints": [],
     "id": "TF-0215",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "pre-commit 已分车道：Rust 车道限定 src-tauri/**，主线 TS 提交零 cargo 开销。",
     "title": "pre-commit / lint-staged 按路径分车道：主线提交不触发 clippy/cargo fmt",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0216": {
     "acceptance_criteria": [
@@ -11818,13 +11829,16 @@
     ],
     "difficulty": "low",
     "estimated_total_minutes": 60,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交 a2d173c）：`scripts/gen-icon-layer.mjs` 新增 `--target src|workbench-ui|all` 参数；映射表保持单一来源（requirement）。",
+      "验收：`node scripts/gen-icon-layer.mjs --target workbench-ui` 实测后 `git status` 只含脚本自身改动，不含 `src/`（AC 原文判据）。"
+    ],
     "execution_hints": [],
     "id": "TF-0216",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11833,11 +11847,11 @@
       "映射表仍单一来源，不拆两份"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "图标层生成已参数化：主线可只生成 workbench-ui 层，不再顺带改写 src/。",
     "title": "gen-icon-layer.mjs 参数化输出目标：主线可只生成 workbench-ui 图标层，不再顺带改写 src/ 184 文件",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0217": {
     "acceptance_criteria": [
@@ -11864,13 +11878,18 @@
     ],
     "difficulty": "medium",
     "estimated_total_minutes": 240,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交 45452c7）：L3 残留清除——`buildResumeCard` 的 `promotionReverted` 输入与 R7「已撤销」分支（废弃节点 evidence 明言 promotion_reverted 无任何生产者，唯一引用是测试本身）连同 R7 测试删除。",
+      "merge-back stub 已不存在：`thread.merged_back` 只剩 events.test.ts 的回归测试（断言该类型被拒绝），属防回归行为。",
+      "ts-prune 扫描（报告归档 `.agent-contexts/tf0217-scan/`）：命中多为 (used in module) 内部导出或有意的公共 API（TribunalFolded/TribunalItemState 为 issue #4 契约面预留）；唯一真正死导出 `mcp/protocol.ts` 的 `JsonRpcNotification` 已删除。",
+      "门禁：workbench 全量 858 pass / 0 fail（少 1 条 = 被删的 R7 测试）；typecheck exit 0。"
+    ],
     "execution_hints": [],
     "id": "TF-0217",
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11880,11 +11899,11 @@
       "测试与类型检查全绿"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "L3 残留与死导出已清除，扫描报告归档 .agent-contexts/tf0217-scan/。",
     "title": "删除已废止节点的残留代码：L3（TF-0099/0100/0101）与旧 merge-back stub，以及主线未引用导出（knip/ts-prune 扫描）",
-    "updated_at": "2026-09-17T14:52:13.553223Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0218": {
     "acceptance_criteria": [
@@ -11910,14 +11929,17 @@
     "difficulty": "low",
     "estimated_total_minutes": 90,
     "evidence": [
-      "报告 §1.2：两目录 0 commit，支线外围"
+      "2026-09-19 落地（提交 c9ce431）：删除 `apps/marketing`（26 文件）与 `apps/registry`（13 文件）；按 ADR-0011 核查并清理全部引用——refresh-marketing.yml 整文件删除、publish.yml notify-marketing job 移除、ci.yml 与 release-plan.yml 注释更新、.changeset/config.json ignore 清空、.claude/launch.json marketing 配置移除。",
+      "验收①无残留引用：仓库内对 apps/marketing、apps/registry、@helmor/marketing、@helmor/registry、refresh-marketing、notify-marketing 的引用为 0（剩余命中仅在本地忽略的 .claude/worktrees 快照里）。",
+      "验收②三套全绿：bun install 成功（移除 2 个已删 workspace）；根 typecheck exit 0；五套 JS 测试全绿——frontend 1692、workbench 859、workbench-ui 53、context-rot 65、sidecar 419（Rust 未改动）。",
+      "决策记录：ADR-0014 决策 1（与 TF-0219 共用同一份 ADR）。"
     ],
     "execution_hints": [],
     "id": "TF-0218",
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11927,11 +11949,11 @@
       "决策记录并入 ADR-0014（退役闸门）"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "外围目录已删除，引用全清，bun install/typecheck/test 全绿。",
     "title": "核查引用后删除支线外围 apps/marketing 与 apps/registry（官网、手机配对服务）",
-    "updated_at": "2026-09-17T16:04:01.719304Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0219": {
     "acceptance_criteria": [
@@ -11955,13 +11977,17 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 90,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交 c9ce431）：ADR-0014 落库（`docs/decisions/0014-legacy-retirement-gate.md` + README 索引登记）。",
+      "核查清单逐项证据：CSS import=TF-0184（workbench-ui 内联 token 子集）；图标生成=TF-0216（--target workbench-ui 后 git status 不含 src/）；postinstall=TF-0214（主线安装零 agent SDK）；pre-commit=TF-0215（Rust 车道限定 src-tauri/**）。四项全部清零。",
+      "AC「ADR-0014 落库；未满足则记录缺项，不删」：闸门满足、ADR 落库；src/、src-tauri/、sidecar/ 的删除按 ADR-0014 决策 3 暂缓——存量仍是主线协议契约的真实参考样本（fixture 回放、心跳/折叠契约），且 CI 的 rust/sidecar 车道仍运行，删除需先移除 CI/根测试脚本引用再跑三套门禁，留作独立执行轮。"
+    ],
     "execution_hints": [],
     "id": "TF-0219",
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11971,11 +11997,11 @@
       "保留冻结 tag 或分支作为行为参考"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "退役闸门核查完成：四项耦合清零，ADR-0014 落库；存量删除条件已满足、执行按 ADR 决策暂缓并留待独立轮。",
     "title": "退役闸门核查：四项耦合清零后另立 ADR-0014，决定删除 src/、src-tauri/、sidecar/",
-    "updated_at": "2026-09-17T16:04:01.719272Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0220": {
     "acceptance_criteria": [],
@@ -11997,24 +12023,27 @@
     "deviations": [],
     "difficulty": "low",
     "estimated_total_minutes": 30,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19 落地（提交 9888021）：核查发现 `*.log`、`dist/`、`worktrees/` 三项均已在 .gitignore（第 3/7/87 行），根目录无未跟踪杂物；`.zcode/`（agent 本地 plans+日志）入 ignore，git status 长期干净。",
+      "归档口径固化：新增 `.agent-contexts/README.md`（提交 9888021）——原始数据本地留（日志/探针 dump/E2E 现场/提案草稿），精选可复算证据入库（须被 docs 或节点 evidence 引用），权威口径见 .gitignore 注释段。"
+    ],
     "execution_hints": [],
     "id": "TF-0220",
     "kind": "follow_up",
     "non_goals": [],
     "priority": 4,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
-    "summary": "",
+    "summary": "根目录已治理：三项模式已在 ignore，.zcode 入 ignore，.agent-contexts 归档口径固化为 README。",
     "title": "根目录杂物治理：*.log、dist/、worktrees/ 进 .gitignore 或清理；.agent-contexts 归档口径",
-    "updated_at": "2026-09-17T14:52:13.553728Z"
+    "updated_at": "2026-09-19T02:18:27.949119Z"
   },
   "TF-0221": {
     "acceptance_criteria": [],
