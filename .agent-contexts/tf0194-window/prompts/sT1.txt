@@ -1,0 +1,12 @@
+你在分支线程里，仓库 D:/helmor-main，权限模式 acceptEdits，直接动手写。
+
+任务：新建 packages/workbench/scripts/e2e/window-report.ts —— TF-0194 观察窗的关窗对账脚本。
+
+要求：
+1. 读 .agent-contexts/tf0194-window/t1-baseline.json（数组，每行格式 "writerId|baselineEventId|branchIds"，只取行数）与 t1-baseline.json 同目录的 shown-state.json（同样式）。
+2. 用 node:child_process spawn `process.execPath packages/workbench/src/index.ts --json stats`（cwd=仓库根）拿 stats.lifecycle，只取 restores / resumeActions 两个字段。
+3. 输出一个 JSON 到 stdout：{ baselineRestores: 140, quotaRestores: 30, restores, restoreDelta, resumeActions, quotaMet: boolean, shownRows, shownGrowth }。shownRows = shown-state.json 行数，shownGrowth = shownRows - baseline 行数。
+4. 文件 ≤ 90 行，风格照 packages/workbench/scripts/fit-ledger.ts 的头部注释（一句中文说明用途与数据来源），不加依赖，只在 import.meta.main 时执行。
+5. 写完用 bun 跑一遍确认输出 JSON 合法（baselineRestores 固定 140）。
+
+完成后一句话说明你写了什么、跑出的读数是多少。
