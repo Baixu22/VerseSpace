@@ -178,3 +178,11 @@
 | --- | --- | --- |
 | 22 | open 主车道 | 全量验证起步：根 `bun run test` 六套——**test:frontend 抓到 10 个文件级失败**，全是 `.workbench/blackboard/sessions/*/spool/` 里分支会话复制的测试文件被根 vitest 误收集（1692 用例本身全过） |
 | 23 | open 主车道 | 真修复：根 vitest exclude 漏了工作台自己的运行时目录 `.workbench`（`.workbuddy`/`.agent-contexts` 都在，唯独它不在）→ 补上；复跑 `test:frontend` **162 文件 / 1692 用例全绿**（正好剔除 10 个 spool 副本）；提交 `f13a83b` |
+
+## 配额进度（第十三次更新：关窗对账，quotaMet: true）
+
+- **restores 171（+31 / 目标 +30）——达标，窗口关闭**（`bun packages/workbench/scripts/e2e/window-report.ts` 现场输出 `quotaMet: true`）
+- resumeActions 32（+31）· dismiss +4 · shownGrowth 13 · footprints 21 线程 · branchEngagement 0.60
+- 熔断器 **closed**，窗口内 dismissRate 0.4（4/10，从开窗前顶格 0.5 拉回健康区）
+- 关窗对账全文：`docs/tf0194-window-close-2026-09-20.md`
+- 运行者口径：steward（代理代替人类）——每一轮 `step.ts` 真实调用产品面，手势与判断依据逐轮在案
