@@ -123,4 +123,19 @@
 - restores 157（基线 140，+17）· resumeActions 30（基线 1，+29）· withFootprints 21（台账 `stats.threads.withFootprints`）
 - shown-state 新增 2 行（共 16 条）
 - 距配额：带卡恢复 +13（目标 +30）
+
+## 轮次记录（循环 P/Q，追加）
+
+| # | 时间 | 动作 | 判断依据 |
+| --- | --- | --- | --- |
+| 13 | 09-20 | 循环 P：侦察「权限漂移」缺口——发现冻结旧 GUI 已有 `build_permission_denied_notice`（labels.rs + pipeline_scenarios.rs 钉住报文），下一代对 `system.permission_denied` **零处理**、落进 undecided 桶 → 吸收：render-decision 新增 `notice` 决策 + `system-notice.ts` 纯函数 + `NoticePart` | 字段与兜底顺序逐字照抄旧实现；「抄之前先给主线做对照实验」：全仓 grep `permission_denied`，workbench 侧 0 命中 |
+| 14 | 09-20 | 循环 Q：UI 接像素——`protocol.test.ts` 的线协议镜像契约在 P 轮 typecheck 时就红（编译期强制两侧同步）→ message-types 镜像 + adapter `data-workbench-notice` + `NoticeRow`/`isNotice` + 测试 → `build:ui` 重新生成 assets，并在构建出的 bundle 里 grep 到 `workbench-notice` ×2 | 镜像契约这道闸门第一次真的拦住漂移；「能力存在」不算数——bundle 里 grep 到才算接上像素 |
+
+## 配额进度（第十次更新，循环 P/Q 后）
+
+- restores 157 · resumeActions 30 · withFootprints 21 —— **与第九次持平**：这两轮是开发轮，配额计数靠带卡恢复发生、不靠提交；P/Q 提供的是下一批手势的材料
+- 距配额：带卡恢复 +13（目标 +30）
+- 门禁：workbench **898 pass / 0 fail**（133 文件）· workbench-ui **61 pass**（17 文件）· 双包 typecheck 0 · check-landing exit 0 · 工作区 0 未提交
+- 提交：`fb4c904`（P，+266/−7）→ `c82a60f`（Q，+161/−5）；每次 git 写后 repin OK
+- 读数来源：现场 `bun run scripts/fit-ledger.ts`（2026-09-20 10:55，黑板 `D:\helmor-main\.workbench`）
 - 读数来源：现场 `bun run scripts/fit-ledger.ts`（生成时间 2026-09-19T16:28Z，黑板 `D:\helmor-main\.workbench`）
