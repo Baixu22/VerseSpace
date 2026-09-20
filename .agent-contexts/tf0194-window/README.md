@@ -138,4 +138,16 @@
 - 门禁：workbench **898 pass / 0 fail**（133 文件）· workbench-ui **61 pass**（17 文件）· 双包 typecheck 0 · check-landing exit 0 · 工作区 0 未提交
 - 提交：`fb4c904`（P，+266/−7）→ `c82a60f`（Q，+161/−5）；每次 git 写后 repin OK
 - 读数来源：现场 `bun run scripts/fit-ledger.ts`（2026-09-20 10:55，黑板 `D:\helmor-main\.workbench`）
-- 读数来源：现场 `bun run scripts/fit-ledger.ts`（生成时间 2026-09-19T16:28Z，黑板 `D:\helmor-main\.workbench`）
+
+## 轮次记录（循环 R，追加）
+
+| # | 时间 | 动作 | 判断依据 |
+| --- | --- | --- | --- |
+| 15 | 09-20 | 循环 R：「fork-resume 会话中毒」的内容面——被杀回合后 resume 的会话回 success + 回执文本（"No response requested."），经 result 兜底变成助手正文落盘、与真回答不可区分 → 判据用**结构**（本轮无任何模型动作），不用字符串匹配：正文照旧落盘一字不改，正文前补一条 notice（复用 Q 轮像素） | 对照实验：纯回执换三种措辞都标注；带模型动作的回合即使 result 一字不差也不标。19 份 fixture 全有 assistant 帧——判据纯增量，零 golden 扰动；既有 render-state 测试按从严更新钉进新形状 |
+
+## 配额进度（第十一次更新，循环 R 后）
+
+- restores 157 · resumeActions 30 · withFootprints 21 —— 仍持平（开发轮不动计数，读数靠带卡恢复）
+- 距配额：带卡恢复 +13（目标 +30）
+- 门禁：workbench **903 pass / 0 fail**（134 文件）· typecheck 0 · check-landing exit 0 · 工作区 0 未提交
+- 提交：`bcb0b1f`（R，+170/−1）；repin OK
