@@ -13,6 +13,7 @@ import {
 	ForkAction,
 	ForkAnchor,
 } from "./message-actions";
+import { isNotice, NoticeRow } from "./notice-row";
 import { ToolCallCard } from "./tool-call-card";
 
 export function UserMessage({ messageId }: { messageId: string }) {
@@ -99,6 +100,13 @@ export function AssistantMessage({ messageId }: { messageId: string }) {
 							return (
 								<CollapsedToolGroup key={part.data.id} group={part.data} />
 							);
+						}
+						if (
+							part.type === "data" &&
+							part.name === "workbench-notice" &&
+							isNotice(part.data)
+						) {
+							return <NoticeRow key={part.data.label} notice={part.data} />;
 						}
 						return null;
 					}}

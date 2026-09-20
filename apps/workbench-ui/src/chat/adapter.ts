@@ -25,6 +25,12 @@ export function toThreadMessage(m: StoredMessage): ThreadMessageLike {
 				data: part,
 			};
 		}
+		if (part.type === "notice") {
+			return {
+				type: "data-workbench-notice" as const,
+				data: part,
+			};
+		}
 		return { type: "text" as const, text: part.text };
 	});
 	// external store rule: status is only supported for assistant messages —

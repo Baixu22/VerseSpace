@@ -18,10 +18,23 @@ export interface CollapsedGroupPart {
 	summary: string;
 }
 
+/**
+ * 提供方发来的、操作者该看见的信息（今天只有「权限被拒」）。它属于助手消息，
+ * 但呈现为通知而不是 agent 自己的话。形状与 workbench 侧 `NoticePart` 一一对应
+ * （`protocol.test.ts` 会强制两侧线协议类型互相可赋值）。
+ */
+export interface NoticePart {
+	type: "notice";
+	severity: "info" | "warning";
+	label: string;
+	body?: string;
+}
+
 export type MessagePart =
 	| { type: "text"; text: string }
 	| ToolCallPart
-	| CollapsedGroupPart;
+	| CollapsedGroupPart
+	| NoticePart;
 
 export interface StoredMessage {
 	id: string;

@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { toThreadMessage } from "./adapter";
 import type {
 	CollapsedGroupPart,
+	NoticePart,
 	StoredMessage,
 	ToolCallPart,
 } from "./message-types";
@@ -64,6 +65,30 @@ describe("Workbench assistant-ui adapter", () => {
 			throw new Error("Expected a normalized data part");
 		expect(part.data).toBe(group);
 		expect(stored.parts?.[1]).toBe(group);
+	});
+
+	it("maps a provider notice to its own data part and keeps it ordered with text and groups", () => {
+		const notice: NoticePart = {
+			type: "notice",
+			severity: "warning",
+			label: "Permission denied for Bash",
+			body: "Command writes outside the workspace",
+		};
+		const message: ThreadMessageLike = toThreadMessage({
+			...stored,
+			parts: [group, notice, { type: "text", text: "After" }],
+		});
+		expect(message.content).toEqual([
+			{ type: "data-workbench-collapsed-group", data: group },
+			{ type: "data-workbench-notice", data: notice },
+			{ type: "text", text: "After" },
+		]);
+		const converted = normalize(message);
+		expect(converted.content).toEqual([
+			{ type: "data", name: "workbench-collapsed-group", data: group },
+			{ type: "data", name: "workbench-notice", data: notice },
+			{ type: "text", text: "After" },
+		]);
 	});
 
 	it("leaves uncollapsed historical tools alone and preserves arguments/results/errors", () => {
