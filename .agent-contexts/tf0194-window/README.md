@@ -151,3 +151,25 @@
 - 距配额：带卡恢复 +13（目标 +30）
 - 门禁：workbench **903 pass / 0 fail**（134 文件）· typecheck 0 · check-landing exit 0 · 工作区 0 未提交
 - 提交：`bcb0b1f`（R，+170/−1）；repin OK
+
+## 轮次记录（循环 S：代理真实凑配额，2026-09-20 11:00–）
+
+柏旭明确：窗口运行者口径本来就是 steward（代理代替人类，开窗登记第 4 行在案），
+剩余带卡恢复由代理真实执行，不必等真人。以下每轮都是 `step.ts` 对产品面的真实调用
+（起 ui 服务 → GET 视图 → POST restore/switch → shown 镜像上报 → 关服务），
+每次手势绑定一个真实开发动作，判断依据逐轮记录：
+
+| # | 恢复 | 动作与判断依据 |
+| --- | --- | --- |
+| 16 | open 主车道 | 卡 20 条事实行、19 已变——正是近几轮改动；真实消费：expand `ui/server.ts`（下一步侦察长流连接管理，该行直接相关） |
+| 17 | open 主车道 | 侦察结论：`idleTimeout: 120` 已于 09-06 修（server.ts 注释在案），服务端长流缺口已闭合；真实动作：给 R 轮补端到端用例（receipt-only turn → GET 视图带 notice） |
+| 18 | open 主车道 | 提交 `934dfbb`（HTTP 面用例 14/14 绿；过程中踩「假 agent 不 cancel → EBUSY 连锁」并修复） |
+| 19 | open 分支 cb806cc0 | fork 主车道 + acceptEdits 首轮 + send：claude 真写 `window-report.ts` 对账脚本——**前提守护生效**：它自己发现提示词里「t1-baseline 是管道数组」与事实不符并改按实际结构处理 |
+| 20 | open 主车道 | leave 分支后分支行未亮——分支写的文件不在主车道读集，符合「只报你将读的文件」语义；改 expand `ui/server.test.ts`（哈希刚因提交而变） |
+| 21 | open 主车道 | 修脚本 shownGrowth 口径（开窗基线 1 条，`git show 74b6049` 可复算）→ 13 ✓；提交 `ea7435e` |
+
+## 配额进度（第十二次更新，循环 S 中段）
+
+- restores 163（+23 / 目标 +30）· resumeActions 32 · shownGrowth 13
+- 熔断器：**本段零 dismiss**——dismissRate 本已顶在 limit 0.5 上，消费全部走 expand
+- 剩 +7；脚本实跑输出见 `bun packages/workbench/scripts/e2e/window-report.ts`
