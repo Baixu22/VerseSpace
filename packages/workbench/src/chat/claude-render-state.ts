@@ -90,8 +90,32 @@ export function reduceClaudeRenderEvent(
 			event.result &&
 			!state.messageParts.some((part) => part.type === "text" && part.text)
 		) {
+			// The fallback text is only a real answer when the turn produced
+			// model work (a tool call — the no-text case is checked above). A
+			// turn with neither is the poisoned-resume shape observed three
+			// times on 2026-09-19: the CLI answers with a receipt line such as
+			// "No response requested." and nothing else. Keep the provider's
+			// own words on disk — never rewrite them — but say out loud that
+			// this is a receipt, not an answer, so it stops reading like one.
+			const hasModelWork = state.messageParts.some(
+				(part) => part.type === "tool-call",
+			);
+			if (!hasModelWork) {
+				state.messageParts.push({
+					type: "notice",
+					severity: "warning",
+					label: "本轮没有模型输出",
+					body: 'result 里只有回执文本（常见为 "No response requested."），没有正文也没有工具调用——多见于被杀回合之后 resume 的会话。别把这条当回答：换一条线程或重发。',
+				});
+			}
 			state.messageParts.push({ type: "text", text: event.result });
 			result.events.push({ type: "delta", text: event.result });
+			if (!hasModelWork) {
+				result.events.push({
+					type: "parts",
+					parts: foldedClaudeParts(state, true),
+				});
+			}
 		}
 		return result;
 	}

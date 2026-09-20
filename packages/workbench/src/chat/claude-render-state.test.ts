@@ -225,11 +225,33 @@ describe("Claude render reducer", () => {
 	test("result-only success fallback belongs to the pure reducer and is idempotent", () => {
 		const state = createClaudeRenderState();
 		const success = { type: "result", subtype: "success", result: "fallback" };
+		// 从严更新（TF-0200 follow-up）：没有模型动作的回合，兜底文本前面多了
+		// 一条通知 —— 正文一个字不变，但不再读起来像真回答。
 		expect(reduceClaudeRenderEvent(state, success).events).toEqual([
 			{ type: "delta", text: "fallback" },
+			{
+				type: "parts",
+				parts: [
+					{
+						type: "notice",
+						severity: "warning",
+						label: "本轮没有模型输出",
+						body: expect.stringContaining("No response requested."),
+					},
+					{ type: "text", text: "fallback" },
+				],
+			},
 		]);
 		expect(reduceClaudeRenderEvent(state, success).events).toEqual([]);
-		expect(finalClaudeParts(state)).toEqual([text("fallback")]);
+		expect(finalClaudeParts(state)).toEqual([
+			{
+				type: "notice",
+				severity: "warning",
+				label: "本轮没有模型输出",
+				body: expect.stringContaining("No response requested."),
+			},
+			text("fallback"),
+		]);
 		const failed = createClaudeRenderState();
 		expect(
 			reduceClaudeRenderEvent(failed, { ...success, is_error: true }).events,
