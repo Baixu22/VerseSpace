@@ -121,6 +121,11 @@ export default defineConfig(async () => ({
 			"**/.workbuddy/**",
 			"**/.agent-contexts/**",
 			"**/.evidence-sites/**",
+			// Same for the blackboard runtime dir: agent sessions spool copies of
+			// task files — including test files — under .workbench, and collecting
+			// those duplicates the suite with broken relative imports (observed
+			// 2026-09-20: 10 spool copies collected as test files by the root run).
+			"**/.workbench/**",
 		],
 	},
 }));
