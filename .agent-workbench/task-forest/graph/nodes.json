@@ -10718,25 +10718,27 @@
       "2026-09-19 启动：前置 TF-0190（claude 车道足迹验证）已完成，本机 claude 已登录；仓库根自用黑板 `.workbench` 的 chat.provider=claude，具备产生足迹的条件。",
       "t0 基线快照：`docs/fit-ledger-2026-09-19-phase3-t0.md`（由 `scripts/fit-ledger.ts --blackboard .workbench --scope . --evidence-kind live-model` 生成）。t0 读数（2026-09-19）：restores=140、resumeActions=1、withFootprints=0、恢复卡展开率=1/140≈0.007。",
       "观察协议：未来一周用主线（`workbench ui`）在 helmor-main 仓库做真实自身开发；一周后重跑 `workbench --json stats` 与同参数 fit-ledger 快照，以 t0 为基线采集 Δrestores / ΔresumeActions / ΔwithFootprints / 展开率（ΔresumeActions/Δrestores），并把带日期的四个读数写入 fit-ledger 快照与本文档。",
-      "2026-09-19 用户决定暂时 pass 数据沉淀：观察窗未继续累积，节点退回 proposed；t0 基线快照与采集协议保留，后续要启动时可直接沿用。"
+      "2026-09-19 用户决定暂时 pass 数据沉淀：观察窗未继续累积，节点退回 proposed；t0 基线快照与采集协议保留，后续要启动时可直接沿用。",
+      "2026-09-20 结项：规格修订后本节点的验收由子节点 TF-0194 承载（日历窗 → 样本配额窗），子节点已于 2026-09-20 关窗达标并结项。本轮实跑读数：restores 171（+31）、resumeActions 32、withFootprints 22 线程、branchEngagement ratio 0.60；t1 基线落在 `docs/fit-ledger-2026-09-20-phase3-t1.md`。节点标题里的「一周」自规格修订起已不适用，验收口径以 TF-0194 的样本配额为准（偏差记录 `observation_window_rescoped`，见 `docs/absorption-progress-2026-09-18.md`）。"
     ],
     "execution_hints": [],
     "id": "TF-0193",
     "kind": "milestone",
+    "next_action": "已结项（2026-09-20）。t0 基线 `docs/fit-ledger-2026-09-19-phase3-t0.md` 与 t1 基线 `docs/fit-ledger-2026-09-20-phase3-t1.md` 都在，阶段 3「首次产生带足迹的真实读数」的目标达成。14 天自然使用门（TF-0136 判决四）不在本阶段范围，仍单独判断。",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "观察窗已挂起（用户暂时 pass）：t0 基线已记录，节点退回 proposed，后续可随时沿用基线启动。",
     "title": "阶段 3：一周自用观察窗——首次产生带足迹的真实读数",
-    "updated_at": "2026-09-19T01:16:10.243369Z"
+    "updated_at": "2026-09-20T12:34:59.451734Z"
   },
   "TF-0194": {
     "acceptance_criteria": [
@@ -10771,17 +10773,23 @@
       "2026-09-19 用户决定暂时 pass：观察窗挂起，节点退回 proposed。",
       "2026-09-19 规格修订（用户确认「高强度使用代替长周期使用」）：日历窗 → 样本配额窗；同步把 TFE-0315（TF-0195 depends_on TF-0194）降级为 related_to——依赖部分循环（精确展开率埋点在 TF-0199 才存在），TF-0198 带临时阈值直接开工。修订记录：docs/absorption-progress-2026-09-18.md 偏差条目 observation_window_rescoped。",
       "采集协议（配额版）：开窗前登记配额；窗口内用主线 UI claude 车道跑真实开发轮；窗口关闭后重跑 workbench --json stats 取 threads.lifecycle.restores / .resumeActions / threads.withFootprints（粗展开率=resumeActions/restores，只对比增量），并重跑 fit-ledger 快照得到带日期与来源声明的行。",
-      "2026-09-19 开窗（t1）：基线快照 .agent-contexts/tf0194-window/t1-baseline.json（restores=140 / resumeActions=1 / withFootprints=0/7，与 t0 同源同值）。运行者变更经用户确认：由人类运行者改为代理运行（steward 口径，账本行单独标注、不冒充人类使用）；配额目标与纪律开窗前登记于 .agent-contexts/tf0194-window/README.md；主车道 claude（CLI 2.1.251 已探活在 PATH），项目=本仓库 TF-0200 开发工作。"
+      "2026-09-19 开窗（t1）：基线快照 .agent-contexts/tf0194-window/t1-baseline.json（restores=140 / resumeActions=1 / withFootprints=0/7，与 t0 同源同值）。运行者变更经用户确认：由人类运行者改为代理运行（steward 口径，账本行单独标注、不冒充人类使用）；配额目标与纪律开窗前登记于 .agent-contexts/tf0194-window/README.md；主车道 claude（CLI 2.1.251 已探活在 PATH），项目=本仓库 TF-0200 开发工作。",
+      "2026-09-20 关窗对账·本轮实跑：`bun run packages/workbench/scripts/e2e/window-report.ts`（2026-09-20 本轮实跑，脚本内现调 `bun packages/workbench/src/index.ts --json stats`，不造数）：`{\"baselineRestores\":140,\"quotaRestores\":30,\"restores\":171,\"restoreDelta\":31,\"resumeActions\":32,\"quotaMet\":true,\"shownRows\":14,\"shownGrowth\":13}`。四项配额逐项达标——带卡恢复 +31（≥+30）、消费动作 32（≥+5）、其中 dismiss +4（≥2）、shownGrowth 13。关窗对账全文：`docs/tf0194-window-close-2026-09-20.md`。",
+      "2026-09-20 完整现场读数·本轮实跑：`bun packages/workbench/src/index.ts --json stats`（2026-09-20 本轮实跑，黑板 `D:\\helmor-main\\.workbench`）：`threads.total=29`、`threads.withFootprints=22`、`lifecycle.restores=171`、`lifecycle.resumeActions=32`、`lifecycle.resumeNotesConsumed=0`、`lifecycle.restoreFirstAction={observed:18,known:18,unknown:153,byKind:{\"resume card dismissed\":7,\"resume fact opened\":11}}`、`lifecycle.resumeCardCircuit={state:\"closed\",dismissRate:0.4,samples:10,dismissed:4,consumed:6,window:10,minSamples:3,limit:0.5}`、`lifecycle.branchEngagement={restoresWithBranchRows:14,branchRowsShown:15,branchRowsEngaged:9,ratio:0.6}`、`observation={startedAt:2026-08-30T08:28:54.895Z,endedAt:2026-09-20T04:20:42.395Z,days:20.83}`。验收第 2 项（展开率有分母与分子）成立：resumeActions=32 / restores=171；验收第 3 项（withFootprints > 0）成立：22 线程（开窗基线 0/7）。",
+      "2026-09-20 验收第 1 项落地（此前确实未做）：按采集协议重跑账本快照 → `docs/fit-ledger-2026-09-20-phase3-t1.md`（生成时间 2026-09-20T12:28:29.172Z，黑板 `D:\\helmor-main\\.workbench`，事件跨度 20.8 天，19568 字节）。命令：`bun run scripts/fit-ledger.ts --blackboard D:/helmor-main/.workbench --scope D:/helmor-main --evidence-kind live-model --out D:/helmor-main/docs/fit-ledger-2026-09-20-phase3-t1.md`（cwd = packages/workbench）。",
+      "2026-09-20 口径诚实性（验收第 4 项）：本窗为 steward 口径（代理代替人类），开窗前登记于 `.agent-contexts/tf0194-window/README.md` 与关窗文档抬头，与历史自然窗分开读数；未做脚本回放凑数——驱动器 `window.ts`/`step.ts` 只提供单步命令，轮次由真实开发任务驱动。**引用注意**：生成的账本快照里「样本来源」行是脚本固定文案，本身不带 steward 标签，标签在两个窗口文档里，引用时必须一并给出。",
+      "2026-09-20 边界（不得读成「已验证」）：同一快照里 TF-0136 的样本窗判据仍未凑齐（seal.decisions 0/3），判决一/二因此读作「证据不足」；现场读数也确认 `resumeNotesConsumed=0`（判决一判据 ≥0.3 不满足），本窗的消费走的是 `resumeActions`（展开/查看分支 32 次），与「消费恢复卡注入笔记」不是同一个量。本节点交付的是「有带日期与四个读数的基线」，已达成；**不得**把本节点 done 读成恢复卡设计已通过验证。"
     ],
     "execution_hints": [],
     "id": "TF-0194",
     "kind": "task",
+    "next_action": "已结项（2026-09-20）。四读数基线落在 `docs/fit-ledger-2026-09-20-phase3-t1.md`，配额对账见 `docs/tf0194-window-close-2026-09-20.md`，两者都可由 `window-report.ts` 与 `fit-ledger.ts` 现场复算。窗口外候选（客户端长流 DATA_CLONE_ERR/ECONNRESET、fork-resume 会话中毒根治、权限漂移根因）不在本节点范围，需要时另立节点。",
     "non_goals": [
       "TF-0136 判决四的 14 天自然使用门（L3）不在本任务范围——留在判决里记录，不并入观察窗（工程开发照常推进）",
       "不为 TF-0136 判决一的 resumeNotesConsumed/restores ≥ 0.3 门凑数；精确展开/点击比例埋点是 TF-0199 的交付物，本任务只产粗基线"
     ],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "给 TF-0198（熔断阈值初始标定）与 TF-0199（重设计前后对比）提供恢复/消费事件的粗基线；窗口长度服从样本配额，不服从日历。",
     "remaining_minutes_max": null,
@@ -10791,11 +10799,11 @@
       "开窗前先登记配额目标与验收，防「知道被测量」的需求效应污染展开率"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "2026-09-19 规格修订：日历窗（一周）→ 样本配额窗。依据：本节点验收从不含日历判据（「一周」只在标题）；唯一使用者是运行者本人（n=1），不存在总体代表性问题，要的是事件密度不是日历跨度；TF-0198 熔断阈值（dismiss 率 >50%）是初始参数，落地后由熔断器自身 stats 持续采集。观察窗与阶段 4 开发重叠执行：用主线 UI 的 claude 车道跑 TF-0198/0199 自身的开发，开发窗口即采集窗口。",
     "title": "用主线跑自身开发（样本配额窗），采集 restores / resumeActions / withFootprints / 恢复卡展开率基线",
-    "updated_at": "2026-09-19T10:36:55.455866Z"
+    "updated_at": "2026-09-20T12:34:59.451784Z"
   },
   "TF-0195": {
     "acceptance_criteria": [],
@@ -10819,16 +10827,19 @@
     "estimated_total_minutes": 1200,
     "evidence": [
       "docs/fable-brief/05-review/D3-Q2-merge-back.md",
-      "2026-09-19 依赖降级：TFE-0315（depends_on TF-0194）→ related_to。阶段 4 不再等观察窗结项：TF-0198 以临时阈值（dismiss 率 >50% 降 L0）开工，熔断器 stats 即持续采集器；阶段 3 转为样本配额窗，与开发窗重叠。"
+      "2026-09-19 依赖降级：TFE-0315（depends_on TF-0194）→ related_to。阶段 4 不再等观察窗结项：TF-0198 以临时阈值（dismiss 率 >50% 降 L0）开工，熔断器 stats 即持续采集器；阶段 3 转为样本配额窗，与开发窗重叠。",
+      "2026-09-20 结项：四个子任务 TF-0196（checkpoint 与 thread/writer 链接 + `thread.merged_back` 白名单）、TF-0197（L1 结构摘要六字段，refs 全溯源、空分支零痕迹）、TF-0198（渲染门 ≥3 分支折叠一行 + dismiss 清注入队列 + dismiss 率 >50% 降 L0 且可恢复）、TF-0199（前端分支动静行 + 展开区叙事 + 展开/点击埋点）全部 done；TF-0200（adopt/revert 手势）同日结项。风险子节点 TF-0223 同日结项（现场 dismissRate 0.4 < 0.5，熔断器 closed）。",
+      "2026-09-20 阶段 4 的对外价值面有现场读数支撑（本轮实跑，非引用）：`lifecycle.branchEngagement={restoresWithBranchRows:14,branchRowsShown:15,branchRowsEngaged:9,ratio:0.6}`——恢复卡分支行被渲染 15 次、被消费 9 次，是阶段 4「把前提账本向人交付」的实测面。"
     ],
     "execution_hints": [],
     "id": "TF-0195",
     "kind": "milestone",
+    "next_action": "已结项（2026-09-20）。阶段 4 全部子节点（0196–0200 + 风险 0223）done；分支动静从生成、渲染门、熔断到前端手势与埋点闭环，且 branchEngagement 有现场读数（15 行渲染 / 9 行消费 / ratio 0.60）。",
     "non_goals": [
       "L2 内容合并（LLM 语义合并一致率 55–59%）"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10840,11 +10851,11 @@
       "从不出现「完成」二字"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "设计完成度最高、只差实现。前提账本向人交付价值的瞬间（R2′）。",
     "title": "阶段 4：D3-Q2 分支动静——恢复卡上的 L1 结构摘要（复活 TF-0132）",
-    "updated_at": "2026-09-19T09:10:05.486018Z"
+    "updated_at": "2026-09-20T12:34:59.451824Z"
   },
   "TF-0196": {
     "acceptance_criteria": [
@@ -11068,13 +11079,19 @@
     "deviations": [],
     "difficulty": "medium",
     "estimated_total_minutes": 180,
-    "evidence": [],
+    "evidence": [
+      "2026-09-19/20 落地（观察窗 H–S 轮，提交 `52d0a20`/`905ad4d`/`f157297`/`96db41c`/`9bc821a`/`097c438`）：`chat/thread-promotion.ts` 的 adoptThread/revertAdopt（改身份不改内容 + 快照可逆 + 单事务回滚），`chat/thread-types.ts` 的 AdoptSnapshot 类型收编，`ui/chat-routes.ts` 的 adopt/revert 路由，workbench-ui 的「以分支为主线」与「反转收养」手势（`chat/resume-slice.ts`、`components/chat/workbench-shell.tsx`）。",
+      "2026-09-20 验收「adopt 后回退快照逐项一致（测试）」·本轮实跑（不是引用历史）：(1) `bun test src/chat/threads.test.ts -t adopt` → 2 pass / 0 fail / 11 expect：断言子线程 forkOf 清空、源线程 archived + adoptSnapshot.adoptedThreadId、源线程 messages.jsonl **逐字节不变**、`thread.adopted` 事件载荷；(2) `-t revert` → 2 pass / 0 fail / 6 expect：断言 forkOf 血统还原、archived=false、adoptSnapshot 被消费、`thread.adoption_reverted` 载荷，以及无快照 revert 抛错；(3) `bun test src/ui/promotion-route.test.ts` → 3 pass / 0 fail / 19 expect：adopt/revert 走公开 HTTP 面断言身份复原（源解档、快照消费、子血统还原）+ 非分叉线程 adopt 返回 400。",
+      "2026-09-20 未复跑的一层（如实记录）：e2e `scripts/e2e/scenario.ts` 的 S6b（fork → adopt → revert 全程只经公开路由）由包内 `scripts/e2e/e2e.test.ts` 单条大用例真跑，需要真 CLI + 真 HTTP 服务 + 真 git 写者；本机 git 在临时目录里间歇性丢 `.git`（`src/git/worktree.test.ts` 可复现 2 例失败），本轮未复跑，该层证据仍是观察窗 M 轮（`097c438`）的记录。",
+      "2026-09-20 使用反馈缺口（不改结项判定，但必须留痕）：adopt 手势在观察窗内是**被开发的对象**，不是被使用的手势——窗口轮次里的真实手势是 expand / bopen / dismiss。因此本节点按自身验收（测试判据）可以结项，但「有没有人真的用过 adopt」仍是账本的 fit 问题，在出现真实使用前应保持 `unknown`，不得由本次 done 推出「已被使用」。"
+    ],
     "execution_hints": [],
     "id": "TF-0200",
     "kind": "task",
+    "next_action": "已结项（2026-09-20）。adopt/revert 的单元与路由两层断言本轮实跑通过；e2e S6b 一层未复跑（需真 CLI + 真 git 写者），证据仍是 M 轮记录。使用反馈缺口留给账本：adopt 有没有被真用过，出现真实使用前保持 unknown。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -11084,11 +11101,11 @@
       "无快照明确拒绝（runtime/rollback 纪律）"
     ],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "",
     "title": "adopt「以分支为主线」手势：拓扑操作、改身份不改内容、快照可逆（复活 TF-0146）",
-    "updated_at": "2026-09-17T14:52:13.552703Z"
+    "updated_at": "2026-09-20T12:34:59.451862Z"
   },
   "TF-0201": {
     "acceptance_criteria": [],
@@ -12178,24 +12195,28 @@
     "deviations": [],
     "difficulty": "unknown",
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-20 结项·本轮实跑：风险触发条件被现场读数回答——`lifecycle.resumeCardCircuit={state:\"closed\",dismissRate:0.4,samples:10,dismissed:4,consumed:6,window:10,minSamples:3,limit:0.5}`，dismissRate 0.4 < 阈值 0.5，熔断器 closed。开窗前基线是 1/1（rate=1），本窗把比率拉回健康区。同一读数也见关窗文档 `docs/tf0194-window-close-2026-09-20.md`。",
+      "2026-09-20 缓解机制由 TF-0198 内建：dismiss 率 >50% 时分支行降 L0 指针、L1 细节撤下、链接与溯源保留，且可自恢复——即「降回 L0」是设计内的出口而不是故障，即便未来触发也属预期行为。"
+    ],
     "execution_hints": [],
     "id": "TF-0223",
     "kind": "risk",
+    "next_action": "已结项（2026-09-20）。风险未触发（现场 dismissRate 0.4 < 0.5，熔断器 closed）；后续由 `stats.lifecycle.resumeCardCircuit` 持续采集，无需人工盯守。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "这是设计内建的负样本出口，不是失败；若触发则记录到 fit-ledger 并回到阶段 3 数据重新判断。",
     "title": "风险：D3-Q2 复活后 dismiss 率 >50%，被自身熔断降回 L0",
-    "updated_at": "2026-09-17T14:52:13.553728Z"
+    "updated_at": "2026-09-20T12:34:59.451898Z"
   },
   "TF-0224": {
     "acceptance_criteria": [],

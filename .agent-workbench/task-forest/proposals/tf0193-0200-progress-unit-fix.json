@@ -1,0 +1,51 @@
+{
+  "applied_at": "2026-09-20T12:34:59.551554Z",
+  "base_graph_hash": "eb3ff8e7636f064f8bfbe6195d5b0ff2ab80c167a536474bc281d7000616a7ac",
+  "base_summary": {
+    "edge_count": 343,
+    "node_count": 224,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0193"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0194"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0195"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0200"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0223"
+    }
+  ],
+  "created_at": "2026-09-20T12:34:57.713Z",
+  "proposal_id": "tf0193-0200-progress-unit-fix",
+  "rationale": "收口提案的进度单位修正。tf0193-0200-phase34-close 用 set_status 传了 progress: 1.0，而 validate 与 estimate_remaining 都把 progress 当 0–100 的百分数读（clamp_progress 上限 100、remaining = total*(100-progress)/100），所以原始字段存成了 1 而不是 100。导出与 todo 不受影响——derived_progress 对 status==done 恒返回 100.0——但原始权威文件里留一个 1 与同仓多数 done 节点（如 TF-0198=100）不一致，日后读原始 JSON 的人会误读成 1%。本提案只把这五个节点的 progress 改成 100，不动状态与证据。",
+  "session_id": "phase34-closeout-20260920",
+  "status": "applied"
+}
