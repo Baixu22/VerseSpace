@@ -331,6 +331,98 @@ describe("ui chat routes", () => {
 		}
 	}, 20000);
 
+	test("a receipt-only turn is labelled instead of passing as an answer", async () => {
+		const ws: TempWorkbench = await makeTempWorkbench();
+		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-receipt-agent-"));
+		// the poisoned-resume shape observed 2026-09-19: the CLI answers a
+		// resumed session with a bare success + receipt line — no assistant
+		// frame, no tool call. The receipt stays on disk verbatim, but it must
+		// not read as an answer.
+		await writeFile(
+			join(fakeDir, "receipt-agent.ts"),
+			[
+				"const emit = (event: Record<string, unknown>) =>",
+				"  process.stdout.write(JSON.stringify(event) + '\\n');",
+				'emit({ type: "result", subtype: "success", result: "No response requested." });',
+				'process.stdin.setEncoding("utf8");',
+				'process.stdin.on("data", () => {});',
+				'process.stdin.on("end", () => process.exit(0));',
+				"setInterval(() => {}, 1000);",
+			].join("\n"),
+			"utf8",
+		);
+		const previousCommand = process.env.WORKBENCH_CHAT_COMMAND;
+		process.env.WORKBENCH_CHAT_COMMAND = `bun ${join(fakeDir, "receipt-agent.ts")}`;
+		const server = await createUiServer(ws.bb, 0);
+		const base = `http://127.0.0.1:${server.port}`;
+		let threadId = "";
+		let token = "";
+		try {
+			token = await fetch(`${base}/api/bootstrap`)
+				.then((r) => r.json())
+				.then((b: { token: string }) => b.token);
+			const auth = {
+				"x-workbench-token": token,
+				"content-type": "application/json",
+			};
+			const thread = (await fetch(`${base}/api/chat/threads`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({}),
+			}).then((r) => r.json())) as { id: string };
+			threadId = thread.id;
+
+			await fetch(`${base}/api/chat/threads/${thread.id}/messages`, {
+				method: "POST",
+				headers: auth,
+				body: JSON.stringify({ text: "hi" }),
+			}).then((r) => r.text());
+
+			const view = (await fetch(`${base}/api/chat/threads/${thread.id}`, {
+				headers: auth,
+			}).then((r) => r.json())) as {
+				messages: Array<{
+					role: string;
+					text: string;
+					parts?: Array<Record<string, unknown>>;
+				}>;
+			};
+			const answer = view.messages.at(-1)!;
+			expect(answer.role).toBe("assistant");
+			// the provider's own words are kept verbatim
+			expect(answer.text).toBe("No response requested.");
+			// …preceded by the receipt notice, so it cannot pass as an answer
+			expect(answer.parts?.[0]).toMatchObject({
+				type: "notice",
+				severity: "warning",
+				label: "本轮没有模型输出",
+			});
+			expect(String(answer.parts?.[0]?.body)).toContain(
+				"No response requested.",
+			);
+			expect(answer.parts?.[1]).toEqual({
+				type: "text",
+				text: "No response requested.",
+			});
+		} finally {
+			// the fake agent lives on between turns (SESSION_IDLE_CLOSE_MS is
+			// minutes) and its cwd locks the temp dir — kill it before rm or
+			// Windows reports EBUSY on the locked directory
+			await fetch(`${base}/api/chat/threads/${threadId}/cancel`, {
+				method: "POST",
+				headers: { "x-workbench-token": token },
+			}).catch(() => {});
+			server.stop(true);
+			if (previousCommand === undefined) {
+				delete process.env.WORKBENCH_CHAT_COMMAND;
+			} else {
+				process.env.WORKBENCH_CHAT_COMMAND = previousCommand;
+			}
+			await rm(fakeDir, { recursive: true, force: true });
+			await ws.cleanup();
+		}
+	}, 20000);
+
 	test("cancel kills the agent process tree, not just the shim", async () => {
 		const ws: TempWorkbench = await makeTempWorkbench();
 		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-cancel-agent-"));
