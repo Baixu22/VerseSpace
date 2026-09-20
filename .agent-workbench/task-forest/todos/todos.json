@@ -1,60 +1,6 @@
 [
   {
     "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.75,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0222",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：改名后 release/CI 的 workspace 过滤名与 npm publish 名残留旧值"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.75,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0224",
-    "kind": "risk",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "风险：删除 apps/marketing、apps/registry 或残留代码时 CI/biome/tsconfig 引用未清导致全仓构建断"
-  },
-  {
-    "alignment": {
       "fit": "aligned",
       "fit_confidence": 0.8,
       "user_goal": "把 Helmor 仓库里的 Workbench 主线做成一个身份清晰、合规、可靠、可被别的 agent 直接使用的产品",
