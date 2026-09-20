@@ -106,7 +106,23 @@ export interface CollapsedGroupPart {
 	summary: string;
 }
 
-export type MessagePart = { type: "text"; text: string } | ToolCallPart;
+/**
+ * Something the operator must see that the assistant did not say: today, the
+ * CLI refusing an action. It lives in the assistant message because that is
+ * where it happened, but it is styled as a notice rather than as the agent's
+ * own words. Shape mirrors the legacy `MessagePart::SystemNotice`.
+ */
+export interface NoticePart {
+	type: "notice";
+	severity: "info" | "warning";
+	label: string;
+	body?: string;
+}
+
+export type MessagePart =
+	| { type: "text"; text: string }
+	| ToolCallPart
+	| NoticePart;
 
 /**
  * What a stored message part may be: a basic part, or a folded group wrapping

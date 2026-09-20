@@ -33,6 +33,13 @@ function partShape(part: StoredPart): Record<string, unknown> {
 			settled: part.result !== undefined,
 			isError: part.isError === true,
 		};
+	if (part.type === "notice")
+		return {
+			type: "notice",
+			severity: part.severity,
+			label: part.label,
+			hasBody: part.body !== undefined,
+		};
 	return {
 		type: "collapsed-group",
 		id: part.id,
@@ -111,7 +118,13 @@ export function replayClaudeFixture(
 	let doneBytes = 0;
 	let finalizedPartsBytes = 0;
 	let deltaCount = 0;
-	const counts = { finalized: 0, "streaming-delta": 0, noop: 0, undecided: 0 };
+	const counts = {
+		finalized: 0,
+		"streaming-delta": 0,
+		noop: 0,
+		notice: 0,
+		undecided: 0,
+	};
 	const paths = new Map<string, { decision: string; count: number }>();
 	const undecided = new Set<string>();
 	const checkpoints: Array<Record<string, unknown>> = [];
@@ -192,6 +205,9 @@ export function replayClaudeFixture(
 			name,
 			eventCount: lines.length,
 			deltaCount,
+			// Every decision kind is present even at zero: the distribution is a
+			// fixed-shape record, so a fixture that never hits `notice` still
+			// says so explicitly instead of implying the kind does not exist.
 			decisionDistribution: counts,
 			decisionPaths: Object.fromEntries(
 				[...paths].sort(([a], [b]) => a.localeCompare(b)),

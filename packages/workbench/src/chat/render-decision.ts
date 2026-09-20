@@ -1,7 +1,12 @@
 import { asRecord, contentBlocks } from "./claude-render-blocks";
 
 /** Explicit rendering consequence for every Claude stream shape we accept. */
-export type RenderDecision = "finalized" | "streaming-delta" | "noop";
+export type RenderDecision =
+	| "finalized"
+	| "streaming-delta"
+	| "noop"
+	/** User-actionable information the provider sent (see system-notice.ts). */
+	| "notice";
 
 export interface RenderVerdict {
 	decision: RenderDecision;
@@ -36,8 +41,8 @@ export const EVENT_RENDER_DECISIONS: Record<string, RenderVerdict> = {
 	end: verdict("end", "noop", "transport sentinel"),
 };
 
-export const SYSTEM_RENDER_DECISIONS: Record<string, RenderVerdict> =
-	Object.fromEntries(
+export const SYSTEM_RENDER_DECISIONS: Record<string, RenderVerdict> = {
+	...Object.fromEntries(
 		[
 			"init",
 			"status",
@@ -52,7 +57,16 @@ export const SYSTEM_RENDER_DECISIONS: Record<string, RenderVerdict> =
 			subtype,
 			verdict(`system.${subtype}`, "noop", "session/task bookkeeping"),
 		]),
-	);
+	),
+	// Not bookkeeping: the CLI refused an action and the provider told us why.
+	// Rendered as a visible notice so a denied write stops reading as an
+	// unexplained tool failure (field mapping: system-notice.ts).
+	permission_denied: verdict(
+		"system.permission_denied",
+		"notice",
+		"a refused action, with the provider's reason",
+	),
+};
 
 export const STREAM_RENDER_DECISIONS: Record<string, RenderVerdict> = {
 	message_start: verdict(

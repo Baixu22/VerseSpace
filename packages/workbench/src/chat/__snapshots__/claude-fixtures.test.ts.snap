@@ -5,6 +5,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 2,
     "noop": 3,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -71,6 +72,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 1,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -129,6 +131,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 1,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -187,6 +190,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 2,
     "noop": 3,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -253,6 +257,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 18,
     "noop": 134,
+    "notice": 0,
     "streaming-delta": 9,
     "undecided": 0,
   },
@@ -596,6 +601,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 3,
     "noop": 2,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -670,6 +676,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 2,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -732,6 +739,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 2,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -794,6 +802,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 27,
     "noop": 223,
+    "notice": 0,
     "streaming-delta": 9,
     "undecided": 0,
   },
@@ -1266,6 +1275,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 5,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -1376,6 +1386,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 1,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -1434,6 +1445,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 1,
     "noop": 1,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -1492,6 +1504,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 5,
     "noop": 4,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -1606,6 +1619,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 16,
     "noop": 92,
+    "notice": 0,
     "streaming-delta": 5,
     "undecided": 0,
   },
@@ -1922,6 +1936,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 2,
     "noop": 11,
+    "notice": 0,
     "streaming-delta": 1,
     "undecided": 0,
   },
@@ -2024,6 +2039,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 6,
     "noop": 130,
+    "notice": 0,
     "streaming-delta": 3,
     "undecided": 0,
   },
@@ -2214,6 +2230,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 4,
     "noop": 2,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },
@@ -2312,6 +2329,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 4,
     "noop": 12,
+    "notice": 0,
     "streaming-delta": 1,
     "undecided": 0,
   },
@@ -2446,6 +2464,7 @@ exports[`Claude stream fixtures (TF-0206) all 19 fixtures have explicit decision
   "decisionDistribution": {
     "finalized": 4,
     "noop": 6,
+    "notice": 0,
     "streaming-delta": 0,
     "undecided": 0,
   },

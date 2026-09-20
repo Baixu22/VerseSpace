@@ -8,6 +8,7 @@ import {
 	patchToolResult,
 } from "./claude-render-blocks";
 import { describeRenderEvent, resolveRenderDecision } from "./render-decision";
+import { noticeFromSystemEvent } from "./system-notice";
 import type { MessagePart, StoredPart, TurnRunEvent } from "./thread-types";
 import { collapseParts } from "./tool-collapse";
 
@@ -17,7 +18,7 @@ export {
 } from "./claude-render-blocks";
 
 export interface ClaudeRenderResult {
-	decision: "finalized" | "streaming-delta" | "noop" | "undecided";
+	decision: "finalized" | "streaming-delta" | "noop" | "notice" | "undecided";
 	decisionKey: string;
 	events: TurnRunEvent[];
 	/** Newly inserted calls only; router owns their side effects. */
@@ -66,6 +67,19 @@ export function reduceClaudeRenderEvent(
 	if (verdict.decision === "streaming-delta") {
 		const text = appendDelta(state, event);
 		if (text) result.events.push({ type: "delta", text });
+		return result;
+	}
+	if (verdict.decision === "notice") {
+		const notice = noticeFromSystemEvent(event);
+		// A decided notice with no fields is still *decided*: the shape is
+		// known, so it must never be re-reported as protocol drift.
+		if (notice) {
+			state.messageParts.push({ type: "notice", ...notice });
+			result.events.push({
+				type: "parts",
+				parts: foldedClaudeParts(state, true),
+			});
+		}
 		return result;
 	}
 	if (event.type === "result") {
