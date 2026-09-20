@@ -173,3 +173,8 @@
 - restores 163（+23 / 目标 +30）· resumeActions 32 · shownGrowth 13
 - 熔断器：**本段零 dismiss**——dismissRate 本已顶在 limit 0.5 上，消费全部走 expand
 - 剩 +7；脚本实跑输出见 `bun packages/workbench/scripts/e2e/window-report.ts`
+
+| # | 恢复 | 动作与判断依据 |
+| --- | --- | --- |
+| 22 | open 主车道 | 全量验证起步：根 `bun run test` 六套——**test:frontend 抓到 10 个文件级失败**，全是 `.workbench/blackboard/sessions/*/spool/` 里分支会话复制的测试文件被根 vitest 误收集（1692 用例本身全过） |
+| 23 | open 主车道 | 真修复：根 vitest exclude 漏了工作台自己的运行时目录 `.workbench`（`.workbuddy`/`.agent-contexts` 都在，唯独它不在）→ 补上；复跑 `test:frontend` **162 文件 / 1692 用例全绿**（正好剔除 10 个 spool 副本）；提交 `f13a83b` |
