@@ -160,33 +160,6 @@
     "confidence": 0.8,
     "context_tags": [],
     "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0242",
-    "kind": "task",
-    "next_action": "有待裁决条目时 composer 上方出现 TribunalBar，无条目时不占位",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "tribunal 是「系统答不了的问题交给人」的通道；在对话里裁决而不是另开面板，符合转向 (a)。",
-    "ready": true,
-    "remaining_minutes_max": 600,
-    "remaining_minutes_min": 300,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "对话内裁决：tribunal 条目在 composer 上方可见，能 resolve / shelve，结果作为 NoticePart 回到对话"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [],
-    "desired_outcomes": [],
     "difficulty": "high",
     "id": "TF-0245",
     "kind": "milestone",
@@ -264,25 +237,23 @@
       "why_not_enough": "",
       "why_this_task": ""
     },
-    "blocked_by": [
-      "TF-0233"
-    ],
-    "confidence": 0.85,
+    "blocked_by": [],
+    "confidence": 0.7,
     "context_tags": [],
     "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0239",
+    "difficulty": "medium",
+    "id": "TF-0251",
     "kind": "milestone",
-    "next_action": "先完成依赖：TF-0233",
-    "priority": 3,
-    "progress": 66.0,
-    "purpose": "在不违背「交互 = 对话」的前提下，让人和模型都能在对话里看见并触碰前提账本：人看见模型被告知的前提、看见并裁决 tribunal 条目；模型在回合中能自己查账本。",
-    "ready": false,
+    "next_action": "至少一个自然使用窗口（非脚本、非代理）产生 seal.decisions ≥ 1 与恢复卡消费记录",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "把结论从「技术落点明确」推进到「真实人类价值成立/不成立」。",
+    "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "ready",
+    "status": "proposed",
     "success_metrics": [],
-    "title": "阶段 2：账本能力内嵌对话——前提通知进对话记录、模型回合中可读账本、裁决在对话里完成（不做独立面板）"
+    "title": "阶段 4：真实人类使用窗口——让 fit 账本的四项护城河判决出现自然使用读数"
   },
   {
     "alignment": {
@@ -324,8 +295,7 @@
       "why_this_task": ""
     },
     "blocked_by": [
-      "TF-0248",
-      "TF-0239"
+      "TF-0248"
     ],
     "confidence": 0.7,
     "context_tags": [],
@@ -333,7 +303,7 @@
     "difficulty": "high",
     "id": "TF-0249",
     "kind": "task",
-    "next_action": "先完成依赖：TF-0248, TF-0239",
+    "next_action": "先完成依赖：TF-0248",
     "priority": 2,
     "progress": 0.0,
     "purpose": "让第二个 provider 的会话产生与 claude 同等的前提账本读数。",
@@ -343,35 +313,6 @@
     "status": "proposed",
     "success_metrics": [],
     "title": "实现选定 provider 的车道：复用 spawnSupervised + provider capabilities + render decision，端到端产生工具足迹"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0239"
-    ],
-    "confidence": 0.7,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0251",
-    "kind": "milestone",
-    "next_action": "先完成依赖：TF-0239",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "把结论从「技术落点明确」推进到「真实人类价值成立/不成立」。",
-    "ready": false,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "阶段 4：真实人类使用窗口——让 fit 账本的四项护城河判决出现自然使用读数"
   },
   {
     "alignment": {

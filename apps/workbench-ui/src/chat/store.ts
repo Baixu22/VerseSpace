@@ -9,6 +9,7 @@ import { createSelectionSlice } from "./selection-slice";
 import { createSendSlice } from "./send-slice";
 import type { ChatState } from "./store-types";
 import { createThreadSlice } from "./thread-slice";
+import { createTribunalSlice } from "./tribunal-slice";
 
 export type {
 	DecisionPoint,
@@ -54,6 +55,7 @@ export const useChatStore = create<ChatState>((...args) => ({
 	...createThreadSlice(...args),
 	...createSendSlice(...args),
 	...createReloadSlice(...args),
+	...createTribunalSlice(...args),
 }));
 export function useActiveMessages(): StoredMessage[] {
 	return (

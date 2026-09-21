@@ -5,8 +5,12 @@ import { useChatStore } from "../../chat/store";
 import { STAGGER_CHILD, STAGGER_PARENT, TWEEN_FAST } from "../../lib/motion";
 import { AnimatedDisclosure } from "./animated-disclosure";
 
-/** 决策账本：自动填充、默认折叠、无分歧时完全不渲染。 */
-export function DecisionLedger() {
+/**
+ * 分支账本：本线程聊天里的分叉与扇出备选（TF-0095）。自动填充、默认折叠、
+ * 无分歧时完全不渲染。这不是裁决队列（那是 TribunalBar）也不是架构决策——
+ * 只汇总对话内产生的分支手势，故名「分支账本」。
+ */
+export function BranchLedger() {
 	const points = useChatStore((s) => s.decisionPoints);
 	const [expanded, setExpanded] = useState(false);
 	if (points.length === 0) return null;
@@ -19,7 +23,7 @@ export function DecisionLedger() {
 				className="flex w-full cursor-pointer items-center gap-2 text-left"
 			>
 				<BookOpenText className="size-3.5 text-fg-subtle" />
-				<span className="text-small font-medium text-fg-muted">决策账本</span>
+				<span className="text-small font-medium text-fg-muted">分支账本</span>
 				<span className="rounded-full bg-muted px-1.5 text-small text-fg-subtle">
 					{points.length}
 				</span>

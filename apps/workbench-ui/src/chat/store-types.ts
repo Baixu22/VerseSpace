@@ -4,6 +4,7 @@ import type {
 	StoredMessage,
 	Suggestion,
 	ThreadMeta,
+	TribunalItemView,
 } from "./message-types";
 import type { ReadSetDiff, ResumeCardView, ResumeNote } from "./resume-types";
 export interface ForkDeclaration {
@@ -36,6 +37,11 @@ export interface ChatState {
 	suggestions: Suggestion[];
 	/** 当前线程的决策账本（TF-0095），无分歧时为空数组＝完全不渲染。 */
 	decisionPoints: DecisionPoint[];
+	/**
+	 * TF-0242 裁决队列：账本全局的待裁决项（pending + shelved），空数组＝不渲染。
+	 * 不随线程切换，随轮次边界与显式加载刷新。
+	 */
+	tribunalItems: TribunalItemView[];
 	/** 各线程的实时草稿镜像（TF-0096）：composer 文本随键入镜像到这里。 */
 	drafts: Record<string, string>;
 	/** 各线程的停放快照（TF-0096）：切换离开时收起的产物。 */
@@ -103,6 +109,12 @@ export interface ChatState {
 	/** TF-0092：手动晋升——一个手势给无名对话命名。 */
 	promoteActive(): Promise<void>;
 	cancel(): void;
+	/** TF-0242：拉取全局待裁决项（pending + shelved）。 */
+	loadTribunal(): Promise<void>;
+	/** TF-0242：裁决一项，走与 CLI 相同的账本路径；成功后从列表移除。 */
+	resolveTribunal(id: string): Promise<void>;
+	/** TF-0242：推迟一项（默认 30 分钟）；成功后从列表移除。 */
+	shelveTribunal(id: string, minutes?: number): Promise<void>;
 	setPlanMode(enabled: boolean): Promise<void>;
 	deleteThread(id: string): Promise<void>;
 	setArchived(id: string, archived: boolean): Promise<void>;

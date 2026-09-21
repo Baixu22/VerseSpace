@@ -1,0 +1,68 @@
+{
+  "applied_at": "2026-09-21T17:07:55.154619Z",
+  "base_graph_hash": "c8a59626d7e34be276944b277685ff8b5134ab7a35f6e149643a0eb25dd33888",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "ui/tribunal-routes.ts + tribunal-routes.test.ts（3 例：列表+resolve+事件+二次404、shelve+shelveCount+事件、非法 id 400）",
+          "apps/workbench-ui: tribunal-slice.ts + tribunal-slice.test.ts（5 例）、components/chat/tribunal-bar.tsx、sidecar 接入、decision-ledger.tsx→branch-ledger.tsx（git mv，DecisionLedger→BranchLedger）",
+          "浏览器验证（:7700 API 重启加载新路由 + :5188 vite）：种 t-mubhq4o36e4eace5(ws-demo) → TribunalBar 显示「待裁决 1 / 高 复核 g-7…」→ 点「裁决」→ 条目消失、bar 因队列空而不渲染 → bb 查得 tribunal_resolved{id:t-mubhq…} 且 item.state=resolved，与 CLI 裁决不可区分",
+          "bun run test:workbench 全绿（+tribunal-routes）；workbench-ui vitest 67 pass（+tribunal-slice）；typecheck + biome 全绿"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "已实现并浏览器端到端验证。裁决队列进对话：composer 上方新增 TribunalBar（sidecar 中排在分支账本之前），展示全局待裁决项（pending+shelved，按 score 降序），展开显示 SBAR + 动作，可「裁决」(resolve) 或「推迟」(shelve)。后端新增 ui/tribunal-routes.ts：GET /api/tribunal 列未裁决项、POST /api/tribunal/:id/{resolve,shelve} 走 bb.tribunal.resolve/shelve——与 workbench tribunal CLI 完全相同的账本路径，产生 tribunal_resolved/tribunal_shelved 事件；挂在 server.ts 的 workspaceRoute 之后、chatRoute 之前。前端加 tribunal-slice（loadTribunal/resolveTribunal/shelveTribunal，全局不随线程切换，init 与轮次边界各刷一次，失败保留上次列表，404 竞态回源对账）。命名分歧消除：原 DecisionLedger（展示聊天 fork/variant）改名 BranchLedger「分支账本」，注释点明它既不是裁决队列也不是架构决策。"
+      },
+      "id": "TF-0242"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "git show -s ba3f5c9：Product pivot per user direction … The tower rendering system is retired",
+          "git show --diff-filter=D ba3f5c9 -- apps/workbench-ui/src → components/lanes.tsx、components/panels.tsx；App.tsx 从 520 行的账本面板改写为聊天壳",
+          "packages/workbench/CHANGELOG.md 0.2.0 段描述的面板能力与 0.3.0 段「本地聊天面板（GUI）」的替换关系",
+          "用户 2026-09-21 选择 (a)：转向仍有效，阶段 2 改为账本能力内嵌对话",
+          "盘点（Explore 子代理）：thread-types.ts:115-125 NoticePart / MessagePart；thread-run.ts:61-67 通知折入 prompt；claude-session.ts:64-80 无 --mcp-config；tribunal/queue.ts:36 tribunalApi（list/shelve/resolve/stats）；ui/ 无 tribunal 路由；sidecar.tsx:9-20 挂点；chat-composer.tsx:44-51 无 slash 机制",
+          "三子节点 TF-0241/0242/0243 均 done 并各自浏览器/测试验证；TF-0244 deprecated（转向下写端点留在 CLI）",
+          "边界守住：apps/workbench-ui 仍无对 /api/state|sync|dispatch|agent/run 的调用；新增前端只挂在 thread-messages 与 sidecar 之下；tribunal 是账本全局队列，走独立 /api/tribunal 只读+两个写动作，不碰聊天 transcript"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "用户 2026-09-21 确认：ba3f5c9 的产品转向仍然有效——交互保持纯对话，深度在运行时层；不恢复独立账本面板。盘点现状（2026-09-21）：① 前提通知只被折进模型 prompt（thread-run.ts:61-67 → prompt.ts），对话记录里只留一个计数，通知正文从不落盘，人看不到「模型被告知了什么」；② claude 车道启动没有 --mcp-config（claude-session.ts:64-80），workbench mcp 只服务外部 agent，模型在回合中读不到 premises/footprints/resume_cards/tribunal/notices，尽管渲染层已能画 mcp_tool_use/mcp_tool_result 卡片（claude-render-blocks.ts:195,216）；③ UI 服务器没有任何 tribunal 路由，tribunal 只有 CLI；④ 对话内唯一的非模型内容形态是 NoticePart（thread-types.ts:115-120），前端 NoticeRow 已能渲染；composer 上方的 sidecar（sidecar.tsx）已有 ResumeCard / DecisionLedger / NoticeDelivered 等挂点。阶段 2 沿这四个既有形态把账本能力带进对话，不新增第二个信息架构。\n\n【2026-09-22 收口】三个交付全部 done：TF-0243（前提通知进对话记录）、TF-0241（MCP 接进 claude 车道，模型回合中可查账本）、TF-0242（对话内裁决 + 证据可见 + DecisionLedger→BranchLedger 改名）。阶段 2 按产品转向 (a) 完成：账本能力内嵌对话，未恢复独立面板，未接 /api/state|sync|dispatch|agent/run 写端点（TF-0244 已废止）。"
+      },
+      "id": "TF-0239"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "correction": "resolve/shelve 走与 CLI 相同的 bb.tribunal 路径，事件本身就是持久回执（测试断言 tribunal_resolved 事件）；UI 反馈是条目离开 TribunalBar 列表。验收标准相应调整：不再要求「结果作为 NoticePart 回到对话」。",
+        "created_at": "2026-09-21T17:07:54.646Z",
+        "id": "TFD-7c3e19a4b2",
+        "kind": "deliverable_scope_change",
+        "reason": "追加 part 到已持久化的 assistant 消息会改写模型已生成的轮次，违反 chat 的 append-only / KV-cache 红线（thread-types.ts 与 claude-session.ts 反复强调 notices 是 append-only user turn，绝不编辑）。且 tribunal 是账本全局队列，把它的回执塞进某条恰好活跃的线程 transcript 在语义上也不对。",
+        "related_task_ids": [
+          "TF-0242",
+          "TF-0239"
+        ],
+        "summary": "TF-0242 原计划把裁决结果作为 NoticePart 追加到当前线程最后一条 assistant 消息作为回执。实现时改为：回执 = tribunal_resolved/tribunal_shelved 事件 + UI 上条目从列表消失，不改写任何 assistant 消息。"
+      }
+    }
+  ],
+  "created_at": "2026-09-21T17:07:54.896628Z",
+  "proposal_id": "TFP-2026-09-22-tf0242-done",
+  "rationale": "TF-0242 对话内裁决完成，阶段 2（TF-0239）三交付全部 done。裁决队列进 composer 上方 sidecar，resolve/shelve 走与 CLI 相同账本路径并产生事件，DecisionLedger 改名 BranchLedger 消除同名异物。记一条 deviation：回执改为事件而非 transcript 内的 NoticePart，避免改写已持久化的 assistant 消息。",
+  "session_id": "session-2026-09-21-second-round-absorption-plan",
+  "status": "applied"
+}

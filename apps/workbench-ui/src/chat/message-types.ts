@@ -119,6 +119,28 @@ export interface DecisionPoint {
 	preview: string;
 }
 
+/**
+ * A tribunal item as the chat surface needs it (TF-0242): the subset of the
+ * ledger's `TribunalItem` the bar renders. The queue is global to the ledger,
+ * not scoped to a thread — the bar shows every item still owing a decision.
+ */
+export interface TribunalItemView {
+	id: string;
+	kind: string;
+	priority: "critical" | "high" | "medium" | "low";
+	state: "pending" | "shelved" | "resolved" | "expired";
+	subject: string;
+	sbar: {
+		situation: string;
+		background: string;
+		assessment: string;
+		recommendation: string;
+	};
+	action: { label: string; command?: string };
+	shelvedUntil?: string;
+	shelveCount: number;
+}
+
 export interface ParkedItem {
 	id: string;
 	kind: "draft";
