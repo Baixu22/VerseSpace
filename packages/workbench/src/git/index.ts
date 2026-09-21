@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { isAbsolute, join } from "node:path";
 import { pathExists } from "../fs/atomic";
+import { hostFilesystemGuardReason } from "./host-filesystem";
 
 export interface GitResult {
 	ok: boolean;
@@ -13,6 +14,18 @@ export interface GitResult {
 
 /** Run git with captured output; never throws. */
 export function git(args: string[], cwd: string): Promise<GitResult> {
+	// 宿主把「非空目录删除」变成成功时，git 的空父目录清理会连带删除兄弟文件与
+	// ref（TF-0173）。只读命令照常放行，可写命令改成一个显式失败——把静默损坏
+	// 换成开口拒绝。
+	const refused = hostFilesystemGuardReason(args);
+	if (refused) {
+		return Promise.resolve({
+			ok: false,
+			code: null,
+			stdout: "",
+			stderr: refused,
+		});
+	}
 	return new Promise((resolve) => {
 		const child = spawn("git", args, { cwd, shell: false });
 		let stdout = "";

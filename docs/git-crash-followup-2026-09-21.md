@@ -59,3 +59,40 @@ WorkBuddy 的 `tsbx.dll` 进入 Windows 外壳文件操作。当前旧宿主中�
 最早非法堆写入及完整转储，定位责任实现并验证修复；或取得兼容的正式宿主修复，
 结合直接故障证据完成修复前后的同条件对照。旧三次 `git apply` 的缺失转储仍然缺失，
 不能宣称它们与此次 `git switch` 的内存写坏点完全相同。
+
+## 2026-09-21 现场复核：判据是行为，不是模块
+
+本轮重新对齐三项现场读数（同一台机器、同一个宿主进程）：
+
+| 项 | 读数 |
+| --- | --- |
+| 现场配置 | Windows PowerShell 5.1.26100.7920（x64），进程已加载 85 个模块 |
+| 提权状态 | `Elevated=False`（非管理员） |
+| 旧沙箱行为 | **`tsbx.dll` 已加载**；`MFCopyHook.dll`、`NsCopyHook3.dll` 均未加载 |
+
+在**这个加载了 `tsbx.dll` 的宿主**里运行 `scripts/win/check-git-filesystem.ps1`：**exit 0**。
+
+- `RemoveDirectoryW` 对非空目录返回 `false`、Win32 错误 `145`，目录里的哨兵文件存活；
+- `git rm -- src/delete.txt` 退出 0，兄弟文件 `src/keep.txt` 仍在；
+- `refs/heads/ws/probe` 与 `refs/remotes/origin/main` 都写成了，且都指向 HEAD。
+
+所以「进程加载了 `tsbx.dll`」**不是**复现判据——本机就有一个现成反例。真正的判据是
+「非空目录能不能被删掉」，即旧 sandbox 运行时的**文件操作通道是否生效**，而不是模块名是否
+出现在模块列表里。这条修正同时否掉了把「加载了 tsbx」直接当作因果证据的写法。
+
+## 仓库侧规避：落在 Git 执行路径上
+
+最早非法堆写入仍捕不到（转储标志 `0x200121`，不含完整进程内存），因此本轮不宣称已定位责任
+实现，改为把已确认的**行为缺陷**挡在产品的 git 派生点上：
+
+- 新增 `packages/workbench/src/git/host-filesystem.ts`：进程内执行与 PowerShell 探针同形的
+  检查（建非空目录 → 删 → 看哨兵是否存活），只看文件副作用、不看错误码；结论按进程缓存。
+- `packages/workbench/src/git/index.ts` 的 `git()` 是产品唯一的 git 派生点，现在先过闸门：
+  判定为 `unsafe` 时放行只读动词，拒绝可写动词并返回显式失败报文（点名 TF-0173 与文档）。
+- 判定不出来（`indeterminate`）**不拦**；宿主健康时闸门完全惰性——本机 `git()` 行为零变化，
+  由既有 904 例与新测试共同覆盖。
+- `WORKBENCH_GIT_HOST_GUARD=off` 关闭闸门；`force-unsafe` / `force-clean` 供测试构造判定。
+
+这是**围堵**，不是修复：它把「git 退出 0、文件却已被连带删除」换成一条失败的报错，不改变
+外部宿主的语义，不恢复 Rust/Tauri，也不加掩盖问题的重试。TF-0173 保持 blocked，验收条件与
+`next_action` 不变。

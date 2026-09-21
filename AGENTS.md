@@ -243,13 +243,16 @@ file by file, each one scanned), so `rm` on that directory can fail with `EBUSY`
 and then warns instead of failing; `packages/workbench/src/fs/atomic.ts` already retries
 `EBUSY`/`EPERM`/`EACCES` for the same reason. A lone teardown `EBUSY` is environmental.
 
-### `git rm` on a directory can delete siblings (host `tsbx.dll` defect)
+### `git rm` on a directory can delete siblings (host file-operation defect)
 
-The host sandbox's `tsbx.dll` turns nonempty-directory deletion into success, after which Git's
-empty-parent cleanup removes siblings. On 2026-09-14 native probes with Git 2.51, 2.53 and
-MinGit 2.55 preserved the sibling file; on 2026-09-15 the failure was reproduced through
-WorkBuddy's bundled sandbox. **The mainline still does real git operations, so this still
-matters.**
+Some hosts turn nonempty-directory deletion into success, after which Git's empty-parent cleanup
+removes siblings. On 2026-09-14 native probes with Git 2.51, 2.53 and MinGit 2.55 preserved the
+sibling file; on 2026-09-15 the failure was reproduced through WorkBuddy's bundled sandbox.
+**The mainline still does real git operations, so this still matters.**
+
+The judging criterion is the *behaviour*, not the module list. Measured on 2026-09-21: a shell
+that had `tsbx.dll` loaded still passed the probe (nonempty `rmdir` refused, error 145, siblings
+and refs intact). Do not claim "`tsbx.dll` is loaded" as evidence of the fault — measure it.
 
 Check the actual host:
 
@@ -257,11 +260,19 @@ Check the actual host:
 powershell.exe -NoProfile -File scripts/win/check-git-filesystem.ps1
 ```
 
-It keeps only its own fixture and returns `1` for corruption even when Git exits `0`. The narrow
-workaround is `git rm --cached` plus removal of exactly the intended file.
-`packages/workbench/scripts/e2e/scenario.ts` stages its deletion this way on purpose: the index
-outcome is identical, but the temporary fixture's siblings survive. **Do not "simplify" it back
-to `git rm`.**
+It keeps only its own fixture and returns `1` for corruption even when Git exits `0`.
+
+`packages/workbench/src/git/host-filesystem.ts` is the same probe in-process, and
+`packages/workbench/src/git/index.ts` wires it into `git()`: while the host is judged unsafe,
+read-only verbs still run, but anything that could rewrite the worktree or refs fails loudly
+with a message naming TF-0173 instead of corrupting silently. On a healthy host the guard is
+inert. `WORKBENCH_GIT_HOST_GUARD=off` disables it; `force-unsafe` / `force-clean` force the
+verdict for tests.
+
+The narrow workaround for agents running git by hand is `git rm --cached` plus removal of exactly
+the intended file. `packages/workbench/scripts/e2e/scenario.ts` stages its deletion this way on
+purpose: the index outcome is identical, but the temporary fixture's siblings survive.
+**Do not "simplify" it back to `git rm`.**
 
 ### Git refs: slash-nested branches and remote-tracking refs
 
