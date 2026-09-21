@@ -1,20 +1,17 @@
 > **本仓库是一个 monorepo，产品是 VerseSpace / Workbench——写者中立的前提账本。** agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，无法回答的问题进入裁决队列。
 >
 > **产品在 `packages/workbench`（CLI + 文件系统状态层）与 `apps/workbench-ui`（本地面板）。**
-> `src/`、`src-tauri/`、`sidecar/` 与 `apps/marketing`、`apps/registry` 是**冻结的存量参考实现**：
-> 保留作行为参考与必要修复，不再演进，也不向 Workbench 提供任何代码级依赖
-> （见 [ADR-0003](docs/decisions/0003-helmor-legacy-freeze.md) 冻结基线与
-> [ADR-0011](docs/decisions/0011-legacy-retention.md) 存量处置）。
+> `src/`、`src-tauri/`、`sidecar/` 与 `apps/marketing`、`apps/registry` 是**已退役的存量实现**：
+> 已于 2026-09-21 从工作树删除，只在 git 历史里可读（见
+> [ADR-0014](docs/decisions/0014-legacy-retirement-gate.md) 退役闸门与
+> [ADR-0015](docs/decisions/0015-legacy-retirement-execution.md) 执行记录；可读于
+> commit `944b9d6` 及更早）。它们不再向 Workbench 提供任何代码级依赖。
 >
 > 使用入口见 [Workbench README](packages/workbench/README.md)；工程边界（前提守护的取舍尺子）
 > 见 [ADR-0010](docs/decisions/0010-premise-custody.md)；身份、合规与存量退役条件见
 > [ADR-0013](docs/decisions/0013-workbench-identity-and-compliance.md)。
 >
-> 以下 Helmor 桌面说明保留为存量产品资料——它是冻结的那一块，不是当前主线。
-
-<p align="center">
-  <img src="src/assets/helmor-logo-light.png" alt="Helmor logo" width="120" />
-</p>
+> 以下 Helmor 桌面说明是**退役产品的历史资料**，仅为存档保留——它描述的代码已不在本仓库工作树中。
 
 <h1 align="center">Helmor</h1>
 
@@ -29,10 +26,7 @@
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-3DA639" alt="License: Apache 2.0" /></a>
 </p>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="src/assets/helmor-screenshot-dark.png" />
-  <img src="src/assets/helmor-screenshot-light.png" alt="Helmor screenshot" width="100%" />
-</picture>
+*(产品截图此前由 `src/assets/` 承载，该目录随退役一并删除，见 ADR-0015。)*
 
 > AI made coding faster.
 >
@@ -113,7 +107,8 @@ helmor workspace run-action myapp/fix-auth
 ## Contributing
 
 Architecture, commands, and test layout live in **[AGENTS.md](AGENTS.md)**.
-To get started locally: `bun install && bun run dev`.
+To get started locally: `bun install`, then `bun run test` (three suites) or
+`bun run dev:ui` for the dashboard.
 
 Or —
 

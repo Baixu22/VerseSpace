@@ -10,10 +10,12 @@
  * genuinely unknown provider protocol shapes, so a deny was both invisible to
  * the operator AND counted as protocol drift.
  *
- * Field order and fallbacks are copied from
- * `src-tauri/src/pipeline/adapter/labels.rs` (`build_permission_denied_notice`),
- * so the frozen surface and this one describe the same event with the same
- * words instead of drifting into two vocabularies.
+ * Field order and fallbacks were copied from the legacy Rust adapter's
+ * `build_permission_denied_notice` (`src-tauri/src/pipeline/adapter/labels.rs`,
+ * retired 2026-09-21 per ADR-0015 — read it at `944b9d6` or earlier), so this
+ * module and that surface described the same event with the same words instead
+ * of drifting into two vocabularies. That surface is gone; this is now the
+ * only implementation, and the copy is the record of what it was aligned to.
  */
 
 export interface SystemNotice {

@@ -1,8 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
-// Mirrors the root src/lib/utils.ts: register the typography tokens with
-// tailwind-merge so text-* utilities don't collapse into colors.
+// Register the typography tokens with tailwind-merge so text-* utilities
+// don't collapse into colors. The legacy `src/lib/utils.ts` this used to
+// mirror was retired on 2026-09-21 (ADR-0015); this is now the only copy.
 const twMerge = extendTailwindMerge({
 	extend: {
 		classGroups: {
