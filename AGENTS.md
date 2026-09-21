@@ -120,7 +120,7 @@ subcommand lives in `src/commands/` and supports `--json` / `--quiet`.
 | `scheduler/` | Dispatch, dispatch guards/recovery, merge guard, branch-in-use, WIP, notifications, tick. |
 | `verifier/` | Runs a checkpoint's declared verification strategy and classifies the result (`passed` / `failed` / `needs_human` / `timeout` / `skipped`). |
 | `supervisor/` | Process supervision: spawn, liveness watch, crash-loop detection, orphan reaping. |
-| `chat/` | Chat lanes — per-provider adapters (`claude`, `codex`, `openai-chat`, …), streaming, render state, threads, branch engagement, stats. |
+| `chat/` | Chat lanes — one supervised-CLI lane (`claude`, the only lane with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The Codex / Cursor / Kimi / OpenCode stream fixtures under `chat/fixtures/streams/` are retained protocol samples, **not** adapters. |
 | `agents/` | Spawns agent sessions, captures their tool footprints, records per-session usage. |
 | `interactions/` | The user-feedback side: interest/context derivation, landmark projection, review queue, review stats (DOI). |
 | `tribunal/` | The human-decision queue: kinds, escalation, rationalization, queue store/stats, envelopes. |

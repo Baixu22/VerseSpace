@@ -129,9 +129,17 @@ packages/workbench/.evidence-sites/
 # (see that dir's runtime-purge.txt for how to rebuild them).
 /.agent-contexts/tf0229-*/
 /.agent-contexts/tf0229-*.log
+# 2026-09-21 TF-0231 注入判据定位：三平台产物、判别探针、同会话矩阵与 tsbx 日志
+# 都保留在本地。结论在 docs/tf0231-injection-discriminator-2026-09-21.md，
+# 产物指纹在该目录的 artifact-sha256.txt。
+/.agent-contexts/tf0231-*/
 # 2026-09-17/18 absorption plan: the planning proposal draft and the per-round
 # node-development proposal copies stay local. The applied copies live in
 # .agent-workbench/task-forest/proposals/, and the readings live in node
 # evidence + docs (see docs/absorption-progress-2026-09-18.md).
 /.agent-contexts/absorption-plan-*/
 /.agent-contexts/nodes-dev-*/
+# 2026-09-21 read-only forest inspection (todos, validate, check-landing, git state).
+# The findings went into .workbuddy/memory/2026-09-21.md; nothing here needs to be tracked.
+/.agent-contexts/tf-inspect-*/
+/.agent-contexts/todo-current.json

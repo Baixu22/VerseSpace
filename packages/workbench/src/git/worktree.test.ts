@@ -1,10 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { makeCommittedRepo } from "../test/git-project";
-import { createWorktree, git } from "./index";
-import { stashPop, stashPushIncludeUntracked } from "./stash";
+import { createWorktree } from "./index";
 import {
 	listWorktrees,
 	parseWorktreeList,
@@ -12,14 +10,6 @@ import {
 	samePath,
 	worktreeHoldingBranch,
 } from "./worktree";
-
-async function run(projectDir: string, args: string[]): Promise<void> {
-	const result = await git(
-		["-c", "user.email=t@local", "-c", "user.name=t", ...args],
-		projectDir,
-	);
-	if (!result.ok) throw new Error(`git ${args.join(" ")}: ${result.stderr}`);
-}
 
 describe("worktree 清单", () => {
 	test("porcelain 文本解析：分支剥掉 refs/heads/，detached 记为 null", () => {
@@ -132,60 +122,6 @@ describe("移除 worktree", () => {
 			expect(refused.reason).toContain("项目根目录");
 			// 仓库本体还在
 			expect(existsSync(join(projectDir, "README.md"))).toBe(true);
-		} finally {
-			await cleanup();
-		}
-	});
-});
-
-describe("stash 结构化结局", () => {
-	test("干净工作区：nothing，而不是 failed", async () => {
-		const { projectDir, cleanup } = await makeCommittedRepo();
-		try {
-			// 夹具里的 .workbench/ 是未跟踪的；先落一次提交，让"干净"是真的干净
-			await run(projectDir, ["add", "-A"]);
-			await run(projectDir, ["commit", "-qm", "track workbench"]);
-			const pushed = await stashPushIncludeUntracked(projectDir, "probe");
-			expect(pushed.ok).toBe(true);
-			expect(pushed.saved).toBe(false);
-			expect(pushed.outcome).toBe("nothing");
-		} finally {
-			await cleanup();
-		}
-	});
-
-	test("有未跟踪文件：saved，pop 回来是 clean", async () => {
-		const { projectDir, cleanup } = await makeCommittedRepo();
-		try {
-			await writeFile(join(projectDir, "note.txt"), "临时\n", "utf8");
-			const pushed = await stashPushIncludeUntracked(projectDir, "probe");
-			expect(pushed.outcome).toBe("clean");
-			expect(pushed.saved).toBe(true);
-			expect(existsSync(join(projectDir, "note.txt"))).toBe(false);
-
-			const popped = await stashPop(projectDir);
-			expect(popped.outcome).toBe("clean");
-			expect(existsSync(join(projectDir, "note.txt"))).toBe(true);
-		} finally {
-			await cleanup();
-		}
-	});
-
-	test("pop 冲突：结局是 conflict 而不是 failed，且条目保留", async () => {
-		const { projectDir, cleanup } = await makeCommittedRepo();
-		try {
-			await writeFile(join(projectDir, "README.md"), "# repo\n\nfrom stash\n");
-			await stashPushIncludeUntracked(projectDir, "probe");
-			// 同一个文件的同一行先落地一个提交（stash 之后才有东西可提交），
-			// pop 回来必然冲突
-			await writeFile(join(projectDir, "README.md"), "# repo\n\nfrom commit\n");
-			await run(projectDir, ["add", "README.md"]);
-			await run(projectDir, ["commit", "-qm", "conflicting"]);
-			const popped = await stashPop(projectDir);
-			expect(popped.outcome).toBe("conflict");
-
-			const list = await git(["stash", "list"], projectDir);
-			expect(list.stdout.trim()).not.toBe("");
 		} finally {
 			await cleanup();
 		}

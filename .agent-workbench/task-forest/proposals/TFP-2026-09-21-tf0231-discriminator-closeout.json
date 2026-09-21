@@ -1,0 +1,65 @@
+{
+  "applied_at": "2026-09-21T11:12:32.567300Z",
+  "base_graph_hash": "cc86940d1c513a706ab529e2798fcfb5c635c8c53c000d92dd3708b42c242e7b",
+  "base_summary": {
+    "edge_count": 354,
+    "node_count": 231,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "acceptance_criteria": [
+          "判定这是宿主的有意设计还是缺陷：给出决策点或缺失实现的直接证据，不是从日志倒推。（达成：决策点 = PE 头 AddressOfEntryPoint 是否为 0，用单变量判别探针确证——只把该字段 0x37BE 改成 0，改动仅偏移 0xa8/0xa9，行为即从「约束失效」翻转为与 x64 逐项相同。定为缺陷的判据是失败策略不一致：x86 目标 fail-closed（终止进程 + SandboxError），AnyCPU 目标 fail-open（无错误、无回读校验）。见 docs/tf0231-injection-discriminator-2026-09-21.md）",
+          "给出可复算判据：同一会话内 /platform:x86 与 /platform:x64 两个产物的注入读数对照（探针内 tsbxLoaded + tsbx 日志里该 PID 的行数）。（达成：同一 Sandbox 会话、同一夹具、同一份源码、同一组参数，四组 × 两臂 × 各 3 次 —— anycpu 0/3（0 行日志、error 145）、anycpu-ep0 3/3（27 行、error 14007）、x64 3/3（27 行、error 14007）、x86 3/3 启动失败（显式 SandboxError 0x6，X86 桥缺件）；非托管臂四组全部 0 行。复算脚本 .agent-contexts/tf0231-20260921/run-platform-arm.py）",
+          "若确认是缺陷，评估影响面：默认 AnyCPU 是 Visual Studio / csc 的默认产物形态，意味着哪些被托管启动的进程实际不受约束。（达成：csc 不带 /platform 与 VS 新建项目的默认产物都是 AnyCPU，因此默认构建的 .NET 程序被以沙箱模式托管启动时 tsbx 不加载——文件写保护 default_action=deny_write、回收站备份 recyclebin_backup、六个 ntdll 文件 API 改写、DNS 域拦截全部不生效；TCP 侧由 Rust LocalProxy 承担，是否部分兜住本轮未测。x64 产物不受影响，32 位目标会被显式拒绝）"
+        ],
+        "alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.9,
+          "user_goal": "确定历史故障的真实原因，避免误报修复。",
+          "validation_plan": [
+            "重跑 .agent-contexts/tf0231-20260921/run-platform-arm.py：判别探针应与 x64 读数相同（27 行 tsbx 日志、error 14007），Probe-anycpu 仍应为 0 行。",
+            "宿主修复后应看到 probe-anycpu.exe 的 tsbxLoaded=true；x86 组应不再 START-FAILED。"
+          ],
+          "why_not_enough": "判据已由单变量行为确证，但注入器是二进制（sandbox_ffi.dll / sandbox-cli.exe），结论没有落到代码行；修复在宿主侧，不在本仓库范围。",
+          "why_this_task": "把 TF-0229 遗留的「用 csc 默认选项重编译的探针不复现」从现象推进到可判定的注入判据，并给出影响面与复算路径。"
+        },
+        "confidence": 0.9,
+        "evidence": [
+          ".agent-contexts/tf0229-20260921/pe-compare.txt（rmdir-probe.exe = 0x8664/PE32+；AnyCPU 产物 = 0x014c/PE32）",
+          ".agent-contexts/tf0229-20260921/bitness.txt（AnyCPU 产物实测 is64BitProcess=true）",
+          ".agent-contexts/tf0229-20260921/arch-lines.txt（x64 目标有 APC 回退 + Loader stub size: 144 bytes；AnyCPU 目标没有）",
+          ".agent-contexts/tf0229-20260921/legacy-t1Cloz/result.json（x64 产物 3/3 复现）与 legacy-bZJk0M/result.json（同源码 AnyCPU 0/3）",
+          "docs/tf0229-evidence-chain-2026-09-21.md（对照层：原二进制 3/3+3/3 vs 重编译 0/3）",
+          "docs/tf0231-injection-discriminator-2026-09-21.md（本轮结论：判据 = PE 头 AddressOfEntryPoint；四组同会话读数表 + 单变量判别探针 + 影响面 + 修复方向）",
+          ".agent-contexts/tf0231-20260921/platform-GLUJ5a/result.json（同会话四组 × 两臂 × 3 次；SHA256 4566989feab425fc）与 platform-K7UGvI/result.json（第一轮三组对照）",
+          ".agent-contexts/tf0231-20260921/patch-entrypoint.json（单变量证据：只把 AddressOfEntryPoint 0x37be→0，diff 仅偏移 0xa8/0xa9 两个字节）",
+          ".agent-contexts/tf0231-20260921/run-platform-arm.log（行为读数与注入器决策行按时间对齐；含 x86 的 fail-closed 原文与任何目标都不出现的失败信号）",
+          ".agent-contexts/tf0231-20260921/pe-flags.json（四产物 machine / magic / AddressOfEntryPoint / CorFlags 读数：anycpu 与 x86 只差 CorFlags 的 32BITREQUIRED 一位）"
+        ],
+        "execution_hints": [
+          "对照必须同会话、同夹具、同源码，只改 csc 的 /platform 参数；探针放在 api-fixture- 目录内。",
+          "判据是文件副作用与日志，不是退出码：探针内 GetModuleHandleW(\"tsbx.dll\") + dbgwin 日志里该 PID 是否出现 loaded successfully / File hooks installed。",
+          "AnyCPU 产物在 x64 系统上跑的是 64 位进程（bit-probe.cs 可自证），别把它当成 32 位目标来定性。",
+          "非托管臂里 probe-anycpu 与 probe-x64 的 exitCode 都是 0，所以退出码在这里完全没有分辨力。要读的是探针 stdout 的 tsbxLoaded 与「该 PID 的 [TSBX] 行数」——本轮是 0 对 27。",
+          "判别探针 probe-anycpu-ep0.exe 启动后会因为 entry point 为 0 而崩（退出码 1），那不代表注入失败：它的 tsbx 日志与 x64 一样是 27 行，含 File hooks installed: 6/6 与两条 RECYCLE-BACKUP。",
+          "别覆盖 .agent-contexts/tf0229-20260921/ 里的 rmdir-probe2.exe 与 rmdir-probe2-x64.exe —— evidence-chain-tf0229.py 绑定了它们的 SHA256，覆盖会让 TF-0229 的证据链断掉。"
+        ],
+        "next_action": "已定位（2026-09-21）。宿主/sandbox 升级后重跑 .agent-contexts/tf0231-20260921/run-platform-arm.py 做三项检查：probe-anycpu.exe 若出现 tsbxLoaded=true，说明判据已修；probe-x86.exe 若不再 START-FAILED，说明 32 位 tsbx 已随包分发；probe-anycpu-ep0.exe 若读数与 probe-x64.exe 不再一致，说明注入路径逻辑改动过。",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "已定位。同样一份源码、同样被 executionMode=sandbox 托管启动，只有编译目标平台不同：/platform:x64（PE32+，AddressOfEntryPoint=0）3/3 被注入 tsbx；csc 默认的 AnyCPU（PE32/I386，AddressOfEntryPoint=0x37BE）0/3 被注入，探针内 tsbxLoaded=false、日志里该 PID 一行 [TSBX] 都没有；两者运行时都是 64 位进程（实测 is64BitProcess=true），所以不是「32 位目标」问题。本轮把因果钉死：注入器按 PE 头 AddressOfEntryPoint 是否为 0 选择路径——为 0 走 APC 回退，日志原文明写 `AddressOfEntryPoint=0; falling back to APC injection` + `LsInject_APC: APC queued successfully`；非 0 走 direct injection（`Loader stub size: 144 bytes`），对托管程序集不生效且静默。判别探针：把 AnyCPU 产物的该字段改成 0，只动 2 个字节，行为即翻转为与 x64 逐项相同（27 行 tsbx 日志、error 14007、keepExists=false、removeReturned=true）。判定为实现缺陷：宿主对 x86 目标是 fail-closed（`Cross-arch injection failed, terminating process`），对 AnyCPU 目标是 fail-open（无错误、无注入后回读校验）。影响面：AnyCPU 是 csc 与 Visual Studio 的默认产物形态。",
+        "title": "PE32/AnyCPU 托管程序集在 sandbox 托管启动时不被注入 tsbx：判据是 PE 头 AddressOfEntryPoint（实现缺陷，约束静默失效）"
+      },
+      "id": "TF-0231"
+    }
+  ],
+  "created_at": "2026-09-21T11:11:19.686210Z",
+  "proposal_id": "TFP-2026-09-21-tf0231-discriminator-closeout",
+  "rationale": "TF-0231 的三条验收标准本轮都拿到了读数，收口为 done。(1) 判定：判据是 PE 头的 AddressOfEntryPoint 是否为 0 —— 用单变量判别探针把 AnyCPU 产物的该字段 0x37BE 改成 0（其余字节不动，diff 只有偏移 0xa8/0xa9），行为立刻从「tsbx 零日志、删除语义原样」翻转为与 x64 产物逐项相同的读数（27 行 tsbx 日志、error 14007、keepExists=false）；定为缺陷而非有意设计，依据是宿主的失败策略不一致：对 x86 目标 fail-closed（Cross-arch injection failed, terminating process），对 AnyCPU 目标 fail-open（无错误、无回读校验、约束全失效）。(2) 可复算判据：同一 Sandbox 会话、同一夹具、同一份源码、同一组参数，四组各 3 次 —— anycpu 0/3（0 行日志）、anycpu-ep0 3/3、x64 3/3、x86 3/3 启动失败（显式 SandboxError）。(3) 影响面：AnyCPU 是 csc 不带 /platform 与 VS 新建项目的默认产物形态，因此默认构建的 .NET 程序被托管启动时 tsbx 不加载，文件写保护 / 回收站备份 / 六个 ntdll 文件 API 改写 / DNS 域拦截全部不生效，且调用方看不出异常。",
+  "session_id": "tf0231-discriminator-20260921",
+  "status": "applied"
+}
