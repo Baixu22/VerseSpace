@@ -13,8 +13,8 @@
 // Usage:
 //   node scripts/publish-workbench-release.mjs --tag workbench-v0.3.1 [--dist packages/workbench/dist] [--dry-run]
 
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -31,7 +31,9 @@ const dist = path.resolve(root, flag("--dist") ?? "packages/workbench/dist");
 
 const m = /^workbench-v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$/.exec(tag);
 if (!m) {
-	console.error(`--tag 必须是 workbench-v<semver>，收到：${JSON.stringify(tag)}`);
+	console.error(
+		`--tag 必须是 workbench-v<semver>，收到：${JSON.stringify(tag)}`,
+	);
 	process.exit(1);
 }
 const version = m[1];
@@ -74,10 +76,13 @@ const changelog = fs.readFileSync(
 	path.join(root, "packages/workbench/CHANGELOG.md"),
 	"utf8",
 );
-const section = new RegExp(`^## ${version.replace(/\./g, "\\.")}\\n([\\s\\S]*?)(?=^## |\\Z)`, "m").exec(
-	changelog,
-);
-const body = section ? section[1].trim() : `（CHANGELOG 中没有 ${version} 段落）`;
+const section = new RegExp(
+	`^## ${version.replace(/\./g, "\\.")}\\n([\\s\\S]*?)(?=^## |\\Z)`,
+	"m",
+).exec(changelog);
+const body = section
+	? section[1].trim()
+	: `（CHANGELOG 中没有 ${version} 段落）`;
 
 const notes = `${body}
 
