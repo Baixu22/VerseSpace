@@ -3,31 +3,28 @@
     "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
-      "user_goal": "确定历史故障的真实原因，避免误报修复。",
-      "validation_plan": [
-        "分析已保存的 Git 转储和宿主 PID 关联。",
-        "捕获最早非法堆写入或完整堆证据，验证兼容正式宿主修复。"
-      ],
-      "why_not_enough": "新转储为部分内存 minidump；检测调用链与模块列表不能单独证明最早写坏堆的模块。",
-      "why_this_task": "已确认原生 Git 崩溃，仍需责任模块的直接证据。"
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.95,
+    "confidence": 0.6,
     "context_tags": [],
     "desired_outcomes": [],
-    "difficulty": "unknown",
-    "id": "TF-0173",
+    "difficulty": "high",
+    "id": "TF-0229",
     "kind": "follow_up",
-    "next_action": "澄清阻塞原因并决定解除或废止",
+    "next_action": "夹具目录名必须以 api-fixture- 开头，否则 rmdir-probe.exe 的 cwd 守卫会直接 exit 2、无输出。",
     "priority": 3,
     "progress": 0.0,
-    "purpose": "保留未解的历史因果问题，避免把当前验证通过写成已定位旧故障。",
-    "ready": false,
+    "purpose": "把「能稳定复现」和「已解释清楚」分开：触发条件定位不等于机制定位。",
+    "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "blocked",
+    "status": "ready",
     "success_metrics": [],
-    "title": "Git 堆损坏归因：新转储已取得，最早非法写入仍待定位"
+    "title": "定位宿主 sandbox 托管模式内改写「删除非空目录」语义的机制"
   },
   {
     "alignment": {
@@ -55,5 +52,32 @@
     "status": "blocked",
     "success_metrics": [],
     "title": "完成退役提交的远端 CI 验收并合入主分支"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 0.95,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
+    "id": "TF-0230",
+    "kind": "follow_up",
+    "next_action": "澄清阻塞原因并决定解除或废止",
+    "priority": 2,
+    "progress": 0.0,
+    "purpose": "把堆因果从已收口的行为缺陷里分出来，避免它继续充当行为缺陷的阻塞理由。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "blocked",
+    "success_metrics": [],
+    "title": "三次历史 Git 0xC0000374 的归因（缺完整堆转储）"
   }
 ]

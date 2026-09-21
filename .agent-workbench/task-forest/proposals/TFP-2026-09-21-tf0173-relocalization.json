@@ -1,4 +1,5 @@
 {
+  "applied_at": "2026-09-21T07:34:47.123352Z",
   "base_graph_hash": "9f8c0df443664b1cd6c5ae83e027b023f9fdf314c75fbbdb12aa486dff577be5",
   "base_summary": {
     "edge_count": 348,
@@ -75,5 +76,5 @@
   "proposal_id": "TFP-2026-09-21-tf0173-relocalization",
   "rationale": "现场复核否证了两条旧判据（进程内加载 tsbx 即故障、备份通道是触发开关），并用单变量对照把触发条件钉到 executionMode=sandbox。TF-0173 的定位随之从「找责任模块 / 等完整堆转储」改为「隔离 sandbox 托管执行模式」，把未证的行为机制与历史堆因果分开，不再让一条未证理由长期充当唯一阻塞。",
   "session_id": "tf0173-relocalization-20260921",
-  "status": "proposed"
+  "status": "applied"
 }

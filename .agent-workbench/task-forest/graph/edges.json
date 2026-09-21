@@ -4174,5 +4174,53 @@
     "to": "TF-0225",
     "type": "child_of",
     "updated_at": "2026-09-21T04:36:56.116521Z"
+  },
+  "TFE-0354": {
+    "blocking": true,
+    "confidence": 0.8,
+    "created_at": "2026-09-21T07:35:49.484305Z",
+    "created_from_session": null,
+    "from": "TF-0229",
+    "id": "TFE-0354",
+    "reason": "宿主沙箱文件操作缺陷的机制追问，与 TF-0173 同属前提守护者一系。",
+    "to": "TF-0057",
+    "type": "child_of",
+    "updated_at": "2026-09-21T07:35:49.484310Z"
+  },
+  "TFE-0355": {
+    "blocking": false,
+    "confidence": 0.9,
+    "created_at": "2026-09-21T07:35:49.484952Z",
+    "created_from_session": null,
+    "from": "TF-0229",
+    "id": "TFE-0355",
+    "reason": "从 TF-0173 收口时拆出的未解项。",
+    "to": "TF-0173",
+    "type": "derived_from",
+    "updated_at": "2026-09-21T07:35:49.484959Z"
+  },
+  "TFE-0356": {
+    "blocking": true,
+    "confidence": 0.8,
+    "created_at": "2026-09-21T07:35:49.485557Z",
+    "created_from_session": null,
+    "from": "TF-0230",
+    "id": "TFE-0356",
+    "reason": "与 TF-0173 同源的历史崩溃归因，拆出后独立阻塞。",
+    "to": "TF-0057",
+    "type": "child_of",
+    "updated_at": "2026-09-21T07:35:49.485561Z"
+  },
+  "TFE-0357": {
+    "blocking": false,
+    "confidence": 0.9,
+    "created_at": "2026-09-21T07:35:49.486132Z",
+    "created_from_session": null,
+    "from": "TF-0230",
+    "id": "TFE-0357",
+    "reason": "从 TF-0173 收口时拆出的未解项。",
+    "to": "TF-0173",
+    "type": "derived_from",
+    "updated_at": "2026-09-21T07:35:49.486137Z"
   }
 }
