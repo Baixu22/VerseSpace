@@ -1,0 +1,248 @@
+# GitLab CI — takes over continuous integration from GitHub Actions.
+#
+# Why this exists (2026-09-21): the GitHub repo is private on a free plan and
+# its Actions billing is exhausted — every job fails to start with "The job
+# was not started because recent account payments have failed or your spending
+# limit needs to be increased", so PR checks on GitHub are dead (first seen on
+# PR #28). GitHub keeps hosting the repo, the PRs and the releases; GitLab.com
+# shared runners run CI. A branch that needs CI is pushed to both remotes:
+#
+#   git push origin <branch>   # GitHub — updates the PR
+#   git push gitlab <branch>   # GitLab  — runs this pipeline
+#
+# Translation of .github/workflows/ci.yml:
+# - The "Detect changes" job (dorny/paths-filter) is replaced by native
+#   `rules: changes` with the same category filters. The filter lists live in
+#   the hidden `.paths` map so each lane is defined once.
+# - macOS shared runners are not available on the GitLab free plan, so the
+#   macos-latest lanes run on Linux (saas-linux-small-amd64); the windows-*
+#   mirror lanes are kept on saas-windows-medium-amd64, which bills at 2x.
+#   Free-tier quota is 400 compute minutes/month, so the Windows lanes run
+#   automatically on the default branch but stay manual (`when: manual`,
+#   allow_failure by default → never blocks a green pipeline) on feature
+#   branches. A manual lane is one click in the pipeline view.
+# - Bun 1.3.14: Linux uses the official docker image; Windows downloads the
+#   pinned release zip — same version as `packageManager` and setup-js pin.
+# - `pipeline-heartbeat` keeps at least one job per pipeline so a push whose
+#   paths match no lane (docs-only) yields a green pipeline instead of a
+#   zero-job failure.
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "web"
+
+default:
+  interruptible: true
+
+variables:
+  BUN_VERSION: "1.3.14"
+
+stages: [verify]
+
+# Path categories, kept in sync with .github/workflows/ci.yml. Written flat on
+# purpose: GitLab `changes` does not flatten nested lists the way
+# dorny/paths-filter did, so shared categories are duplicated per lane.
+.paths:
+  global:
+    - .gitlab-ci.yml
+    - .github/**
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+  biome:
+    - .gitlab-ci.yml
+    - .github/**
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    # Biome lints the whole repo — gate on every extension it can parse.
+    - '**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,json,jsonc,css,html,vue,svelte,astro,graphql}'
+  typecheck:
+    # Root `bun run typecheck` walks all three packages — gate on the union.
+    - .gitlab-ci.yml
+    - .github/**
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    - packages/workbench/**
+    - packages/context-rot/**
+    - apps/workbench-ui/**
+  workbench:
+    - .gitlab-ci.yml
+    - .github/**
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    - packages/workbench/**
+    - packages/context-rot/**
+  workbench_ui:
+    - .gitlab-ci.yml
+    - .github/**
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    - apps/workbench-ui/**
+  context_rot:
+    - .gitlab-ci.yml
+    - .github/**
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    - packages/context-rot/**
+
+pipeline-heartbeat:
+  stage: verify
+  image: alpine:3.20
+  script:
+    - echo "pipeline for ${CI_COMMIT_REF_SLUG} — path filters selected the lanes below"
+
+# ---------- shared setup ----------
+
+.bun-linux:
+  # entrypoint reset: the base image may define a bun entrypoint that would
+  # swallow the runner's build script.
+  image:
+    name: oven/bun:1.3.14
+    entrypoint: [""]
+  variables:
+    BUN_INSTALL_CACHE_DIR: "$CI_PROJECT_DIR/.bun-cache"
+  cache:
+    - key:
+        files: [bun.lock]
+        prefix: bun-store-linux
+      paths: [.bun-cache]
+  before_script:
+    - bun --version
+    - bun install --frozen-lockfile
+
+.bun-windows:
+  tags: [saas-windows-medium-amd64]
+  variables:
+    BUN_INSTALL_CACHE_DIR: "$CI_PROJECT_DIR/.bun-cache"
+  cache:
+    - key:
+        files: [bun.lock]
+        prefix: bun-store-windows
+      paths: [.bun-cache]
+    - key: bun-bin-$BUN_VERSION
+      paths: [.bun-bin]
+
+# Windows setup is spliced with !reference into each job's `script:` (not
+# before_script): a single script section keeps PATH changes alive across the
+# setup lines and the lane command, which separate before_script/script files
+# on the pwsh shell do not guarantee.
+.win-setup:
+  script:
+    - $env:PATH = "$CI_PROJECT_DIR\.bun-bin;$env:PATH"
+    - |
+      if (-not (Test-Path "$CI_PROJECT_DIR\.bun-bin\bun.exe")) {
+        New-Item -ItemType Directory -Force -Path "$CI_PROJECT_DIR\.bun-bin" | Out-Null
+        $zip = "$env:TEMP\bun-$env:BUN_VERSION.zip"
+        Invoke-WebRequest -Uri "https://github.com/oven-sh/bun/releases/download/bun-v$env:BUN_VERSION/bun-windows-x64.zip" -OutFile $zip
+        Expand-Archive -Path $zip -DestinationPath "$env:TEMP\bun-unpack" -Force
+        Move-Item "$env:TEMP\bun-unpack\bun-windows-x64\bun.exe" "$CI_PROJECT_DIR\.bun-bin\bun.exe" -Force
+      }
+    - bun --version
+    - bun install --frozen-lockfile
+
+# ---------- quality ----------
+
+biome:
+  extends: .bun-linux
+  stage: verify
+  timeout: 15m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, biome]
+  script:
+    - bun x biome check . --config-path=./biome.json
+
+typecheck:
+  extends: .bun-linux
+  stage: verify
+  timeout: 20m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, typecheck]
+  script:
+    - bun run typecheck
+
+# ---------- test ----------
+
+workbench-test:
+  extends: .bun-linux
+  stage: verify
+  timeout: 20m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, workbench]
+  script:
+    - bun run test:workbench
+
+workbench-ui-test:
+  extends: .bun-linux
+  stage: verify
+  timeout: 25m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, workbench_ui]
+  script:
+    # Must run with cwd inside apps/workbench-ui (the package's own `test`
+    # script); passing `--root` instead breaks vi.mock resolution — see the
+    # note in .github/workflows/ci.yml.
+    - bun run test:workbench-ui
+    # CSS imports are not covered by tsc or jsdom — build after a clean
+    # install so undeclared assets cannot hide in an old node_modules.
+    - bun run build:ui
+
+context-rot-test:
+  extends: .bun-linux
+  stage: verify
+  timeout: 20m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, context_rot]
+  script:
+    - bun run test:context-rot
+
+# ---------- windows mirrors ----------
+# The three packages carry win32 branches (`process.platform === "win32"`)
+# that the Linux lanes never instantiate. 2x minute cost → automatic on the
+# default branch, manual on feature branches (never blocks a green pipeline).
+
+windows-typecheck:
+  extends: .bun-windows
+  stage: verify
+  timeout: 20m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: !reference [.paths, typecheck]
+    - if: $CI_COMMIT_BRANCH
+      when: manual
+      changes: !reference [.paths, typecheck]
+  script:
+    - !reference [.win-setup, script]
+    - bun run typecheck
+
+windows-workbench-test:
+  extends: .bun-windows
+  stage: verify
+  timeout: 30m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: !reference [.paths, workbench]
+    - if: $CI_COMMIT_BRANCH
+      when: manual
+      changes: !reference [.paths, workbench]
+  script:
+    - !reference [.win-setup, script]
+    - bun run test:workbench
