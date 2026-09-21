@@ -110,6 +110,30 @@ describe("Workbench assistant-ui adapter", () => {
 		]);
 	});
 
+	it("keeps premise notices on a user message ahead of the typed text (TF-0243)", () => {
+		const notice: NoticePart = {
+			type: "notice",
+			severity: "warning",
+			label: "前提失效：1 个文件。",
+			body: "- src/a.ts\n  观察版本 1 → 当前版本 2",
+		};
+		const message = toThreadMessage({
+			id: "user-2",
+			role: "user",
+			text: "second",
+			at: "2026-09-21T00:00:00.000Z",
+			parts: [notice, { type: "text", text: "second" }],
+		});
+		expect(message.role).toBe("user");
+		// user messages must not carry a status — the external store throws
+		expect(message).not.toHaveProperty("status");
+		const converted = normalize(message);
+		expect(converted.content).toEqual([
+			{ type: "data", name: "workbench-notice", data: notice },
+			{ type: "text", text: "second" },
+		]);
+	});
+
 	it("uses text fallback for legacy history, but honors an explicit empty parts snapshot", () => {
 		expect(
 			normalize(toThreadMessage({ ...stored, parts: undefined })).content,

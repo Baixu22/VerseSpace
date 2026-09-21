@@ -12839,7 +12839,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 3,
-    "progress": 60.0,
+    "progress": 90.0,
     "progress_source": "manual",
     "purpose": "让任务森林与仓库文档说的和代码/远端做的一致，后续规划不再建立在过期状态上。",
     "remaining_minutes_max": null,
@@ -12848,9 +12848,9 @@
     "source_sessions": [],
     "status": "in_progress",
     "success_metrics": [],
-    "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。\n\n【2026-09-21 进展】TF-0235 / 0236 / 0238 已完成；TF-0234 的改动已在工作树就绪待提交；TF-0237 风险已核实、替代方案已写明，等用户决定。",
+    "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。\n\n【2026-09-21 进展】TF-0235 / 0236 / 0238 已完成；TF-0234 的改动已在工作树就绪待提交；TF-0237 风险已核实、替代方案已写明，等用户决定。\n\n【2026-09-21 第二轮】TF-0237 已实现 GitLab 发行车道；全部改动在 PR #29；剩余只有 PR 合入。",
     "title": "阶段 1：把旧任务森林收干净——状态对齐远端事实、修正文档口径、处理未接线原语",
-    "updated_at": "2026-09-21T13:09:23.728558Z"
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   },
   "TF-0234": {
     "acceptance_criteria": [
@@ -12876,25 +12876,28 @@
     "difficulty": "low",
     "display_order": 100,
     "estimated_total_minutes": 30,
-    "evidence": [],
+    "evidence": [
+      "https://github.com/Baixu22/VerseSpace/pull/29",
+      "git log：73bd672 chore(closeout) / a7d314a ci(release) / d35a224 style / df2fe47 fix(release)"
+    ],
     "execution_hints": [],
     "id": "TF-0234",
     "kind": "follow_up",
-    "next_action": "在当前分支提交 task-forest 变更 + docs + .gitignore，push 到 origin 与 gitlab，开 PR 并合入",
+    "next_action": "GitLab 流水线绿 → 合并 PR #29 → 本节点 done",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 90.0,
     "progress_source": "manual",
     "purpose": "让「工作已做完」变成「成果已落库」，避免远端森林与本地森林分叉。",
     "remaining_minutes_max": 45,
     "remaining_minutes_min": 15,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "review_needed",
     "success_metrics": [],
-    "summary": "工作树里 TF-0231 已标 done，但节点变更、已应用的 proposal、docs/tf0231-injection-discriminator-2026-09-21.md 与 .gitignore 的本地证据规则都还未提交；远端 main 上该节点仍是 ready。",
+    "summary": "已提交并推送。分支 chore/phase1-closeout-20260921（73bd672 + a7d314a + d35a224 + df2fe47）已推 origin 与 gitlab，PR #29 已开；等 GitLab 流水线绿后合入。",
     "title": "把 TF-0231 沙箱注入判据的研究成果提交并合入主分支",
-    "updated_at": "2026-09-21T12:45:56.332976Z"
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   },
   "TF-0235": {
     "acceptance_criteria": [
@@ -13018,26 +13021,30 @@
     "evidence": [
       "gh run list --branch main --limit 1 → 2026-09-21T10:15 CI failure；jobs: Detect changes failure，其余 skipped",
       "grep stages .gitlab-ci.yml → stages: [verify]；无 release/publish job",
-      ".github/workflows/release-workbench.yml:9-12 on push tags workbench-v*；:24 runs-on matrix.os"
+      ".github/workflows/release-workbench.yml:9-12 on push tags workbench-v*；:24 runs-on matrix.os",
+      ".gitlab-ci.yml stages: [verify, release]；release-build / release-publish 两个 job",
+      "scripts/publish-workbench-release.mjs（node 无依赖）；scripts/tag-workbench-release.mjs 同时 push origin 与 gitlab",
+      "AGENTS.md Releases / Licensing 两条更新",
+      "PR #29"
     ],
     "execution_hints": [],
     "id": "TF-0237",
     "kind": "risk",
-    "next_action": "用户决定：等 GitHub 额度恢复，还是建 GitLab 发行车道（交叉编译 + 本机 gh release）",
+    "next_action": "PR #29 合入；下次真实 workbench-v* tag 走完 release-build → release-publish 即结案",
     "non_goals": [],
     "priority": 3,
-    "progress": 40.0,
+    "progress": 90.0,
     "progress_source": "manual",
     "purpose": "在下一次发版前把这个缺口显性化，避免在 CI 绿的错觉下推 tag。",
     "remaining_minutes_max": 180,
     "remaining_minutes_min": 60,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "review_needed",
     "success_metrics": [],
-    "summary": "已核实风险成立。2026-09-21 main 上最新 GitHub Actions run 仍在 Detect changes 失败、其余全部 skipped（账户额度未恢复）；gh api users/Baixu22/settings/billing/actions 需要 user scope，本机 gh 未授权，额度数字读不到。.gitlab-ci.yml 只有 verify 一个 stage（pipeline-heartbeat / biome / typecheck / workbench-test / workbench-ui-test / context-rot-test），没有发行车道；release-workbench.yml 由 workbench-v* tag 触发、矩阵跨 macOS / Linux / Windows 构建后 ubuntu 汇总发 Release——这条线整个不可用。可行替代：在 .gitlab-ci.yml 加 release stage，在 Windows runner 上跑 bun run build:all（bun 交叉编译四平台单文件）产出 artifacts，再由本机 gh release create 附上 NOTICE/LICENSE/LICENSE-APACHE；代价是 macOS / Linux 产物只有构建、没有在真实平台上跑过测试，需要在 Release 说明里诚实标注。是否建这条车道待用户决定。",
+    "summary": "用户决定：建 GitLab 发行车道。已实现：.gitlab-ci.yml 新增 release 阶段——release-build 在 workbench-v* tag 上跑 bun run build:all（Bun 交叉编译四平台）并把 dist/workbench-* + NOTICE/LICENSE/LICENSE-APACHE 存为 artifacts；release-publish 为手动 job，跑 scripts/publish-workbench-release.mjs：校验 tag 与包版本一致、七个发行物齐全、生成 SHA256SUMS、取 CHANGELOG 对应段落作 notes 并附「只有 windows-x64 跑过测试」的平台覆盖说明，gh release create --verify-tag。tag 脚本改为同时推 origin 与 gitlab；AGENTS.md 发行段已记录两条车道关系。glab ci lint 有效；publish 脚本对假 dist 做过 dry-run（首段/末段 CHANGELOG 提取均正确）。尚未用真实 tag 跑过一次——下一次发版即为验收。",
     "title": "风险：四平台发行验证无处可跑——release-workbench.yml 仍依赖被卡住的 GitHub Actions，本机 GitLab runner 只有 Windows",
-    "updated_at": "2026-09-21T13:09:23.728558Z"
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   },
   "TF-0238": {
     "acceptance_criteria": [
@@ -13094,10 +13101,10 @@
   },
   "TF-0239": {
     "acceptance_criteria": [
-      "dashboard 有一个非聊天的账本视图，数据来自 /api/state",
-      "tribunal 队列有人类可视化裁决入口",
-      "premises / footprints / notices 有证据浏览面",
-      "写端点按 ADR-0012 准入逐项接通，每个接通都有 vitest + Playwright 覆盖"
+      "前提通知正文作为 NoticePart 持久化在它被折入的那个 user turn 上，刷新后仍可见",
+      "spawn 出的 claude 会话挂上 workbench 的 MCP 只读工具，一次真实回合里模型调用 premises/tribunal 并以工具卡渲染",
+      "tribunal 条目能从对话面 resolve / shelve，结果作为 NoticePart 回到对话，事件与 CLI 触发不可区分",
+      "没有新增任何独立于聊天的路由级视图；vitest + Playwright 覆盖三条链路"
     ],
     "alignment": {
       "fit": "unknown",
@@ -13109,9 +13116,7 @@
     },
     "alignment_records": [],
     "assumptions": [],
-    "blocked_by": [
-      "用户确认 ba3f5c9 产品转向是否仍然有效"
-    ],
+    "blocked_by": [],
     "confidence": 0.85,
     "context_tags": [],
     "created_at": "2026-09-21T12:45:56.339486Z",
@@ -13124,34 +13129,38 @@
     "evidence": [
       "git show -s ba3f5c9：Product pivot per user direction … The tower rendering system is retired",
       "git show --diff-filter=D ba3f5c9 -- apps/workbench-ui/src → components/lanes.tsx、components/panels.tsx；App.tsx 从 520 行的账本面板改写为聊天壳",
-      "packages/workbench/CHANGELOG.md 0.2.0 段描述的面板能力与 0.3.0 段「本地聊天面板（GUI）」的替换关系"
+      "packages/workbench/CHANGELOG.md 0.2.0 段描述的面板能力与 0.3.0 段「本地聊天面板（GUI）」的替换关系",
+      "用户 2026-09-21 选择 (a)：转向仍有效，阶段 2 改为账本能力内嵌对话",
+      "盘点（Explore 子代理）：thread-types.ts:115-125 NoticePart / MessagePart；thread-run.ts:61-67 通知折入 prompt；claude-session.ts:64-80 无 --mcp-config；tribunal/queue.ts:36 tribunalApi（list/shelve/resolve/stats）；ui/ 无 tribunal 路由；sidecar.tsx:9-20 挂点；chat-composer.tsx:44-51 无 slash 机制"
     ],
     "execution_hints": [],
     "id": "TF-0239",
     "kind": "milestone",
-    "next_action": "向用户提出 (a)/(b)/(c) 三选一；确认后再把 TF-0240–0244 从 ready 推进",
+    "next_action": "先做 TF-0243（通知落盘，最小改动、零新路由），再做 TF-0241（MCP 接进车道），最后 TF-0242（裁决）",
     "non_goals": [
-      "复刻 Helmor 的多工作区/多仓库导航",
-      "把旧 src/ 的 React 组件搬回来"
+      "恢复 0.2.0 的目标 DAG / 工位 / checkpoint 面板",
+      "在 UI 里接 /api/sync、/api/dispatch、/api/agent/run 写端点（转向下这些留在 CLI）",
+      "给 composer 加 slash 命令系统"
     ],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 33.0,
     "progress_source": "manual",
-    "purpose": "Workbench 的核心是完整的 CLI/领域层，而 GUI 只是聊天与恢复面——这是当前最大的产品缺口。可以吸收 Helmor 的 inspector / navigation / workspace-start 等交互模式，但数据与行为全部来自 Blackboard。",
+    "purpose": "在不违背「交互 = 对话」的前提下，让人和模型都能在对话里看见并触碰前提账本：人看见模型被告知的前提、看见并裁决 tribunal 条目；模型在回合中能自己查账本。",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "blocked",
+    "status": "ready",
     "success_metrics": [],
-    "summary": "后端 ui/state.ts 已聚合 goals、workspots、checkpoints、interfaces、decisions、events、doctor、agent sessions；workspace-routes.ts 已有 /api/sync、/api/dispatch、/api/agent/run、/api/review。但前端根组件只挂 Chat，整个 apps/workbench-ui/src 没有一处消费这些路由；UI 里的「决策账本」展示的是聊天 fork/variant，不是架构决策也不是 tribunal。\n\n【2026-09-21 补充事实，需用户拍板】账本面板不是从未存在：0.2.0 的 workbench ui 有目标 DAG / 工位 / checkpoint / 接口漂移 / 决策 / 事件流 / doctor + 一键 Sync（apps/workbench-ui/src/App.tsx 520 行 + panels.tsx 197 + lanes.tsx 185，含 ReviewQueue「裁决优先」首屏与 fetchState / dispatchGoal / reviewCheckpoint / runAgent / triggerSync 客户端）。提交 ba3f5c9（0.3.0 聊天 MVP）把它整体删除，提交说明写明「Product pivot per user direction: interaction stays plain conversation; the depth is in the runtime layer. The tower rendering system is retired」。因此阶段 2 实质是推翻或修订这个转向，不是补一个从未做过的面。开工前必须由用户确认：(a) 转向仍有效，阶段 2 改为只做聊天内嵌的账本能力（如 tribunal 在对话中裁决）；(b) 转向作废，恢复独立账本视图并与聊天并列；(c) 折中——只读观察面 + 裁决面，写操作继续留在对话里。旧代码可作行为参考，但 0.2.0 的 UI 是塔式布局、react-query 直连，不宜直接搬回。",
-    "title": "阶段 2：Workbench 产品面完整化——让 goals / 工位 / 检查点 / 裁决 / 前提证据在面板上可见、可操作",
-    "updated_at": "2026-09-21T13:09:23.728558Z"
+    "summary": "用户 2026-09-21 确认：ba3f5c9 的产品转向仍然有效——交互保持纯对话，深度在运行时层；不恢复独立账本面板。盘点现状（2026-09-21）：① 前提通知只被折进模型 prompt（thread-run.ts:61-67 → prompt.ts），对话记录里只留一个计数，通知正文从不落盘，人看不到「模型被告知了什么」；② claude 车道启动没有 --mcp-config（claude-session.ts:64-80），workbench mcp 只服务外部 agent，模型在回合中读不到 premises/footprints/resume_cards/tribunal/notices，尽管渲染层已能画 mcp_tool_use/mcp_tool_result 卡片（claude-render-blocks.ts:195,216）；③ UI 服务器没有任何 tribunal 路由，tribunal 只有 CLI；④ 对话内唯一的非模型内容形态是 NoticePart（thread-types.ts:115-120），前端 NoticeRow 已能渲染；composer 上方的 sidecar（sidecar.tsx）已有 ResumeCard / DecisionLedger / NoticeDelivered 等挂点。阶段 2 沿这四个既有形态把账本能力带进对话，不新增第二个信息架构。\n\n【2026-09-21 进展】三个交付里 TF-0243（通知进对话记录）已 done 并浏览器验证；剩 TF-0241（MCP 接进 claude 车道）、TF-0242（对话内裁决）。",
+    "title": "阶段 2：账本能力内嵌对话——前提通知进对话记录、模型回合中可读账本、裁决在对话里完成（不做独立面板）",
+    "updated_at": "2026-09-21T15:20:58.039545Z"
   },
   "TF-0240": {
     "acceptance_criteria": [
-      "新增前端代码不 import 任何 944b9d6 之前 src/ 的文件",
-      "每个视图的数据源可追溯到 packages/workbench/src/ui 的某条路由"
+      "apps/workbench-ui/src 中没有对 /api/state、/api/sync、/api/dispatch、/api/agent/run 的调用",
+      "新增前端组件都挂在 thread-messages 或 sidecar 之下",
+      "每个新 part kind 在 thread-types.ts 有类型且 adapter.ts 有映射"
     ],
     "alignment": {
       "fit": "unknown",
@@ -13187,15 +13196,16 @@
     "source_sessions": [],
     "status": "ready",
     "success_metrics": [],
-    "summary": "ADR-0010 产品尺子与 ADR-0015 退役执行都明确旧 Helmor 是行为参考而非代码来源。阶段 2 的所有子任务都受此约束。",
-    "title": "要求：产品面只消费 Blackboard 与现有 HTTP 路由，不搬旧 React / Tauri 代码，交互模式可借鉴",
-    "updated_at": "2026-09-21T12:45:56.340747Z"
+    "summary": "转向 (a) 的边界。允许的载体：StoredMessage 的 MessagePart（现有 text / tool_call / notice，可按需新增 kind）、composer 上方 sidecar 的挂点、模型通过 MCP 调用后渲染的工具卡。禁止：新的顶层视图切换、react-query 直连 /api/state 的面板、把 0.2.0 的 panels.tsx / lanes.tsx 搬回。数据仍全部来自 Blackboard 与现有 chat 路由。",
+    "title": "要求：账本能力只以对话内既有形态出现——消息 part、composer 上方 sidecar、模型工具卡；不新增独立面板或路由级视图",
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   },
   "TF-0241": {
     "acceptance_criteria": [
-      "WorkbenchShell 之外有可切换的账本视图，加载 /api/state 并渲染 goals、workspots、checkpoints、queue、doctor 五块",
-      "空账本、doctor 非零退出、大账本（≥1MB）三种状态都有 UI 表现且不卡死",
-      "vitest 覆盖数据映射，Playwright 覆盖切换与渲染"
+      "一次真实 claude 回合中，模型调用 mcp__workbench__premises 并渲染为工具卡（用 chat/fixtures 或真实 CLI 二选一做门禁）",
+      "二进制与 bun run 两种启动形态都能定位到 workbench mcp",
+      "provider-capabilities.ts 对 claude 车道新增「可查账本」能力位并在 UI 诚实标注",
+      "MCP 不可用时（旧版 claude CLI 不认 --mcp-config）回合仍能跑，只是没有工具"
     ],
     "alignment": {
       "fit": "unknown",
@@ -13207,40 +13217,42 @@
     },
     "alignment_records": [],
     "assumptions": [],
-    "confidence": 0.85,
+    "confidence": 0.8,
     "context_tags": [],
     "created_at": "2026-09-21T12:45:56.341749Z",
     "deprecated_at": null,
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "medium",
-    "display_order": 200,
-    "estimated_total_minutes": 480,
+    "display_order": 300,
+    "estimated_total_minutes": 300,
     "evidence": [],
     "execution_hints": [],
     "id": "TF-0241",
     "kind": "task",
-    "next_action": "读 ui/state.ts 的返回 shape，定义前端类型；在 workbench-shell 加视图切换",
+    "next_action": "读 claude-session.ts / thread-run.ts / mcp/server.ts；确定 mcp-config 生成位置与可执行路径推导",
     "non_goals": [],
     "priority": 3,
     "progress": 0.0,
     "progress_source": "manual",
-    "purpose": "让用户第一次不用开 CLI 就能看见账本在说什么。",
-    "remaining_minutes_max": 720,
-    "remaining_minutes_min": 360,
+    "purpose": "「模型在回合中能自己查账本」是账本内嵌对话的另一半——不靠人贴上下文，模型主动核对前提。",
+    "remaining_minutes_max": 420,
+    "remaining_minutes_min": 240,
     "requirements": [],
     "source_sessions": [],
     "status": "ready",
     "success_metrics": [],
-    "summary": "ui/state.ts 已把这些聚合好，缺的只是前端。第一版做只读观察面，放在聊天壳旁边而不是替换它。",
-    "title": "面板消费 /api/state：新增 goals / 工位 / 检查点 / 执行队列 / doctor 的观察视图",
-    "updated_at": "2026-09-21T12:45:56.341749Z"
+    "summary": "现状：claude-session.ts:64-80 组装的参数只有 --permission-mode / --input-format / --resume / --session-id / --fork-session，没有 --mcp-config；mcp/server.ts 是给外部 agent 的独立进程。改法：thread-run 启动 claude 前生成一个临时 mcp 配置（command 指向当前 workbench 可执行文件 + [\"mcp\"]，cwd 为项目根），通过 --mcp-config 传入；渲染层已支持 mcp_tool_use/mcp_tool_result（claude-render-blocks.ts:195,216），工具卡免费获得。注意：五个工具已限 ≤2000 字符输出，不会吃掉上下文；单文件二进制与 bun run 两种形态下可执行文件路径不同，需从 process.execPath / import.meta 推导并测试。",
+    "title": "模型回合中可读账本：spawn claude 时挂上 workbench 的 MCP 只读工具，让模型自己查 premises / footprints / resume_cards / tribunal / notices",
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   },
   "TF-0242": {
     "acceptance_criteria": [
-      "有 tribunal 队列视图，展示 kind / 升级原因 / 相关工位 / 证据",
-      "能从 UI 提交裁决，写入与 CLI 相同的账本路径并产生事件",
-      "DecisionLedger 改名或加说明，避免与 tribunal / 架构决策混淆"
+      "有待裁决条目时 composer 上方出现 TribunalBar，无条目时不占位",
+      "从 UI resolve / shelve 后，events.jsonl 中的事件与 workbench tribunal resolve 产生的不可区分",
+      "裁决结果以 NoticePart 出现在对话里并持久化",
+      "DecisionLedger 已改名，且命名不再与 tribunal / 架构决策混淆",
+      "server 路由测试（NO_PROXY 下）+ vitest + Playwright 覆盖"
     ],
     "alignment": {
       "fit": "unknown",
@@ -13259,33 +13271,34 @@
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "medium",
-    "display_order": 300,
-    "estimated_total_minutes": 480,
+    "display_order": 400,
+    "estimated_total_minutes": 420,
     "evidence": [],
     "execution_hints": [],
     "id": "TF-0242",
     "kind": "task",
-    "next_action": "盘点 tribunal/ 模块的读写 API 与现有 CLI 命令，决定需要新增哪条 HTTP 路由（按 ADR-0012 准入）",
+    "next_action": "TF-0243 完成后开始；先加路由与测试，再做 sidecar 组件",
     "non_goals": [],
     "priority": 3,
     "progress": 0.0,
     "progress_source": "manual",
-    "purpose": "tribunal 是「系统答不了的问题交给人」的通道；没有 UI 入口，这个通道对非 CLI 用户不存在。",
-    "remaining_minutes_max": 720,
-    "remaining_minutes_min": 360,
+    "purpose": "tribunal 是「系统答不了的问题交给人」的通道；在对话里裁决而不是另开面板，符合转向 (a)。",
+    "remaining_minutes_max": 600,
+    "remaining_minutes_min": 300,
     "requirements": [],
     "source_sessions": [],
     "status": "ready",
     "success_metrics": [],
-    "summary": "tribunal 目前只有 CLI、MCP 只读列表和后端领域模块，没有人类可视化入口；任务森林自身（TF-0176 阶段记录）也标注「tribunal 前端入口仍未开工」。当前 UI 的 DecisionLedger 是聊天 fork/variant，同名异物，需在命名上区分。",
-    "title": "tribunal 人类裁决面：把等待人类决策的条目做成可视化队列并能提交裁决",
-    "updated_at": "2026-09-21T12:45:56.342751Z"
+    "summary": "现状：tribunal/queue.ts:36 tribunalApi 提供 list / get / shelve(id, minutes) / resolve(id) / stats；commands/tribunal.ts:40-69 的 renderCard 已产 SBAR 文本卡；UI 服务器无 tribunal 路由；sidecar.tsx 已有 ResumeCard / DecisionLedger 等挂点。改法：新增 GET /api/chat/threads/:id/tribunal（列表，复用 bb.tribunal.list）与 POST .../tribunal/:itemId/resolve|shelve（复用 tribunalApi，写事件与 CLI 同路径）；sidecar 新增 TribunalBar，展示待裁决条目（SBAR 摘要 + 证据引用，复用 EvidenceRefs）；裁决后把结果作为 info NoticePart 追加到当前线程最后一条 assistant 消息。DecisionLedger（聊天 fork/variant）改名为 BranchLedger 以免与 tribunal 混淆。",
+    "title": "对话内裁决：tribunal 条目在 composer 上方可见，能 resolve / shelve，结果作为 NoticePart 回到对话",
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   },
   "TF-0243": {
     "acceptance_criteria": [
-      "有 premises、footprints、notices 三个列表视图，支持按 writer / 路径过滤",
-      "点击一条失效前提能跳到对应恢复卡或聊天线程",
-      "复用 mcp/tools.ts 的查询逻辑或对应 HTTP evidence 路由，不复制实现"
+      "带通知的回合，刷新页面后 user 消息下仍显示通知条目，内容与 prompt 里折入的一致",
+      "无通知的回合不产生空 parts",
+      "旧线程（user 消息无 parts 字段）加载不报错",
+      "threads.test.ts / thread-run 测试覆盖写入；workbench-ui vitest 覆盖 UserMessage 渲染"
     ],
     "alignment": {
       "fit": "unknown",
@@ -13297,34 +13310,39 @@
     },
     "alignment_records": [],
     "assumptions": [],
-    "confidence": 0.8,
+    "confidence": 0.85,
     "context_tags": [],
     "created_at": "2026-09-21T12:45:56.343750Z",
     "deprecated_at": null,
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "medium",
-    "display_order": 400,
-    "estimated_total_minutes": 420,
-    "evidence": [],
+    "display_order": 200,
+    "estimated_total_minutes": 240,
+    "evidence": [
+      "packages/workbench/src/chat/notice-parts.ts + notice-parts.test.ts（3 例：多行拆分、单行无 body、空白跳过）",
+      "thread-run.ts：drain 提前到 appendMessage 之前；threads.test.ts R2 用例新增断言——第 2 个 user 消息 parts=[notice, text]，第 1 个无 parts",
+      "bun run test:workbench 913 pass；apps/workbench-ui vitest 62 pass（含 adapter.test.ts TF-0243 用例）；typecheck + biome 全绿",
+      "浏览器验证（workbench ui :7700 + vite :5188）：NoticeRow label=前提失效：2 个文件。，body computed white-space=pre-wrap，跨 4 行渲染，newline 保留"
+    ],
     "execution_hints": [],
     "id": "TF-0243",
     "kind": "task",
-    "next_action": "对照 mcp/tools.ts 与 ui/evidence-route.ts 的查询能力，确定是否需要新只读路由",
+    "next_action": "",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
-    "purpose": "前提账本是产品护城河，但护城河 A/B/C/D 在 fit 账本里全部未达门槛——人类看不见证据，就不会产生自然使用。",
-    "remaining_minutes_max": 600,
-    "remaining_minutes_min": 300,
+    "purpose": "让「模型被告知了什么」成为对话记录的一部分——这是前提账本在对话里最基本的可见性，也是阶段 4 自然使用读数的前置。",
+    "remaining_minutes_max": 300,
+    "remaining_minutes_min": 180,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
-    "summary": "MCP 已暴露这五个只读工具给 agent；人类目前只能走 CLI --json 或恢复卡。证据浏览面让人看见「谁读过什么、谁改了什么、哪些前提失效了」。",
-    "title": "前提证据浏览面：premises / footprints / notices 在面板上可查、可按写者与文件过滤",
-    "updated_at": "2026-09-21T12:45:56.343750Z"
+    "summary": "已实现并浏览器验证。改动：① 新增 chat/notice-parts.ts（noticeParts：把渲染后的通知文本首行作 label、其余作 body，映射为 severity=warning 的 NoticePart 数组，空白通知跳过、顺序保持）；② thread-run.ts 把 drainNotices/selectNoticeEntries 提前到 user 消息写入之前，非 resend 轮次把选中的通知作为 parts=[...noticeParts, {text}] 挂到 user StoredMessage；③ thread-types.ts StoredMessage.parts 文档说明 user 分支的含义；④ 前端 adapter.ts 早已把 notice part 映射为 data-workbench-notice；thread-messages.tsx 的 UserMessage 现在先渲染 NoticeRow 再渲染文本气泡；notice-row.tsx 的 body 加 whitespace-pre-wrap 让多文件明细换行正确。零新路由、零新 part kind。旧线程（user 无 parts）加载不受影响。",
+    "title": "前提通知进对话记录：把折入模型 prompt 的通知正文作为 NoticePart 持久化到对应 user turn，并在消息里渲染",
+    "updated_at": "2026-09-21T15:20:58.039545Z"
   },
   "TF-0244": {
     "acceptance_criteria": [
@@ -13345,7 +13363,7 @@
     "confidence": 0.75,
     "context_tags": [],
     "created_at": "2026-09-21T12:45:56.345956Z",
-    "deprecated_at": null,
+    "deprecated_at": "2026-09-21T14:15:34.288089Z",
     "desired_outcomes": [],
     "deviations": [],
     "difficulty": "medium",
@@ -13365,11 +13383,11 @@
     "remaining_minutes_min": 420,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "deprecated",
     "success_metrics": [],
-    "summary": "workspace-routes.ts 已有这四条写路由，但没有前端调用者。每一条接通都要回答 ADR-0012 的写端点准入问题（幂等、锁、事件、失败回滚），不能只是加按钮。",
+    "summary": "用户 2026-09-21 确认 ba3f5c9 转向仍有效：交互保持纯对话，sync / dispatch / review / agent run 写端点不进 UI，留在 CLI。若将来需要对话内触发，另立节点按 ADR-0012 评估。",
     "title": "按 ADR-0012 准入逐项接通写端点：sync、dispatch、review、agent run 从面板可触发",
-    "updated_at": "2026-09-21T12:45:56.345956Z"
+    "updated_at": "2026-09-21T14:15:34.288089Z"
   },
   "TF-0245": {
     "acceptance_criteria": [

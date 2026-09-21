@@ -4427,18 +4427,6 @@
     "type": "child_of",
     "updated_at": "2026-09-21T12:45:56.342751Z"
   },
-  "TFE-0375": {
-    "blocking": false,
-    "confidence": 0.6,
-    "created_at": "2026-09-21T12:45:56.342751Z",
-    "created_from_session": null,
-    "from": "TF-0242",
-    "id": "TFE-0375",
-    "reason": "复用观察视图的壳与数据加载模式",
-    "to": "TF-0241",
-    "type": "depends_on",
-    "updated_at": "2026-09-21T12:45:56.342751Z"
-  },
   "TFE-0376": {
     "blocking": true,
     "confidence": 0.6,
@@ -4450,18 +4438,6 @@
     "to": "TF-0239",
     "type": "child_of",
     "updated_at": "2026-09-21T12:45:56.343750Z"
-  },
-  "TFE-0377": {
-    "blocking": false,
-    "confidence": 0.6,
-    "created_at": "2026-09-21T12:45:56.344954Z",
-    "created_from_session": null,
-    "from": "TF-0243",
-    "id": "TFE-0377",
-    "reason": "复用观察视图的壳",
-    "to": "TF-0241",
-    "type": "depends_on",
-    "updated_at": "2026-09-21T12:45:56.344954Z"
   },
   "TFE-0378": {
     "blocking": true,
@@ -4702,5 +4678,17 @@
     "to": "TF-0193",
     "type": "derived_from",
     "updated_at": "2026-09-21T12:45:56.361049Z"
+  },
+  "TFE-0398": {
+    "blocking": true,
+    "confidence": 0.6,
+    "created_at": "2026-09-21T14:15:34.287088Z",
+    "created_from_session": null,
+    "from": "TF-0242",
+    "id": "TFE-0398",
+    "reason": "裁决回执复用通知落盘的 NoticePart 持久化路径",
+    "to": "TF-0243",
+    "type": "depends_on",
+    "updated_at": "2026-09-21T14:15:34.287088Z"
   }
 }

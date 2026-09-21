@@ -1,11 +1,11 @@
 {
   "created_at": "2026-08-28T08:00:43.940229Z",
-  "graph_hash": "7580a2e49b1fc42f2538d535d34b09697172269dcb339a7a7c524571d459c31c",
-  "next_edge_number": 398,
+  "graph_hash": "639d124904bb6e9bc1a2ddf13550895e2637aed25d1099f34b40b6078d398442",
+  "next_edge_number": 399,
   "next_event_number": 167,
   "next_node_number": 252,
-  "next_snapshot_number": 333,
+  "next_snapshot_number": 335,
   "schema_version": 1,
-  "updated_at": "2026-09-21T13:09:23.806472Z",
+  "updated_at": "2026-09-21T15:20:58.118804Z",
   "workspace_path": "D:\\helmor-main"
 }

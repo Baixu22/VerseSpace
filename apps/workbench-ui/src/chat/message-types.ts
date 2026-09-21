@@ -19,9 +19,9 @@ export interface CollapsedGroupPart {
 }
 
 /**
- * 提供方发来的、操作者该看见的信息（今天只有「权限被拒」）。它属于助手消息，
- * 但呈现为通知而不是 agent 自己的话。形状与 workbench 侧 `NoticePart` 一一对应
- * （`protocol.test.ts` 会强制两侧线协议类型互相可赋值）。
+ * 操作者该看见、但不是谁「说」的信息。助手消息上：提供方拒绝了某个动作；
+ * 用户消息上：折入这一轮 prompt 的前提通知（TF-0243）。形状与 workbench 侧
+ * `NoticePart` 一一对应（`protocol.test.ts` 会强制两侧线协议类型互相可赋值）。
  */
 export interface NoticePart {
 	type: "notice";

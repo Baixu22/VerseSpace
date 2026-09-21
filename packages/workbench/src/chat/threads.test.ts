@@ -616,6 +616,19 @@ process.stdin.on("data", (chunk) => {
 			expect(
 				await ws.bb.events.query({ type: "premise_notice_delivered" }),
 			).toHaveLength(1);
+
+			// TF-0243: what the model was told is recorded on the user turn it
+			// was folded into — notices first, then the typed text. A turn with
+			// no notices keeps the bare shape (no empty `parts`).
+			const messages = await chat.messages(thread.id);
+			const users = messages.filter((m) => m.role === "user");
+			expect(users).toHaveLength(2);
+			expect(users[0]?.parts).toBeUndefined();
+			expect(users[1]?.parts).toEqual([
+				{ type: "notice", severity: "warning", label: "前提已经变化" },
+				{ type: "text", text: "second" },
+			]);
+			expect(users[1]?.text).toBe("second");
 		} finally {
 			if (previousCommand === undefined) {
 				delete process.env.WORKBENCH_CHAT_COMMAND;
