@@ -222,10 +222,17 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   (`workbench-v*` tag → four-platform build → GitHub Release). The npm shape is not published
   yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
   the version and `CHANGELOG.md` first. **`.changeset/` no longer exists** — bump the version and
-  write the changelog entry by hand.
+  write the changelog entry by hand. **While GitHub Actions has no runner** (quota, see CI
+  remotes above) the tag script pushes to both remotes and the build runs in the `release` stage
+  of `.gitlab-ci.yml`: `release-build` cross-compiles all four binaries on the Windows runner,
+  then the **manual** `release-publish` job runs `scripts/publish-workbench-release.mjs`, which
+  attaches them plus `SHA256SUMS` to the GitHub Release and states in the notes that only
+  windows-x64 ran the test suite. `release-workbench.yml` stays as the per-platform lane for
+  when Actions comes back.
 - **Licensing**: `@baixu22/workbench` is `MIT AND Apache-2.0`. `scripts/build.ts` copies
   `NOTICE` / `LICENSE` / `LICENSE-APACHE` into `dist/`, the package `files` field keeps them in
-  the tarball, and `release-workbench.yml` attaches them to the Release. Apache-2.0 §4(d)
+  the tarball, and both release lanes (`release-workbench.yml`,
+  `scripts/publish-workbench-release.mjs`) attach them to the Release. Apache-2.0 §4(d)
   requires a readable `NOTICE` at distribution time — do not delete those files.
 - **"Helmor" and the Helmor logo are trademarks** of Caspian Zhao and Nathan Lian. The Apache-2.0
   grant covers use, modification and redistribution of the source, but **not** use of the name or
