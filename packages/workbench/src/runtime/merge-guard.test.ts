@@ -21,15 +21,33 @@ import {
 
 type Fixture = Awaited<ReturnType<typeof makeTempWorkbench>>;
 
+// Ambient GIT_AUTHOR_* / GIT_COMMITTER_* outrank local git config; pin identity.
+function gitIdentityEnv(name: string, email: string): NodeJS.ProcessEnv {
+	return {
+		...process.env,
+		GIT_AUTHOR_NAME: name,
+		GIT_AUTHOR_EMAIL: email,
+		GIT_COMMITTER_NAME: name,
+		GIT_COMMITTER_EMAIL: email,
+	};
+}
+
+const testerEnv = gitIdentityEnv("Tester", "t@example.com");
+const otherEnv = gitIdentityEnv("Other", "o@example.com");
+
 async function gitInit(ws: Fixture): Promise<void> {
 	await git(["init", "-q"], ws.projectDir);
 	await git(["config", "user.email", "t@example.com"], ws.projectDir);
 	await git(["config", "user.name", "Tester"], ws.projectDir);
 }
 
-async function commitAll(ws: Fixture, message: string): Promise<void> {
+async function commitAll(
+	ws: Fixture,
+	message: string,
+	env: NodeJS.ProcessEnv = testerEnv,
+): Promise<void> {
 	await git(["add", "-A"], ws.projectDir);
-	await git(["commit", "-qm", message], ws.projectDir);
+	await git(["commit", "-qm", message], ws.projectDir, env);
 }
 
 describe("parseMergeTreeOutput（只在认得出来时才算结论）", () => {
@@ -198,18 +216,7 @@ describe("合并安全网（R2 · TF-0079）", () => {
 			// shared.ts 由第二个人再提交一次
 			await writeFile(join(ws.projectDir, "src", "shared.ts"), "b2", "utf8");
 			await git(["add", "-A"], ws.projectDir);
-			await git(
-				[
-					"-c",
-					"user.name=Other",
-					"-c",
-					"user.email=o@example.com",
-					"commit",
-					"-qm",
-					"other",
-				],
-				ws.projectDir,
-			);
+			await git(["commit", "-qm", "other"], ws.projectDir, otherEnv);
 
 			expect(await recentAuthors(ws.projectDir, "src/solo.ts")).toEqual([
 				"Tester",
@@ -232,18 +239,7 @@ describe("合并安全网（R2 · TF-0079）", () => {
 			await commitAll(ws, "base");
 			await writeFile(join(ws.projectDir, "src", "shared.ts"), "b2", "utf8");
 			await git(["add", "-A"], ws.projectDir);
-			await git(
-				[
-					"-c",
-					"user.name=Other",
-					"-c",
-					"user.email=o@example.com",
-					"commit",
-					"-qm",
-					"other",
-				],
-				ws.projectDir,
-			);
+			await git(["commit", "-qm", "other"], ws.projectDir, otherEnv);
 
 			// 两个写者同时碰了 solo.ts（反常）和 shared.ts（常规）
 			for (const id of ["wa", "wb"]) {

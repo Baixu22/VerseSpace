@@ -35,8 +35,10 @@ variables:
   BUN_VERSION: "1.3.14"
   # Full history: merge-author safety-net tests read git log authors.
   GIT_DEPTH: "0"
-  # Keep bun on PATH even if the runner service environment is reset.
+  # Keep bun/node on PATH even if the runner service environment is reset.
   BUN_BIN: "C:\\Users\\27933\\AppData\\Roaming\\npm\\node_modules\\bun\\bin"
+  NODE_BIN_DIR: "C:\\Program Files\\nodejs"
+  CONTEXT_ROT_NODE: "C:\\Program Files\\nodejs\\node.exe"
 
 stages: [verify]
 
@@ -99,8 +101,9 @@ pipeline-heartbeat:
 
 .bun-setup:
   before_script:
-    - $env:PATH = "$env:BUN_BIN;$env:PATH"
+    - $env:PATH = "$env:NODE_BIN_DIR;$env:BUN_BIN;$env:PATH"
     - bun --version
+    - node --version
     - bun install --frozen-lockfile
 
 biome:
