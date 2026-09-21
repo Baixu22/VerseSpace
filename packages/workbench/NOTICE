@@ -11,7 +11,7 @@ Portions derived from Helmor (Apache-2.0)
 
 Copyright 2026 Caspian Zhao, Nathan Lian
 
-The following part of this product is derived from the Helmor project, which is
+The following portions are derived from the Helmor project, which is
 licensed under the Apache License, Version 2.0:
 
   apps/workbench-ui/src/styles/theme.css
@@ -25,10 +25,22 @@ licensed under the Apache License, Version 2.0:
   settings / workspace-PR / chart / sub-agent tokens were removed. The change
   notice required by Section 4(b) is at the top of that file.
 
-Everything else in this package — the CLI, the filesystem state manager, the
-local HTTP dashboard and its components — is original work of the package
-author. No other file is derived from Helmor, and this package imports nothing
-from it.
+  packages/workbench/src/chat/system-notice.ts
+    A CHANGED TypeScript port of the permission-denied notice helper in
+    `src-tauri/src/pipeline/adapter/labels.rs`, retaining its field priority
+    and operator-facing text. The file carries its own origin/change notice.
+    This code is included in the binary and JS bundle.
+
+  packages/workbench/src/chat/fixtures/streams/
+    The 49 JSONL stream fixtures moved from
+    `src-tauri/tests/fixtures/streams/`, with their contents unchanged.
+    These are source/test materials; they are not embedded in release binaries
+    or included in the npm package's files list.
+
+The retired source paths remain available at commit `944b9d6` and earlier.
+The Workbench package uses MIT for its own work and retains Apache-2.0 for
+incorporated Helmor portions. Third-party dependencies retain their licenses
+listed below. No runtime import from the retired directories is required.
 
 Per Section 4(d), this NOTICE is distributed with every release: `scripts/build.ts`
 copies it into `dist/` (and into each platform archive), and the package

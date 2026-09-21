@@ -1,4 +1,10 @@
 /**
+ * ORIGIN AND CHANGE NOTICE — Apache License 2.0, Section 4(b).
+ * Copyright 2026 Caspian Zhao, Nathan Lian.
+ * Changed from Helmor's Rust permission-denied notice helper into TypeScript;
+ * retained its field priority and labels, and added the system-event guard.
+ * See this package's NOTICE and LICENSE-APACHE.
+ *
  * Provider system events that are *information for the operator* rather than
  * facts of the turn (TF-0200 follow-up; the shape is absorbed from the frozen
  * legacy adapter's `MessagePart::SystemNotice`).

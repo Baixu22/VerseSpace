@@ -1,47 +1,6 @@
 [
   {
     "alignment": {
-      "fit": "aligned",
-      "fit_confidence": 0.8,
-      "user_goal": "把 Helmor 仓库里的 Workbench 主线做成一个身份清晰、合规、可靠、可被别的 agent 直接使用的产品",
-      "validation_plan": [
-        "ADR-0012 落库",
-        "release 产物含 NOTICE",
-        "fit-ledger 出现非零 resumeActions 与 withFootprints"
-      ],
-      "why_not_enough": "报告是探索不是规划；六个决策需用户确认；真实使用数据仍为零",
-      "why_this_task": "报告已核验四项容器耦合与合规暴露面，且六个决策点决定后续全部工作的形态"
-    },
-    "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [
-      "absorption",
-      "compliance",
-      "workbench"
-    ],
-    "desired_outcomes": [
-      "每次 workbench 发布不再含未声明归属的 Apache-2.0 代码",
-      "UI 聊天在 claude 车道上产生真实足迹并在界面诚实标注可观测性",
-      "恢复卡上的分支动静（D3-Q2）落地",
-      "dispatch 有 worktree 预检与两阶段创建回滚",
-      "支线的四项容器耦合清零，退役条件可核查"
-    ],
-    "difficulty": "high",
-    "id": "TF-0176",
-    "kind": "global_task",
-    "next_action": "补充下一步动作或开始执行",
-    "priority": 1,
-    "progress": 76.3,
-    "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "in_progress",
-    "success_metrics": [],
-    "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码"
-  },
-  {
-    "alignment": {
       "fit": "unknown",
       "fit_confidence": 0.0,
       "user_goal": "确定历史故障的真实原因，避免误报修复。",

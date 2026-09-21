@@ -28,7 +28,7 @@ bun run release:tag:workbench
 bun run release:tag:workbench --push
 ```
 
-`release-workbench.yml` 会先跑 `packages/workbench` 的测试，再交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64 并把产物挂到该 tag 的 Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。注意根目录的 `release:tag` 是旧 Helmor 的 tag（`v0.46.0`），与本包无关——workbench 用 `release:tag:workbench`。
+`release-workbench.yml` 会先跑 `packages/workbench` 的测试，再交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64 并把产物挂到该 tag 的 Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。
 
 ## 5 分钟上手
 
@@ -190,14 +190,14 @@ Windows 入口默认模型为 `senseaudio-s2-flash`（默认端点 `https://api.
 
 模型产物会独立执行固定 12 项 URL 用例，最多交回模型纠正两轮，全部结果保存在 `runs/live-validation.json`。如完整场景在开发阶段之前失败，可加 `-DevelopmentWorkspace <隔离现场路径>` 单独运行开发、恢复和分叉；只接受已有授权标记的现场，会重新初始化示例源文件，原 `runs/live-report.json` 保持不变，专项通过不代表完整场景通过。
 
-架构决策见 [ADR 目录](../../docs/decisions/README.md)。目标、工位与 checkpoint CLI 保留兼容，当前开发主线是 ADR-0010 的前提守护；存量处置见 [ADR-0011](../../docs/decisions/0011-legacy-retention.md)。
+架构决策见 [ADR 目录](../../docs/decisions/README.md)。目标、工位与 checkpoint CLI 保留兼容，当前开发主线是 ADR-0010 的前提守护；存量退役与收口见 [ADR-0015](../../docs/decisions/0015-legacy-retirement-execution.md) 和 [ADR-0016](../../docs/decisions/0016-retirement-closeout.md)。
 
 ## License
 
-**MIT，含 Apache-2.0 部分。** 包本身以 MIT 发布（`LICENSE`）。其中内联的主题 token 子集
-——`apps/workbench-ui/src/styles/theme.css`，派生自 Helmor 的 `src/styles/color-theme.css`
-（Copyright 2026 Caspian Zhao, Nathan Lian）——按 Apache-2.0 分发，归属与改动声明见
-`NOTICE` 与 `LICENSE-APACHE`。
+**MIT，含 Apache-2.0 部分。** 包本身以 MIT 发布（`LICENSE`）。内联主题 token 子集和
+权限拒绝提示的移植实现来自 Helmor（Copyright 2026 Caspian Zhao, Nathan Lian），
+按 Apache-2.0 分发；迁入的流协议夹具也保留原归属，仅用于源码参考与测试。
+具体文件、来源与改动声明见 `NOTICE` 与 `LICENSE-APACHE`。
 
 ```
 license: MIT AND Apache-2.0     # SPDX

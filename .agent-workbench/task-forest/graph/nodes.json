@@ -9882,7 +9882,8 @@
       "支线的四项容器耦合清零，退役条件可核查"
     ],
     "deviations": [
-      "TFD-1d70ea4b93"
+      "TFD-1d70ea4b93",
+      "TFD-7dc9fa7668"
     ],
     "difficulty": "high",
     "display_order": 2700,
@@ -9895,7 +9896,9 @@
       "2026-09-19 阶段 2 完成（TF-0190 受控试用取证闭合）：claude 车道 withFootprints=1、HTTP 对照 0，验收两项判据均满足。总进度按既有 5,160 分钟口径更新为 2,105 / 5,160 = 40.8%。",
       "2026-09-19 阶段 6 完成（MCP server）：TF-0210/0211/0212 全部 done，`workbench mcp` 已被 Claude Code 连接（✔ Connected），五条只读工具上线（premises/footprints/resume_cards/tribunal/notices），零新依赖。总进度 = (2,105 + 600) / 5,160 = 52.4%。",
       "2026-09-19 阶段 7 完成（容器耦合清零与删码）：四项耦合清零、apps/marketing 与 apps/registry 删除、L3 残留清除、ADR-0014 落库。七项任务估时 30+60+60+60+240+90+90=630。总进度 = (2,705 + 630) / 5,160 = 64.6%。",
-      "2026-09-19 阶段 4 前置完成：TF-0196（checkpoint 会话链接 + merged_back 白名单）与 TF-0197（L1 结构摘要）done，估时 240+360=600。阶段 4 剩 TF-0198（渲染门与熔断）与 TF-0199（前端），依赖阶段 3 观察窗基线。总进度 = (3,335 + 600) / 5,160 = 76.3%。"
+      "2026-09-19 阶段 4 前置完成：TF-0196（checkpoint 会话链接 + merged_back 白名单）与 TF-0197（L1 结构摘要）done，估时 240+360=600。阶段 4 剩 TF-0198（渲染门与熔断）与 TF-0199（前端），依赖阶段 3 观察窗基线。总进度 = (3,335 + 600) / 5,160 = 76.3%。",
+      "2026-09-21 收口复核：原图中 14 个直接子节点、48 个后代均已完成，旧 76.3% 是 2026-09-19 保留的手工估时快照，不是尚有 23.7% 开发量。补登记 TF-0225/TF-0226 并通过 ADR-0016 所列本地门禁后设为 done/100%。",
+      "本轮修复依赖方向为 TF-0225 depends_on TF-0226；保留既有证据数组与历史事件。TF-0173 位于另一分支，仍因缺原始转储 blocked；此次收口不宣称已解决它或完成远端/跨平台验收。"
     ],
     "execution_hints": [],
     "id": "TF-0176",
@@ -9907,7 +9910,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 76.3,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9920,11 +9923,11 @@
     "source_sessions": [
       "session-2026-09-17-absorption-plan"
     ],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
-    "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
+    "summary": "六个决策点与七个阶段已经完成；本轮补登记存量退役与夹具迁移，修复干净安装构建、入口与归属漏项后收口。Workbench 使用自己的构建和发行入口，保持前提账本边界。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-19T02:49:57.773965Z"
+    "updated_at": "2026-09-21T02:43:23.574074Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -12037,7 +12040,10 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-b560ff7e7d",
+      "TFD-31a78e49dd"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": 90,
     "evidence": [
@@ -12291,5 +12297,135 @@
     "summary": "缓解：每项删除三套测试 + typecheck + lint 全绿为验收。",
     "title": "风险：删除 apps/marketing、apps/registry 或残留代码时 CI/biome/tsconfig 引用未清导致全仓构建断",
     "updated_at": "2026-09-20T16:35:49.628070Z"
+  },
+  "TF-0225": {
+    "acceptance_criteria": [
+      "typecheck / biome / 三套测试全绿",
+      "packages/workbench 构建产出单文件二进制与 npm bundle，两者可自报版本",
+      "dist/ 内含 NOTICE、LICENSE、LICENSE-APACHE",
+      "check-landing 无 dirty、无 suspect",
+      "仓库外冻结锁文件安装后，UI 构建与两种发行物的 test:build 通过"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.95,
+    "context_tags": [
+      "retirement",
+      "workbench",
+      "compliance",
+      "build"
+    ],
+    "created_at": "2026-09-21T02:43:23.570784Z",
+    "deprecated_at": null,
+    "desired_outcomes": [
+      "工作树里不再有 src/、src-tauri/、sidecar/ 与任何指向它们的活引用",
+      "根 package.json 只剩三包门禁、UI 开发构建与 workbench 发版三块能力",
+      "发布物仍能构建，且合规文件随构建进入 dist/"
+    ],
+    "deviations": [
+      "TFD-b560ff7e7d",
+      "TFD-31a78e49dd",
+      "TFD-4c045c8f30",
+      "TFD-7dc9fa7668"
+    ],
+    "difficulty": "high",
+    "display_order": 2800,
+    "estimated_total_minutes": 240,
+    "evidence": [
+      "工作树删除面：1481 个文件（src/ 738、src-tauri/ 601、sidecar/ 82，外加 legacy 构建入口、CI 工作流、发版脚本与 Nix shell）",
+      "门禁读数（本轮现场实跑）：typecheck 三包 0 错；biome 540 文件 0 问题",
+      "三套测试 904（workbench 134 文件）+ 61（UI 17 文件）+ 65（context-rot 6 文件） = 1030 pass / 0 fail",
+      "对照实验：向 UI 包注入一处类型错误后 typecheck 退出码 2 并指名文件，证明这条门禁不是空跑",
+      "发布链：bun run build:ui 嵌入 14 个 UI 资源；packages/workbench bun run build 产出 dist/workbench.exe 与 dist/workbench.js（均自报 0.3.0），attribution 把 NOTICE / LICENSE / LICENSE-APACHE 复制进 dist/",
+      "落地：d8e2f83（代码面 1542 文件）+ 5b6eca6（文档面 9 文件），check-landing dirty 0 / suspect 0",
+      "2026-09-21 独立复核：原工作区虽有 1030 项测试通过，仓库外干净安装后的 UI 构建仍以 exit 1 报缺少 Geist Mono；补齐两项字体依赖后同一隔离目录构建 exit 0。详见 docs/retirement-closeout-validation-2026-09-21.md。",
+      "本轮根 build:ui 仅执行一次 Vite，嵌入 14 个资源；CI 增加面板真实构建，发布测试复用包内声明的 60 秒超时入口。",
+      "本轮最终三包 typecheck 与 Biome exit 0；测试 904 + 61 + 65 = 1030 pass / 0 fail；隔离构建的 native / JS 均通过初始化、doctor、stats 与内嵌 UI 检查。",
+      "根 README 改为 Workbench 入口；根 NOTICE 保留上游归属并指向发行物清单，包 NOTICE 补权限提示移植与源代码夹具范围；dist 三个许可文件逐字节一致。决策记录 ADR-0016。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0225",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "让 Workbench 主线在身份、合规与构建链上不再寄生于旧 Helmor 容器——删除是 ADR-0011「存量处置」的终点，也是判断「主线是否真的独立」的唯一硬证据。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "兑现 ADR-0014 决策 3 预留的删除动作：把 49 个流夹具先搬进主线，再清掉样式/构建/发布/CI 的全部引用，最后删除 src/、src-tauri/、sidecar/ 与 apps/marketing、apps/registry，并用现行三套门禁证明主线仍可跑、仍可发布。",
+    "title": "执行存量退役：删除 src/、src-tauri/、sidecar/ 三块旧容器与外围，清空全仓引用",
+    "updated_at": "2026-09-21T02:43:23.570784Z"
+  },
+  "TF-0226": {
+    "acceptance_criteria": [
+      "claude 夹具回放用例在同包内通过",
+      "全量测试套件不因迁移而变红"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "retirement",
+      "workbench",
+      "fixtures",
+      "wire-protocol"
+    ],
+    "created_at": "2026-09-21T02:43:23.570784Z",
+    "deprecated_at": null,
+    "desired_outcomes": [
+      "主线不再需要跨目录读 src-tauri/ 才能跑夹具回放",
+      "四个尚无消费者的 provider 夹具也保留下来作为参考样本"
+    ],
+    "deviations": [
+      "TFD-31a78e49dd",
+      "TFD-4c045c8f30"
+    ],
+    "difficulty": "medium",
+    "display_order": 2810,
+    "estimated_total_minutes": 60,
+    "evidence": [
+      "迁移面：49 个 .jsonl（claude 19 / codex 11 / cursor 7 / kimi 3 / opencode 9，约 766 KB）",
+      "claude-fixtures.test.ts 的夹具目录由跨目录相对路径改为 join(import.meta.dir, \"fixtures/streams/claude\")",
+      "本轮全量实跑覆盖该用例：workbench 套件 904 pass / 0 fail（134 文件）",
+      "2026-09-21 本轮逐一核对 49 个 JSONL 的 Git blob SHA-1，与 944b9d6 的原路径全部一致；补来源说明，未修改夹具内容。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0226",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "线协议形状不能靠回忆重建。夹具是主线折叠、渲染与增量逻辑的回归基准，留它们在自己的包里，删除 src-tauri/ 才不会让主线失去对外部协议的证据。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "删除 src-tauri/ 之前先把线协议的真实参考样本搬走：claude 19 / codex 11 / cursor 7 / kimi 3 / opencode 9 共 49 个 .jsonl 夹具迁入 packages/workbench/src/chat/fixtures/streams/，claude 用例改读同包路径。",
+    "title": "流夹具迁入主线：49 个 provider 事件样本从 src-tauri/tests 移进 workbench 包",
+    "updated_at": "2026-09-21T02:43:23.570784Z"
   }
 }

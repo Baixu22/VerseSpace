@@ -170,6 +170,11 @@ jobs:
       - name: Run workbench UI tests
         run: bun run test:workbench-ui
 
+      # CSS imports are not covered by tsc or jsdom. Build after a clean
+      # install so undeclared assets cannot hide in an old node_modules.
+      - name: Build dashboard
+        run: bun run build:ui
+
   context-rot-test:
     name: Context Rot Test
     needs: changes

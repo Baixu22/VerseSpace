@@ -3,9 +3,8 @@ name: Release Workbench
 # Builds the compiled workbench binaries for every release target and attaches
 # them to the GitHub Release for the pushed `workbench-v*` tag.
 #
-# Tag shape note: the legacy Helmor publish.yml still triggers on `v*` tags, so
-# workbench releases use the `workbench-v*` prefix to stay independent of the
-# frozen legacy release flow (ADR-0003).
+# Workbench releases use `workbench-v*`. The legacy `v*` publish workflow was
+# retired under ADR-0015; root package versions do not select this release.
 
 on:
   push:
@@ -59,7 +58,7 @@ jobs:
 
       - name: Test
         shell: bash
-        run: cd packages/workbench && bun test
+        run: bun run test:workbench
 
       - name: Build binary
         shell: bash

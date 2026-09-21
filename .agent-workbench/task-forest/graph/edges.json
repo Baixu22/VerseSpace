@@ -4114,5 +4114,41 @@
     "to": "TF-0194",
     "type": "related_to",
     "updated_at": "2026-09-19T09:10:31.952629Z"
+  },
+  "TFE-0349": {
+    "blocking": true,
+    "confidence": 0.95,
+    "created_at": "2026-09-21T02:43:23.570784Z",
+    "created_from_session": null,
+    "from": "TF-0225",
+    "id": "TFE-0349",
+    "reason": "夹具必须先搬走，src-tauri/ 才能删——顺序反了就没有留档的线协议样本",
+    "to": "TF-0226",
+    "type": "depends_on",
+    "updated_at": "2026-09-21T02:43:23.570784Z"
+  },
+  "TFE-0350": {
+    "blocking": true,
+    "confidence": 0.9,
+    "created_at": "2026-09-21T02:43:23.570784Z",
+    "created_from_session": null,
+    "from": "TF-0225",
+    "id": "TFE-0350",
+    "reason": "执行 ADR-0014 决策 3 预留的删除动作，是退役闸门核查的直接后续",
+    "to": "TF-0219",
+    "type": "child_of",
+    "updated_at": "2026-09-21T02:43:23.570784Z"
+  },
+  "TFE-0351": {
+    "blocking": true,
+    "confidence": 0.9,
+    "created_at": "2026-09-21T02:43:23.574074Z",
+    "created_from_session": null,
+    "from": "TF-0226",
+    "id": "TFE-0351",
+    "reason": "迁夹具是退役的前置条件，与执行轮同属退役这一件事",
+    "to": "TF-0219",
+    "type": "child_of",
+    "updated_at": "2026-09-21T02:43:23.574074Z"
   }
 }

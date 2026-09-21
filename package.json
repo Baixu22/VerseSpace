@@ -20,7 +20,7 @@
 		"test:workbench-ui": "cd apps/workbench-ui && vitest run",
 		"test:context-rot": "cd packages/context-rot && bun run test",
 		"dev:ui": "cd apps/workbench-ui && bun run dev",
-		"build:ui": "cd apps/workbench-ui && bun run build && cd ../../packages/workbench && bun run scripts/ui-prepare.ts",
+		"build:ui": "cd packages/workbench && bun run scripts/ui-prepare.ts",
 		"icons": "node scripts/gen-icon-layer.mjs",
 		"release:tag:workbench": "node scripts/tag-workbench-release.mjs"
 	},

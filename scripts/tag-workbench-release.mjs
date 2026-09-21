@@ -1,12 +1,9 @@
 // Emit the `workbench-v<version>` tag that release-workbench.yml listens for.
 //
-// Why this exists: `.github/workflows/release-workbench.yml` builds the four
-// platform binaries and attaches them to a GitHub Release, but it only fires on
-// a `workbench-v*` tag push — and nothing in the repo ever created such a tag.
-// `scripts/create-release-tag.mjs` (the changesets/action `publish` step) reads
-// the ROOT package.json, which is the frozen legacy Helmor app (0.46.0), so it
-// emits `v0.46.0` and drives publish.yml instead. The workbench binary channel
-// was therefore reachable only by hand-typing a tag.
+// `.github/workflows/release-workbench.yml` builds the four platform binaries
+// on a `workbench-v*` tag push. Read the Workbench package version, independent
+// of the private monorepo root version. The old `v*` tag and publish scripts
+// were retired under ADR-0015.
 //
 // Safety: this is dry-run by default. It prints the tag it would push and exits
 // 0. Pass `--push` to actually create and push it — a pushed tag starts a real
