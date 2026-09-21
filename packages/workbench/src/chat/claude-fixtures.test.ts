@@ -5,10 +5,9 @@ import { ipcTotals, replayClaudeFixture } from "./claude-fixture-replay";
 import { asRecord, contentBlocks } from "./claude-render-blocks";
 import { flattenToolParts } from "./tool-collapse";
 
-const FIXTURE_DIR = join(
-	import.meta.dir,
-	"../../../../src-tauri/tests/fixtures/streams/claude",
-);
+// 夹具于 2026-09-21 随存量退役轮从 `src-tauri/tests/fixtures/streams/claude/`
+// 迁入本包（ADR-0015）：主线不再依赖 `src-tauri/`，参考样本留在自己身边。
+const FIXTURE_DIR = join(import.meta.dir, "fixtures/streams/claude");
 
 describe("Claude stream fixtures (TF-0206)", () => {
 	test("all 19 fixtures have explicit decisions, matching wire projections and IPC savings", async () => {

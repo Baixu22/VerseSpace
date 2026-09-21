@@ -107,7 +107,7 @@ describe("supervisor 存活心跳（TF-0205）", () => {
 			[
 				process.execPath,
 				"-e",
-				String.raw`process.stdin.resume(); setInterval(() => {}, 1000);`,
+				"process.stdin.resume(); setInterval(() => {}, 1000);",
 			],
 			{ label: "liveness-kill-test" },
 		);
