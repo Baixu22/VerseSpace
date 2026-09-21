@@ -13143,7 +13143,7 @@
       "给 composer 加 slash 命令系统"
     ],
     "priority": 3,
-    "progress": 33.0,
+    "progress": 66.0,
     "progress_source": "manual",
     "purpose": "在不违背「交互 = 对话」的前提下，让人和模型都能在对话里看见并触碰前提账本：人看见模型被告知的前提、看见并裁决 tribunal 条目；模型在回合中能自己查账本。",
     "remaining_minutes_max": null,
@@ -13152,9 +13152,9 @@
     "source_sessions": [],
     "status": "ready",
     "success_metrics": [],
-    "summary": "用户 2026-09-21 确认：ba3f5c9 的产品转向仍然有效——交互保持纯对话，深度在运行时层；不恢复独立账本面板。盘点现状（2026-09-21）：① 前提通知只被折进模型 prompt（thread-run.ts:61-67 → prompt.ts），对话记录里只留一个计数，通知正文从不落盘，人看不到「模型被告知了什么」；② claude 车道启动没有 --mcp-config（claude-session.ts:64-80），workbench mcp 只服务外部 agent，模型在回合中读不到 premises/footprints/resume_cards/tribunal/notices，尽管渲染层已能画 mcp_tool_use/mcp_tool_result 卡片（claude-render-blocks.ts:195,216）；③ UI 服务器没有任何 tribunal 路由，tribunal 只有 CLI；④ 对话内唯一的非模型内容形态是 NoticePart（thread-types.ts:115-120），前端 NoticeRow 已能渲染；composer 上方的 sidecar（sidecar.tsx）已有 ResumeCard / DecisionLedger / NoticeDelivered 等挂点。阶段 2 沿这四个既有形态把账本能力带进对话，不新增第二个信息架构。\n\n【2026-09-21 进展】三个交付里 TF-0243（通知进对话记录）已 done 并浏览器验证；剩 TF-0241（MCP 接进 claude 车道）、TF-0242（对话内裁决）。",
+    "summary": "用户 2026-09-21 确认：ba3f5c9 的产品转向仍然有效——交互保持纯对话，深度在运行时层；不恢复独立账本面板。盘点现状（2026-09-21）：① 前提通知只被折进模型 prompt（thread-run.ts:61-67 → prompt.ts），对话记录里只留一个计数，通知正文从不落盘，人看不到「模型被告知了什么」；② claude 车道启动没有 --mcp-config（claude-session.ts:64-80），workbench mcp 只服务外部 agent，模型在回合中读不到 premises/footprints/resume_cards/tribunal/notices，尽管渲染层已能画 mcp_tool_use/mcp_tool_result 卡片（claude-render-blocks.ts:195,216）；③ UI 服务器没有任何 tribunal 路由，tribunal 只有 CLI；④ 对话内唯一的非模型内容形态是 NoticePart（thread-types.ts:115-120），前端 NoticeRow 已能渲染；composer 上方的 sidecar（sidecar.tsx）已有 ResumeCard / DecisionLedger / NoticeDelivered 等挂点。阶段 2 沿这四个既有形态把账本能力带进对话，不新增第二个信息架构。\n\n【2026-09-22 进展】三个交付里 TF-0243（通知进对话记录）、TF-0241（MCP 接进 claude 车道）已 done；剩 TF-0242（对话内裁决）。",
     "title": "阶段 2：账本能力内嵌对话——前提通知进对话记录、模型回合中可读账本、裁决在对话里完成（不做独立面板）",
-    "updated_at": "2026-09-21T15:20:58.039545Z"
+    "updated_at": "2026-09-21T16:20:08.821427Z"
   },
   "TF-0240": {
     "acceptance_criteria": [
@@ -13226,25 +13226,31 @@
     "difficulty": "medium",
     "display_order": 300,
     "estimated_total_minutes": 300,
-    "evidence": [],
+    "evidence": [
+      "chat/claude-mcp.ts + claude-mcp.test.ts（7 例：二进制/dev/虚拟路径三种 invocation、config 形状、写文件+flag、off 开关、命名前缀）",
+      "探针实测：编译后的单文件二进制 Bun.main=B:/~BUN/root/...，statSync 成功 exists=true——所以 ~BUN/$bunfs 子串判定才是真正判据，mainExists 只是次要信号",
+      "commands/context.ts resolveBlackboard(root?)；context.test.ts 证明 --root 覆盖在无关 cwd 下仍打开正确账本，无 root 时向上发现失败抛 NoWorkbenchError",
+      "claude-session.ts 分支：chatCommand()===CHAT_COMMAND_DEFAULT 才追加；bun -e 模拟拼装 + splitCommandLine 回解，--mcp-config 与 --allowedTools mcp__workbench 参数正确",
+      "bun run test:workbench 922 pass（+9 新）；typecheck + biome 全绿；.workbench/mcp/claude-mcp.json 经 git check-ignore 确认忽略；AGENTS.md chat/ 行更新且 context-rot 无新增告警"
+    ],
     "execution_hints": [],
     "id": "TF-0241",
     "kind": "task",
-    "next_action": "读 claude-session.ts / thread-run.ts / mcp/server.ts；确定 mcp-config 生成位置与可执行路径推导",
+    "next_action": "",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "「模型在回合中能自己查账本」是账本内嵌对话的另一半——不靠人贴上下文，模型主动核对前提。",
     "remaining_minutes_max": 420,
     "remaining_minutes_min": 240,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
-    "summary": "现状：claude-session.ts:64-80 组装的参数只有 --permission-mode / --input-format / --resume / --session-id / --fork-session，没有 --mcp-config；mcp/server.ts 是给外部 agent 的独立进程。改法：thread-run 启动 claude 前生成一个临时 mcp 配置（command 指向当前 workbench 可执行文件 + [\"mcp\"]，cwd 为项目根），通过 --mcp-config 传入；渲染层已支持 mcp_tool_use/mcp_tool_result（claude-render-blocks.ts:195,216），工具卡免费获得。注意：五个工具已限 ≤2000 字符输出，不会吃掉上下文；单文件二进制与 bun run 两种形态下可执行文件路径不同，需从 process.execPath / import.meta 推导并测试。",
+    "summary": "已实现并核验。claude 车道现在把只读账本 MCP 服务喂给真实 CLI，模型可在回合中查 premises/footprints/resume_cards/tribunal/notices，工具卡由既有 mcp_tool_use/mcp_tool_result 渲染路径免费获得。实现：① workbench mcp 加 --root <dir> 选项，resolveBlackboard(root?) 跳过向上发现，让 spawn 出的 server 无论 cwd 在哪都能定位账本；② 新增 chat/claude-mcp.ts——resolveSelfInvocation 区分单文件二进制（execPath 即 CLI，Bun.main 是 ~BUN/$bunfs 虚拟路径）与 bun 开发运行（execPath=bun + 真实 entry），buildMcpConfig 生成 mcpServers.workbench 配置，mcpConfigFlags 写到 .workbench/mcp/claude-mcp.json（已 gitignore）并返回 --mcp-config + --allowedTools mcp__workbench（五个工具只读，自动放行避免 -p 模式卡权限）；③ claude-session.ts 仅在命令为默认真实 CLI 时追加这些 flag（测试的假 WORKBENCH_CHAT_COMMAND 与 WORKBENCH_CLAUDE_MCP=off 都不受影响）。诚实标注：未加 UI 徽章——ThreadObservability 只在有分歧（不可观测/继承缺口）时渲染，「账本已接入」是好情况无需标；也未加 provider-capabilities 布尔位，因为 ensureClaudeSession 只被 claude 车道调用，加了会是 claude 判断 claude 的自指字段，违反「字段必须有真实分支调用者」的表规约——留待阶段 3 出现第二个 local-cli provider 时再加。",
     "title": "模型回合中可读账本：spawn claude 时挂上 workbench 的 MCP 只读工具，让模型自己查 premises / footprints / resume_cards / tribunal / notices",
-    "updated_at": "2026-09-21T14:15:34.287088Z"
+    "updated_at": "2026-09-21T16:20:08.821427Z"
   },
   "TF-0242": {
     "acceptance_criteria": [

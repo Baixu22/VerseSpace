@@ -9,6 +9,7 @@ import {
 	UNRESPONSIVE_MS,
 	watchLiveness,
 } from "../supervisor/liveness";
+import { mcpConfigFlags } from "./claude-mcp";
 import { registerTurnRouter } from "./claude-router";
 import type { LiveClaudeSession } from "./claude-types";
 import { capabilitiesOf } from "./provider-capabilities";
@@ -77,6 +78,17 @@ export async function ensureClaudeSession(
 		commandLine += meta.hasResumableSession
 			? ` --resume ${claudeSessionId}`
 			: ` --session-id ${claudeSessionId}`;
+	}
+
+	// TF-0241: hand the real CLI the premise ledger over MCP so the model can
+	// query premises/footprints/resume_cards/tribunal/notices mid-turn. Only
+	// when the command is the genuine claude CLI (the default) — a test's fake
+	// `WORKBENCH_CHAT_COMMAND` does not understand `--mcp-config`, and
+	// `WORKBENCH_CLAUDE_MCP=off` opts out for a CLI build that lacks the flag.
+	if (chatCommand() === CHAT_COMMAND_DEFAULT) {
+		for (const flag of await mcpConfigFlags(context.bb.paths.root)) {
+			commandLine += flag.includes(" ") ? ` "${flag}"` : ` ${flag}`;
+		}
 	}
 
 	const initialLines: string[] = [];

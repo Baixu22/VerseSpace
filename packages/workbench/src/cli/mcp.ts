@@ -13,8 +13,12 @@ export function registerMcp(program: Command): void {
 		.description(
 			"serve the premise ledger over MCP stdio (JSON-RPC 2.0, read-only tools)",
 		)
-		.action(async () => {
-			const bb = await resolveBlackboard();
+		.option(
+			"--root <dir>",
+			"path to the .workbench directory (skips upward discovery; used when the chat lane spawns this server)",
+		)
+		.action(async (options: { root?: string }) => {
+			const bb = await resolveBlackboard(options.root);
 			await serveMcp(bb);
 		});
 }
