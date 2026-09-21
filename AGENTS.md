@@ -56,6 +56,34 @@ Single test file: `cd packages/workbench && bun test src/cli.test.ts` |
 Pre-commit runs `lint-staged` (Biome on JS/TS/JSON/CSS). There is **no Rust lane** — `cargo`,
 `clippy` and `insta` are no longer part of this repo.
 
+### CI remotes (GitHub Actions blocked → GitLab CI)
+
+GitHub still hosts the repo, PRs and Releases. **Continuous integration runs on GitLab.com**
+because the GitHub private-repo Actions billing/spending limit is exhausted — jobs never get a
+runner (PR #28, also recorded in `docs/integrity-fixes-closeout-2026-09-16.md`).
+
+| Remote | URL | Role |
+| --- | --- | --- |
+| `origin` | `https://github.com/Baixu22/VerseSpace.git` | PRs, Releases, source of truth for merge |
+| `gitlab` | `https://gitlab.com/Baixu22/VerseSpace.git` | CI (`.gitlab-ci.yml`, shared runners) |
+
+A branch that needs CI is pushed to **both** remotes:
+
+```bash
+git push origin <branch>   # updates the GitHub PR
+git push gitlab <branch>   # runs the GitLab pipeline
+```
+
+Local git is wired so HTTPS pushes to `gitlab.com` authenticate through glab
+(`credential.https://gitlab.com.helper` → `glab auth git-credential`). `glab` lives at
+`D:\software\glab\glab.exe` and is already logged in as `Baixu22`.
+
+Quirk to know: GitLab.com free accounts must complete **identity verification** before CI jobs
+will start. Until that is done, a push creates a pipeline that fails immediately with
+`Identity verification is required in order to run CI jobs` (0 jobs). Free tier is 400 compute
+minutes/month; the Windows mirror lanes in `.gitlab-ci.yml` stay `manual` on feature branches
+for that reason. Validate config with `glab ci lint .gitlab-ci.yml -R Baixu22/VerseSpace`.
+
 ### Package-local commands worth knowing
 
 ```bash
