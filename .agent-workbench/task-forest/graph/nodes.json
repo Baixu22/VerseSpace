@@ -9665,9 +9665,10 @@
       "fit_confidence": 0.0,
       "user_goal": "确定历史故障的真实原因，避免误报修复。",
       "validation_plan": [
-        "取得原始或新的 Git dump 后分析堆异常与加载模块。"
+        "分析已保存的 Git 转储和宿主 PID 关联。",
+        "捕获最早非法堆写入或完整堆证据，验证兼容正式宿主修复。"
       ],
-      "why_not_enough": "ntdll 是检测位置；事件日志不能替代已经丢失的崩溃调用栈。",
+      "why_not_enough": "新转储为部分内存 minidump；检测调用链与模块列表不能单独证明最早写坏堆的模块。",
       "why_this_task": "已确认原生 Git 崩溃，仍需责任模块的直接证据。"
     },
     "alignment_records": [],
@@ -9687,14 +9688,19 @@
       "Windows Application 记录 1241268/1241277/1241280：2026-09-13 08:23:28、09:48:29、10:02:21，Git 2.51.0.1，异常 c0000374；ntdll 固定版本 10.0.26100.7920，检测偏移 0x1176e5。",
       "对应 WER 1001 记录 1241269/1241278/1241281 引用的 18 个报告/转储/附件路径均不存在。限定时窗的 Defender 事件未命中，不构成排除所有外部干扰的证据。",
       "docs/issue-8-crash-investigation.md；原始字段保存在 .agent-contexts/issue-6-closeout-2026-09-14/issue8-investigation/。",
-      "2026-09-17 收尾扫描复核：HEAD e21ca1b 上六套测试 4611 pass / 0 fail 与全部门禁（validate / export / 导出回归 / check-landing / typecheck / biome）全绿；Git 2.51 堆损坏仍无可复现失败、无新转储，按节点验收维持 blocked，不宣布根因（本轮扫描产物 .agent-contexts/integrity-scan-2026-09-16/）。"
+      "2026-09-17 收尾扫描复核：HEAD e21ca1b 上六套测试 4611 pass / 0 fail 与全部门禁（validate / export / 导出回归 / check-landing / typecheck / biome）全绿；Git 2.51 堆损坏仍无可复现失败、无新转储，按节点验收维持 blocked，不宣布根因（本轮扫描产物 .agent-contexts/integrity-scan-2026-09-16/）。",
+      "2026-09-21 取得 9 月 20 日的新 Git 2.51.0.1 转储，PID 14216，命令 git.exe switch main，异常 c0000374；SHA256 dbe70fc30a0d4f63be8be2f4901fb69860ac52d04b4bf4c3e5fc4b7505a786ca。",
+      "通过对应 Microsoft PDB 解析：tsbx+0x13fbc → SHFileOperationWithAdditionalFlags → CFileOperation::FinishOperations → 路径分配 → RtlpLogHeapFailure；同 PID ModifyBackup 请求/响应 492 行与崩溃时窗关联。",
+      "隔离对照：当前原生宿主文件系统探针 exit 0；旧 WorkBuddy 同脚本 exit 1。24 个临时文件的切分支实验中旧宿主 exit 0 却丢失 src/keep.txt，原生结果正确。960 个文件的旧宿主实验超时，未据此声称复现堆崩溃。",
+      "docs/git-crash-followup-2026-09-21.md；新 dump 标志 0x200121，不含完整内存。保持 blocked；保留原始验收条件，不将外部宿主故障伪装成 Workbench 产品代码修复。"
     ],
     "execution_hints": [
-      "阻塞原因：原始转储与报告缺失；目前无复现，不应臆测修改 Helmor 代码或恢复旁路。"
+      "已有新 Git minidump 和原始命令；不再以完全缺少新转储为阻塞原因。",
+      "剩余阻塞：缺最早非法堆写入的直接证据，以及兼容正式宿主修复的同条件验证。当前原生 Codex 宿主通过文件系统探针，旧 WorkBuddy 宿主仍不通过。"
     ],
     "id": "TF-0173",
     "kind": "follow_up",
-    "next_action": "需要当时 Git 崩溃转储，或原宿主环境中的新可重复失败；取得调用栈、加载模块与文件操作进程证据后继续归因。",
+    "next_action": "以已保存的新转储和隔离夹具继续捕获完整堆或最早非法写入；取得兼容的正式宿主修复后做同条件对照，不将非空目录误删等同于三次历史堆损坏的全部根因。",
     "non_goals": [],
     "priority": 3,
     "progress": 0.0,
@@ -9708,9 +9714,9 @@
     ],
     "status": "blocked",
     "success_metrics": [],
-    "summary": "已恢复三次 Git 2.51 原生进程堆损坏事件（0xC0000374），与首份 Cargo 失败日志时间和退出码对应。18 个 WER 报告、转储及附件路径均已不存在；当前无可重复失败，尚不能确定责任模块。",
-    "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）",
-    "updated_at": "2026-09-17T04:30:34.287356Z"
+    "summary": "取得 2026-09-20 Git switch main 的 0xC0000374 minidump，解析到 tsbx 经外壳删除进入堆检测的调用链；隔离复现旧宿主切分支 exit 0 却误删保留文件。该 minidump 无完整堆，尚未确定最早写坏内存的位置；旧三次 apply 转储仍缺失。",
+    "title": "Git 堆损坏归因：新转储已取得，最早非法写入仍待定位",
+    "updated_at": "2026-09-21T04:36:56.116521Z"
   },
   "TF-0174": {
     "acceptance_criteria": [
@@ -12427,5 +12433,103 @@
     "summary": "删除 src-tauri/ 之前先把线协议的真实参考样本搬走：claude 19 / codex 11 / cursor 7 / kimi 3 / opencode 9 共 49 个 .jsonl 夹具迁入 packages/workbench/src/chat/fixtures/streams/，claude 用例改读同包路径。",
     "title": "流夹具迁入主线：49 个 provider 事件样本从 src-tauri/tests 移进 workbench 包",
     "updated_at": "2026-09-21T02:43:23.570784Z"
+  },
+  "TF-0227": {
+    "acceptance_criteria": [
+      "三个入口解析到同一目录，旧副本可恢复。",
+      "历史、锁竞争和导出回归通过。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.98,
+    "context_tags": [],
+    "created_at": "2026-09-21T04:36:56.114787Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "display_order": 2900,
+    "estimated_total_minutes": null,
+    "evidence": [
+      "docs/retirement-followup-2026-09-21.md",
+      "主脚本三入口 SHA256：ff02745282619a55ff96ed2a2a96266e816b56d7b723a0a061ffefc25e6cab2f。",
+      "历史 5 项、锁恢复、8 进程 160 次拒绝 unlink 的竞争、完整导出回归、skill quick_validate 和仓库 validate 通过。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0227",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "避免多宿主调用不同脚本造成任务历史、排序和进度再次漂移。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "合并两份技能各自独有的修复，以 WorkBuddy 目录为权威，Codex 和 Claude 都通过 junction 使用同一份实现。",
+    "title": "统一任务森林技能入口，保留历史恢复、排序和并发写入保护",
+    "updated_at": "2026-09-21T04:36:56.114787Z"
+  },
+  "TF-0228": {
+    "acceptance_criteria": [
+      "PR 最新提交的相关远端检查全部通过。",
+      "通过后合入 main，本任务不创建发布 tag。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 1.0,
+    "context_tags": [],
+    "created_at": "2026-09-21T04:36:56.115791Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "display_order": 2910,
+    "estimated_total_minutes": null,
+    "evidence": [
+      "https://github.com/Baixu22/VerseSpace/pull/28",
+      "https://github.com/Baixu22/VerseSpace/actions/runs/35560280554",
+      "Detect changes 的失败注释明确为 recent account payments have failed or spending limit needs to be increased，steps 为空。",
+      "用户本轮确认：暂时无法恢复，保留 PR 等待 CI。"
+    ],
+    "execution_hints": [
+      "阻塞原因是 GitHub 账户付款或额度；不得用本地通过替代远端 CI 或绕过检查合入。"
+    ],
+    "id": "TF-0228",
+    "kind": "follow_up",
+    "next_action": "用户恢复 GitHub Actions 可用额度后，重跑 PR #28 最新提交的检查，通过后合入。",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "补齐本地验收无法替代的 macOS、Windows 远端门禁。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "blocked",
+    "success_metrics": [],
+    "summary": "PR #28 已建立。GitHub 因账户付款或支出额度未启动检查；用户选择保留 PR，等待额度恢复后再验收和合入。",
+    "title": "完成退役提交的远端 CI 验收并合入主分支",
+    "updated_at": "2026-09-21T04:36:56.115791Z"
   }
 }

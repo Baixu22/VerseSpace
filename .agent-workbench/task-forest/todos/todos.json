@@ -5,9 +5,10 @@
       "fit_confidence": 0.0,
       "user_goal": "确定历史故障的真实原因，避免误报修复。",
       "validation_plan": [
-        "取得原始或新的 Git dump 后分析堆异常与加载模块。"
+        "分析已保存的 Git 转储和宿主 PID 关联。",
+        "捕获最早非法堆写入或完整堆证据，验证兼容正式宿主修复。"
       ],
-      "why_not_enough": "ntdll 是检测位置；事件日志不能替代已经丢失的崩溃调用栈。",
+      "why_not_enough": "新转储为部分内存 minidump；检测调用链与模块列表不能单独证明最早写坏堆的模块。",
       "why_this_task": "已确认原生 Git 崩溃，仍需责任模块的直接证据。"
     },
     "blocked_by": [],
@@ -26,6 +27,33 @@
     "remaining_minutes_min": null,
     "status": "blocked",
     "success_metrics": [],
-    "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）"
+    "title": "Git 堆损坏归因：新转储已取得，最早非法写入仍待定位"
+  },
+  {
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "blocked_by": [],
+    "confidence": 1.0,
+    "context_tags": [],
+    "desired_outcomes": [],
+    "difficulty": "unknown",
+    "id": "TF-0228",
+    "kind": "follow_up",
+    "next_action": "澄清阻塞原因并决定解除或废止",
+    "priority": 3,
+    "progress": 0.0,
+    "purpose": "补齐本地验收无法替代的 macOS、Windows 远端门禁。",
+    "ready": false,
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "status": "blocked",
+    "success_metrics": [],
+    "title": "完成退役提交的远端 CI 验收并合入主分支"
   }
 ]
