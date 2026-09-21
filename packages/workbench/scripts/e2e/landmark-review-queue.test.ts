@@ -38,10 +38,26 @@ test("代理自审不能宣称 L1 真人验收达标，真实人答通道单独�
 					answers,
 					...flags,
 				],
-				{ encoding: "utf8", windowsHide: true, timeout: 10_000 },
+				{
+					encoding: "utf8",
+					windowsHide: true,
+					timeout: 30_000,
+					// CI runner PATH may omit git/node; keep the spawn hermetic.
+					env: {
+						...process.env,
+						PATH: [
+							"C:\\Program Files\\Git\\cmd",
+							"C:\\Program Files\\nodejs",
+							...String(process.env.PATH ?? "").split(";"),
+						].join(";"),
+					},
+				},
 			);
 		const steward = apply("--steward");
-		expect(steward.status, steward.stderr).toBe(0);
+		expect(
+			steward.status,
+			`status=${steward.status}\nstderr=${steward.stderr}\nstdout=${steward.stdout}`,
+		).toBe(0);
 		expect(steward.stdout).toContain("认可 1 / 全部候选 1 = 1.0000");
 		expect(steward.stdout).toContain(
 			"用户认可口径（human · 新口径）：认可 0 / 全部候选 1",
