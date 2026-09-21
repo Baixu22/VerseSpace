@@ -78,11 +78,16 @@ Local git is wired so HTTPS pushes to `gitlab.com` authenticate through glab
 (`credential.https://gitlab.com.helper` → `glab auth git-credential`). `glab` lives at
 `D:\software\glab\glab.exe` and is already logged in as `Baixu22`.
 
-Quirk to know: GitLab.com free accounts must complete **identity verification** before CI jobs
-will start. Until that is done, a push creates a pipeline that fails immediately with
-`Identity verification is required in order to run CI jobs` (0 jobs). Free tier is 400 compute
-minutes/month; the Windows mirror lanes in `.gitlab-ci.yml` stay `manual` on feature branches
-for that reason. Validate config with `glab ci lint .gitlab-ci.yml -R Baixu22/VerseSpace`.
+Quirk to know: GitLab.com free accounts must complete **identity verification** before *GitLab-hosted* CI jobs will start, and phone SMS is **Unsupported for China (+86)** — so hosted runners are not available here. The workaround is a **self-managed project runner** on this Windows machine (documented alternative in GitLab's identity-verification troubleshooting):
+
+- Binary/config: `D:\software\gitlab-runner\` (`gitlab-runner.exe`, `config.toml`)
+- Runner id `56555227`, tags `verspace-local` / `windows` / `self-hosted`, executor `shell` + PowerShell
+- Uses the machine's Bun at `C:\Users\27933\AppData\Roaming\npm\node_modules\bun\bin`
+- Project has `shared_runners_enabled=false` so jobs cannot fall through to SaaS
+- Start if not running: `Start-Process D:\software\gitlab-runner\gitlab-runner.exe -ArgumentList run,--config,D:\software\gitlab-runner\config.toml -WorkingDirectory D:\software\gitlab-runner -WindowStyle Hidden`
+- **The machine must be on** for CI to pick up jobs; `concurrent=1` by design (16 GB host)
+
+Validate config with `glab ci lint .gitlab-ci.yml -R Baixu22/VerseSpace`.
 
 ### Package-local commands worth knowing
 
