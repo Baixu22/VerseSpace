@@ -76,12 +76,12 @@ const changelog = fs.readFileSync(
 	path.join(root, "packages/workbench/CHANGELOG.md"),
 	"utf8",
 );
-const section = new RegExp(
-	`^## ${version.replace(/\./g, "\\.")}\\n([\\s\\S]*?)(?=^## |\\Z)`,
-	"m",
-).exec(changelog);
+const section = changelog
+	.split(/^## /m)
+	.map((chunk) => chunk.trim())
+	.find((chunk) => chunk.startsWith(`${version}\n`));
 const body = section
-	? section[1].trim()
+	? section.slice(version.length).trim()
 	: `（CHANGELOG 中没有 ${version} 段落）`;
 
 const notes = `${body}
