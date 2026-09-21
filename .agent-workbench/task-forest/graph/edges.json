@@ -4222,5 +4222,29 @@
     "to": "TF-0173",
     "type": "derived_from",
     "updated_at": "2026-09-21T07:35:49.486137Z"
+  },
+  "TFE-0358": {
+    "blocking": true,
+    "confidence": 0.8,
+    "created_at": "2026-09-21T08:03:10.047097Z",
+    "created_from_session": null,
+    "from": "TF-0231",
+    "id": "TFE-0358",
+    "reason": "同属宿主沙箱托管执行模式的缺陷面：一个改写了语义，一个让约束根本没生效。",
+    "to": "TF-0057",
+    "type": "child_of",
+    "updated_at": "2026-09-21T08:03:10.047104Z"
+  },
+  "TFE-0359": {
+    "blocking": false,
+    "confidence": 0.9,
+    "created_at": "2026-09-21T08:03:10.047998Z",
+    "created_from_session": null,
+    "from": "TF-0231",
+    "id": "TFE-0359",
+    "reason": "做 TF-0229 的对照时，用 csc 默认选项重编译的探针不复现，追下去才发现注入本身就没发生。",
+    "to": "TF-0229",
+    "type": "derived_from",
+    "updated_at": "2026-09-21T08:03:10.048012Z"
   }
 }

@@ -9,22 +9,22 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.6,
+    "confidence": 0.75,
     "context_tags": [],
     "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0229",
+    "difficulty": "medium",
+    "id": "TF-0231",
     "kind": "follow_up",
-    "next_action": "夹具目录名必须以 api-fixture- 开头，否则 rmdir-probe.exe 的 cwd 守卫会直接 exit 2、无输出。",
-    "priority": 3,
+    "next_action": "对照必须同会话、同夹具、同源码，只改 csc 的 /platform 参数；探针放在 api-fixture- 目录内。",
+    "priority": 2,
     "progress": 0.0,
-    "purpose": "把「能稳定复现」和「已解释清楚」分开：触发条件定位不等于机制定位。",
+    "purpose": "把「沙箱是否真的生效」变成一个可判定的读数：一个被托管启动的进程如果没被注入 tsbx，它的文件系统约束就是空的，而调用方看不出任何异常。",
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "status": "ready",
     "success_metrics": [],
-    "title": "定位宿主 sandbox 托管模式内改写「删除非空目录」语义的机制"
+    "title": "PE32/AnyCPU 托管程序集在 sandbox 托管启动时不被注入 tsbx（沙箱约束静默失效）"
   },
   {
     "alignment": {

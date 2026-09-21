@@ -122,6 +122,13 @@ packages/workbench/.evidence-sites/
 # 2026-09-16 closeout scan: raw report + probe output stay local; the reviewed
 # summary is docs/integrity-fixes-closeout-2026-09-16.md
 /.agent-contexts/integrity-scan-*/
+# 2026-09-21 TF-0229 mechanism round: raw probes, captured tsbx logs and the
+# sandbox session dirs stay local as machine evidence. The reviewed summary is
+# docs/tf0229-evidence-chain-2026-09-21.md; the readings live in TF-0229 /
+# TF-0231 node evidence. Runtime copies of the sandbox binaries are purged
+# (see that dir's runtime-purge.txt for how to rebuild them).
+/.agent-contexts/tf0229-*/
+/.agent-contexts/tf0229-*.log
 # 2026-09-17/18 absorption plan: the planning proposal draft and the per-round
 # node-development proposal copies stay local. The applied copies live in
 # .agent-workbench/task-forest/proposals/, and the readings live in node
