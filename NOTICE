@@ -1,8 +1,16 @@
-Helmor
+VerseSpace / Workbench — NOTICE
+
+This repository retains portions of Helmor. The upstream copyright,
+Apache-2.0 attribution and trademark notices below continue to apply to
+those portions. Workbench's package license is MIT AND Apache-2.0; see
+packages/workbench/NOTICE, packages/workbench/LICENSE and
+packages/workbench/LICENSE-APACHE for its license scope.
+
+Helmor portions
 Copyright 2026 Caspian Zhao, Nathan Lian
 
-This product is licensed under the Apache License, Version 2.0 (the "License");
-you may not use this product except in compliance with the License. A copy of
+These portions are licensed under the Apache License, Version 2.0 (the "License");
+you may not use them except in compliance with the License. A copy of
 the License is distributed with this product in the LICENSE file, and is also
 available at https://www.apache.org/licenses/LICENSE-2.0.
 
@@ -35,15 +43,13 @@ For commercial use of the "Helmor" name or logo, contact the authors.
 Third-Party Components
 ================================================================================
 
-This product bundles or depends on the following third-party components,
-each licensed under its own terms. See the respective project pages for
-license text:
+The current Workbench distribution's component list and license scope are
+maintained in packages/workbench/NOTICE, which is shipped with the binary
+and JS package. Each third-party component retains its own license.
 
-- Tauri (tauri-apps/tauri) — MIT / Apache-2.0
-- React (facebook/react) — MIT
-- Bun (oven-sh/bun) — MIT
-- Claude Agent SDK (@anthropic-ai/claude-agent-sdk) — Anthropic's terms
-- Codex CLI (@openai/codex) — OpenAI's terms
+The legacy desktop and sidecar were retired on 2026-09-21. Tauri, the Claude
+Agent SDK and Codex CLI are not bundled in Workbench. Agent executables and
+model services configured by the user are external integrations.
 
 Inclusion of these components does not imply endorsement by their respective
 owners.

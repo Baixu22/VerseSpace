@@ -82,17 +82,22 @@ test("单文件 Node 产物能验证符号，不依赖 Bun 全局对象", async 
 	});
 	expect(built.success).toBe(true);
 	await writeFile(join(root, "dist/package.json"), '{"type":"module"}');
-	const output = execFileSync(
-		"node",
-		[
-			"--input-type=module",
-			"-e",
-			"const {scanRepo}=await import(process.argv[1]); process.stdout.write(JSON.stringify(await scanRepo(process.argv[2])));",
-			pathToFileURL(join(root, "dist/scan.js")).href,
-			root,
-		],
-		{ encoding: "utf8", windowsHide: true },
-	);
+	// Embed paths in the eval source: process.argv layout under `node -e`
+	// differs across hosts, and agent/CI PATHs may not resolve bare `node`.
+	const scanUrl = pathToFileURL(join(root, "dist", "scan.js")).href;
+	const code = `const {scanRepo}=await import(${JSON.stringify(scanUrl)}); process.stdout.write(JSON.stringify(await scanRepo(${JSON.stringify(root)})));`;
+	const nodeBin = process.env.CONTEXT_ROT_NODE ?? "node";
+	const output = execFileSync(nodeBin, ["--input-type=module", "-e", code], {
+		encoding: "utf8",
+		windowsHide: true,
+		env: {
+			...process.env,
+			PATH: [
+				"C:\\Program Files\\nodejs",
+				...(process.env.PATH ?? "").split(";"),
+			].join(";"),
+		},
+	});
 	expect(JSON.parse(output)).toMatchObject({
 		valid: 2,
 		total: 3,

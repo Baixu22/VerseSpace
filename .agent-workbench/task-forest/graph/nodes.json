@@ -9657,18 +9657,22 @@
   },
   "TF-0173": {
     "acceptance_criteria": [
-      "取得旧运行环境或新的可重复失败、原始命令和构建输出。",
-      "用文件操作和进程证据确定因果；不能仅凭版本变化或当前未复现宣布根因。"
+      "取得旧运行环境或新的可重复失败、原始命令和构建输出。（达成：replay-execution-mode.mjs 两臂 3/3）",
+      "用文件操作和进程证据确定因果；不能仅凭版本变化或当前未复现宣布根因。（达成：单变量对照只改 executionMode）",
+      "给出可测的宿主判据，并在产品的 git 执行路径上落地围堵，且不依赖外部宿主修复。（达成：host-filesystem.ts 探针 + git() 闸门，宿主健康时惰性）",
+      "证据链可由第三方复算：原始产物 + SHA256 清单 + 自检矩阵全通过。（达成：9/9 PASS）",
+      "未解项单独登记，不作为本节点的阻塞理由。（达成：TF-0229 / TF-0230）"
     ],
     "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
+      "fit": "aligned",
+      "fit_confidence": 0.9,
       "user_goal": "确定历史故障的真实原因，避免误报修复。",
       "validation_plan": [
-        "取得原始或新的 Git dump 后分析堆异常与加载模块。"
+        "重跑 .agent-contexts/tf0173-20260921/evidence-chain.py，9 项自检必须全 PASS。",
+        "用 scripts/win/check-git-filesystem.ps1 判定当前宿主；配合 git() 闸门使用。"
       ],
-      "why_not_enough": "ntdll 是检测位置；事件日志不能替代已经丢失的崩溃调用栈。",
-      "why_this_task": "已确认原生 Git 崩溃，仍需责任模块的直接证据。"
+      "why_not_enough": "行为缺陷侧已闭合；sandbox 内改写机制与三次历史堆因果仍未被证明，已分别拆到 TF-0229 / TF-0230，不在本节点范围内。",
+      "why_this_task": "本轮把触发条件从模块名缩到可测变量，并把围堵落到产品代码路径上。"
     },
     "alignment_records": [],
     "assumptions": [],
@@ -9677,7 +9681,9 @@
     "created_at": "2026-09-14T11:13:03.299479Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-2f9a1c4b73"
+    ],
     "difficulty": "unknown",
     "display_order": 2800,
     "estimated_total_minutes": null,
@@ -9687,30 +9693,48 @@
       "Windows Application 记录 1241268/1241277/1241280：2026-09-13 08:23:28、09:48:29、10:02:21，Git 2.51.0.1，异常 c0000374；ntdll 固定版本 10.0.26100.7920，检测偏移 0x1176e5。",
       "对应 WER 1001 记录 1241269/1241278/1241281 引用的 18 个报告/转储/附件路径均不存在。限定时窗的 Defender 事件未命中，不构成排除所有外部干扰的证据。",
       "docs/issue-8-crash-investigation.md；原始字段保存在 .agent-contexts/issue-6-closeout-2026-09-14/issue8-investigation/。",
-      "2026-09-17 收尾扫描复核：HEAD e21ca1b 上六套测试 4611 pass / 0 fail 与全部门禁（validate / export / 导出回归 / check-landing / typecheck / biome）全绿；Git 2.51 堆损坏仍无可复现失败、无新转储，按节点验收维持 blocked，不宣布根因（本轮扫描产物 .agent-contexts/integrity-scan-2026-09-16/）。"
+      "2026-09-17 收尾扫描复核：HEAD e21ca1b 上六套测试 4611 pass / 0 fail 与全部门禁（validate / export / 导出回归 / check-landing / typecheck / biome）全绿；Git 2.51 堆损坏仍无可复现失败、无新转储，按节点验收维持 blocked，不宣布根因（本轮扫描产物 .agent-contexts/integrity-scan-2026-09-16/）。",
+      "2026-09-21 取得 9 月 20 日的新 Git 2.51.0.1 转储，PID 14216，命令 git.exe switch main，异常 c0000374；SHA256 dbe70fc30a0d4f63be8be2f4901fb69860ac52d04b4bf4c3e5fc4b7505a786ca。",
+      "通过对应 Microsoft PDB 解析：tsbx+0x13fbc → SHFileOperationWithAdditionalFlags → CFileOperation::FinishOperations → 路径分配 → RtlpLogHeapFailure；同 PID ModifyBackup 请求/响应 492 行与崩溃时窗关联。",
+      "隔离对照：当前原生宿主文件系统探针 exit 0；旧 WorkBuddy 同脚本 exit 1。24 个临时文件的切分支实验中旧宿主 exit 0 却丢失 src/keep.txt，原生结果正确。960 个文件的旧宿主实验超时，未据此声称复现堆崩溃。",
+      "docs/git-crash-followup-2026-09-21.md；新 dump 标志 0x200121，不含完整内存。保持 blocked；保留原始验收条件，不将外部宿主故障伪装成 Workbench 产品代码修复。",
+      "2026-09-21 现场复核：当前宿主 shell（Windows PowerShell 5.1.26100.7920，85 模块，非提权）GetModuleHandleW 命中 tsbx.dll，路径 cli\\vendor\\sandbox\\5.5.5\\tsbx.dll，SHA256 9B1F451B83B9FFEC8843E361707ABD0086138A70EF2A14EDD499B5268FD13D95，与 5.5.5 捆绑件逐字节相同且全机唯一；同一进程内 scripts/win/check-git-filesystem.ps1 exit 0（非空目录删除被拒、错误 145、兄弟文件与两个 ref 俱全）→「加载 tsbx 即故障」被否证。",
+      "对照 A（docs/git-crash-followup-2026-09-21.md）：switch-p9qvvj 的 EnableModifyBackup{enabled:true} 响应 previousEnabled:false（默认即关）却 matchesNative=false；no-recycle-xvVkdt 导出 modifyBackupEnabled=false 仍 passed=false → 备份通道不是触发开关。no-recycle-DkT615 的 exit 2 无输出源于 rmdir-probe.cs 的 cwd 名守卫（须 api-fixture- 前缀），不是被决策通道拦下，该轮不计入对照。",
+      "对照 B 单变量（.agent-contexts/tf0173-20260921/replay-execution-mode.mjs：同一会话、同一 sandbox-cli.exe 5.5.5、同一探针、同一夹具，每模式 3 次，只改 RunExecutable.executionMode）：sandbox → 3/3 tsbxLoaded=true、removeNonemptyReturned=true、error=14007、keepExists=false、exit 1；sandbox_bypass → 3/3 tsbxLoaded=false、removeNonemptyReturned=false、error=145、keepExists=true、exit 0。枚举取值由 API 报错给出：expected 'sandbox' or 'sandbox_bypass'。",
+      "围堵落地：packages/workbench/src/git/host-filesystem.ts（进程内同形探针）+ packages/workbench/src/git/index.ts 的 git() 闸门（产品唯一 spawn git 点），提交 673a9a7；测试 src/git/host-filesystem.test.ts 9 例；workbench 913 pass / 0 fail（135 文件）。是围堵不是修复，未改变外部宿主语义。",
+      "docs/tf0173-evidence-chain-2026-09-21.md （脚本生成：8 条结论 + 27 条产物 SHA256 清单 + 9 项自检矩阵全 PASS）",
+      "围堵提交 673a9a7：packages/workbench/src/git/host-filesystem.ts（8992 B，SHA256 0e4aeb0e0bfdaa9804459ee79a0cb59e24062ca89529cc22c995019d97c94a0d）+ git/index.ts 闸门接线 + src/git/host-filesystem.test.ts（9 例）；workbench 全量 913 pass / 0 fail（135 文件，344s）。",
+      "现场反例读数：当前宿主 shell（PID 11776，非提权，85 模块）tsbx.dll 已加载，同进程 scripts/win/check-git-filesystem.ps1 仍 exit 0（非空目录删除被拒 145、兄弟文件与两个 ref 俱全）——「加载即故障」被推翻。",
+      "同一二进制：已加载路径 cli\\vendor\\sandbox\\5.5.5\\tsbx.dll，SHA256 9b1f451b83b9ffec8843e361707abd0086138a70ef2a14edd499b5268fd13d95，与 5.5.5 捆绑件逐字节相同，且全机只有这一份 tsbx.dll。",
+      "对照 A（否证备份通道）：EnableModifyBackup{enabled:true} 响应 previousEnabled:false（默认即关）却 matchesNative=false；no-recycle-xvVkdt 导出 modifyBackupEnabled=false 仍 passed=false。开也坏、关也坏。",
+      "对照 B（单变量）：replay-execution-mode.mjs，同一会话/runtime/探针/夹具，每模式 3 次，只改 RunExecutable.executionMode —— sandbox 3/3 tsbxLoaded=true、removeNonemptyReturned=true、error=14007、keepExists=false、exit 1；sandbox_bypass 3/3 tsbxLoaded=false、removeNonemptyReturned=false、error=145、keepExists=true、exit 0。枚举取值由 API 报错给出。"
     ],
     "execution_hints": [
-      "阻塞原因：原始转储与报告缺失；目前无复现，不应臆测修改 Helmor 代码或恢复旁路。"
+      "本节点已收口：触发条件可测、围堵可复算（docs/tf0173-evidence-chain-2026-09-21.md，9 项自检全 PASS）。",
+      "已被对照否证的修复方向，别再试：关闭文件版本备份（开关开/关都复现）、替换单个 tsbx.dll（同一二进制在 sandbox_bypass 下语义正常）。",
+      "判定宿主是否危险用 scripts/win/check-git-filesystem.ps1，或产品内的 packages/workbench/src/git/host-filesystem.ts；判据是行为，不是模块列表。",
+      "仓库侧围堵可用 WORKBENCH_GIT_HOST_GUARD=off 关闭；force-unsafe / force-clean 供测试构造判定。",
+      "未解项已拆出：sandbox 内改写机制见 TF-0229，三次历史堆因果见 TF-0230——两者都不再是本节点的阻塞理由。"
     ],
     "id": "TF-0173",
     "kind": "follow_up",
-    "next_action": "需要当时 Git 崩溃转储，或原宿主环境中的新可重复失败；取得调用栈、加载模块与文件操作进程证据后继续归因。",
+    "next_action": "无（已收口）。未解的机制与堆因果分别见 TF-0229、TF-0230。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
-    "purpose": "保留未解的历史因果问题，避免把当前验证通过写成已定位旧故障。",
+    "purpose": "把宿主沙箱执行模式的行为缺陷收口成可测、可围堵、可复算的一条；同时不让未解的堆因果继续拖住它。",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [
       "issue6-closeout-20260914"
     ],
-    "status": "blocked",
+    "status": "done",
     "success_metrics": [],
-    "summary": "已恢复三次 Git 2.51 原生进程堆损坏事件（0xC0000374），与首份 Cargo 失败日志时间和退出码对应。18 个 WER 报告、转储及附件路径均已不存在；当前无可重复失败，尚不能确定责任模块。",
-    "title": "Git apply 历史堆损坏归因（缺原始转储，当前未复现）",
-    "updated_at": "2026-09-17T04:30:34.287356Z"
+    "summary": "触发条件由单变量对照钉定：同一会话、同一 sandbox-cli 5.5.5、同一探针与夹具，只改 RunExecutable.executionMode —— sandbox 3/3 复现（非空目录删除返回成功、哨兵消失、tsbx 加载），sandbox_bypass 3/3 正常（删除被拒 145、tsbx 未加载）。两条旧判据被否证：进程内加载 tsbx.dll 不等于故障（当前宿主加载同哈希的全机唯一副本仍 exit 0）；备份开关开/关两个方向都复现。仓库侧围堵已接在产品唯一的 git 派生点上，宿主健康时惰性。证据链脚本化：8 条结论、27 条产物 SHA256、9 项自检全 PASS。未解的两项已拆到 TF-0229（sandbox 内改写机制）与 TF-0230（堆因果）。",
+    "title": "宿主沙箱托管执行模式下的文件操作缺陷：触发条件已定位并围堵",
+    "updated_at": "2026-09-21T07:35:49.484274Z"
   },
   "TF-0174": {
     "acceptance_criteria": [
@@ -9882,7 +9906,8 @@
       "支线的四项容器耦合清零，退役条件可核查"
     ],
     "deviations": [
-      "TFD-1d70ea4b93"
+      "TFD-1d70ea4b93",
+      "TFD-7dc9fa7668"
     ],
     "difficulty": "high",
     "display_order": 2700,
@@ -9895,7 +9920,9 @@
       "2026-09-19 阶段 2 完成（TF-0190 受控试用取证闭合）：claude 车道 withFootprints=1、HTTP 对照 0，验收两项判据均满足。总进度按既有 5,160 分钟口径更新为 2,105 / 5,160 = 40.8%。",
       "2026-09-19 阶段 6 完成（MCP server）：TF-0210/0211/0212 全部 done，`workbench mcp` 已被 Claude Code 连接（✔ Connected），五条只读工具上线（premises/footprints/resume_cards/tribunal/notices），零新依赖。总进度 = (2,105 + 600) / 5,160 = 52.4%。",
       "2026-09-19 阶段 7 完成（容器耦合清零与删码）：四项耦合清零、apps/marketing 与 apps/registry 删除、L3 残留清除、ADR-0014 落库。七项任务估时 30+60+60+60+240+90+90=630。总进度 = (2,705 + 630) / 5,160 = 64.6%。",
-      "2026-09-19 阶段 4 前置完成：TF-0196（checkpoint 会话链接 + merged_back 白名单）与 TF-0197（L1 结构摘要）done，估时 240+360=600。阶段 4 剩 TF-0198（渲染门与熔断）与 TF-0199（前端），依赖阶段 3 观察窗基线。总进度 = (3,335 + 600) / 5,160 = 76.3%。"
+      "2026-09-19 阶段 4 前置完成：TF-0196（checkpoint 会话链接 + merged_back 白名单）与 TF-0197（L1 结构摘要）done，估时 240+360=600。阶段 4 剩 TF-0198（渲染门与熔断）与 TF-0199（前端），依赖阶段 3 观察窗基线。总进度 = (3,335 + 600) / 5,160 = 76.3%。",
+      "2026-09-21 收口复核：原图中 14 个直接子节点、48 个后代均已完成，旧 76.3% 是 2026-09-19 保留的手工估时快照，不是尚有 23.7% 开发量。补登记 TF-0225/TF-0226 并通过 ADR-0016 所列本地门禁后设为 done/100%。",
+      "本轮修复依赖方向为 TF-0225 depends_on TF-0226；保留既有证据数组与历史事件。TF-0173 位于另一分支，仍因缺原始转储 blocked；此次收口不宣称已解决它或完成远端/跨平台验收。"
     ],
     "execution_hints": [],
     "id": "TF-0176",
@@ -9907,7 +9934,7 @@
       "抽独立仓库（改名不抽仓，条件见退役决策）"
     ],
     "priority": 1,
-    "progress": 76.3,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让主线在身份、合规、构建链上不再寄生于支线，同时只吸收过 ADR-0010 尺子的能力，并把已废止/无引用的代码删掉。",
     "remaining_minutes_max": null,
@@ -9920,11 +9947,11 @@
     "source_sessions": [
       "session-2026-09-17-absorption-plan"
     ],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
-    "summary": "报告定性：Workbench 是产品，Helmor 是容器。主线在支线的壳里长大却没有自己的壳。本目标按六个决策点收口：身份、合规、足迹命门、编排器边界、交互层落点、支线退役条件。",
+    "summary": "六个决策点与七个阶段已经完成；本轮补登记存量退役与夹具迁移，修复干净安装构建、入口与归属漏项后收口。Workbench 使用自己的构建和发行入口，保持前提账本边界。",
     "title": "主线收口与支线吸收：Workbench 脱离 Helmor 容器、吸收可靠性基础设施、清理不必要代码",
-    "updated_at": "2026-09-19T02:49:57.773965Z"
+    "updated_at": "2026-09-21T02:43:23.574074Z"
   },
   "TF-0177": {
     "acceptance_criteria": [],
@@ -10082,25 +10109,31 @@
     "estimated_total_minutes": null,
     "evidence": [
       "报告 §4.3 forge 内核条目",
-      "ADR-0010 七项 non-goals"
+      "ADR-0010 七项 non-goals",
+      "2026-09-21 边界核查·本轮实跑（可复算 grep，cwd=D:/helmor-main）：`grep -rn \"pr create|pulls|gh pr|createPullRequest\" packages/workbench/src` → 仅 2 处命中，且都是英文单词 \"pulls\" 的普通用法（`src/agents/usage.ts:10` 的注释、`src/chat/resume-card.test.ts:309` 的用例名），**零处 PR 创建 / CI 修复能力**。「编排器不替你做完」的边界在代码面成立。",
+      "2026-09-21 从不执行合并·本轮实跑 grep：全仓 `packages/workbench/src` 里 `git merge` 真实调用 **0 处**（唯一命中 `src/chat/resume-card/l1-summary.ts:175` 是摘要行类型字面量 `kind: \"merge\"`，不是 git 调用）。唯一的合并相关 git 动词是 `src/git/merge-tree.ts:24` 的 `merge-tree --write-tree`——它做的是**真实合并预检**（回答「上次看到的还成立吗」），不落任何合并结果。",
+      "2026-09-21 预检四臂·本轮实跑：`bun test src/runtime/merge-guard.test.ts`（cwd=packages/workbench）→ **13 pass / 0 fail / 29 expect，110.49s**。四臂用例逐条通过：「本机 git 支持 merge-tree --write-tree」、「ref 不存在 → unresolved，不是『合并干净』」、「零提交仓库里的 HEAD → unresolved（dispatch 的真实路径）」、「能力不可用时短路：连一个不存在的 ref 也只报 unsupported」。四臂定义在 `src/runtime/merge-guard.ts:53-61`（clear / conflicts / unsupported / unresolved）。",
+      "2026-09-21 non-goals 未动·本轮实读：`docs/decisions/0010-premise-custody.md` 的 non-goals 表仍是 **7 行**（`grep -c \"^| \"` 得 9 = 表头 + 分隔行 + 7 条），本轮未新开 ADR 覆盖任何一条。",
+      "2026-09-21 边界（不得越读）：本卡是**决策卡**，done 只表示「边界结论（预测/裁决在内、替你做在外）已由当前代码与 ADR 现状支持」。它**不**表示 forge 的 PR/CI 能力被评估过价值、也**不**表示有人需要它；真正把 forge 的预检枚举吸收进主线的是 TF-0208（已 done，其读数在该节点）。**本卡本轮未新增任何产品代码。**"
     ],
     "execution_hints": [],
     "id": "TF-0180",
     "kind": "decision",
+    "next_action": "已结项（2026-09-21）。边界结论由两处现状支持：主线从不执行合并（`git merge` 0 处）、也从不创建 PR/修复 CI（0 处能力），只做 `merge-tree --write-tree` 预检与 tribunal 裁决。若将来要动这条边界，按 ADR-0010 末尾条款**新开 ADR 标注取代关系**，不要在本卡上改结论。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "merge-guard 做预测、tribunal 做裁决，都在回答「上次看到的还成立吗」，未越界。PR 创建/CI 修复是「替你做完」，越界。non-goals 不变，不新开 ADR。",
     "title": "决策 4：编排器边界不动；forge 只吸收 GithubResolution 预检枚举与 merge 方式协商模式",
-    "updated_at": "2026-09-17T14:52:13.552198Z"
+    "updated_at": "2026-09-20T16:11:24.422236Z"
   },
   "TF-0181": {
     "acceptance_criteria": [],
@@ -10124,25 +10157,30 @@
     "estimated_total_minutes": null,
     "evidence": [
       "报告 §6.2",
-      "TF-0132 evidence：checkpoint schema 只有 workspot 字段；白名单无 thread.merged_back"
+      "TF-0132 evidence：checkpoint schema 只有 workspot 字段；白名单无 thread.merged_back",
+      "2026-09-21 前置缺口一（checkpoint 无线程/写者链接）·本轮实读：`packages/workbench/src/types/checkpoint.ts:96-102` 现有可选字段 `threadId` / `writerId`，注释明写「会话链接（TF-0196）：checkpoint 由哪个线程/写者产生……这是 Verifier 状态的生产者侧链接：验证结论从此可以归因到会话」，并规定旧 checkpoint 缺这两个字段时读侧不得报错。缺口已补。",
+      "2026-09-21 前置缺口二（`thread.merged_back` 不在白名单）·本轮实读 + 实跑：`src/types/event.ts:40` 已列白名单；`bun test src/blackboard/events.test.ts`（cwd=packages/workbench）→ **10 pass / 0 fail / 36 expect，44.41s**，其中「thread.merged_back is whitelisted as an observation; verdict keys and unknown types still throw」通过（白名单放行与「裁决键/未知类型仍抛错」两条同时成立）。",
+      "2026-09-21 D3-Q2 分支动静落地·本轮实跑：`bun test src/chat/resume-card/l1-summary.test.ts` → **7 pass / 0 fail / 37 expect，37.09s**。六类事实行（`L1LineKind` = ledger / writes / interfaces / merge / verifier / premises，见 `src/chat/resume-card/l1-summary.ts`）与三条硬规则（refs 全溯源、R3 措辞互斥、有 verified@ 必并列失效前提数）逐条有用例；空分支零痕迹有独立用例。",
+      "2026-09-21 边界（不得越读）：本卡是**优先级决策卡**（三候选 D3-Q2 分支动静 / tribunal 前端入口 / 足迹可视化中选第一个），done 只表示「该选择已兑现，且它点名必须先补的两条废止理由已补齐」。**不**表示另两个候选已被评估或否决——报告 §6.3 的 tribunal 前端入口与 UI 足迹可视化**仍未开工**，本轮也未为它们建节点。也**不**表示分支动静已被真实使用：观察窗内它是被开发的对象，使用反馈按账本纪律保持 `unknown`（与 TF-0200 同一条边界）。"
     ],
     "execution_hints": [],
     "id": "TF-0181",
     "kind": "decision",
+    "next_action": "已结项（2026-09-21）。两条前置（checkpoint 会话链接、merged_back 白名单）已由 TF-0196 补齐并本轮复验；D3-Q2 分支动静由 TF-0197/0198/0199/0200 落地。未选的另两个交互候选（tribunal 前端入口、UI 足迹可视化）仍待评估，需要时另立节点，不要在本卡上追认。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "三候选中只有它设计完成、验收标准写好且有数据支持（restores 12 vs resumeActions 1）。TF-0132 被废止的两条硬理由必须先补：checkpoint schema 无线程/写者链接（Verifier 状态无生产者）、thread.merged_back 不在事件白名单。tribunal 前端入口与足迹可视化排后。",
     "title": "决策 5：交互层先落 D3-Q2 分支动静（复活 TF-0132），前置补齐其废止原因",
-    "updated_at": "2026-09-17T14:52:13.552198Z"
+    "updated_at": "2026-09-20T16:11:24.422314Z"
   },
   "TF-0182": {
     "acceptance_criteria": [],
@@ -12026,7 +12064,10 @@
     "created_at": "2026-09-17T14:52:13.553223Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-b560ff7e7d",
+      "TFD-31a78e49dd"
+    ],
     "difficulty": "low",
     "estimated_total_minutes": 90,
     "evidence": [
@@ -12117,24 +12158,32 @@
     "deviations": [],
     "difficulty": "unknown",
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-21 零依赖定位·本轮实读：`packages/workbench/package.json` → `@baixu22/workbench` v0.3.0 的 `dependencies` 恰为 **4 个纯 TS 包**（chokidar ^5.0.0 / commander ^14.0.0 / yaml ^2.9.0 / zod ^4.4.3），`peerDependencies` 为空——与 ADR-0013 决策 3 记的「4 个运行时依赖 + 单文件编译二进制」一致。",
+      "2026-09-21 不 import SDK·本轮实跑 grep：`grep -rn \"anthropic-ai|@openai/|opencode-ai\" packages/workbench/src packages/workbench/scripts` → **0 处命中**。这正是 ADR-0013 决策 3 写下的接入形态约束（触发后只允许 spawn-sidecar）。",
+      "2026-09-21 单文件二进制·本轮实跑（本卡最硬的一条）：`bun run build`（cwd=packages/workbench）→ `compiled [host-win32-x64] → dist/workbench.exe`（**101,238,272 字节**）+ `compiled [npm] → dist/workbench.js`，日志含 `ui assets: 14 files embedded`。把**仅这一个 exe** 复制到空目录 `C:\\Users\\27933\\AppData\\Local\\Temp\\wb-standalone`（该目录内无 node_modules、无 dist/ui、无任何源码）：`./workbench.exe init` → `ready at ...\\.workbench (18 created, 0 already present)`；`./workbench.exe ui --no-open --port 7799` → `curl http://127.0.0.1:7799/` 返回 **200 / 394 字节** HTML（`<title>Workbench</title>`），其引用的 `assets/index-CHT4J3bm.js` 单独请求也是 **200**——UI 资产确实来自嵌入包（`src/ui/assets.ts:33` 的 `kind: \"embedded\"` 优先于磁盘目录），二进制不依赖外部文件即可自举。",
+      "2026-09-21 触发条件在案·本轮实读：`docs/decisions/0013-workbench-identity-and-compliance.md:51` 明确「sidecar（重路）的触发条件是『出现第二个需要足迹观测的 provider』，不是『补足迹』」，并点名「不允许把 `@anthropic-ai/claude-agent-sdk` 之类的 SDK `import` 进主包——那会破坏『4 个运行时依赖 + 单文件编译二进制』这一生态特征（对应风险节点 TF-0221）」。触发条件当前**未满足**（仍只有一个可观测 provider = claude 车道；HTTP 对照组读数见 TF-0190）。",
+      "2026-09-21 未复跑的一层（如实记录）：本轮只跑 host 目标（`bun run build`），**未跑** `--all` 跨平台交叉编译（Windows/macOS/Linux 四目标），也**未跑** e2e。另：构建仍会生成 `dist/ui/` 目录（磁盘回退路径），但上面的空目录试验证明二进制不依赖它。",
+      "2026-09-21 边界（不得越读）：本卡是**风险卡**，done 表示「缓解措施在案且本轮实测未被违反」。**不**表示重路已被评估为不需要——触发条件（第二个需要足迹观测的 provider）一旦出现，本卡结论即需重估，ADR-0013 已写明触发重估条款。也**不**表示 SDK 接入这件事在别处没发生过：本轮只核了 `packages/workbench`，未核 `sidecar/`（它本来就是 SDK 的宿主，不在本卡范围）。"
+    ],
     "execution_hints": [],
     "id": "TF-0221",
     "kind": "risk",
+    "next_action": "已结项（2026-09-21）。缓解三条本轮逐条实测：4 个运行时依赖、SDK import 0 处、单文件二进制在空目录里自举起 UI（HTTP 200）。触发条件（第二个需要足迹观测的 provider）仍写在 ADR-0013 决策 3；条件出现时按该 ADR 的「触发重估」条款重估本卡，且接入形态只能是 spawn-sidecar。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "缓解：决策 3 把触发条件写进 ADR；接入形态只允许 spawn-sidecar，不允许 import SDK 进主包。",
     "title": "风险：以「补足迹」为由整体接入 sidecar，破坏零依赖单文件二进制定位",
-    "updated_at": "2026-09-17T14:52:13.553728Z"
+    "updated_at": "2026-09-20T16:11:24.422381Z"
   },
   "TF-0222": {
     "acceptance_criteria": [],
@@ -12156,24 +12205,32 @@
     "deviations": [],
     "difficulty": "unknown",
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-21 发版链静态校验·本轮实跑：`bun run release:verify`（cwd=D:/helmor-main）→ `Release configuration verified for version 0.46.0` + `[verify-release-announcements] release announcements verified.`，**exit 0**。这是仓库自己的发版链校验（`scripts/verify-release-config.mjs` + `scripts/verify-release-announcements.ts`），不引用历史读数。",
+      "2026-09-21 包名终态·本轮实读（逐个读 package.json，不是引用文档）：根 `versespace`（private=true）；`packages/workbench` → `@baixu22/workbench` v0.3.0（`publishConfig.access=public`，唯一对外发布物）；`apps/workbench-ui` → `@baixu22/workbench-ui`（private=true）；`packages/context-rot` → `context-rot`。与 ADR-0013 决策 1 的改名终态一致。",
+      "2026-09-21 旧作用域残留·本轮实跑 grep：`grep -rn \"@helmor/\"`（排除 node_modules/.git/.claude/worktrees/`.agent-contexts`/`.agent-workbench`/`.workbuddy`/dist）→ 8 处命中，**逐条都不是主线残留**：6 处在 `docs/`（ADR-0013/0014 与吸收报告的**历史叙述**，按「历史文档不改写」保留）、1 处在 `packages/context-rot/README.md:26`（该 README 的**示例文本**，讲的是「未在 package.json 声明」这种情形）、2 处在 `sidecar/bun.lock` 与 `sidecar/package.json`（**支线**自己的包名 `@helmor/sidecar`，属 ADR-0011 保留的冻结存量，不在改名范围）。",
+      "2026-09-21 workflow 里的 `helmor`·本轮实跑 grep：`.github/workflows/` 命中 **7 处，全部是 `helmor-cli` / `helmor-sidecar`**（支线 Rust 二进制名，见 ci.yml 的 vendor 注释与 publish.yml），**没有一处是主线包名或 workspace 过滤名**。主线发版链 `release-workbench.yml` 用 `workbench-v*` 标签前缀 + 矩阵构建，与支线 `publish.yml` 的 `v*` 触发相互独立（该文件头注释在案）。",
+      "2026-09-21 未复跑的一层（如实记录）：**远程 workflow 未触发**（GitHub Actions 受账单阻塞，TF-0188 已记录同一偏差）；`release:tag` 未真打标签；`release:sync-versions` 未跑。本轮只做了本地静态校验与包名实读，**不含任何 CI 上的成功读数**。",
+      "2026-09-21 边界（不得越读）：本卡是**风险卡**，done 表示「改名后的残留引用在仓库权威面上为 0，且发版链静态校验本轮通过」。**不**表示发版链在 CI 上真的跑通过——远程 Actions 仍未验证，那是账单问题，不是本卡结论。也**不**表示支线 `sidecar` 的 `@helmor/sidecar` 名字该改（ADR-0011 明确冻结）。"
+    ],
     "execution_hints": [],
     "id": "TF-0222",
     "kind": "risk",
+    "next_action": "已结项（2026-09-21）。残留引用核查与发版链静态校验本轮实跑通过（`release:verify` exit 0）。远程 Actions 一旦解除账单阻塞，应把 `release-workbench.yml` 的真跑读数补进 TF-0188 而非本卡；本卡不追认 CI 结果。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "缓解：T1.5 干跑发版链。",
     "title": "风险：改名后 release/CI 的 workspace 过滤名与 npm publish 名残留旧值",
-    "updated_at": "2026-09-17T14:52:13.553728Z"
+    "updated_at": "2026-09-20T16:35:49.627994Z"
   },
   "TF-0223": {
     "acceptance_criteria": [],
@@ -12238,23 +12295,428 @@
     "deviations": [],
     "difficulty": "unknown",
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-21 已删目录的残留引用·本轮实跑 grep（排除 node_modules/.git/.claude/worktrees/`.agent-contexts`/`.agent-workbench`/`.workbuddy`/dist）：六个模式 `apps/marketing`、`apps/registry`、`@helmor/marketing`、`@helmor/registry`、`refresh-marketing`、`notify-marketing` 在**权威配置面全部为 0**。逐文件点验：`.github/workflows/ci.yml` / `publish.yml` / `release-plan.yml` / `.changeset/config.json` / `biome.json` / `tsconfig.json` / `tsconfig.node.json` / `package.json` **各 0 处**。剩余命中只在 `docs/`（历史叙述）、`.agent-contexts/`（归档草稿）、`.workbuddy/`（本机草稿）、`.claude/worktrees/`（本地忽略快照）里。",
+      "2026-09-21 目录与 workspace 声明·本轮实读：`ls apps/` → 只剩 `workbench-ui`；根 `package.json` 的 `workspaces` = `['.', 'apps/*', 'packages/*']`（通配，**没有**写死的已删目录名，删目录不会留下过滤名残留）。",
+      "2026-09-21 全仓构建·本轮实跑：`bun run build`（cwd=packages/workbench）→ **成功**：UI vite 构建 ✓ built in 5.89s、`ui assets: 14 files embedded`、`compiled [host-win32-x64] → dist/workbench.exe`（101,238,272 字节）、`compiled [npm] → dist/workbench.js`。即「删目录导致全仓构建断」这条风险，主线构建面本轮实测**未发生**。",
+      "2026-09-21 门禁·本轮实跑：`bun run typecheck` → **exit 0**（5 段串联：根 → sidecar → packages/workbench → packages/context-rot → apps/workbench-ui，46s，无输出即无错）；`bunx biome check . --config-path=./biome.json` → **exit 0**，`Checked 1383 files in 1953ms`，`Found 1 info`（一条 `String.raw` 无用的提示级 info，非 error）；`bun run test:context-rot` → **65 pass / 0 fail / 160 expect，45.26s，exit 0**。",
+      "2026-09-21 未复跑的一层（如实记录）：本卡摘要里的验收措辞是「三套测试 + typecheck + lint 全绿」，本轮**只完成了 typecheck 与 biome 两段**。未跑：六套件里的 `test:frontend` / `test:sidecar` / `test:workbench` / `test:rust`，以及 `cargo clippy`。原因在案：本机全量 `bun test` 已知 18 分钟以上仍不结束（`packages/workbench/bunfig.toml` 有注），`src/git/worktree.test.ts` 有 2 例由宿主 hook 删临时目录 `.git` 造成的**环境假红**；`apps/workbench-ui` 的 vitest 本轮也在 10 分钟以上未结束（同类慢盘现象）。**这些层按「未复跑」记，不冒充全绿。**",
+      "2026-09-21 边界（不得越读）：本卡是**风险卡**，done 表示「删除动作已执行、引用在权威面上已清、本轮可跑的三项（构建 / typecheck / biome）为绿」。**不**表示六套件测试与 clippy 本轮全绿——那几层未复跑；也**不**表示 CI 上跑通过（远程 Actions 受账单阻塞）。要补这两层读数，应在解除阻塞后由独立轮次补进本卡或另立节点。"
+    ],
     "execution_hints": [],
     "id": "TF-0224",
     "kind": "risk",
+    "next_action": "已结项（2026-09-21）。引用清零与主线构建面本轮实测通过（typecheck / biome / workbench build 三项 exit 0）。未复跑的层（六套件测试、cargo clippy、远程 CI）不在本卡追认范围；解除 Actions 账单阻塞后由独立轮次补读数。",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "缓解：每项删除三套测试 + typecheck + lint 全绿为验收。",
     "title": "风险：删除 apps/marketing、apps/registry 或残留代码时 CI/biome/tsconfig 引用未清导致全仓构建断",
-    "updated_at": "2026-09-17T14:52:13.553728Z"
+    "updated_at": "2026-09-20T16:35:49.628070Z"
+  },
+  "TF-0225": {
+    "acceptance_criteria": [
+      "typecheck / biome / 三套测试全绿",
+      "packages/workbench 构建产出单文件二进制与 npm bundle，两者可自报版本",
+      "dist/ 内含 NOTICE、LICENSE、LICENSE-APACHE",
+      "check-landing 无 dirty、无 suspect",
+      "仓库外冻结锁文件安装后，UI 构建与两种发行物的 test:build 通过"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.95,
+    "context_tags": [
+      "retirement",
+      "workbench",
+      "compliance",
+      "build"
+    ],
+    "created_at": "2026-09-21T02:43:23.570784Z",
+    "deprecated_at": null,
+    "desired_outcomes": [
+      "工作树里不再有 src/、src-tauri/、sidecar/ 与任何指向它们的活引用",
+      "根 package.json 只剩三包门禁、UI 开发构建与 workbench 发版三块能力",
+      "发布物仍能构建，且合规文件随构建进入 dist/"
+    ],
+    "deviations": [
+      "TFD-b560ff7e7d",
+      "TFD-31a78e49dd",
+      "TFD-4c045c8f30",
+      "TFD-7dc9fa7668"
+    ],
+    "difficulty": "high",
+    "display_order": 2800,
+    "estimated_total_minutes": 240,
+    "evidence": [
+      "工作树删除面：1481 个文件（src/ 738、src-tauri/ 601、sidecar/ 82，外加 legacy 构建入口、CI 工作流、发版脚本与 Nix shell）",
+      "门禁读数（本轮现场实跑）：typecheck 三包 0 错；biome 540 文件 0 问题",
+      "三套测试 904（workbench 134 文件）+ 61（UI 17 文件）+ 65（context-rot 6 文件） = 1030 pass / 0 fail",
+      "对照实验：向 UI 包注入一处类型错误后 typecheck 退出码 2 并指名文件，证明这条门禁不是空跑",
+      "发布链：bun run build:ui 嵌入 14 个 UI 资源；packages/workbench bun run build 产出 dist/workbench.exe 与 dist/workbench.js（均自报 0.3.0），attribution 把 NOTICE / LICENSE / LICENSE-APACHE 复制进 dist/",
+      "落地：d8e2f83（代码面 1542 文件）+ 5b6eca6（文档面 9 文件），check-landing dirty 0 / suspect 0",
+      "2026-09-21 独立复核：原工作区虽有 1030 项测试通过，仓库外干净安装后的 UI 构建仍以 exit 1 报缺少 Geist Mono；补齐两项字体依赖后同一隔离目录构建 exit 0。详见 docs/retirement-closeout-validation-2026-09-21.md。",
+      "本轮根 build:ui 仅执行一次 Vite，嵌入 14 个资源；CI 增加面板真实构建，发布测试复用包内声明的 60 秒超时入口。",
+      "本轮最终三包 typecheck 与 Biome exit 0；测试 904 + 61 + 65 = 1030 pass / 0 fail；隔离构建的 native / JS 均通过初始化、doctor、stats 与内嵌 UI 检查。",
+      "根 README 改为 Workbench 入口；根 NOTICE 保留上游归属并指向发行物清单，包 NOTICE 补权限提示移植与源代码夹具范围；dist 三个许可文件逐字节一致。决策记录 ADR-0016。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0225",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "让 Workbench 主线在身份、合规与构建链上不再寄生于旧 Helmor 容器——删除是 ADR-0011「存量处置」的终点，也是判断「主线是否真的独立」的唯一硬证据。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "兑现 ADR-0014 决策 3 预留的删除动作：把 49 个流夹具先搬进主线，再清掉样式/构建/发布/CI 的全部引用，最后删除 src/、src-tauri/、sidecar/ 与 apps/marketing、apps/registry，并用现行三套门禁证明主线仍可跑、仍可发布。",
+    "title": "执行存量退役：删除 src/、src-tauri/、sidecar/ 三块旧容器与外围，清空全仓引用",
+    "updated_at": "2026-09-21T02:43:23.570784Z"
+  },
+  "TF-0226": {
+    "acceptance_criteria": [
+      "claude 夹具回放用例在同包内通过",
+      "全量测试套件不因迁移而变红"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.9,
+    "context_tags": [
+      "retirement",
+      "workbench",
+      "fixtures",
+      "wire-protocol"
+    ],
+    "created_at": "2026-09-21T02:43:23.570784Z",
+    "deprecated_at": null,
+    "desired_outcomes": [
+      "主线不再需要跨目录读 src-tauri/ 才能跑夹具回放",
+      "四个尚无消费者的 provider 夹具也保留下来作为参考样本"
+    ],
+    "deviations": [
+      "TFD-31a78e49dd",
+      "TFD-4c045c8f30"
+    ],
+    "difficulty": "medium",
+    "display_order": 2810,
+    "estimated_total_minutes": 60,
+    "evidence": [
+      "迁移面：49 个 .jsonl（claude 19 / codex 11 / cursor 7 / kimi 3 / opencode 9，约 766 KB）",
+      "claude-fixtures.test.ts 的夹具目录由跨目录相对路径改为 join(import.meta.dir, \"fixtures/streams/claude\")",
+      "本轮全量实跑覆盖该用例：workbench 套件 904 pass / 0 fail（134 文件）",
+      "2026-09-21 本轮逐一核对 49 个 JSONL 的 Git blob SHA-1，与 944b9d6 的原路径全部一致；补来源说明，未修改夹具内容。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0226",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "线协议形状不能靠回忆重建。夹具是主线折叠、渲染与增量逻辑的回归基准，留它们在自己的包里，删除 src-tauri/ 才不会让主线失去对外部协议的证据。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "删除 src-tauri/ 之前先把线协议的真实参考样本搬走：claude 19 / codex 11 / cursor 7 / kimi 3 / opencode 9 共 49 个 .jsonl 夹具迁入 packages/workbench/src/chat/fixtures/streams/，claude 用例改读同包路径。",
+    "title": "流夹具迁入主线：49 个 provider 事件样本从 src-tauri/tests 移进 workbench 包",
+    "updated_at": "2026-09-21T02:43:23.570784Z"
+  },
+  "TF-0227": {
+    "acceptance_criteria": [
+      "三个入口解析到同一目录，旧副本可恢复。",
+      "历史、锁竞争和导出回归通过。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.98,
+    "context_tags": [],
+    "created_at": "2026-09-21T04:36:56.114787Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "display_order": 2900,
+    "estimated_total_minutes": null,
+    "evidence": [
+      "docs/retirement-followup-2026-09-21.md",
+      "主脚本三入口 SHA256：ff02745282619a55ff96ed2a2a96266e816b56d7b723a0a061ffefc25e6cab2f。",
+      "历史 5 项、锁恢复、8 进程 160 次拒绝 unlink 的竞争、完整导出回归、skill quick_validate 和仓库 validate 通过。"
+    ],
+    "execution_hints": [],
+    "id": "TF-0227",
+    "kind": "task",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "避免多宿主调用不同脚本造成任务历史、排序和进度再次漂移。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "合并两份技能各自独有的修复，以 WorkBuddy 目录为权威，Codex 和 Claude 都通过 junction 使用同一份实现。",
+    "title": "统一任务森林技能入口，保留历史恢复、排序和并发写入保护",
+    "updated_at": "2026-09-21T04:36:56.114787Z"
+  },
+  "TF-0228": {
+    "acceptance_criteria": [
+      "PR 最新提交的相关远端检查全部通过。",
+      "通过后合入 main，本任务不创建发布 tag。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 1.0,
+    "context_tags": [],
+    "created_at": "2026-09-21T04:36:56.115791Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "display_order": 2910,
+    "estimated_total_minutes": null,
+    "evidence": [
+      "https://github.com/Baixu22/VerseSpace/pull/28",
+      "https://github.com/Baixu22/VerseSpace/actions/runs/35560280554",
+      "Detect changes 的失败注释明确为 recent account payments have failed or spending limit needs to be increased，steps 为空。",
+      "用户本轮确认：暂时无法恢复，保留 PR 等待 CI。"
+    ],
+    "execution_hints": [
+      "阻塞原因是 GitHub 账户付款或额度；不得用本地通过替代远端 CI 或绕过检查合入。"
+    ],
+    "id": "TF-0228",
+    "kind": "follow_up",
+    "next_action": "用户恢复 GitHub Actions 可用额度后，重跑 PR #28 最新提交的检查，通过后合入。",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "补齐本地验收无法替代的 macOS、Windows 远端门禁。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "blocked",
+    "success_metrics": [],
+    "summary": "PR #28 已建立。GitHub 因账户付款或支出额度未启动检查；用户选择保留 PR，等待额度恢复后再验收和合入。",
+    "title": "完成退役提交的远端 CI 验收并合入主分支",
+    "updated_at": "2026-09-21T04:36:56.115791Z"
+  },
+  "TF-0229": {
+    "acceptance_criteria": [
+      "给出一次只变一个变量的机制对照，且结果可被第三方复算。（达成：三组对照各 3/3 —— 只改删除入口 kernel32→ntdll；只改目录里有无被独占持有的子文件；只改编译目标平台 AnyCPU→x64。原始产物在 .agent-contexts/tf0229-20260921/，复算脚本 evidence-chain-tf0229.py）",
+      "结论落到具体入口或调用，不满足于「经过 tsbx」。（达成：入口 = ntdll!NtSetInformationFile 的 delete-disposition 分支，class 13 与 64 都被改写；实现 = SHELL32!SHFileOperationW 的 RECYCLE-BACKUP，tsbx 自己的日志逐条与之对应）",
+      "证据链可由第三方复算：原始产物 + SHA256 清单 + 自检矩阵全通过。（达成：24/24 PASS，任一条不成立脚本 exit 1）"
+    ],
+    "alignment": {
+      "fit": "aligned",
+      "fit_confidence": 0.95,
+      "user_goal": "确定历史故障的真实原因，避免误报修复。",
+      "validation_plan": [
+        "重跑 evidence-chain-tf0229.py，24 项自检必须全 PASS。",
+        "若要独立复核机制：用 dbgwin-capture.py 抓 [TSBX] 日志，复现时应当看到 RECYCLE-BACKUP ok 指向被删目录，且删除返回成功。"
+      ],
+      "why_not_enough": "机制已定位，但「宿主为什么这样设计删除语义」属于产品意图，不在本节点范围；由本节点拆出的 TF-0231（PE32/AnyCPU 目标不被注入）仍是独立缺陷。",
+      "why_this_task": "本轮把「改写发生在哪一步」从调用链层的间接证据，提升为可枚举入口 + 可观测实现 + 可复算对照。"
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.6,
+    "context_tags": [],
+    "created_at": "2026-09-21T07:35:49.484285Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "high",
+    "display_order": 2950,
+    "estimated_total_minutes": null,
+    "evidence": [
+      "docs/tf0229-evidence-chain-2026-09-21.md（24 项自检 + 结论 + 产物 SHA256 清单）",
+      ".agent-contexts/tf0229-20260921/evidence-chain-tf0229.py（生成器，断链即 exit 1）",
+      ".agent-contexts/tf0229-20260921/mech-CNMKTM/result.json（sandbox / sandbox_bypass 两臂 × 7 组合 × 3 次）",
+      ".agent-contexts/tf0229-20260921/dbgwin-arm3x64.txt（tsbx 自身 OutputDebugString，按 PID 对齐）",
+      ".agent-contexts/tf0229-20260921/align-arm3x64.txt（行为读数 ↔ 日志分支逐条对齐表）",
+      ".agent-contexts/tf0229-20260921/strings-context.txt（tsbx.dll 导入表原文：SHELL32!SHFileOperationW）"
+    ],
+    "execution_hints": [
+      "探针必须编译成 x64（csc /platform:x64）。csc 默认的 AnyCPU 产物是 PE32/I386，在 sandbox 臂里不会被注入 tsbx（探针内 tsbxLoaded=false），会得到「一切正常」的假阴性 —— 这个坑本轮踩过，见 TF-0231。",
+      "tsbx 的日志走 OutputDebugString：用 .agent-contexts/tf0229-20260921/dbgwin-capture.py 抓（DBWIN 共享内存 + 两个事件，不需要管理员、不改注册表）；自检脚本 test-dbgwin.py。",
+      "夹具目录名必须以 api-fixture- 开头（探针自带 cwd 守卫），且探针要放在夹具内落在 inherit_user 规则里，否则偶发 exit 2 无输出。",
+      "第二删除入口用 ntdll!NtCreateFile(DELETE) + NtSetInformationFile，NT 路径前缀 \\??\\；这就是「只变入口」的那一臂。",
+      "只在新夹具里跑，不碰工作区与用户项目。"
+    ],
+    "id": "TF-0229",
+    "kind": "follow_up",
+    "next_action": "已定位（2026-09-21）。后续宿主/sandbox 升级后，重跑 .agent-contexts/tf0229-20260921/evidence-chain-tf0229.py：24 项自检任一失败即说明机制变了，需重新定位。",
+    "non_goals": [],
+    "priority": 3,
+    "progress": 100.0,
+    "progress_source": "manual",
+    "purpose": "把「能稳定复现」和「已解释清楚」分开：触发条件定位不等于机制定位。本轮把机制落到可枚举的入口与调用上。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "done",
+    "success_metrics": [],
+    "summary": "机制已定位：tsbx.dll 在目标进程内 inline-hook 六个 ntdll 文件 API（它自己打印 File hooks installed: 6/6），删除请求落在 NtSetInformationFile 的 FileDispositionInformation(13) / FileDispositionInformationEx(64) 分支；tsbx 先做 RECYCLE-BACKUP（实现是它静态导入的 SHELL32!SHFileOperationW），备份成功后放行，于是「删除非空目录」返回成功、目录内文件被一起带走、last error 残留 14007（ERROR_SXS_KEY_NOT_FOUND，shell 路径的副作用）；备份失败时它改为拒绝删除。",
+    "title": "宿主 sandbox 托管模式改写「删除非空目录」语义的机制：已定位到 ntdll delete-disposition + RECYCLE-BACKUP",
+    "updated_at": "2026-09-21T08:03:10.047048Z"
+  },
+  "TF-0230": {
+    "acceptance_criteria": [
+      "取得含完整堆的转储，或在已知崩溃条件下复现并当场采集完整转储。",
+      "给出责任实现的直接证据，且与行为缺陷分开结案。",
+      "若长期无法取得完整堆转储，按不可达登记而不是继续挂着 blocked。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.95,
+    "context_tags": [],
+    "created_at": "2026-09-21T07:35:49.485540Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "unknown",
+    "display_order": 2960,
+    "estimated_total_minutes": null,
+    "evidence": [
+      "docs/tf0173-evidence-chain-2026-09-21.md（结论 L3-未证）",
+      ".agent-contexts/tf0173-20260921/git.exe.14216.dmp（2,872,709 B，SHA256 dbe70fc30a0d4f63be8be2f4901fb69860ac52d04b4bf4c3e5fc4b7505a786ca）",
+      "Windows Application 记录 1241268/1241277/1241280（2026-09-13 08:23/09:48/10:02，Git 2.51.0.1，ntdll 10.0.26100.7920 偏移 0x1176e5）",
+      "docs/tf0229-evidence-chain-2026-09-21.md：本轮证明 tsbx 处理删除时会调 SHELL32!SHFileOperationW（RECYCLE-BACKUP），因此转储里出现 SHFileOperationWithAdditionalFlags → CFileOperation::FinishOperations 是「删除走了 shell」的正常痕迹，不再需要另外解释这条栈。"
+    ],
+    "execution_hints": [
+      "别再拿「关闭文件版本备份」「替换单个 tsbx.dll」当修复方向——两者都已被对照否证。",
+      "崩溃时立刻从 Event 1000/1001 指向的路径采集转储；已确认那时的 minidump 不含完整内存。"
+    ],
+    "id": "TF-0230",
+    "kind": "follow_up",
+    "next_action": "决定继续等完整堆转储，还是按不可达登记后关闭。",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "把堆因果从已收口的行为缺陷里分出来，避免它继续充当行为缺陷的阻塞理由。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "blocked",
+    "success_metrics": [],
+    "summary": "2026-09-13 三次 git apply 与 2026-09-20 一次 git switch main 均以 0xC0000374 结束；2026-09-20 的转储为 minidump（标志 0x200121，不含完整进程内存），检测栈只能证明「经过」tsbx 与外壳删除，不能证明「最早写坏」。旧三次 git apply 的转储仍缺失。",
+    "title": "三次历史 Git 0xC0000374 的归因（缺完整堆转储）",
+    "updated_at": "2026-09-21T08:03:10.048708Z"
+  },
+  "TF-0231": {
+    "acceptance_criteria": [
+      "判定这是宿主的有意设计还是缺陷：给出决策点或缺失实现的直接证据，不是从日志倒推。",
+      "给出可复算判据：同一会话内 /platform:x86 与 /platform:x64 两个产物的注入读数对照（探针内 tsbxLoaded + tsbx 日志里该 PID 的行数）。",
+      "若确认是缺陷，评估影响面：默认 AnyCPU 是 Visual Studio / csc 的默认产物形态，意味着哪些被托管启动的进程实际不受约束。"
+    ],
+    "alignment": {
+      "fit": "unknown",
+      "fit_confidence": 0.0,
+      "user_goal": "",
+      "validation_plan": [],
+      "why_not_enough": "",
+      "why_this_task": ""
+    },
+    "alignment_records": [],
+    "assumptions": [],
+    "confidence": 0.75,
+    "context_tags": [],
+    "created_at": "2026-09-21T08:03:10.047068Z",
+    "deprecated_at": null,
+    "desired_outcomes": [],
+    "deviations": [],
+    "difficulty": "medium",
+    "display_order": 2970,
+    "estimated_total_minutes": null,
+    "evidence": [
+      ".agent-contexts/tf0229-20260921/pe-compare.txt（rmdir-probe.exe = 0x8664/PE32+；AnyCPU 产物 = 0x014c/PE32）",
+      ".agent-contexts/tf0229-20260921/bitness.txt（AnyCPU 产物实测 is64BitProcess=true）",
+      ".agent-contexts/tf0229-20260921/arch-lines.txt（x64 目标有 APC 回退 + Loader stub size: 144 bytes；AnyCPU 目标没有）",
+      ".agent-contexts/tf0229-20260921/legacy-t1Cloz/result.json（x64 产物 3/3 复现）与 legacy-bZJk0M/result.json（同源码 AnyCPU 0/3）",
+      "docs/tf0229-evidence-chain-2026-09-21.md（对照层：原二进制 3/3+3/3 vs 重编译 0/3）"
+    ],
+    "execution_hints": [
+      "对照必须同会话、同夹具、同源码，只改 csc 的 /platform 参数；探针放在 api-fixture- 目录内。",
+      "判据是文件副作用与日志，不是退出码：探针内 GetModuleHandleW(\"tsbx.dll\") + dbgwin 日志里该 PID 是否出现 loaded successfully / File hooks installed。",
+      "AnyCPU 产物在 x64 系统上跑的是 64 位进程（bit-probe.cs 可自证），别把它当成 32 位目标来定性。"
+    ],
+    "id": "TF-0231",
+    "kind": "follow_up",
+    "next_action": "用 rmdir-probe2.exe（AnyCPU）与 rmdir-probe2-x64.exe 在同一会话里各跑 3 次，把注入读数与 [TSBX-CI] 分叉行并排放；然后查 sandbox 侧注入器对 AddressOfEntryPoint≠0 的目标走的是哪条路径（sandbox_ffi / sandbox-cli 的 CI 模块日志）。",
+    "non_goals": [],
+    "priority": 2,
+    "progress": 0.0,
+    "progress_source": "manual",
+    "purpose": "把「沙箱是否真的生效」变成一个可判定的读数：一个被托管启动的进程如果没被注入 tsbx，它的文件系统约束就是空的，而调用方看不出任何异常。",
+    "remaining_minutes_max": null,
+    "remaining_minutes_min": null,
+    "requirements": [],
+    "source_sessions": [],
+    "status": "ready",
+    "success_metrics": [],
+    "summary": "同样一份源码、同样被 executionMode=sandbox 托管启动，只有编译目标平台不同：/platform:x64（PE32+，AddressOfEntryPoint=0）的产物 3/3 被注入 tsbx；csc 默认的 AnyCPU（PE32/I386，AddressOfEntryPoint=0x37BE）产物 0/3 被注入，探针内 tsbxLoaded=false、日志里该 PID 没有任何 [TSBX] 行。而两者运行时都是 64 位进程（bit-probe 实测 is64BitProcess=true），所以这不是「32 位目标」问题。注入器日志给出的分叉点是：x64 目标出现 `AddressOfEntryPoint=0; falling back to APC injection` 并解析 kernel32 导出、写 144 字节 loader stub；PE32 目标走另一条路径且没有成功加载。推断：回退到 APC 的路径是有效路径，另一条路径对托管程序集不成立（未读注入器实现，属推断）。",
+    "title": "PE32/AnyCPU 托管程序集在 sandbox 托管启动时不被注入 tsbx（沙箱约束静默失效）",
+    "updated_at": "2026-09-21T08:03:10.047083Z"
   }
 }

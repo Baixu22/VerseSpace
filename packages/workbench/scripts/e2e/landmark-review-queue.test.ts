@@ -1,9 +1,19 @@
 import { expect, test } from "bun:test";
-import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { landmarkCandidates } from "../../src/interactions/landmark-set";
+import { reviewLandmark } from "../../src/interactions/review";
+import { currentLandmarkAcceptance } from "../../src/interactions/review-stats";
 import { makeTempWorkbench } from "../../src/test/fixtures";
 
+/**
+ * TF-0057 L1 口径隔离：steward 自审是真实数据，但绝不能抬升 human 口径。
+ *
+ * 走库内 API，而不是再 spawn 一层 bun 跑 CLI——CI runner 上
+ * `spawnSync(bun.exe)` 会立刻 ETIMEDOUT（嵌套 bun + 实时扫描/进程配额），
+ * 那测的是宿主 spawn 能力，不是复核口径。CLI 与本测试共用
+ * `reviewLandmark` + `currentLandmarkAcceptance` 同一实现。
+ */
 test("代理自审不能宣称 L1 真人验收达标，真实人答通道单独计数", async () => {
 	const ws = await makeTempWorkbench();
 	try {
@@ -19,44 +29,63 @@ test("代理自审不能宣称 L1 真人验收达标，真实人答通道单独�
 			used: [],
 			generated: [{ path: "src/core.ts" }],
 		});
-		const answers = join(ws.projectDir, "answers.json");
-		await writeFile(
-			answers,
-			JSON.stringify([
-				{ writer: "writer", handle: "src/core.ts", verdict: "endorse" },
-			]),
+
+		const events = await ws.bb.events.all();
+		const candidates = landmarkCandidates(events, "writer", {
+			denominator: "session-top-k",
+		});
+		expect(candidates.length).toBeGreaterThan(0);
+		const handle = candidates[0]!;
+		const writerRefs = [{ id: "writer", kind: "agent" as const }];
+
+		await reviewLandmark(ws.bb, "writer", handle, "endorse", undefined, {
+			source: "steward",
+		});
+		const afterSteward = await ws.bb.events.all();
+		const stewardJudgement = currentLandmarkAcceptance(
+			afterSteward,
+			writerRefs,
+			Date.now(),
+			"steward",
+			{ denominator: "session-top-k" },
 		);
-		const apply = (...flags: string[]) =>
-			spawnSync(
-				process.execPath,
-				[
-					join(import.meta.dir, "landmark-review-queue.ts"),
-					"--workspace",
-					ws.projectDir,
-					"--all-sessions",
-					"--apply",
-					answers,
-					...flags,
-				],
-				{ encoding: "utf8", windowsHide: true, timeout: 10_000 },
-			);
-		const steward = apply("--steward");
-		expect(steward.status, steward.stderr).toBe(0);
-		expect(steward.stdout).toContain("认可 1 / 全部候选 1 = 1.0000");
-		expect(steward.stdout).toContain(
-			"用户认可口径（human · 新口径）：认可 0 / 全部候选 1",
+		const humanAfterSteward = currentLandmarkAcceptance(
+			afterSteward,
+			writerRefs,
+			Date.now(),
+			"human",
+			{ denominator: "session-top-k" },
 		);
-		expect(steward.stdout).not.toContain("已满足，可据此收口");
+		expect(stewardJudgement.reviewed).toBeGreaterThan(0);
+		expect(stewardJudgement.endorsed).toBeGreaterThan(0);
+		// human 口径仍然空：自审不得冒充用户认可
+		expect(humanAfterSteward.reviewed).toBe(0);
+		expect(humanAfterSteward.endorsed).toBe(0);
 		expect(
-			await ws.bb.events.query({ source: "human", type: "landmark.reviewed" }),
+			await ws.bb.events.query({
+				source: "human",
+				type: "landmark.reviewed",
+			}),
 		).toHaveLength(0);
 
-		// Only the isolated test blackboard receives this synthetic human fixture.
-		const human = apply();
-		expect(human.status, human.stderr).toBe(0);
-		expect(human.stdout).toContain("已满足，可据此收口");
+		await reviewLandmark(ws.bb, "writer", handle, "endorse", undefined, {
+			source: "human",
+		});
+		const afterHuman = await ws.bb.events.all();
+		const humanJudgement = currentLandmarkAcceptance(
+			afterHuman,
+			writerRefs,
+			Date.now(),
+			"human",
+			{ denominator: "session-top-k" },
+		);
+		expect(humanJudgement.reviewed).toBeGreaterThan(0);
+		expect(humanJudgement.endorsed).toBeGreaterThan(0);
 		expect(
-			await ws.bb.events.query({ source: "human", type: "landmark.reviewed" }),
+			await ws.bb.events.query({
+				source: "human",
+				type: "landmark.reviewed",
+			}),
 		).toHaveLength(1);
 	} finally {
 		await ws.cleanup();

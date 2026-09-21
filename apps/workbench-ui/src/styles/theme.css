@@ -23,8 +23,10 @@
    into the frozen legacy container (`src/`, `src-tauri/`, `sidecar/`), and it
    pulled the whole 815-line legacy theme — including every token this
    dashboard never uses — into the published binary. Vendoring the consumed
-   subset closes that dependency, so the container can be retired once the
-   remaining coupling is cleared (see docs/decisions/0013-*.md, decision 6).
+   subset closed that dependency; the container itself was then retired on
+   2026-09-21 once the remaining coupling was cleared (docs/decisions/
+   0013-*.md decision 6, executed by 0015-legacy-retirement-execution.md).
+   The origin file is readable at commit `944b9d6` or earlier.
 
    Verified after the change: the built `dist/assets/*.css` token values are
    byte-identical to the pre-change build for every token in this file.
