@@ -96,3 +96,52 @@ WorkBuddy 的 `tsbx.dll` 进入 Windows 外壳文件操作。当前旧宿主中�
 这是**围堵**，不是修复：它把「git 退出 0、文件却已被连带删除」换成一条失败的报错，不改变
 外部宿主的语义，不恢复 Rust/Tauri，也不加掩盖问题的重试。TF-0173 保持 blocked，验收条件与
 `next_action` 不变。
+
+## 重新定位：触发开关是「sandbox 执行模式」，不是「进程里有 tsbx.dll」
+
+本轮补了两组对照，把「触发条件」从模块名缩到具体一步。
+
+### 对照 A：备份/回收站开关不是触发条件
+
+| 组 | 状态 | 结果 |
+| --- | --- | --- |
+| `switch-p9qvvj` | `EnableModifyBackup{enabled:true}`，响应 `previousEnabled:false`（即默认本来就是关的） | `matchesNative=false`，`src/keep.txt` 丢失 |
+| `no-recycle-xvVkdt` | 规则导出 `modifyBackupEnabled=false` | 探针 `passed=false`：非空目录删除成功、`keepExists=false`、两个 ref `correct=false` |
+
+**开也坏、关也坏** → 备份通道不是开关。（`no-recycle-DkT615` 的探针 `exit 2` 无输出，是
+`rmdir-probe.cs` 的自保守卫——cwd 目录名必须以 `api-fixture-` 开头，否则 `return 2`——不是
+被决策通道拦下，该轮不计入对照。）
+
+### 对照 B：单变量 = `executionMode`
+
+`replay-execution-mode.mjs`：**同一个会话、同一个 `sandbox-cli.exe` 5.5.5、同一个探针二进制、
+同一个夹具**（目录名合规，落在工作规则内），每个模式重复 3 次，只改 `RunExecutable.executionMode`。
+
+| `executionMode` | 次数 | 探针输出 | 判读 |
+| --- | --- | --- | --- |
+| `sandbox` | 3/3 | `{"tsbxLoaded":true,"removeNonemptyReturned":true,"error":14007,"keepExists":false,"removeEmptyReturned":true}`，exit 1 | 非空目录被删掉，哨兵消失 —— **缺陷** |
+| `sandbox_bypass` | 3/3 | `{"tsbxLoaded":false,"removeNonemptyReturned":false,"error":145,"keepExists":true,"removeEmptyReturned":true}`，exit 0 | 删除被拒（145），哨兵存活 —— **正常** |
+
+枚举取值由 API 报错给出：`expected 'sandbox' or 'sandbox_bypass'`。
+
+**结论**：判据不是「进程里有没有 `tsbx.dll`」，而是**子进程是否以 `executionMode:"sandbox"`
+被托管启动**——该模式下模块才被注入并接管文件操作。`sandbox_bypass` 里同一份 DLL 根本不加载，
+语义正常。
+
+这条同时解释了 2026-09-21 现场复核的反例：当前宿主 shell 里 `tsbx.dll` 确实已加载
+（`GetModuleHandleW` 命中，全机唯一一份，SHA256 `9B1F451B…`，与 5.5.5 捆绑件逐字节相同），
+但它的文件语义是对的。**注入 ≠ 接管**；接管发生在 sandbox 执行模式这一层。
+
+由此，旧「修复方式」清单要改写：
+
+- 「关闭旧客户端的文件版本备份/文件操作代理」——**被对照 A 否证**。
+- 「不直接替换 `tsbx.dll`」——理由更强：同一个二进制在会话外/绕过模式下正常，换单个 DLL 不修任何东西。
+- 「Git/Cargo 操作移出旧 sandbox」——**唯一有对照支撑的方向**，与本轮落地的 `git()` 闸门同源。
+
+### 仍未定位的部分
+
+1. `sandbox` 模式内**是谁**把「删除非空目录」变成成功的（疑似被改路由到外壳删除，
+   而不是 `RemoveDirectoryW`）——缺机制级证据。
+2. 三次历史堆损坏（`0xC0000374`）与这条删除路径是否同一个写坏点。转储为 minidump、
+   不含完整堆，检测栈只证明「经过」，不证明「最早写坏」。这一条维持未证。
+
