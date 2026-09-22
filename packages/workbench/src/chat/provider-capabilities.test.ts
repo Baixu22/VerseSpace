@@ -25,6 +25,7 @@ describe("provider 能力表（TF-0204）", () => {
 		).toEqual({
 			claude: {
 				channel: "local-cli",
+				turnRunner: "claude",
 				observesFootprint: true,
 				supportsFork: true,
 				supportsStreamJson: true,
@@ -32,6 +33,7 @@ describe("provider 能力表（TF-0204）", () => {
 			},
 			codex: {
 				channel: "local-cli",
+				turnRunner: "codex",
 				observesFootprint: true,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -39,6 +41,7 @@ describe("provider 能力表（TF-0204）", () => {
 			},
 			"openai-chat": {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -46,6 +49,7 @@ describe("provider 能力表（TF-0204）", () => {
 			},
 			"openai-responses": {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -53,6 +57,7 @@ describe("provider 能力表（TF-0204）", () => {
 			},
 			anthropic: {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -85,6 +90,11 @@ describe("provider 能力表（TF-0204）", () => {
 		for (const provider of PROVIDERS) {
 			const capabilities = capabilitiesOf(provider);
 			expect(capabilities.requiresApiKey).toBe(capabilities.channel === "http");
+			// `turnRunner` is what thread-run dispatches on: it must agree with
+			// `channel` (an HTTP lane can never claim a local CLI runner).
+			expect(capabilities.turnRunner === "http").toBe(
+				capabilities.channel === "http",
+			);
 		}
 	});
 

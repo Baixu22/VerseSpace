@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { decideServerRequest, normalizeNotification } from "./codex-app-server";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+	createCodexAppServer,
+	decideServerRequest,
+	normalizeNotification,
+} from "./codex-app-server";
 
 /**
  * TF-0250: codex's app-server issues six interaction protocols; ADR-0017 admits
@@ -54,5 +61,41 @@ describe("app-server notification normalization", () => {
 
 	test("a param-less notification still carries its type", () => {
 		expect(normalizeNotification("end", undefined)).toEqual({ type: "end" });
+	});
+});
+
+/**
+ * TF-0249: the app-server is the only thing that can settle its own promises.
+ * If it never starts, the handshake must reject rather than stay pending — a
+ * pending `initialize` holds the thread's enqueue lock forever, and the user
+ * sees a turn that never finishes instead of an error. (The claude lane gets
+ * the same guarantee by resolving its turn from `proc.wait()`.)
+ */
+describe("app-server liveness (TF-0249)", () => {
+	test("a command that cannot spawn rejects the handshake instead of hanging", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "codex-app-server-"));
+		const server = createCodexAppServer({
+			cwd: dir,
+			registryDir: join(dir, "proc"),
+			label: "chat:test",
+			commandLine: "workbench-definitely-not-a-real-binary",
+			onEvent: () => {},
+		});
+		try {
+			const outcome = await Promise.race([
+				server.initialize().then(
+					() => "resolved",
+					(error: Error) => `rejected: ${error.message}`,
+				),
+				new Promise<string>((resolve) =>
+					setTimeout(() => resolve("still pending"), 5_000),
+				),
+			]);
+			expect(outcome).toContain("rejected");
+			expect(outcome).toContain("codex app-server 启动失败");
+		} finally {
+			await server.shutdown().catch(() => {});
+			await rm(dir, { recursive: true, force: true });
+		}
 	});
 });

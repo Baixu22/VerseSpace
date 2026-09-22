@@ -19,7 +19,6 @@ export interface CodexTurnState {
 	pendingFootprints: Map<string, ParsedStreamFootprint>;
 	fpQueue: Promise<void>;
 	undecidedEventTypes: Set<string>;
-	sawTurnStart: boolean;
 	emit: (event: TurnRunEvent) => void;
 }
 
@@ -35,8 +34,6 @@ export function routeCodexEvent(
 	turn: CodexTurnState,
 	event: Record<string, unknown>,
 ): void {
-	if (event.type === "turn/started") turn.sawTurnStart = true;
-
 	const result = reduceCodexRenderEvent(turn.render, event);
 	if (result.decision === "undecided") {
 		turn.undecidedEventTypes.add(result.decisionKey);

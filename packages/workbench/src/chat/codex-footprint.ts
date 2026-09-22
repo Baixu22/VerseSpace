@@ -25,7 +25,14 @@ import { asRecord, stringField } from "./codex-render-blocks";
 
 /** codex commandAction kinds that put a file INTO context (a read). */
 const READ_ACTIONS = new Set(["read", "listFiles"]);
-/** codex commandAction kinds that MODIFY a file (a write). */
+/**
+ * codex commandAction kinds that MODIFY a file (a write).
+ *
+ * Unproven: all 11 retained codex fixtures carry only `read` / `listFiles`, so
+ * the write half of this channel has no gate. ADR-0017 §「本轮实现边界」records
+ * that; an item type with no render decision is surfaced as `undecided` rather
+ * than dropped, so a real write arriving in a new shape is audible.
+ */
 const WRITE_ACTIONS = new Set(["edit", "write", "applyPatch", "createFile"]);
 
 /** The tool-call shape a codex command becomes for rendering + classification. */

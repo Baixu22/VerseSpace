@@ -75,6 +75,7 @@ it("HTTP 车道在设置面板写明读集不可观测；claude 车道不加提�
 			provider: "openai-chat",
 			capabilities: {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -91,6 +92,7 @@ it("HTTP 车道在设置面板写明读集不可观测；claude 车道不加提�
 			provider: "claude",
 			capabilities: {
 				channel: "local-cli",
+				turnRunner: "claude",
 				observesFootprint: true,
 				supportsFork: true,
 				supportsStreamJson: true,

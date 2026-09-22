@@ -5,8 +5,13 @@ import type { ThreadContext } from "./thread-context";
 import { maybePromote } from "./thread-promotion";
 import type { StoredMessage, ThreadMeta, TurnRunEvent } from "./thread-types";
 
-/** How long an idle codex session lingers before its process is torn down. */
-export const CODEX_SESSION_IDLE_CLOSE_MS =
+/**
+ * How long an idle codex session lingers before its process is torn down.
+ * Read per turn (not once at import) so a test can drive the idle-close race
+ * with a short window instead of idling five real minutes — the same shape as
+ * `chatStallMs()` in claude-session.ts.
+ */
+export const codexSessionIdleCloseMs = (): number =>
 	Number(process.env.WORKBENCH_SESSION_IDLE_MS) || 5 * 60_000;
 
 /**
@@ -24,8 +29,24 @@ export async function runCodexTurn(
 	opts: { messageId: string },
 ): Promise<void> {
 	const session = await ensureCodexSession(context, id, meta);
+	// The session outlives the turn; cancel the idle-close armed by the previous
+	// turn. Without this the timer can fire mid-turn and kill the app-server,
+	// leaving `startTurn` — and therefore this thread's enqueue lock — pending
+	// forever. The claude lane clears `session.idleTimer` at exactly this point.
+	if (session.idleTimer) {
+		clearTimeout(session.idleTimer);
+		session.idleTimer = undefined;
+	}
 	if (!session.codexThreadId) {
 		emit({ type: "error", message: "codex 线程未能建立" });
+		// `run()` already marked the durable thread running; returning without
+		// resetting it left the thread busy forever (a second turn then deadlocks
+		// behind the same enqueue lock).
+		const failed = await context.store.get(id).catch(() => null);
+		if (failed) {
+			failed.status = "idle";
+			await context.store.saveMeta(failed).catch(() => {});
+		}
 		return;
 	}
 
@@ -34,7 +55,6 @@ export async function runCodexTurn(
 		pendingFootprints: new Map(),
 		fpQueue: Promise.resolve(),
 		undecidedEventTypes: new Set(),
-		sawTurnStart: false,
 		emit,
 	};
 	// Install this turn's event sink; the app-server's onEvent routes here.
@@ -83,10 +103,11 @@ export async function runCodexTurn(
 	await context.store.saveMeta(latest);
 	await maybePromote(context, id);
 
-	// Idle-close the session so orphaned codex processes don't accumulate.
+	// Idle-close the session so orphaned codex processes don't accumulate. Held
+	// on the session so the next turn can cancel it (see the top of this file).
 	if (context.liveCodex.get(id) === session) {
-		setTimeout(() => {
+		session.idleTimer = setTimeout(() => {
 			void session.server.shutdown();
-		}, CODEX_SESSION_IDLE_CLOSE_MS);
+		}, codexSessionIdleCloseMs());
 	}
 }

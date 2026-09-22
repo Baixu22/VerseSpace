@@ -36,7 +36,7 @@ codex 的 `app-server` 会发出六类交互协议。逐项按「它如何服务
 
 | 协议 | codex 线方法 | 是否服务账本 | 处置 |
 | --- | --- | --- | --- |
-| 权限请求 | `item/{commandExecution,fileChange,fileRead}/requestApproval` | **是——请求本身就是「即将读/写」的声明** | 接线：auto-accept 后照常落足迹。与「建议式并发 + seal 是唯一拦截点」一致（ADR-0006/0010）——车道不再设第二道人工闸。 |
+| 权限请求 | `item/{commandExecution,fileChange,fileRead}/requestApproval` | **是——请求本身就是「即将读/写」的声明** | 接线：auto-accept（不设第二道人工闸），读/写目标经 `commandExecution` item 的结构化 `commandActions[].path` 落足迹。见下方「本轮实现边界」。 |
 | 用户输入请求 | `item/tool/requestUserInput`、`mcpServer/elicitation/request` | 否 | 最小应答（auto-decline）以免回合永久挂起；不建独立 UI。 |
 | 回合中打断 | `turn/interrupt` | 否（车道健壮性） | 不接。teardown / 判死走 supervisor 的 killTree（Windows `taskkill /T /F`、POSIX 组杀），与 claude 车道一致——不先发 `turn/interrupt` 帧。回合级取消经 `context.running` 的 `ProcHandle.kill()` 树杀该进程。 |
 | 上下文用量 | `thread/tokenUsage/updated` | 否（纯遥测） | render noop，与 claude 车道对 `contextUsageUpdated` 的处置一致。 |
@@ -44,12 +44,21 @@ codex 的 `app-server` 会发出六类交互协议。逐项按「它如何服务
 | slash 命令 | `skills/list` | 否 | 不做。 |
 | 回合中转向 | `turn/steer` | 否（UX 便利） | 不做；用户可发新回合。 |
 
-**权限请求 auto-accept 的理由**：Workbench 的并发哲学是建议式（ADR-0006）、单调优先（ADR-0007），seal（R2）是运行时唯一被授权打断写者的地方（ADR-0010 / `workbench.yaml` 的 `seal.mode`）。在 codex 车道里再引入 provider 自己的每次工具人工批准，等于设第二道拦截点，与这套哲学冲突。因此车道对 codex approval 请求一律 accept，把「该不该让这次写落地」的判断留给 seal，而 approval 请求携带的读/写目标照常进足迹账本。
+**权限请求 auto-accept 的理由**：Workbench 的并发哲学是建议式（ADR-0006）、单调优先（ADR-0007），seal（R2）是运行时唯一被授权打断写者的地方（ADR-0010 / `workbench.yaml` 的 `seal.mode`）。在 codex 车道里再引入 provider 自己的每次工具人工批准，等于设第二道拦截点，与这套哲学冲突。因此车道对 codex approval 请求一律 accept，把「该不该让这次写落地」的判断留给 seal。
+
+### 本轮实现边界（2026-09-22 对抗式复审补记）
+
+上表第 1 行的「请求本身就是读/写声明」是**设计意图**；实现到什么程度必须写明，否则这句话比代码承诺得多：
+
+- **approval 请求只回 accept，不解析其 params**（`codex-app-server.ts` 的 `answerServerRequest`）。退役时迁入的 11 个 codex 夹具里没有任何一个包含 approval 请求，其 payload 形状没有可核对的样本；按猜测解析会把无法验证的声明写进账本。
+- **真正进账的读足迹**来自 `commandExecution` item 的结构化 `commandActions[].path`（`codex-footprint.ts`），这条路径由夹具门禁证明（11/11 零 undecided）。
+- **写侧尚无证据**：`WRITE_ACTIONS`（edit / write / applyPatch / createFile）与 `fileChange` / `fileRead` item 类型都没有夹具覆盖——11 个夹具里只有 `read` / `listFiles`。因此「写目标照常落账」目前是未验证的设计意图；未建模的 item 类型会以 `undecided` 被 `codex-turn.ts` 报警，不会静默丢失。
+- **复核条件**：拿到一个包含 approval 请求或写动作的真实 codex 会话后，补夹具门禁，并把本节收窄为已证事实。
 
 ## 验证方式
 
 - **协议翻译层**：以退役轮迁入的 11 个 `packages/workbench/src/chat/fixtures/streams/codex/*.jsonl` 为门禁（TF-0248），断言每条事件都有显式 render 决策（零 undecided）、文本与足迹路径正确。夹具是 app-server 通知归一化后的形态，正好是翻译层的输入。
-- **传输/驱动层**：假 app-server 脚本驱动一轮的集成测试（TF-0249），断言足迹落账、回合以 done 收尾、线程回 idle、进程被 killTree。
+- **传输/驱动层**：假 app-server 脚本驱动一轮的集成测试（TF-0249），断言足迹落账、回合以 done 收尾、线程回 idle、`codexSessionId` 落库。负面路径同属门禁：进程中途死亡与启动失败都必须让回合以 error 收尾且线程回 idle（而不是悬挂），空闲关闭计时器必须被下一轮取消，前提通知必须按共享口径折入 prompt；另有单测钉住「静默的 app-server 被判死」。以上每条都做过对照实验：在修复前的实现上跑同一测试，四条全部失败。
 - **不改 claude 默认**：`chat.provider` 默认仍是 `claude`，现有 claude 夹具与 HTTP 车道测试不变。
 - **依赖不变**：`bun install` 不新增运行时依赖；单文件二进制构建产物形状不变。
 

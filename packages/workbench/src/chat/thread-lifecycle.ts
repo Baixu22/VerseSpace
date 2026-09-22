@@ -18,8 +18,10 @@ export async function remove(
 	context: ThreadContext,
 	id: string,
 ): Promise<{ ok: boolean; reason?: string }> {
-	if (context.live.get(id)) {
-		// a live session dies with its thread (the transcript lives here)
+	if (context.live.get(id) || context.liveCodex.get(id)) {
+		// a live session dies with its thread (the transcript lives here) — for
+		// the codex lane this is the only way an idle thread becomes deletable
+		// inside the idle-close window
 		cancel(context, id);
 	} else if (context.running.get(id)) {
 		return { ok: false, reason: "线程正在运行" };
@@ -86,6 +88,9 @@ export async function reload(
 export function turnInFlight(context: ThreadContext, id: string): boolean {
 	return (
 		context.running.get(id) instanceof AbortController ||
-		Boolean(context.live.get(id)?.turn)
+		Boolean(context.live.get(id)?.turn) ||
+		// TF-0249: the codex lane has no `turn` field — `route` is installed for
+		// exactly the span of one turn, so it is the same signal.
+		context.liveCodex.get(id)?.route !== undefined
 	);
 }
