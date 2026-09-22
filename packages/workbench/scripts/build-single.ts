@@ -1,5 +1,9 @@
-// Single-target binary build used by release-workbench.yml: one host per
-// matrix job builds only its own target (no cross-compile downloads needed).
+// Single-target binary build: one host builds only its own target (no
+// cross-compile downloads needed). This was the per-matrix-job path of the
+// retired GitHub Actions release lane — since ADR-0018 the JihuLab release
+// stage runs `build:all` on one Windows host instead, so nothing calls this
+// today. It is kept (not deleted) because ADR-0018 names it as part of what a
+// restored GitHub lane would take back from history.
 // Usage: bun run scripts/build-single.ts <bun-target> <artifact-name>
 
 import { mkdir, rm } from "node:fs/promises";

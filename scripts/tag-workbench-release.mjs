@@ -1,12 +1,12 @@
-// Emit the `workbench-v<version>` tag that release-workbench.yml listens for.
+// Emit the `workbench-v<version>` tag that `.gitlab-ci.yml`'s release stage
+// listens for.
 //
-// `.gitlab-ci.yml`'s release stage builds the four platform binaries on a
-// `workbench-v*` tag push (the GitHub Actions lane in release-workbench.yml
-// has no runner while the account quota is exhausted). CI runs on **JihuLab**
-// (`jihulab.com`), which only holds orphan snapshots of this repo — see
-// AGENTS.md §"CI remotes". Read the Workbench package version, independent
-// of the private monorepo root version. The old `v*` tag and publish scripts
-// were retired under ADR-0015.
+// CI runs on **JihuLab** (`jihulab.com`) only — the GitHub Actions workflows
+// were deleted under ADR-0018. JihuLab holds orphan snapshots of this repo, so
+// the tag goes to two places: the real tag to `origin` (GitHub) and a
+// same-tree snapshot tag to `jihulab`. Read the Workbench package version,
+// independent of the private monorepo root version. The old `v*` tag and
+// publish scripts were retired under ADR-0015.
 //
 // Safety: this is dry-run by default. It prints the tag it would push and exits
 // 0. Pass `--push` to actually create and push it — a pushed tag starts a real
@@ -52,8 +52,8 @@ const tag = `workbench-v${version}`;
 console.log(`包：${manifest.name}@${version}`);
 console.log(`tag：${tag}`);
 console.log(
-	"触发：.gitlab-ci.yml release 阶段（本机 runner 交叉编译 4 平台二进制，release-publish 手动挂到 GitHub Release）；" +
-		"GitHub Actions 的 release-workbench.yml 在额度恢复前不会有 runner。",
+	"触发：.gitlab-ci.yml release 阶段（JihuLab 本机 runner 交叉编译 4 平台二进制，release-publish 手动挂到 GitHub Release）；" +
+		"GitHub Actions 车道已随 ADR-0018 退役。",
 );
 
 const dirty = execSync("git status --porcelain", { encoding: "utf8" }).trim();

@@ -22,14 +22,19 @@
 # ref name — `main` and `feat/*` are protected on jihulab and reject a
 # force-push. The machine must be on for the runner to pick the job up.
 #
-# Translation notes vs .github/workflows/ci.yml:
+# This is the only CI lane (ADR-0018): the GitHub Actions workflows were
+# deleted, so there is no GitHub status check to compare against any more.
+#
+# Notes:
 # - Path filters stay as `rules: changes` so a docs-only push does not re-run
-#   the full suite on a single shared box.
-# - All jobs target tag `verspace-local` (shell + powershell). Docker images
-#   and GitHub-hosted OS matrices do not apply.
-# - `concurrent = 4` in the runner config while the host has 16 GB: the UI suite
-#   and a heavy build must not run at the same time (see AGENTS.md). Keep pushes
-#   serialized, or lower `concurrent` if the box starts thrashing.
+#   the full suite on a single shared box. `changes` compares against the
+#   previous snapshot of this ref, so re-pushing an unchanged tree creates an
+#   empty pipeline (no jobs, nothing in the runner log).
+# - All jobs target tag `verspace-local` (shell + pwsh). Docker images and
+#   OS matrices do not apply.
+# - The heavy jobs share `resource_group: heavy`: `concurrent = 4` while the
+#   host has 16 GB, and running the UI suite, the workbench suite and tsc at
+#   once made workbench-test exit 1 after a full run (2026-09-22).
 
 workflow:
   rules:
@@ -57,14 +62,12 @@ stages: [verify, release]
 .paths:
   global:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
     - scripts/**
   biome:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -72,7 +75,6 @@ stages: [verify, release]
     - '**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,json,jsonc,css,html,vue,svelte,astro,graphql}'
   typecheck:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -82,7 +84,6 @@ stages: [verify, release]
     - apps/workbench-ui/**
   workbench:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -91,7 +92,6 @@ stages: [verify, release]
     - packages/context-rot/**
   workbench_ui:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -99,7 +99,6 @@ stages: [verify, release]
     - apps/workbench-ui/**
   context_rot:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json

@@ -56,14 +56,15 @@ Single test file: `cd packages/workbench && bun test src/cli.test.ts` |
 Pre-commit runs `lint-staged` (Biome on JS/TS/JSON/CSS). There is **no Rust lane** — `cargo`,
 `clippy` and `insta` are no longer part of this repo.
 
-### CI remotes (GitHub Actions blocked → JihuLab CI)
+### CI remotes (JihuLab is the only CI lane)
 
-GitHub still hosts the repo, PRs and Releases. **Continuous integration runs on JihuLab**
-(`jihulab.com`, GitLab China / 极狐) because the GitHub private-repo Actions billing/spending
-limit is exhausted — jobs never get a runner (PR #28, also recorded in
-`docs/integrity-fixes-closeout-2026-09-16.md`). The earlier `gitlab.com` runners were torn down
-on 2026-09-22 (`D:\software\gitlab-runner\config.toml.bak-pre-gitlab-teardown` is that config);
-JihuLab is the instance actually reachable from this machine.
+GitHub hosts the repo, PRs and Releases — but **not CI**: the private-repo Actions billing limit
+left every workflow run without a runner (4–6s failures, PR #28), and the `gitlab.com` runners
+were torn down on 2026-09-22 (`D:\software\gitlab-runner\config.toml.bak-pre-gitlab-teardown` is
+that config). **JihuLab (`jihulab.com`, GitLab China / 极狐) is the single CI channel.** The
+GitHub workflows were deleted under
+[ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md), so a PR no longer carries GitHub
+status checks — its green light lives on JihuLab.
 
 | Remote | URL | Role |
 | --- | --- | --- |
@@ -188,8 +189,8 @@ symbols and package names; the workbench `doctor` reuses the path checks only.
 **Cross-package coupling to be aware of:** `packages/workbench/src/rot/scan.ts` imports
 directly from `../../../context-rot/src/scan` and `.../file-index`. Both single-file builds
 bundle the shared source, so neither installed package needs the other at runtime — but a change
-to `packages/context-rot/**` must be validated against **both** test suites (wired in
-`.github/workflows/ci.yml`).
+to `packages/context-rot/**` must be validated against **both** test suites (both run in
+`.gitlab-ci.yml`).
 
 ### Data flow
 
@@ -250,20 +251,19 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   (`workbench-v*` tag → four-platform build → GitHub Release). The npm shape is not published
   yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
   the version and `CHANGELOG.md` first. **`.changeset/` no longer exists** — bump the version and
-  write the changelog entry by hand. **While GitHub Actions has no runner** (quota, see CI
-  remotes above) the build runs in the `release` stage of `.gitlab-ci.yml` on the JihuLab
-  runner: `release-build` cross-compiles all four binaries, then the **manual**
+  write the changelog entry by hand. The build runs in the `release` stage of `.gitlab-ci.yml` on
+  the JihuLab runner: `release-build` cross-compiles all four binaries, then the **manual**
   `release-publish` job runs `scripts/publish-workbench-release.mjs`, which attaches them plus
   `SHA256SUMS` to the GitHub Release and states in the notes that only windows-x64 ran the test
   suite. The tag script pushes the **real tag to `origin`** and a **snapshot tag to `jihulab`** —
   the mirror holds orphan snapshots, so a tag on the real commit would try to upload the whole
   ~2 GB forest history; the snapshot tag carries the same *tree* under the same tag *name*, which
-  is all the release rules match on. `release-workbench.yml` stays as the per-platform lane for
-  when Actions comes back.
+  is all the release rules match on. There is **no GitHub Actions fallback** any more
+  ([ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md)); this is the only release lane.
 - **Licensing**: `@baixu22/workbench` is `MIT AND Apache-2.0`. `scripts/build.ts` copies
   `NOTICE` / `LICENSE` / `LICENSE-APACHE` into `dist/`, the package `files` field keeps them in
-  the tarball, and both release lanes (`release-workbench.yml`,
-  `scripts/publish-workbench-release.mjs`) attach them to the Release. Apache-2.0 §4(d)
+  the tarball, and the release lane (`scripts/publish-workbench-release.mjs`) attaches them to the
+  Release. Apache-2.0 §4(d)
   requires a readable `NOTICE` at distribution time — do not delete those files.
 - **"Helmor" and the Helmor logo are trademarks** of Caspian Zhao and Nathan Lian. The Apache-2.0
   grant covers use, modification and redistribution of the source, but **not** use of the name or
@@ -363,10 +363,10 @@ has this cause.
 
 ### Bun version
 
-Pinned to **1.3.14** in `package.json` (`packageManager`), `.github/actions/setup-js/action.yml`,
-and `.github/workflows/release-workbench.yml`. Two version-bound behaviours must be re-checked on
-any bump: `fetch` connection-pool reuse across ports, and the HTTP layer rejecting illegal
-percent-encoding (`%ZZ`) before the request handler runs — see
+Pinned to **1.3.14** in `package.json` (`packageManager`) and in `.gitlab-ci.yml`
+(`BUN_VERSION`, plus the `BUN_BIN` path the runner puts on `PATH`). Two version-bound behaviours
+must be re-checked on any bump: `fetch` connection-pool reuse across ports, and the HTTP layer
+rejecting illegal percent-encoding (`%ZZ`) before the request handler runs — see
 `packages/workbench/src/ui/server.ts` and `ui/evidence-route.test.ts`.
 
 ### Windows test concurrency

@@ -24,11 +24,11 @@ bun install -g @baixu22/workbench
 # 看这一版会打什么 tag（默认 dry-run，不做任何写操作）
 bun run release:tag:workbench
 
-# 真正发布：创建并推送 workbench-v<version>，触发 release-workbench.yml
+# 真正发布：origin 推真实 tag、jihulab 推同树快照 tag，触发 JihuLab 的 release 阶段
 bun run release:tag:workbench --push
 ```
 
-`release-workbench.yml` 会先跑 `packages/workbench` 的测试，再交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64 并把产物挂到该 tag 的 Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。
+JihuLab（极狐）的 release 阶段先跑 `packages/workbench` 的测试，再交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64，`release-publish`（手动）把产物挂到该 tag 的 GitHub Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役，GitHub Actions 车道已随 ADR-0018 退役。
 
 ## 5 分钟上手
 
@@ -204,7 +204,7 @@ license: MIT AND Apache-2.0     # SPDX
 ```
 
 这三个文件随每次分发一起走：`scripts/build.ts` 把它们复制进 `dist/`，包 `files` 字段把它们
-留在 npm tarball 里，`release-workbench.yml` 把它们挂到 GitHub Release。Apache-2.0 §4(d)
+留在 npm tarball 里，`scripts/publish-workbench-release.mjs` 把它们挂到 GitHub Release。Apache-2.0 §4(d)
 要求分发时附上可读的 NOTICE，请不要删除。
 
 "Helmor" 与 Helmor logo 是 Caspian Zhao 与 Nathan Lian 的商标。Apache-2.0 授权源码的

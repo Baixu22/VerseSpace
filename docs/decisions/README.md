@@ -23,3 +23,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0015](./0015-legacy-retirement-execution.md) | 执行存量退役：流夹具迁入主线、清理构建与发布引用、删除三块旧实现 | 已接受 | TF-0225 / TF-0226（归属 TF-0219） |
 | [0016](./0016-retirement-closeout.md) | 退役收口：修复干净安装的字体依赖、增加 UI 构建门禁、更新归属与首页、纠正任务依赖 | 已接受 | TF-0225 / TF-0226（上级 TF-0176） |
 | [0017](./0017-second-observable-provider-integration.md) | 第二个可观测 provider 接入形态 = 直接监督外部 CLI + 主包内轻量协议适配，不复活 sidecar、不 import SDK；取代 ADR-0013 决策 3；首个落地 = codex；交互协议只接权限请求进账本 | 已接受 | TF-0246（阶段 TF-0245，目标 TF-0232） |
+| [0018](./0018-single-ci-channel-jihulab.md) | CI 单一通道 = JihuLab（极狐）；删除 GitHub Actions 车道与 `release-workbench.yml`、不再使用 gitlab.com；取代 ADR-0015 中「保留 release-workbench.yml」一句 | 已接受 | TF-0232（落地过程中） |
