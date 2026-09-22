@@ -38,7 +38,7 @@ codex 的 `app-server` 会发出六类交互协议。逐项按「它如何服务
 | --- | --- | --- | --- |
 | 权限请求 | `item/{commandExecution,fileChange,fileRead}/requestApproval` | **是——请求本身就是「即将读/写」的声明** | 接线：auto-accept 后照常落足迹。与「建议式并发 + seal 是唯一拦截点」一致（ADR-0006/0010）——车道不再设第二道人工闸。 |
 | 用户输入请求 | `item/tool/requestUserInput`、`mcpServer/elicitation/request` | 否 | 最小应答（auto-decline）以免回合永久挂起；不建独立 UI。 |
-| 回合中打断 | `turn/interrupt` | 否（车道健壮性） | 接 teardown / 判死路径：发 interrupt 再 killTree。 |
+| 回合中打断 | `turn/interrupt` | 否（车道健壮性） | 不接。teardown / 判死走 supervisor 的 killTree（Windows `taskkill /T /F`、POSIX 组杀），与 claude 车道一致——不先发 `turn/interrupt` 帧。回合级取消经 `context.running` 的 `ProcHandle.kill()` 树杀该进程。 |
 | 上下文用量 | `thread/tokenUsage/updated` | 否（纯遥测） | render noop，与 claude 车道对 `contextUsageUpdated` 的处置一致。 |
 | 模型目录 | 无（静态表） | 否 | 不做多 provider 模型选择器。 |
 | slash 命令 | `skills/list` | 否 | 不做。 |
