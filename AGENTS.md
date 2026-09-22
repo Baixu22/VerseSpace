@@ -103,11 +103,20 @@ Runner (self-managed project runner on this Windows machine — no SaaS compute 
 - Uses the machine's Bun at `C:\Users\27933\AppData\Roaming\npm\node_modules\bun\bin`
 - Project has `shared_runners_enabled=false` so jobs cannot fall through to SaaS
 - Start if not running: `D:\software\gitlab-runner\start-runner.bat` (sets PATH then `gitlab-runner run`)
+- **The runner is a foreground process, not a Windows service.** If the console that launched it
+  closes, the runner dies and every pipeline sits *pending with no jobs running* — which looks
+  like "CI is broken" but is just a dead runner. Observed 2026-09-22 (runner died 22:09, no
+  pipeline picked up until it was restarted at 22:35). Diagnose with
+  `Get-Process gitlab-runner`: no process means restart it, not that the pipeline failed.
+  Installing it as a service (`gitlab-runner install`, or `install --user`) needs an elevated
+  shell and is the durable fix.
 - **The machine must be on** for CI to pick up jobs
 - `concurrent = 4` in `config.toml` (it was 1 when the runner served `gitlab.com`). The host has
-  16 GB, so the "Windows test concurrency" caveat below still applies — one push can now start
-  the full UI suite and a heavy build side by side. Keep pushes serialized, and lower
-  `concurrent` if the box starts thrashing.
+  16 GB, so the heavy verify jobs (`typecheck`, `workbench-test`, `workbench-ui-test`) share
+  `resource_group: heavy` in `.gitlab-ci.yml` and never run two at a time; the light ones
+  (`biome`, `context-rot-test`, the heartbeat) still overlap. Do not remove that group without
+  reading the note on it — the workbench suite failed a full 215s run under 4-way contention on
+  2026-09-22 and passed once the heavy jobs were serialized.
 
 ### Package-local commands worth knowing
 
