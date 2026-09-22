@@ -2,7 +2,9 @@
 //
 // `.gitlab-ci.yml`'s release stage builds the four platform binaries on a
 // `workbench-v*` tag push (the GitHub Actions lane in release-workbench.yml
-// has no runner while the account quota is exhausted). Read the Workbench package version, independent
+// has no runner while the account quota is exhausted). CI runs on **JihuLab**
+// (`jihulab.com`), which only holds orphan snapshots of this repo — see
+// AGENTS.md §"CI remotes". Read the Workbench package version, independent
 // of the private monorepo root version. The old `v*` tag and publish scripts
 // were retired under ADR-0015.
 //
@@ -17,7 +19,7 @@
 //   bun scripts/tag-workbench-release.mjs --version 0.3.1 --push
 //   bun scripts/tag-workbench-release.mjs --allow-dirty --push
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -92,11 +94,23 @@ if (!push) {
 	console.log(
 		`\n[dry-run] 本地 tag 存在：${exists}；远端 tag 存在：${remoteExists}`,
 	);
+	console.log(
+		"[dry-run] 会推两处：origin 推真实 tag；jihulab 推同树快照 tag（CI 镜像只有孤儿快照）。",
+	);
 	console.log(`[dry-run] 未做任何写操作。要真正发布请运行：`);
 	console.log(
 		`  bun scripts/tag-workbench-release.mjs --push${allowDirty ? " --allow-dirty" : ""}`,
 	);
 	process.exit(0);
+}
+
+const remotes = execSync("git remote", { encoding: "utf8" }).split(/\s+/);
+if (!remotes.includes("jihulab")) {
+	console.error(
+		"\n找不到 `jihulab` remote——CI 镜像推不出去，release 车道不会跑。" +
+			"先按 AGENTS.md §CI remotes 配好 remote（git@jihulab.com:Baixu22/VerseSpace.git）。",
+	);
+	process.exit(1);
 }
 
 if (remoteExists === true) {
@@ -105,6 +119,29 @@ if (remoteExists === true) {
 }
 if (!exists) execSync(`git tag ${tag}`, { stdio: "inherit" });
 execSync(`git push origin ${tag}`, { stdio: "inherit" });
-// GitLab runs the release lane; GitHub only hosts the Release object.
-execSync(`git push gitlab ${tag}`, { stdio: "inherit" });
-console.log(`New tag: ${tag}（origin + gitlab）`);
+// JihuLab runs the release lane; GitHub only hosts the Release object. The CI
+// mirror holds orphan snapshots (the local .git carries ~2 GB of forest
+// history), so pushing this tag as-is would try to upload that whole history.
+// Push the SAME TREE as a parent-less commit under the same tag NAME instead —
+// the release rules only match `$CI_COMMIT_TAG`, and the tree is what gets
+// built. The mirror's tag therefore names a different SHA than origin's; that
+// is the point of the mirror, not a divergence to fix.
+const tree = execFileSync("git", ["rev-parse", `${tag}^{tree}`], {
+	encoding: "utf8",
+}).trim();
+const snapshot = execFileSync(
+	"git",
+	[
+		"commit-tree",
+		tree,
+		"-m",
+		`snapshot: ${tag} - jihulab CI mirror (no history)`,
+	],
+	{ encoding: "utf8" },
+).trim();
+execSync(`git push -f jihulab ${snapshot}:refs/tags/${tag}`, {
+	stdio: "inherit",
+});
+console.log(
+	`New tag: ${tag}（origin: 真实提交；jihulab: 同树快照 ${snapshot.slice(0, 7)}）`,
+);

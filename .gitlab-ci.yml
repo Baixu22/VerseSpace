@@ -1,23 +1,35 @@
 # GitLab CI — runs on a self-managed runner on the developer Windows machine.
 #
-# Why not GitLab-hosted runners (2026-09-21): free-plan identity verification
-# blocks CI jobs, and phone SMS verification is Unsupported for China (+86).
-# Official alternative: project / self-managed runners. The runner lives at
-# D:\software\gitlab-runner (tags: verspace-local, windows, self-hosted) and
-# uses the machine's existing Bun 1.3.14 install — no SaaS compute minutes.
+# Instance: **jihulab.com** (GitLab China / 极狐). The gitlab.com runners this
+# lane was originally written for were torn down on 2026-09-22
+# (D:\software\gitlab-runner\config.toml.bak-pre-gitlab-teardown); the runner
+# now registered is `verspace-local-jihulab` (id 47590). Why not GitLab-hosted
+# runners (2026-09-21): free-plan identity verification blocks CI jobs, and
+# phone SMS verification is Unsupported for China (+86). Official alternative:
+# project / self-managed runners. The runner lives at D:\software\gitlab-runner
+# (tags: verspace-local, windows, self-hosted, builds under builds-jh) and uses
+# the machine's existing Bun 1.3.14 install — no SaaS compute minutes.
 #
 # GitHub still hosts the repo, PRs and Releases. A branch that needs CI:
 #
 #   git push origin <branch>   # GitHub — updates the PR
-#   git push gitlab <branch>   # GitLab  — this pipeline (machine must be on)
+#   "C:\Program Files\Git\bin\bash.exe" scripts/win/jihulab-snapshot.sh [ref]
+#                              # JihuLab — this pipeline (bash on PATH is WSL here)
+#
+# The second line is a script, not a plain push, on purpose: the local .git
+# carries ~2 GB of events.jsonl history, so pushing real history would drag all
+# of it up. The script force-pushes an orphan single-commit snapshot to a FLAT
+# ref name — `main` and `feat/*` are protected on jihulab and reject a
+# force-push. The machine must be on for the runner to pick the job up.
 #
 # Translation notes vs .github/workflows/ci.yml:
 # - Path filters stay as `rules: changes` so a docs-only push does not re-run
 #   the full suite on a single shared box.
 # - All jobs target tag `verspace-local` (shell + powershell). Docker images
 #   and GitHub-hosted OS matrices do not apply.
-# - concurrent=1 in the runner config — the 16 GB host must not run the UI
-#   suite and heavy builds at the same time (see AGENTS.md).
+# - `concurrent = 4` in the runner config while the host has 16 GB: the UI suite
+#   and a heavy build must not run at the same time (see AGENTS.md). Keep pushes
+#   serialized, or lower `concurrent` if the box starts thrashing.
 
 workflow:
   rules:
@@ -157,16 +169,21 @@ context-rot-test:
   script:
     - bun run test:context-rot
 
-# Release lane (2026-09-21). `.github/workflows/release-workbench.yml` still
-# describes the intended shape — one host per target — but GitHub Actions has
-# no runner while the account quota is exhausted, so a `workbench-v*` tag
-# pushed to the gitlab remote builds here instead. All four binaries are
-# cross-compiled by Bun on this Windows host; only windows-x64 has run the
-# test suite, and the publish script says so in the release notes.
+# Release lane (2026-09-21; instance switched to JihuLab 2026-09-22).
+# `.github/workflows/release-workbench.yml` still describes the intended shape —
+# one host per target — but GitHub Actions has no runner while the account quota
+# is exhausted, so a `workbench-v*` tag on this instance builds here instead.
+# All four binaries are cross-compiled by Bun on this Windows host; only
+# windows-x64 has run the test suite, and the publish script says so in the
+# release notes.
 #
-#   bun run release:tag:workbench --push   # tags + pushes to origin AND gitlab
+#   bun run release:tag:workbench --push   # origin: real tag; jihulab: snapshot tag
 #   → release-build runs after verify      # artifacts: dist/workbench-* + legal
 #   → release-publish is manual            # gh release create (host gh login)
+#
+# The tag that reaches this instance points at an orphan snapshot commit with
+# the same TREE as the released commit (see scripts/tag-workbench-release.mjs);
+# `$CI_COMMIT_TAG` is what the rules match, and the tree is what gets built.
 
 release-build:
   extends: .bun-setup

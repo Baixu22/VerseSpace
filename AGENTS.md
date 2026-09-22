@@ -56,39 +56,58 @@ Single test file: `cd packages/workbench && bun test src/cli.test.ts` |
 Pre-commit runs `lint-staged` (Biome on JS/TS/JSON/CSS). There is **no Rust lane** — `cargo`,
 `clippy` and `insta` are no longer part of this repo.
 
-### CI remotes (GitHub Actions blocked → GitLab CI)
+### CI remotes (GitHub Actions blocked → JihuLab CI)
 
-GitHub still hosts the repo, PRs and Releases. **Continuous integration runs on GitLab.com**
-because the GitHub private-repo Actions billing/spending limit is exhausted — jobs never get a
-runner (PR #28, also recorded in `docs/integrity-fixes-closeout-2026-09-16.md`).
+GitHub still hosts the repo, PRs and Releases. **Continuous integration runs on JihuLab**
+(`jihulab.com`, GitLab China / 极狐) because the GitHub private-repo Actions billing/spending
+limit is exhausted — jobs never get a runner (PR #28, also recorded in
+`docs/integrity-fixes-closeout-2026-09-16.md`). The earlier `gitlab.com` runners were torn down
+on 2026-09-22 (`D:\software\gitlab-runner\config.toml.bak-pre-gitlab-teardown` is that config);
+JihuLab is the instance actually reachable from this machine.
 
 | Remote | URL | Role |
 | --- | --- | --- |
 | `origin` | `https://github.com/Baixu22/VerseSpace.git` | PRs, Releases, source of truth for merge |
-| `gitlab` | `https://gitlab.com/Baixu22/VerseSpace.git` | CI (`.gitlab-ci.yml`, shared runners) |
+| `jihulab` | `git@jihulab.com:Baixu22/VerseSpace.git` | CI (`.gitlab-ci.yml`) |
 
-A branch that needs CI is pushed to **both** remotes:
+**Push CI as an orphan snapshot, never as real history.** The local `.git` carries ~2 GB of
+`events.jsonl` history (the task forest is committed on every closeout), so a plain
+`git push jihulab <branch>` would drag all of it up. JihuLab only needs the current tree to run
+CI:
 
 ```bash
-git push origin <branch>   # updates the GitHub PR
-git push gitlab <branch>   # runs the GitLab pipeline
+git push origin <branch>   # GitHub — updates the PR (real history)
+# JihuLab — orphan snapshot, runs the pipeline. `bash` on PATH is the WSL
+# launcher on this host and does nothing, so call Git Bash explicitly:
+"C:\Program Files\Git\bin\bash.exe" scripts/win/jihulab-snapshot.sh [ref]
 ```
 
-Local git is wired so HTTPS pushes to `gitlab.com` authenticate through glab
-(`credential.https://gitlab.com.helper` → `glab auth git-credential`). `glab` lives at
-`D:\software\glab\glab.exe` and is already logged in as `Baixu22`.
+The script commits the current tree as a single parent-less commit (`git commit-tree`, so no
+working-tree switch and no local ref is created) and force-pushes it to a **flat** ref name.
+**`main` and `feat/*` are protected on JihuLab — the pre-receive hook rejects a force-push to
+them**, so the default target strips the prefix (`feat/x` → `x`); pass an explicit ref to
+override. The same 2 GB problem applies to pushing a *tag* from real history — see the
+Releases bullet below.
 
-Quirk to know: GitLab.com free accounts must complete **identity verification** before *GitLab-hosted* CI jobs will start, and phone SMS is **Unsupported for China (+86)** — so hosted runners are not available here. The workaround is a **self-managed project runner** on this Windows machine (documented alternative in GitLab's identity-verification troubleshooting):
+Local git reaches `jihulab.com` over **SSH** (`git@jihulab.com`), not the glab HTTPS helper the
+retired `gitlab.com` remote used. There is no `glab` host config for JihuLab, so pipeline
+status is read in the browser — <https://jihulab.com/Baixu22/VerseSpace/-/pipelines> — or from
+the runner log `D:\software\gitlab-runner\runner.err.log` (it names `job_name`,
+`job-status` and `pipeline_id` per job).
+
+Runner (self-managed project runner on this Windows machine — no SaaS compute minutes):
 
 - Binary/config: `D:\software\gitlab-runner\` (`gitlab-runner.exe`, `config.toml`, `start-runner.bat`)
-- Runner id `56555227`, tags `verspace-local` / `windows` / `self-hosted`
+- Runner `verspace-local-jihulab`, id `47590`, url `https://jihulab.com`, tags `verspace-local` / `windows` / `self-hosted`
 - Executor: `shell` + **`pwsh`** (PowerShell 7 portable at `D:\software\PowerShell\pwsh-dir`) — Windows PowerShell 5.1 cannot parse the runner's UTF-8 env files on a zh-CN host
 - Uses the machine's Bun at `C:\Users\27933\AppData\Roaming\npm\node_modules\bun\bin`
 - Project has `shared_runners_enabled=false` so jobs cannot fall through to SaaS
 - Start if not running: `D:\software\gitlab-runner\start-runner.bat` (sets PATH then `gitlab-runner run`)
-- **The machine must be on** for CI to pick up jobs; `concurrent=1` by design (16 GB host)
-
-Validate config with `glab ci lint .gitlab-ci.yml -R Baixu22/VerseSpace`.
+- **The machine must be on** for CI to pick up jobs
+- `concurrent = 4` in `config.toml` (it was 1 when the runner served `gitlab.com`). The host has
+  16 GB, so the "Windows test concurrency" caveat below still applies — one push can now start
+  the full UI suite and a heavy build side by side. Keep pushes serialized, and lower
+  `concurrent` if the box starts thrashing.
 
 ### Package-local commands worth knowing
 
@@ -223,11 +242,14 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
   the version and `CHANGELOG.md` first. **`.changeset/` no longer exists** — bump the version and
   write the changelog entry by hand. **While GitHub Actions has no runner** (quota, see CI
-  remotes above) the tag script pushes to both remotes and the build runs in the `release` stage
-  of `.gitlab-ci.yml`: `release-build` cross-compiles all four binaries on the Windows runner,
-  then the **manual** `release-publish` job runs `scripts/publish-workbench-release.mjs`, which
-  attaches them plus `SHA256SUMS` to the GitHub Release and states in the notes that only
-  windows-x64 ran the test suite. `release-workbench.yml` stays as the per-platform lane for
+  remotes above) the build runs in the `release` stage of `.gitlab-ci.yml` on the JihuLab
+  runner: `release-build` cross-compiles all four binaries, then the **manual**
+  `release-publish` job runs `scripts/publish-workbench-release.mjs`, which attaches them plus
+  `SHA256SUMS` to the GitHub Release and states in the notes that only windows-x64 ran the test
+  suite. The tag script pushes the **real tag to `origin`** and a **snapshot tag to `jihulab`** —
+  the mirror holds orphan snapshots, so a tag on the real commit would try to upload the whole
+  ~2 GB forest history; the snapshot tag carries the same *tree* under the same tag *name*, which
+  is all the release rules match on. `release-workbench.yml` stays as the per-platform lane for
   when Actions comes back.
 - **Licensing**: `@baixu22/workbench` is `MIT AND Apache-2.0`. `scripts/build.ts` copies
   `NOTICE` / `LICENSE` / `LICENSE-APACHE` into `dist/`, the package `files` field keeps them in
