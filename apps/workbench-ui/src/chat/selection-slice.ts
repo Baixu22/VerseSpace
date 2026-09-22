@@ -16,6 +16,9 @@ export const createSelectionSlice: StateCreator<
 			(r) => r.json() as Promise<ThreadMeta[]>,
 		);
 		set({ threads });
+		// TF-0242: the tribunal queue is global, so load it once at startup
+		// (independent of which thread is active).
+		void get().loadTribunal();
 		if (threads[0]) {
 			await get().switchThread(threads[0].id);
 		}

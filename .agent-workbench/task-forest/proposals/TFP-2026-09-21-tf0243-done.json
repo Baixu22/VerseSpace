@@ -1,0 +1,42 @@
+{
+  "applied_at": "2026-09-21T15:20:58.116217Z",
+  "base_graph_hash": "d62644304ca4230e3d8b9da9f283579d35a0efb3cd9960a581ba3122dd2374d1",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "packages/workbench/src/chat/notice-parts.ts + notice-parts.test.ts（3 例：多行拆分、单行无 body、空白跳过）",
+          "thread-run.ts：drain 提前到 appendMessage 之前；threads.test.ts R2 用例新增断言——第 2 个 user 消息 parts=[notice, text]，第 1 个无 parts",
+          "bun run test:workbench 913 pass；apps/workbench-ui vitest 62 pass（含 adapter.test.ts TF-0243 用例）；typecheck + biome 全绿",
+          "浏览器验证（workbench ui :7700 + vite :5188）：NoticeRow label=前提失效：2 个文件。，body computed white-space=pre-wrap，跨 4 行渲染，newline 保留"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "已实现并浏览器验证。改动：① 新增 chat/notice-parts.ts（noticeParts：把渲染后的通知文本首行作 label、其余作 body，映射为 severity=warning 的 NoticePart 数组，空白通知跳过、顺序保持）；② thread-run.ts 把 drainNotices/selectNoticeEntries 提前到 user 消息写入之前，非 resend 轮次把选中的通知作为 parts=[...noticeParts, {text}] 挂到 user StoredMessage；③ thread-types.ts StoredMessage.parts 文档说明 user 分支的含义；④ 前端 adapter.ts 早已把 notice part 映射为 data-workbench-notice；thread-messages.tsx 的 UserMessage 现在先渲染 NoticeRow 再渲染文本气泡；notice-row.tsx 的 body 加 whitespace-pre-wrap 让多文件明细换行正确。零新路由、零新 part kind。旧线程（user 无 parts）加载不受影响。"
+      },
+      "id": "TF-0243"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 33,
+        "progress_source": "manual",
+        "summary": "用户 2026-09-21 确认：ba3f5c9 的产品转向仍然有效——交互保持纯对话，深度在运行时层；不恢复独立账本面板。盘点现状（2026-09-21）：① 前提通知只被折进模型 prompt（thread-run.ts:61-67 → prompt.ts），对话记录里只留一个计数，通知正文从不落盘，人看不到「模型被告知了什么」；② claude 车道启动没有 --mcp-config（claude-session.ts:64-80），workbench mcp 只服务外部 agent，模型在回合中读不到 premises/footprints/resume_cards/tribunal/notices，尽管渲染层已能画 mcp_tool_use/mcp_tool_result 卡片（claude-render-blocks.ts:195,216）；③ UI 服务器没有任何 tribunal 路由，tribunal 只有 CLI；④ 对话内唯一的非模型内容形态是 NoticePart（thread-types.ts:115-120），前端 NoticeRow 已能渲染；composer 上方的 sidecar（sidecar.tsx）已有 ResumeCard / DecisionLedger / NoticeDelivered 等挂点。阶段 2 沿这四个既有形态把账本能力带进对话，不新增第二个信息架构。\n\n【2026-09-21 进展】三个交付里 TF-0243（通知进对话记录）已 done 并浏览器验证；剩 TF-0241（MCP 接进 claude 车道）、TF-0242（对话内裁决）。"
+      },
+      "id": "TF-0239"
+    }
+  ],
+  "created_at": "2026-09-21T15:20:57.827726Z",
+  "proposal_id": "TFP-2026-09-21-tf0243-done",
+  "rationale": "TF-0243 前提通知进对话记录已实现并浏览器验证：通知正文作为 NoticePart 持久化到它折入的 user turn，UserMessage 渲染 NoticeRow。全套测试与静态检查通过。",
+  "session_id": "session-2026-09-21-second-round-absorption-plan",
+  "status": "applied"
+}

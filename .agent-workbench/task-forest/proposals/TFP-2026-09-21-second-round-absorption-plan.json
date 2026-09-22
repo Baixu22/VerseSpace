@@ -1,0 +1,933 @@
+{
+  "applied_at": "2026-09-21T12:45:56.436296Z",
+  "base_graph_hash": "7ca14be80b7202abbf4d37659fe5be2e5ca6fe0c278d0f478f9d8b5be52e26ba",
+  "base_summary": {
+    "edge_count": 354,
+    "node_count": 231,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "confidence": 1,
+        "evidence": [
+          "https://github.com/Baixu22/VerseSpace/pull/28",
+          "https://github.com/Baixu22/VerseSpace/actions/runs/35560280554",
+          "Detect changes 的失败注释明确为 recent account payments have failed or spending limit needs to be increased，steps 为空。",
+          "用户本轮确认：暂时无法恢复，保留 PR 等待 CI。",
+          "GitHub PR #28 state=MERGED，mergedAt=2026-09-21T10:15:12Z，mergeCommit=8610d188247db2d229064713f7ce0c19f7d45fa0（gh pr view 28 核验）",
+          "GitLab pipeline 2867032946（ref codex/retirement-closeout-20260921，head 9e3f560）success；2867226784 与 2867227081（ref main）success（glab ci list 核验，2026-09-21）",
+          "AGENTS.md「CI remotes」一节：GitHub Actions 额度耗尽 → GitLab 自托管 runner（id 56555227，Windows/pwsh）为正式 CI 通道"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "已合入。GitHub Actions 因账户额度持续不可用，仓库正式改为「GitHub 管 PR/Release、GitLab 跑 CI」（AGENTS.md 已记录）。PR #28 于 2026-09-21 10:15 UTC 合入 main（合并提交 8610d18）；分支 head 9e3f560 的 GitLab 自托管流水线 #13（2867032946）成功，合并后 main 的流水线 #14/#15（2867226784/2867227081）Biome、Typecheck、Workbench、Workbench UI、context-rot 全部成功。注意：本机 runner 只有 Windows，原任务目的里的 macOS 远端门禁并未由此覆盖，该缺口另立风险节点跟踪。"
+      },
+      "id": "TF-0228"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "docs/tf0173-evidence-chain-2026-09-21.md（结论 L3-未证）",
+          ".agent-contexts/tf0173-20260921/git.exe.14216.dmp（2,872,709 B，SHA256 dbe70fc30a0d4f63be8be2f4901fb69860ac52d04b4bf4c3e5fc4b7505a786ca）",
+          "Windows Application 记录 1241268/1241277/1241280（2026-09-13 08:23/09:48/10:02，Git 2.51.0.1，ntdll 10.0.26100.7920 偏移 0x1176e5）",
+          "docs/tf0229-evidence-chain-2026-09-21.md：本轮证明 tsbx 处理删除时会调 SHELL32!SHFileOperationW（RECYCLE-BACKUP），因此转储里出现 SHFileOperationWithAdditionalFlags → CFileOperation::FinishOperations 是「删除走了 shell」的正常痕迹，不再需要另外解释这条栈。",
+          "2026-09-21 复核：三次历史崩溃的完整堆转储仍不可得，且当前不计划主动等待下一次崩溃；依验收第 3 条「长期无法取得完整堆转储，按不可达登记」结案。"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "按「历史证据不可达」登记结案。三次 2026-09-13 git apply 崩溃没有转储；2026-09-20 转储是 minidump（不含完整堆），只能证明经过 tsbx 与外壳删除路径。行为层缺陷已由 TF-0229/TF-0231 分开定位并结案（判据 = PE 头 AddressOfEntryPoint，宿主侧修复）。本节点与 Workbench 产品开发无依赖，按自身验收第 3 条收口；若日后再出现同类崩溃并能当场采集完整堆转储，另开新节点，不复活本节点。"
+      },
+      "id": "TF-0230"
+    },
+    {
+      "action": "add_node",
+      "alias": "root",
+      "node": {
+        "acceptance_criteria": [
+          "阶段 1–4 全部收口，或以新 ADR 明确记录不做的部分",
+          "validate 通过，export 的 HTML 能让首次读者理解四个阶段各自交付什么"
+        ],
+        "alignment": {
+          "fit": "aligned",
+          "fit_confidence": 0.85,
+          "user_goal": "在 Helmor 退役后，把 Workbench 做成一个用户真正能用的前提账本产品，而不是只剩 CLI 与聊天壳",
+          "validation_plan": [
+            "每个阶段用 validate + export 检查森林一致性",
+            "阶段 2 以 dashboard 实际消费 /api/state 等路由为准，不以文件存在为准",
+            "阶段 4 以 fit 账本来源纪律为准：只有自然人类使用计入 L1"
+          ],
+          "why_not_enough": "产品价值仍需真实人类使用来验证，技术落地不等于价值成立；多 provider 的具体选择尚需用户确认真实需求",
+          "why_this_task": "任务森林里没有第二轮迁移主线；旧节点全部 done/deprecated，若不另立目标，「继续吸收 Helmor」会以追记方式挂到已完成的 TF-0176 下，失去可见性"
+        },
+        "confidence": 0.85,
+        "context_tags": [
+          "workbench",
+          "absorption",
+          "round-2"
+        ],
+        "desired_outcomes": [
+          "旧任务森林没有任何产品迁移阻塞项，状态与远端事实一致",
+          "dashboard 从聊天壳变为能看见 goals / workspots / checkpoints / 队列 / doctor / tribunal / 前提证据的账本控制台",
+          "第二个可观测 provider 有新 ADR 定边界并落地，不引入 sidecar 进程或 SDK 进主包",
+          "fit 账本的四项护城河判决出现自然人类使用产生的读数"
+        ],
+        "difficulty": "high",
+        "display_order": 2800,
+        "evidence": [
+          "2026-09-21 交叉核验：nodes.json 231 节点 = 221 done / 8 deprecated / 2 blocked；apps/workbench-ui/src 无任何对 /api/state|sync|dispatch|agent/run|review 的调用；App.tsx 只挂 ChatProvider + WorkbenchShell",
+          "packages/workbench/src/types/config.ts:82 provider 枚举 = claude | openai-chat | openai-responses | anthropic，无 codex；AGENTS.md:122 却写有 codex adapter",
+          "docs/decisions/0013:51 规定接入形态只允许 spawn-sidecar；AGENTS.md:21 禁止重新引入 sidecar 进程",
+          "packages/workbench/src/git/stash.ts 只有测试引用，无生产调用者；docs/absorption-progress-2026-09-18.md 标记 unwired_export",
+          "docs/fit-ledger-2026-09-20-phase3-t1.md：seal.decisions 0/3，护城河 A/B/C/D 均未达门槛"
+        ],
+        "kind": "global_task",
+        "non_goals": [
+          "恢复 Tauri / Rust / SQLite / sidecar",
+          "同时迁移 Codex、Cursor、Kimi、OpenCode 多家 provider",
+          "Monaco 编辑器、PR/CI 编排器等已被 ADR-0010 产品尺子排除的能力"
+        ],
+        "priority": 3,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "让 Workbench 已有的前提账本能力真正被用户看见和用到，并让多 provider 在新架构约束下有可执行的接入路径，最终用自然人类使用数据验证价值。",
+        "requirements": [
+          "数据与行为全部来自 Blackboard / 现有 HTTP 路由，不搬旧 React / Tauri 代码",
+          "写端点接入遵守 ADR-0012 的准入规则",
+          "保持单文件二进制、文件系统存储、少量运行时依赖",
+          "每项吸收都必须回答它如何服务前提账本，不以「旧 Helmor 有」为理由"
+        ],
+        "status": "in_progress",
+        "summary": "第一轮（TF-0176）已完成架构独立、可靠性吸收、聊天/恢复/足迹/MCP 与旧容器退役；231 个旧节点中只剩两个滞后的 blocked 收尾项。但当前 GUI 只有聊天壳，goals / workspots / checkpoints / tribunal / premises 等账本能力停留在 CLI、HTTP 与 MCP；chat provider 只有 claude 车道可观测；ADR-0013 规定的 spawn-sidecar 形态已与「不得重新引入 sidecar」的仓库总则冲突。本目标不是「把 Helmor 搬回来」：不恢复 Tauri、Rust、SQLite、sidecar，不追求旧桌面应用功能对等。",
+        "title": "Workbench 第二轮选择性吸收：把账本能力做成完整产品面，再在新边界下接入第二个可观测 provider"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "confidence": 0.9,
+        "reason": "第二轮吸收是第一轮（TF-0176）收口后暴露的缺口清单的延续，但以新目标立项而不追记到已完成节点下"
+      },
+      "from": "root",
+      "to": "TF-0176",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_node",
+      "alias": "p0",
+      "node": {
+        "acceptance_criteria": [
+          "旧森林中不存在 blocked / ready 的产品迁移节点",
+          "AGENTS.md 对 chat provider 的描述与 types/config.ts 枚举一致",
+          "stash 原语要么有生产调用链，要么被删除并记录",
+          "四平台发行验证有明确的可运行通道或明确的替代方案"
+        ],
+        "confidence": 0.9,
+        "difficulty": "low",
+        "display_order": 100,
+        "kind": "milestone",
+        "priority": 3,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "让任务森林与仓库文档说的和代码/远端做的一致，后续规划不再建立在过期状态上。",
+        "status": "in_progress",
+        "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。",
+        "title": "阶段 1：把旧任务森林收干净——状态对齐远端事实、修正文档口径、处理未接线原语"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 1 是新目标的收口前置"
+      },
+      "from": "p0",
+      "to": "root",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "p0-commit-231",
+      "node": {
+        "acceptance_criteria": [
+          "上述文件在一个提交里合入 main",
+          "origin/main 的 nodes.json 中 TF-0231 状态为 done"
+        ],
+        "confidence": 0.95,
+        "difficulty": "low",
+        "display_order": 100,
+        "estimated_total_minutes": 30,
+        "kind": "follow_up",
+        "next_action": "在当前分支提交 task-forest 变更 + docs + .gitignore，push 到 origin 与 gitlab，开 PR 并合入",
+        "priority": 3,
+        "purpose": "让「工作已做完」变成「成果已落库」，避免远端森林与本地森林分叉。",
+        "remaining_minutes_max": 45,
+        "remaining_minutes_min": 15,
+        "status": "ready",
+        "summary": "工作树里 TF-0231 已标 done，但节点变更、已应用的 proposal、docs/tf0231-injection-discriminator-2026-09-21.md 与 .gitignore 的本地证据规则都还未提交；远端 main 上该节点仍是 ready。",
+        "title": "把 TF-0231 沙箱注入判据的研究成果提交并合入主分支"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "收口项"
+      },
+      "from": "p0-commit-231",
+      "to": "p0",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "提交的正是 TF-0231 的成果"
+      },
+      "from": "p0-commit-231",
+      "to": "TF-0231",
+      "type": "related_to"
+    },
+    {
+      "action": "add_node",
+      "alias": "p0-agents-md",
+      "node": {
+        "acceptance_criteria": [
+          "AGENTS.md 中 chat/ 一行与 config.ts 枚举一致，并注明只有 claude 车道可观测",
+          "context-rot doctor 对 AGENTS.md 无新增告警"
+        ],
+        "confidence": 0.95,
+        "difficulty": "low",
+        "display_order": 200,
+        "estimated_total_minutes": 15,
+        "kind": "task",
+        "next_action": "编辑 AGENTS.md 架构表 chat/ 行，跑 bun run test:context-rot",
+        "priority": 3,
+        "purpose": "文档口径先于多 provider 规划纠正，否则阶段 3 的起点就是错的。",
+        "remaining_minutes_max": 20,
+        "remaining_minutes_min": 10,
+        "status": "ready",
+        "summary": "AGENTS.md 架构表把 chat/ 描述为「per-provider adapters (claude, codex, openai-chat, …)」，但 types/config.ts 的 provider 枚举是 claude | openai-chat | openai-responses | anthropic，代码里没有 Codex CLI 车道。这个差异会让读者误以为多 provider 已迁移。",
+        "title": "修正 AGENTS.md：chat 模块并没有 codex adapter，provider 只有 claude 与三个 HTTP 协议"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "收口项"
+      },
+      "from": "p0-agents-md",
+      "to": "p0",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "p0-stash",
+      "node": {
+        "acceptance_criteria": [
+          "给出明确决定：接入哪个用户可走的流程（如派发前保护未提交改动），或删除并在 CHANGELOG/ADR 注明",
+          "若接入，有调用者和端到端测试；若删除，grep 无残留引用"
+        ],
+        "confidence": 0.8,
+        "difficulty": "low",
+        "display_order": 300,
+        "estimated_total_minutes": 60,
+        "kind": "decision",
+        "next_action": "列出 stash.ts 导出面与派发/恢复流程的潜在接点，判断是否有真实用例",
+        "priority": 2,
+        "purpose": "消除「文件存在即已迁移」的假象；同类未接线原语要么进产品链路，要么按 ADR-0011 的删除规则清掉。",
+        "remaining_minutes_max": 90,
+        "remaining_minutes_min": 30,
+        "status": "ready",
+        "summary": "packages/workbench/src/git/stash.ts 有实现和测试，但没有任何生产调用者；docs/absorption-progress-2026-09-18.md 已标 unwired_export。任务森林里对应节点是 done，说明「done」有时只代表可复用原语已实现，不代表用户能用到。",
+        "title": "决定结构化 stash 原语的去留：接入产品流，还是删除未使用的契约面"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "收口项"
+      },
+      "from": "p0-stash",
+      "to": "p0",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "p0-release-ci",
+      "node": {
+        "acceptance_criteria": [
+          "确认 GitHub Actions 额度状态；若恢复，用一次 dry-run 验证 release-workbench.yml 可跑",
+          "若不恢复，给出替代方案（GitLab 发行流水线 + 交叉编译产物 + 至少一个非 Windows 平台的冒烟）并写入 AGENTS.md"
+        ],
+        "confidence": 0.85,
+        "difficulty": "medium",
+        "display_order": 400,
+        "estimated_total_minutes": 120,
+        "kind": "risk",
+        "next_action": "查 GitHub billing 状态；评估 bun build:all 交叉编译产物在 GitLab 上产出并附到 Release 的可行性",
+        "priority": 3,
+        "purpose": "在下一次发版前把这个缺口显性化，避免在 CI 绿的错觉下推 tag。",
+        "remaining_minutes_max": 180,
+        "remaining_minutes_min": 60,
+        "status": "ready",
+        "summary": "TF-0228 原本要补的 macOS 远端门禁并没有被 GitLab 自托管 runner 覆盖：runner 是 Windows shell 执行器。而 workbench 的公开发行形态是 workbench-v* tag → 四平台 build → GitHub Release，这条线仍走 GitHub Actions；额度不恢复就无法发版，也无法在真实 macOS / Linux 上跑测试。",
+        "title": "风险：四平台发行验证无处可跑——release-workbench.yml 仍依赖被卡住的 GitHub Actions，本机 GitLab runner 只有 Windows"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "收口项暴露的风险"
+      },
+      "from": "p0-release-ci",
+      "to": "p0",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "TF-0228 结案时明确未覆盖 macOS 门禁"
+      },
+      "from": "p0-release-ci",
+      "to": "TF-0228",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_node",
+      "alias": "p0-legacy-cleanup",
+      "node": {
+        "acceptance_criteria": [
+          "git ls-files 中不再有 helmor-* 技能目录、.env.release.local.example、.workbuddy/ 下的文件",
+          "skills-lock.json 与 .claude/settings.json 不引用被删技能",
+          "bun run test:context-rot 与 workbench doctor 对 AGENTS.md/CLAUDE.md 的路径检查无新增告警",
+          "保留 .claude/hooks/set-git-identity.sh 与 e2e 脚本里的 HelmorWorkbench 凭据路径：前者是在用钩子，后者是本机真实路径，不属于残留"
+        ],
+        "confidence": 0.9,
+        "difficulty": "low",
+        "display_order": 500,
+        "estimated_total_minutes": 40,
+        "kind": "task",
+        "next_action": "git rm -r 五个技能目录（两处）、.env.release.local.example；git rm --cached .workbuddy/memory/2026-08-28.md；跑 lint + context-rot",
+        "non_goals": [
+          "处理 agent/ 与 .agents/ 两份 assistant-ui 技能镜像的重复——那不是 Helmor 残留，另行评估",
+          "改写 docs/ 与 CHANGELOG 里的历史叙述"
+        ],
+        "priority": 3,
+        "purpose": "把「行为参考只在 944b9d6 之前的历史里」落到实处，让当前工作树里不再有任何指向已删容器的可执行指引。",
+        "remaining_minutes_max": 60,
+        "remaining_minutes_min": 20,
+        "status": "ready",
+        "summary": "ADR-0015 删掉了 src/、src-tauri/、sidecar/，但工作树里仍跟踪着 .agents/skills/helmor-{cli,release,debug-loop,debug-operate,bump-vendors}（23 个文件）及其在 .claude/skills 下的 5 个镜像——它们的正文指向 sidecar/package.json、Tauri MCP 桥、Helmor CLI 与 Changesets，全部已不存在；.env.release.local.example 只含 Tauri 更新器的 HELMOR_UPDATER_* 变量；.workbuddy/memory/2026-08-28.md 在 .gitignore 已排除 /.workbuddy/ 后仍被跟踪。这些会被 Claude Code / Cursor 当作可用技能加载，误导代理走已退役的路径。",
+        "title": "清理仓库里仍被跟踪的 Helmor 残留：五个指向已删 sidecar/Tauri 的技能包、Tauri 更新器环境样例、被忽略目录中的旧记忆文件"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "收口项：退役未清干净的可执行指引"
+      },
+      "from": "p0-legacy-cleanup",
+      "to": "p0",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "TF-0225 的四项容器耦合清零没有覆盖被跟踪的技能包与环境样例"
+      },
+      "from": "p0-legacy-cleanup",
+      "to": "TF-0225",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_node",
+      "alias": "p1",
+      "node": {
+        "acceptance_criteria": [
+          "dashboard 有一个非聊天的账本视图，数据来自 /api/state",
+          "tribunal 队列有人类可视化裁决入口",
+          "premises / footprints / notices 有证据浏览面",
+          "写端点按 ADR-0012 准入逐项接通，每个接通都有 vitest + Playwright 覆盖"
+        ],
+        "confidence": 0.85,
+        "difficulty": "high",
+        "display_order": 200,
+        "kind": "milestone",
+        "non_goals": [
+          "复刻 Helmor 的多工作区/多仓库导航",
+          "把旧 src/ 的 React 组件搬回来"
+        ],
+        "priority": 3,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "Workbench 的核心是完整的 CLI/领域层，而 GUI 只是聊天与恢复面——这是当前最大的产品缺口。可以吸收 Helmor 的 inspector / navigation / workspace-start 等交互模式，但数据与行为全部来自 Blackboard。",
+        "status": "ready",
+        "summary": "后端 ui/state.ts 已聚合 goals、workspots、checkpoints、interfaces、decisions、events、doctor、agent sessions；workspace-routes.ts 已有 /api/sync、/api/dispatch、/api/agent/run、/api/review。但前端根组件只挂 Chat，整个 apps/workbench-ui/src 没有一处消费这些路由；UI 里的「决策账本」展示的是聊天 fork/variant，不是架构决策也不是 tribunal。",
+        "title": "阶段 2：Workbench 产品面完整化——让 goals / 工位 / 检查点 / 裁决 / 前提证据在面板上可见、可操作"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2"
+      },
+      "from": "p1",
+      "to": "root",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "reason": "文档口径与森林状态先对齐，产品面工作以正确起点开始"
+      },
+      "from": "p1",
+      "to": "p0",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p1-boundary",
+      "node": {
+        "acceptance_criteria": [
+          "新增前端代码不 import 任何 944b9d6 之前 src/ 的文件",
+          "每个视图的数据源可追溯到 packages/workbench/src/ui 的某条路由"
+        ],
+        "confidence": 0.9,
+        "difficulty": "low",
+        "display_order": 100,
+        "kind": "requirement",
+        "priority": 3,
+        "purpose": "防止「做产品面」演变成「把桌面应用搬回来」。",
+        "status": "ready",
+        "summary": "ADR-0010 产品尺子与 ADR-0015 退役执行都明确旧 Helmor 是行为参考而非代码来源。阶段 2 的所有子任务都受此约束。",
+        "title": "要求：产品面只消费 Blackboard 与现有 HTTP 路由，不搬旧 React / Tauri 代码，交互模式可借鉴"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2 的边界要求"
+      },
+      "from": "p1-boundary",
+      "to": "p1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "p1-state-view",
+      "node": {
+        "acceptance_criteria": [
+          "WorkbenchShell 之外有可切换的账本视图，加载 /api/state 并渲染 goals、workspots、checkpoints、queue、doctor 五块",
+          "空账本、doctor 非零退出、大账本（≥1MB）三种状态都有 UI 表现且不卡死",
+          "vitest 覆盖数据映射，Playwright 覆盖切换与渲染"
+        ],
+        "confidence": 0.85,
+        "difficulty": "medium",
+        "display_order": 200,
+        "estimated_total_minutes": 480,
+        "kind": "task",
+        "next_action": "读 ui/state.ts 的返回 shape，定义前端类型；在 workbench-shell 加视图切换",
+        "priority": 3,
+        "purpose": "让用户第一次不用开 CLI 就能看见账本在说什么。",
+        "remaining_minutes_max": 720,
+        "remaining_minutes_min": 360,
+        "status": "ready",
+        "summary": "ui/state.ts 已把这些聚合好，缺的只是前端。第一版做只读观察面，放在聊天壳旁边而不是替换它。",
+        "title": "面板消费 /api/state：新增 goals / 工位 / 检查点 / 执行队列 / doctor 的观察视图"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2 首个交付"
+      },
+      "from": "p1-state-view",
+      "to": "p1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "p1-tribunal",
+      "node": {
+        "acceptance_criteria": [
+          "有 tribunal 队列视图，展示 kind / 升级原因 / 相关工位 / 证据",
+          "能从 UI 提交裁决，写入与 CLI 相同的账本路径并产生事件",
+          "DecisionLedger 改名或加说明，避免与 tribunal / 架构决策混淆"
+        ],
+        "confidence": 0.8,
+        "difficulty": "medium",
+        "display_order": 300,
+        "estimated_total_minutes": 480,
+        "kind": "task",
+        "next_action": "盘点 tribunal/ 模块的读写 API 与现有 CLI 命令，决定需要新增哪条 HTTP 路由（按 ADR-0012 准入）",
+        "priority": 3,
+        "purpose": "tribunal 是「系统答不了的问题交给人」的通道；没有 UI 入口，这个通道对非 CLI 用户不存在。",
+        "remaining_minutes_max": 720,
+        "remaining_minutes_min": 360,
+        "status": "ready",
+        "summary": "tribunal 目前只有 CLI、MCP 只读列表和后端领域模块，没有人类可视化入口；任务森林自身（TF-0176 阶段记录）也标注「tribunal 前端入口仍未开工」。当前 UI 的 DecisionLedger 是聊天 fork/variant，同名异物，需在命名上区分。",
+        "title": "tribunal 人类裁决面：把等待人类决策的条目做成可视化队列并能提交裁决"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2 交付"
+      },
+      "from": "p1-tribunal",
+      "to": "p1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "reason": "复用观察视图的壳与数据加载模式"
+      },
+      "from": "p1-tribunal",
+      "to": "p1-state-view",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p1-evidence",
+      "node": {
+        "acceptance_criteria": [
+          "有 premises、footprints、notices 三个列表视图，支持按 writer / 路径过滤",
+          "点击一条失效前提能跳到对应恢复卡或聊天线程",
+          "复用 mcp/tools.ts 的查询逻辑或对应 HTTP evidence 路由，不复制实现"
+        ],
+        "confidence": 0.8,
+        "difficulty": "medium",
+        "display_order": 400,
+        "estimated_total_minutes": 420,
+        "kind": "task",
+        "next_action": "对照 mcp/tools.ts 与 ui/evidence-route.ts 的查询能力，确定是否需要新只读路由",
+        "priority": 2,
+        "purpose": "前提账本是产品护城河，但护城河 A/B/C/D 在 fit 账本里全部未达门槛——人类看不见证据，就不会产生自然使用。",
+        "remaining_minutes_max": 600,
+        "remaining_minutes_min": 300,
+        "status": "ready",
+        "summary": "MCP 已暴露这五个只读工具给 agent；人类目前只能走 CLI --json 或恢复卡。证据浏览面让人看见「谁读过什么、谁改了什么、哪些前提失效了」。",
+        "title": "前提证据浏览面：premises / footprints / notices 在面板上可查、可按写者与文件过滤"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2 交付"
+      },
+      "from": "p1-evidence",
+      "to": "p1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "reason": "复用观察视图的壳"
+      },
+      "from": "p1-evidence",
+      "to": "p1-state-view",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p1-write",
+      "node": {
+        "acceptance_criteria": [
+          "每个写操作在 UI 上有确认态、进行态、结果态，失败时展示后端 evidence",
+          "操作结果在 events.jsonl 有对应事件，与 CLI 触发不可区分",
+          "Playwright 覆盖 sync 与 dispatch 的成功/失败路径"
+        ],
+        "confidence": 0.75,
+        "difficulty": "medium",
+        "display_order": 500,
+        "estimated_total_minutes": 600,
+        "kind": "task",
+        "next_action": "等观察面落地后，逐条对照 ADR-0012 写准入清单",
+        "priority": 2,
+        "purpose": "让面板从「看」到「做」，但不绕过运行时的锁与事件纪律。",
+        "remaining_minutes_max": 900,
+        "remaining_minutes_min": 420,
+        "status": "proposed",
+        "summary": "workspace-routes.ts 已有这四条写路由，但没有前端调用者。每一条接通都要回答 ADR-0012 的写端点准入问题（幂等、锁、事件、失败回滚），不能只是加按钮。",
+        "title": "按 ADR-0012 准入逐项接通写端点：sync、dispatch、review、agent run 从面板可触发"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 2 交付"
+      },
+      "from": "p1-write",
+      "to": "p1",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "写操作的对象来自观察面"
+      },
+      "from": "p1-write",
+      "to": "p1-state-view",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "reason": "review 写端点与裁决面共享确认/结果态模式"
+      },
+      "from": "p1-write",
+      "to": "p1-tribunal",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p2",
+      "node": {
+        "acceptance_criteria": [
+          "新 ADR 合入，明确替代 ADR-0013 决策 3 的接入形态",
+          "恰好一个新 provider 有工具足迹且通过夹具驱动的协议门禁",
+          "provider-capabilities.ts 对它的可观测性标注诚实"
+        ],
+        "confidence": 0.8,
+        "difficulty": "high",
+        "display_order": 300,
+        "kind": "milestone",
+        "non_goals": [
+          "同时接入多家 provider",
+          "把 @anthropic-ai/claude-agent-sdk 或任何 provider SDK import 进主包"
+        ],
+        "priority": 2,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "多 provider 是 Workbench 作为「编排器」而非「Claude 壳」的必要条件，但必须在单文件二进制、零 SDK 进主包的约束下重新设计。",
+        "status": "ready",
+        "summary": "当前 provider 只有 claude 本地 CLI 可观测（有工具足迹），openai-chat / openai-responses / anthropic 三个 HTTP 协议明确不可观测。旧 Helmor 的 Codex、Cursor、Kimi、OpenCode 只剩 49 个真实流夹具（其中 Claude 19 个有消费者，其余 30 个仅参考）。ADR-0013 规定第二个可观测 provider 只能以 spawn-sidecar 接入，但退役后 AGENTS.md 明令禁止 sidecar 进程——旧方案不能照搬。",
+        "title": "阶段 3：第二个可观测 provider——先用新 ADR 重定接入形态（不复活 sidecar），再只做一个真正有需求的 provider"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3"
+      },
+      "from": "p2",
+      "to": "root",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "TF-0179（决策 3）的 sidecar 触发条件与形态需要在新约束下重议"
+      },
+      "from": "p2",
+      "to": "TF-0179",
+      "type": "derived_from"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "TF-0221 记录的风险（sidecar 破坏单文件二进制定位）在新 ADR 中继续成立"
+      },
+      "from": "p2",
+      "to": "TF-0221",
+      "type": "related_to"
+    },
+    {
+      "action": "add_node",
+      "alias": "p2-adr",
+      "node": {
+        "acceptance_criteria": [
+          "docs/decisions/0016-*.md 合入，README 索引更新，任务森林 TF-0179 加 superseded 备注",
+          "ADR 回答：进程边界、协议适配放哪个模块、如何保持 4 个运行时依赖、夹具如何作为门禁",
+          "AGENTS.md 的 chat/ 描述与 ADR 一致"
+        ],
+        "confidence": 0.8,
+        "difficulty": "medium",
+        "display_order": 100,
+        "estimated_total_minutes": 180,
+        "kind": "decision",
+        "next_action": "读 claude-session.ts、provider-capabilities.ts、supervisor/ 的现状，起草 ADR-0016",
+        "priority": 2,
+        "purpose": "消除 ADR-0013 与 AGENTS.md 之间的架构冲突，让阶段 3 有合法起点。",
+        "remaining_minutes_max": 240,
+        "remaining_minutes_min": 120,
+        "status": "ready",
+        "summary": "候选形态：仿照当前 claude-session.ts 车道，用 supervisor/spawnSupervised 直接监督 provider 自己的 CLI 进程，在 chat/ 内实现该 provider 的 JSON Lines / SSE 协议适配，用已保留的真实流夹具做协议测试。明确记录它与 ADR-0013 决策 3 的关系（supersedes）。",
+        "title": "决策：新 ADR 重定第二个可观测 provider 的接入形态——直接监督外部 CLI，每个 provider 在主包内做轻量协议适配，不引入 sidecar 与 SDK"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3 前置决策"
+      },
+      "from": "p2-adr",
+      "to": "p2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "reason": "文档口径先纠正，ADR 才不会建立在「已有 codex adapter」的错误前提上"
+      },
+      "from": "p2-adr",
+      "to": "p0-agents-md",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p2-pick",
+      "node": {
+        "acceptance_criteria": [
+          "用户明确选定一个 provider 并说明真实场景",
+          "确认该 provider CLI 的事件流能提供文件读写级别的工具事件"
+        ],
+        "confidence": 0.6,
+        "difficulty": "low",
+        "display_order": 200,
+        "estimated_total_minutes": 60,
+        "kind": "question",
+        "next_action": "向用户提问；同时核对四家夹具里哪些含工具读写事件",
+        "priority": 2,
+        "purpose": "避免为了「多 provider」而多 provider；只做一个有人用的。",
+        "remaining_minutes_max": 90,
+        "remaining_minutes_min": 30,
+        "status": "proposed",
+        "summary": "候选：Codex（OpenAI CLI）、Cursor、Kimi、OpenCode。四家都有真实流夹具保留在仓库里。选择标准：用户当下真的会用它写代码；它的 CLI 能输出工具级事件（否则没有足迹可观测，接了也不满足「可观测」）。",
+        "title": "问题：第二个 provider 选哪一个？需要用户给出真实使用需求，而不是按夹具数量选"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3 待用户回答的问题"
+      },
+      "from": "p2-pick",
+      "to": "p2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_node",
+      "alias": "p2-fixtures",
+      "node": {
+        "acceptance_criteria": [
+          "该 provider 的全部夹具在 bun test 中被解析且无未知帧",
+          "解析结果能产出与 claude 车道同形的工具足迹事件",
+          "provider-capabilities.ts 的可观测性标注由测试推导"
+        ],
+        "confidence": 0.75,
+        "difficulty": "medium",
+        "display_order": 300,
+        "estimated_total_minutes": 360,
+        "kind": "task",
+        "next_action": "等选定 provider 后开始",
+        "priority": 2,
+        "purpose": "协议形状先于运行时接线被钉住，避免边接边猜。",
+        "remaining_minutes_max": 480,
+        "remaining_minutes_min": 240,
+        "status": "proposed",
+        "summary": "ADR-0015 退役时把 49 个 Claude/Codex/Cursor/Kimi/OpenCode 真实流夹具搬进 Workbench，目前只有 Claude 的 19 个有消费者。选定 provider 后，先让它的夹具有消费者：解析器能把每一帧映射到统一的 render decision 与工具足迹。",
+        "title": "用已保留的真实流夹具为选定 provider 建协议门禁测试"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3 交付"
+      },
+      "from": "p2-fixtures",
+      "to": "p2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "协议适配放哪个模块由 ADR 决定"
+      },
+      "from": "p2-fixtures",
+      "to": "p2-adr",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "要先知道是哪家"
+      },
+      "from": "p2-fixtures",
+      "to": "p2-pick",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p2-adapter",
+      "node": {
+        "acceptance_criteria": [
+          "config.ts 枚举新增该 provider，dashboard 可选择",
+          "一次真实会话后 footprints 中出现该 provider 写者的读写记录",
+          "恢复卡与前提失效通知对该 provider 的会话同样生效",
+          "chat/threads.test.ts 等 HTTP 测试在 NO_PROXY 下全绿"
+        ],
+        "confidence": 0.7,
+        "difficulty": "high",
+        "display_order": 400,
+        "estimated_total_minutes": 720,
+        "kind": "task",
+        "next_action": "等夹具门禁绿后开始",
+        "priority": 2,
+        "purpose": "让第二个 provider 的会话产生与 claude 同等的前提账本读数。",
+        "remaining_minutes_max": 1080,
+        "remaining_minutes_min": 480,
+        "status": "proposed",
+        "summary": "沿 claude-session.ts 的模式：监督 CLI 进程、静默判定、EPIPE 区分、树杀接线、turn id 预分配。新 provider 的车道进入 chat/ 并挂到 types/config.ts 枚举。",
+        "title": "实现选定 provider 的车道：复用 spawnSupervised + provider capabilities + render decision，端到端产生工具足迹"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3 核心交付"
+      },
+      "from": "p2-adapter",
+      "to": "p2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "协议门禁先绿"
+      },
+      "from": "p2-adapter",
+      "to": "p2-fixtures",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "blocking": false,
+        "reason": "先把已有能力做成产品面，再扩 provider（用户判断的顺序）"
+      },
+      "from": "p2-adapter",
+      "to": "p1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p2-protocols",
+      "node": {
+        "acceptance_criteria": [
+          "每项有一条评估记录：服务账本的方式 / 不做的理由",
+          "被采纳的项在两个 provider 上行为一致并有测试"
+        ],
+        "confidence": 0.6,
+        "difficulty": "medium",
+        "display_order": 500,
+        "estimated_total_minutes": 480,
+        "kind": "task",
+        "next_action": "等 provider 车道落地后逐项评估",
+        "priority": 1,
+        "purpose": "多 provider 下的一致交互体验，但不为对等而对等。",
+        "remaining_minutes_max": 720,
+        "remaining_minutes_min": 240,
+        "status": "proposed",
+        "summary": "旧 sidecar 有统一的 userInputRequest / permissionRequest、模型目录、context usage、slash commands、mid-turn abort/steer。它们只在有第二个 provider 时才有「统一」的意义。逐项评估，不整体搬。",
+        "title": "按需吸收旧 Helmor 的交互协议：用户输入请求、权限请求、模型目录、上下文用量、slash 命令、回合中打断/转向——每项必须回答它如何服务前提账本"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 3 可选交付"
+      },
+      "from": "p2-protocols",
+      "to": "p2",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "没有第二个 provider，统一协议没有对象"
+      },
+      "from": "p2-protocols",
+      "to": "p2-adapter",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_node",
+      "alias": "p3",
+      "node": {
+        "acceptance_criteria": [
+          "至少一个自然使用窗口（非脚本、非代理）产生 seal.decisions ≥ 1 与恢复卡消费记录",
+          "fit 账本重算，四项护城河中至少两项判决从「证据不足」变为有方向的判决（哪个方向都算）"
+        ],
+        "confidence": 0.7,
+        "difficulty": "medium",
+        "display_order": 400,
+        "kind": "milestone",
+        "next_action": "等阶段 2 的观察面与裁决面可用后，安排一周自用窗口",
+        "priority": 2,
+        "progress": 0,
+        "progress_source": "manual",
+        "purpose": "把结论从「技术落点明确」推进到「真实人类价值成立/不成立」。",
+        "status": "proposed",
+        "summary": "现有证据有真实模型、真实 Claude CLI、真实远端 CI，但使用窗口主要是脚本安排或 steward 代理操作。fit 账本（2026-09-20 phase3-t1）显示 seal.decisions 0/3，恢复卡与前提检测判决「证据不足」，护城河 A/B/C/D 均未达门槛。来源纪律：脚本化手势不计入人类背书，L1 只在自然证据下移动。",
+        "title": "阶段 4：真实人类使用窗口——让 fit 账本的四项护城河判决出现自然使用读数"
+      }
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "阶段 4"
+      },
+      "from": "p3",
+      "to": "root",
+      "type": "child_of"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "人类要能在面板上看见账本，才可能自然使用"
+      },
+      "from": "p3",
+      "to": "p1",
+      "type": "depends_on"
+    },
+    {
+      "action": "add_edge",
+      "edge": {
+        "reason": "第一轮的一周自用观察窗只产生了首次带足迹的读数，价值判决仍未达门槛"
+      },
+      "from": "p3",
+      "to": "TF-0193",
+      "type": "derived_from"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "correction": "本提案把 TF-0228 收口为 done 并补记 GitLab 流水线证据；另立风险节点跟踪 GitLab runner 仅 Windows 导致的四平台发行验证缺口。以后 CI/远端策略变更同步更新相关 blocked 节点。",
+        "created_at": "2026-09-21T12:45:00.241Z",
+        "id": "TFD-2a9c41e7f0",
+        "kind": "status_lag",
+        "reason": "CI 通道切换（GitHub Actions → GitLab）是在 AGENTS.md 里记录的，没有同步回任务森林；合并动作由用户在 GitHub 上完成，没有触发森林更新。",
+        "related_task_ids": [
+          "TF-0228"
+        ],
+        "summary": "TF-0228 在远端已合入、GitLab 流水线已绿约 1 小时后仍在任务森林中标为 blocked，且 next_action 仍写「等 GitHub Actions 额度恢复」；仓库 CI 通道已正式改为 GitLab 自托管 runner，森林未跟上。"
+      }
+    }
+  ],
+  "created_at": "2026-09-21T12:45:00.447761Z",
+  "proposal_id": "TFP-2026-09-21-second-round-absorption-plan",
+  "rationale": "2026-09-21 交叉核验旧任务森林与代码/远端事实：231 节点仅剩 2 个 blocked，其中 TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿）、TF-0230 为不可达的历史取证；Helmor→Workbench 第一轮选择性吸收（TF-0176）已真实落地。但 GUI 仍只是聊天壳、多 provider 未迁、ADR-0013 的 sidecar 形态与 AGENTS.md 禁令冲突、AGENTS.md 错写 codex adapter、stash 原语未接线、发行流水线仍依赖被卡的 GitHub Actions。本提案收口旧森林两个滞后节点，并新立第二轮吸收主线（四个阶段），不追记到已完成的 TF-0176 下。",
+  "session_id": "session-2026-09-21-second-round-absorption-plan",
+  "status": "applied"
+}

@@ -19,9 +19,9 @@ export interface CollapsedGroupPart {
 }
 
 /**
- * 提供方发来的、操作者该看见的信息（今天只有「权限被拒」）。它属于助手消息，
- * 但呈现为通知而不是 agent 自己的话。形状与 workbench 侧 `NoticePart` 一一对应
- * （`protocol.test.ts` 会强制两侧线协议类型互相可赋值）。
+ * 操作者该看见、但不是谁「说」的信息。助手消息上：提供方拒绝了某个动作；
+ * 用户消息上：折入这一轮 prompt 的前提通知（TF-0243）。形状与 workbench 侧
+ * `NoticePart` 一一对应（`protocol.test.ts` 会强制两侧线协议类型互相可赋值）。
  */
 export interface NoticePart {
 	type: "notice";
@@ -117,6 +117,28 @@ export interface DecisionPoint {
 	kind: "fork" | "variant";
 	count: number;
 	preview: string;
+}
+
+/**
+ * A tribunal item as the chat surface needs it (TF-0242): the subset of the
+ * ledger's `TribunalItem` the bar renders. The queue is global to the ledger,
+ * not scoped to a thread — the bar shows every item still owing a decision.
+ */
+export interface TribunalItemView {
+	id: string;
+	kind: string;
+	priority: "critical" | "high" | "medium" | "low";
+	state: "pending" | "shelved" | "resolved" | "expired";
+	subject: string;
+	sbar: {
+		situation: string;
+		background: string;
+		assessment: string;
+		recommendation: string;
+	};
+	action: { label: string; command?: string };
+	shelvedUntil?: string;
+	shelveCount: number;
 }
 
 export interface ParkedItem {

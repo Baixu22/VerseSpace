@@ -1,7 +1,8 @@
 // Emit the `workbench-v<version>` tag that release-workbench.yml listens for.
 //
-// `.github/workflows/release-workbench.yml` builds the four platform binaries
-// on a `workbench-v*` tag push. Read the Workbench package version, independent
+// `.gitlab-ci.yml`'s release stage builds the four platform binaries on a
+// `workbench-v*` tag push (the GitHub Actions lane in release-workbench.yml
+// has no runner while the account quota is exhausted). Read the Workbench package version, independent
 // of the private monorepo root version. The old `v*` tag and publish scripts
 // were retired under ADR-0015.
 //
@@ -49,7 +50,8 @@ const tag = `workbench-v${version}`;
 console.log(`包：${manifest.name}@${version}`);
 console.log(`tag：${tag}`);
 console.log(
-	`触发：.github/workflows/release-workbench.yml（4 平台二进制 + 挂到 GitHub Release）`,
+	"触发：.gitlab-ci.yml release 阶段（本机 runner 交叉编译 4 平台二进制，release-publish 手动挂到 GitHub Release）；" +
+		"GitHub Actions 的 release-workbench.yml 在额度恢复前不会有 runner。",
 );
 
 const dirty = execSync("git status --porcelain", { encoding: "utf8" }).trim();
@@ -103,4 +105,6 @@ if (remoteExists === true) {
 }
 if (!exists) execSync(`git tag ${tag}`, { stdio: "inherit" });
 execSync(`git push origin ${tag}`, { stdio: "inherit" });
-console.log(`New tag: ${tag}`);
+// GitLab runs the release lane; GitHub only hosts the Release object.
+execSync(`git push gitlab ${tag}`, { stdio: "inherit" });
+console.log(`New tag: ${tag}（origin + gitlab）`);

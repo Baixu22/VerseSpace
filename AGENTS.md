@@ -120,7 +120,7 @@ subcommand lives in `src/commands/` and supports `--json` / `--quiet`.
 | `scheduler/` | Dispatch, dispatch guards/recovery, merge guard, branch-in-use, WIP, notifications, tick. |
 | `verifier/` | Runs a checkpoint's declared verification strategy and classifies the result (`passed` / `failed` / `needs_human` / `timeout` / `skipped`). |
 | `supervisor/` | Process supervision: spawn, liveness watch, crash-loop detection, orphan reaping. |
-| `chat/` | Chat lanes — per-provider adapters (`claude`, `codex`, `openai-chat`, …), streaming, render state, threads, branch engagement, stats. |
+| `chat/` | Chat lanes — one supervised-CLI lane (`claude`, the only lane with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Codex / Cursor / Kimi / OpenCode stream fixtures under `chat/fixtures/streams/` are retained protocol samples, **not** adapters. |
 | `agents/` | Spawns agent sessions, captures their tool footprints, records per-session usage. |
 | `interactions/` | The user-feedback side: interest/context derivation, landmark projection, review queue, review stats (DOI). |
 | `tribunal/` | The human-decision queue: kinds, escalation, rationalization, queue store/stats, envelopes. |
@@ -222,10 +222,17 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   (`workbench-v*` tag → four-platform build → GitHub Release). The npm shape is not published
   yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
   the version and `CHANGELOG.md` first. **`.changeset/` no longer exists** — bump the version and
-  write the changelog entry by hand.
+  write the changelog entry by hand. **While GitHub Actions has no runner** (quota, see CI
+  remotes above) the tag script pushes to both remotes and the build runs in the `release` stage
+  of `.gitlab-ci.yml`: `release-build` cross-compiles all four binaries on the Windows runner,
+  then the **manual** `release-publish` job runs `scripts/publish-workbench-release.mjs`, which
+  attaches them plus `SHA256SUMS` to the GitHub Release and states in the notes that only
+  windows-x64 ran the test suite. `release-workbench.yml` stays as the per-platform lane for
+  when Actions comes back.
 - **Licensing**: `@baixu22/workbench` is `MIT AND Apache-2.0`. `scripts/build.ts` copies
   `NOTICE` / `LICENSE` / `LICENSE-APACHE` into `dist/`, the package `files` field keeps them in
-  the tarball, and `release-workbench.yml` attaches them to the Release. Apache-2.0 §4(d)
+  the tarball, and both release lanes (`release-workbench.yml`,
+  `scripts/publish-workbench-release.mjs`) attach them to the Release. Apache-2.0 §4(d)
   requires a readable `NOTICE` at distribution time — do not delete those files.
 - **"Helmor" and the Helmor logo are trademarks** of Caspian Zhao and Nathan Lian. The Apache-2.0
   grant covers use, modification and redistribution of the source, but **not** use of the name or

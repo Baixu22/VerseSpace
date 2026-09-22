@@ -107,10 +107,11 @@ export interface CollapsedGroupPart {
 }
 
 /**
- * Something the operator must see that the assistant did not say: today, the
- * CLI refusing an action. It lives in the assistant message because that is
- * where it happened, but it is styled as a notice rather than as the agent's
- * own words. Shape mirrors the legacy `MessagePart::SystemNotice`.
+ * Something the operator must see that the assistant did not say. On an
+ * assistant message: the CLI refusing an action. On a user message: a premise
+ * notice that was folded into that turn's prompt. Either way it is styled as a
+ * notice rather than as anyone's own words. Shape mirrors the legacy
+ * `MessagePart::SystemNotice`.
  */
 export interface NoticePart {
 	type: "notice";
@@ -137,7 +138,11 @@ export interface StoredMessage {
 	role: "user" | "assistant";
 	text: string;
 	at: string;
-	/** assistant 消息的结构化内容（text / tool-call / collapsed-group）；user 消息省略 */
+	/**
+	 * Structured content. assistant: text / tool-call / collapsed-group / notice.
+	 * user: only present when premise notices were folded into the turn — the
+	 * notices come first, then the text the user typed. Absent otherwise.
+	 */
 	parts?: StoredPart[];
 	/** 扇出的备选文本（TF-0094）：不含主回答，最多 fanout-1 条。 */
 	variants?: string[];

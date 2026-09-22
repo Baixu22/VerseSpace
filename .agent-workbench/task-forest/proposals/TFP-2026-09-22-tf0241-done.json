@@ -1,0 +1,43 @@
+{
+  "applied_at": "2026-09-21T16:20:08.896552Z",
+  "base_graph_hash": "639d124904bb6e9bc1a2ddf13550895e2637aed25d1099f34b40b6078d398442",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "chat/claude-mcp.ts + claude-mcp.test.ts（7 例：二进制/dev/虚拟路径三种 invocation、config 形状、写文件+flag、off 开关、命名前缀）",
+          "探针实测：编译后的单文件二进制 Bun.main=B:/~BUN/root/...，statSync 成功 exists=true——所以 ~BUN/$bunfs 子串判定才是真正判据，mainExists 只是次要信号",
+          "commands/context.ts resolveBlackboard(root?)；context.test.ts 证明 --root 覆盖在无关 cwd 下仍打开正确账本，无 root 时向上发现失败抛 NoWorkbenchError",
+          "claude-session.ts 分支：chatCommand()===CHAT_COMMAND_DEFAULT 才追加；bun -e 模拟拼装 + splitCommandLine 回解，--mcp-config 与 --allowedTools mcp__workbench 参数正确",
+          "bun run test:workbench 922 pass（+9 新）；typecheck + biome 全绿；.workbench/mcp/claude-mcp.json 经 git check-ignore 确认忽略；AGENTS.md chat/ 行更新且 context-rot 无新增告警"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "已实现并核验。claude 车道现在把只读账本 MCP 服务喂给真实 CLI，模型可在回合中查 premises/footprints/resume_cards/tribunal/notices，工具卡由既有 mcp_tool_use/mcp_tool_result 渲染路径免费获得。实现：① workbench mcp 加 --root <dir> 选项，resolveBlackboard(root?) 跳过向上发现，让 spawn 出的 server 无论 cwd 在哪都能定位账本；② 新增 chat/claude-mcp.ts——resolveSelfInvocation 区分单文件二进制（execPath 即 CLI，Bun.main 是 ~BUN/$bunfs 虚拟路径）与 bun 开发运行（execPath=bun + 真实 entry），buildMcpConfig 生成 mcpServers.workbench 配置，mcpConfigFlags 写到 .workbench/mcp/claude-mcp.json（已 gitignore）并返回 --mcp-config + --allowedTools mcp__workbench（五个工具只读，自动放行避免 -p 模式卡权限）；③ claude-session.ts 仅在命令为默认真实 CLI 时追加这些 flag（测试的假 WORKBENCH_CHAT_COMMAND 与 WORKBENCH_CLAUDE_MCP=off 都不受影响）。诚实标注：未加 UI 徽章——ThreadObservability 只在有分歧（不可观测/继承缺口）时渲染，「账本已接入」是好情况无需标；也未加 provider-capabilities 布尔位，因为 ensureClaudeSession 只被 claude 车道调用，加了会是 claude 判断 claude 的自指字段，违反「字段必须有真实分支调用者」的表规约——留待阶段 3 出现第二个 local-cli provider 时再加。"
+      },
+      "id": "TF-0241"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 66,
+        "progress_source": "manual",
+        "summary": "用户 2026-09-21 确认：ba3f5c9 的产品转向仍然有效——交互保持纯对话，深度在运行时层；不恢复独立账本面板。盘点现状（2026-09-21）：① 前提通知只被折进模型 prompt（thread-run.ts:61-67 → prompt.ts），对话记录里只留一个计数，通知正文从不落盘，人看不到「模型被告知了什么」；② claude 车道启动没有 --mcp-config（claude-session.ts:64-80），workbench mcp 只服务外部 agent，模型在回合中读不到 premises/footprints/resume_cards/tribunal/notices，尽管渲染层已能画 mcp_tool_use/mcp_tool_result 卡片（claude-render-blocks.ts:195,216）；③ UI 服务器没有任何 tribunal 路由，tribunal 只有 CLI；④ 对话内唯一的非模型内容形态是 NoticePart（thread-types.ts:115-120），前端 NoticeRow 已能渲染；composer 上方的 sidecar（sidecar.tsx）已有 ResumeCard / DecisionLedger / NoticeDelivered 等挂点。阶段 2 沿这四个既有形态把账本能力带进对话，不新增第二个信息架构。\n\n【2026-09-22 进展】三个交付里 TF-0243（通知进对话记录）、TF-0241（MCP 接进 claude 车道）已 done；剩 TF-0242（对话内裁决）。"
+      },
+      "id": "TF-0239"
+    }
+  ],
+  "created_at": "2026-09-21T16:20:08.642537Z",
+  "proposal_id": "TFP-2026-09-22-tf0241-done",
+  "rationale": "TF-0241 把只读账本 MCP 服务接进 spawn 的 claude 会话：模型回合中可查五个账本工具，工具卡复用既有渲染路径。--root 让 server 不依赖 cwd 定位账本；单文件二进制与 bun 开发两种形态都能定位自身。7+2 新测试、922 全绿。",
+  "session_id": "session-2026-09-21-second-round-absorption-plan",
+  "status": "applied"
+}

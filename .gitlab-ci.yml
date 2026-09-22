@@ -40,7 +40,7 @@ variables:
   NODE_BIN_DIR: "C:\\Program Files\\nodejs"
   CONTEXT_ROT_NODE: "C:\\Program Files\\nodejs\\node.exe"
 
-stages: [verify]
+stages: [verify, release]
 
 .paths:
   global:
@@ -156,3 +156,46 @@ context-rot-test:
     - changes: !reference [.paths, context_rot]
   script:
     - bun run test:context-rot
+
+# Release lane (2026-09-21). `.github/workflows/release-workbench.yml` still
+# describes the intended shape — one host per target — but GitHub Actions has
+# no runner while the account quota is exhausted, so a `workbench-v*` tag
+# pushed to the gitlab remote builds here instead. All four binaries are
+# cross-compiled by Bun on this Windows host; only windows-x64 has run the
+# test suite, and the publish script says so in the release notes.
+#
+#   bun run release:tag:workbench --push   # tags + pushes to origin AND gitlab
+#   → release-build runs after verify      # artifacts: dist/workbench-* + legal
+#   → release-publish is manual            # gh release create (host gh login)
+
+release-build:
+  extends: .bun-setup
+  stage: release
+  timeout: 30m
+  interruptible: false
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^workbench-v/
+  script:
+    - Set-Location packages/workbench
+    - bun run build:all
+    - Get-ChildItem dist
+  artifacts:
+    name: "workbench-$CI_COMMIT_TAG"
+    expire_in: 30 days
+    paths:
+      - packages/workbench/dist/workbench-*
+      - packages/workbench/dist/NOTICE
+      - packages/workbench/dist/LICENSE
+      - packages/workbench/dist/LICENSE-APACHE
+
+release-publish:
+  stage: release
+  needs: [release-build]
+  timeout: 10m
+  interruptible: false
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^workbench-v/
+      when: manual
+  script:
+    - $env:PATH = "$env:NODE_BIN_DIR;$env:PATH"
+    - node scripts/publish-workbench-release.mjs --tag $env:CI_COMMIT_TAG

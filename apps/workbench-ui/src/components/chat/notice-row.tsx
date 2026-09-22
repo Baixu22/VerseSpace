@@ -34,7 +34,7 @@ export function NoticeRow({ notice }: { notice: NoticePart }) {
 				<Icon className="size-3.5 shrink-0" /> {notice.label}
 			</span>
 			{notice.body ? (
-				<p className="mt-1 text-fg-muted [overflow-wrap:anywhere]">
+				<p className="mt-1 whitespace-pre-wrap text-fg-muted [overflow-wrap:anywhere]">
 					{notice.body}
 				</p>
 			) : null}

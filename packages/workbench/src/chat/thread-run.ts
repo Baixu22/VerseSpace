@@ -1,5 +1,6 @@
 import { runClaudeTurn } from "./claude-turn";
 import { runHttp } from "./http-run";
+import { noticeParts } from "./notice-parts";
 import { ackNotices, drainNotices, selectNoticeEntries } from "./notice-queue";
 import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
@@ -22,22 +23,36 @@ export function run(
 ): Promise<void> {
 	return context.store.enqueue(id, async () => {
 		const meta = await context.store.get(id);
+		const config = await context.bb.config.load();
+		const chat = config.chat;
+		const readObservability = readObservabilityOf(chat.provider);
+
+		// Drained before the user message is persisted so the notices that get
+		// folded into this turn's prompt are recorded on that very message.
+		const noticeBatch = await drainNotices(context, id);
+		const selectedNotices = selectNoticeEntries(
+			noticeBatch.entries,
+			chat.noticeTokenBudget,
+		);
+		const notices = selectedNotices.notices;
+		const noticeIds = selectedNotices.entries.map((entry) => entry.id);
+
 		if (!opts.resend) {
+			const userNoticeParts = noticeParts(notices);
 			const userMessage: StoredMessage = {
 				id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
 				role: "user",
 				text,
 				at: new Date().toISOString(),
+				...(userNoticeParts.length
+					? { parts: [...userNoticeParts, { type: "text", text }] }
+					: {}),
 			};
 			await context.store.appendMessage(id, userMessage);
 			emit({ type: "user", message: userMessage });
 			// TF-0092：对话默认保持无名——命名延迟到触发信号命中的轮次边界
 			//（maybePromote），绝不要求用户先命名或分类。
 		}
-
-		const config = await context.bb.config.load();
-		const chat = config.chat;
-		const readObservability = readObservabilityOf(chat.provider);
 
 		// TF-0207: the assistant message id is allocated BEFORE the turn runs.
 		// Every streaming event carries it and the message is persisted under the
@@ -58,13 +73,6 @@ export function run(
 		};
 		await context.store.saveMeta(meta);
 
-		const noticeBatch = await drainNotices(context, id);
-		const selectedNotices = selectNoticeEntries(
-			noticeBatch.entries,
-			chat.noticeTokenBudget,
-		);
-		const notices = selectedNotices.notices;
-		const noticeIds = selectedNotices.entries.map((entry) => entry.id);
 		// Delivery is acknowledged after success, but the model can repair a
 		// premise inside that very turn. Capture its causal lower bound now.
 		const activityAfterEventId =

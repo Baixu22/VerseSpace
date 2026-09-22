@@ -12,6 +12,7 @@ import { WORKBENCH_VERSION } from "../version";
 import { FALLBACK_PAGE, readUiAsset, resolveUiAssets } from "./assets";
 import { chatRoute } from "./chat-routes";
 import { collectState } from "./state";
+import { tribunalRoute } from "./tribunal-routes";
 import { workspaceRoute } from "./workspace-routes";
 
 export { resolveUiAssets, type UiAssets } from "./assets";
@@ -73,6 +74,7 @@ export async function createUiServer(
 		}
 		const response =
 			(await workspaceRoute(bb, url, request)) ??
+			(await tribunalRoute(bb, url, request)) ??
 			(await chatRoute(bb, chat, url, request));
 		if (response) return response;
 		if (!url.pathname.startsWith("/api")) {

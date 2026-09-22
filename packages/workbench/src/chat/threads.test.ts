@@ -616,6 +616,19 @@ process.stdin.on("data", (chunk) => {
 			expect(
 				await ws.bb.events.query({ type: "premise_notice_delivered" }),
 			).toHaveLength(1);
+
+			// TF-0243: what the model was told is recorded on the user turn it
+			// was folded into — notices first, then the typed text. A turn with
+			// no notices keeps the bare shape (no empty `parts`).
+			const messages = await chat.messages(thread.id);
+			const users = messages.filter((m) => m.role === "user");
+			expect(users).toHaveLength(2);
+			expect(users[0]?.parts).toBeUndefined();
+			expect(users[1]?.parts).toEqual([
+				{ type: "notice", severity: "warning", label: "前提已经变化" },
+				{ type: "text", text: "second" },
+			]);
+			expect(users[1]?.text).toBe("second");
 		} finally {
 			if (previousCommand === undefined) {
 				delete process.env.WORKBENCH_CHAT_COMMAND;
@@ -656,6 +669,22 @@ process.stdin.on("data", () => setTimeout(() => process.exit(0), 5));
 			expect(
 				await ws.bb.events.query({ type: "premise_notice_delivered" }),
 			).toHaveLength(0);
+
+			// TF-0243 semantics on the failure path: the notice part records what
+			// was FOLDED INTO THIS TURN'S PROMPT, not a delivery receipt. The turn
+			// failed (0 delivered events) and the notice stays queued for
+			// at-least-once redelivery — yet the user message keeps its notice part,
+			// because that prompt genuinely was assembled with the notice. When the
+			// next turn re-drains and re-folds it, that turn's user message shows it
+			// too; both are truthful. Delivery is tracked only by the event above.
+			const users = (await chat.messages(thread.id)).filter(
+				(m) => m.role === "user",
+			);
+			expect(users).toHaveLength(1);
+			expect(users[0]?.parts).toEqual([
+				{ type: "notice", severity: "warning", label: "失败后不可丢" },
+				{ type: "text", text: "try" },
+			]);
 		} finally {
 			if (previousCommand === undefined) {
 				delete process.env.WORKBENCH_CHAT_COMMAND;

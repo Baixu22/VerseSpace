@@ -20,14 +20,27 @@ export function UserMessage({ messageId }: { messageId: string }) {
 	return (
 		<MessagePrimitive.Root className="group relative flex min-w-0 flex-col items-end gap-1">
 			<ForkAnchor messageId={messageId} />
-			<div className="max-w-[88%] rounded-2xl rounded-tr-md border border-border-subtle bg-bg-elevated px-4 py-3 text-body leading-relaxed [overflow-wrap:anywhere] sm:max-w-[85%]">
+			<div className="flex w-full flex-col items-end gap-1.5">
 				<MessagePrimitive.Parts>
 					{({ part }) =>
-						part.type === "text" ? (
-							<p className="whitespace-pre-wrap">{part.text}</p>
+						part.type === "data" &&
+						part.name === "workbench-notice" &&
+						isNotice(part.data) ? (
+							<div className="max-w-[88%] sm:max-w-[85%]">
+								<NoticeRow notice={part.data} />
+							</div>
 						) : null
 					}
 				</MessagePrimitive.Parts>
+				<div className="max-w-[88%] rounded-2xl rounded-tr-md border border-border-subtle bg-bg-elevated px-4 py-3 text-body leading-relaxed [overflow-wrap:anywhere] sm:max-w-[85%]">
+					<MessagePrimitive.Parts>
+						{({ part }) =>
+							part.type === "text" ? (
+								<p className="whitespace-pre-wrap">{part.text}</p>
+							) : null
+						}
+					</MessagePrimitive.Parts>
+				</div>
 			</div>
 			<div className="ui-control message-action-bar flex min-h-8 items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100">
 				<CopyAction />

@@ -147,6 +147,8 @@ export const createSendSlice: StateCreator<
 			}
 			// 轮次边界刷新：meta + 建议 + 决策账本（TF-0095）
 			await refreshThread(set, threadId);
+			// TF-0242：一轮可能新增/解除裁决项——边界刷新全局队列。
+			void get().loadTribunal();
 		}
 	},
 });
