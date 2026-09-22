@@ -2,6 +2,7 @@ import type { Blackboard } from "../blackboard";
 
 import type { ProcHandle } from "../supervisor";
 import type { LiveClaudeSession } from "./claude-types";
+import type { LiveCodexSession } from "./codex-session";
 import type { ForkOutcome } from "./fork";
 import { notifySession } from "./notice-queue";
 import type { RestoreObservation } from "./restore-timing";
@@ -46,6 +47,7 @@ export class ChatThreads {
 			store: new ThreadRepository(bb),
 			running: new Map<string, ProcHandle | AbortController>(),
 			live: new Map<string, LiveClaudeSession>(),
+			liveCodex: new Map<string, LiveCodexSession>(),
 			observingInheritance: new Set<string>(),
 			lineRouters: new Map<string, (line: string) => void>(),
 			pendingVariants: new Map<string, string[]>(),

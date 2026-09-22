@@ -48,6 +48,19 @@ export const PROVIDER_CAPABILITIES: Record<ChatProvider, ProviderCapabilities> =
 			supportsStreamJson: true,
 			requiresApiKey: false,
 		},
+		codex: {
+			// TF-0249 / ADR-0017: a supervised external CLI, like claude. Its
+			// commandExecution items leave read/write footprints. No --fork-session
+			// equivalent (resume reattaches by thread id but cannot tail-fork a
+			// parent's context), and it streams app-server JSON-RPC, not stream-json
+			// — so supportsStreamJson is false: nothing branches on it as "claude's
+			// wire shape", and codex fixture replay drives its own reducer.
+			channel: "local-cli",
+			observesFootprint: true,
+			supportsFork: false,
+			supportsStreamJson: false,
+			requiresApiKey: false,
+		},
 		"openai-chat": {
 			channel: "http",
 			observesFootprint: false,

@@ -71,15 +71,23 @@ export const workbenchConfigSchema = z.object({
 		})
 		.default({ command: DEFAULT_AGENT_COMMAND }),
 	/**
-	 * Chat runtime provider. claude = local CLI (stream-json); the rest are
-	 * HTTP streaming APIs. A saved apiKey takes precedence over the optional
-	 * WORKBENCH_CHAT_API_KEY environment credential. The latter is never saved;
-	 * the UI masks credentials and GET /api/config/chat never returns them.
+	 * Chat runtime provider. claude and codex = local CLI (both leave tool
+	 * footprints — claude speaks stream-json, codex speaks the app-server
+	 * JSON-RPC protocol, see ADR-0017); the rest are HTTP streaming APIs. A
+	 * saved apiKey takes precedence over the optional WORKBENCH_CHAT_API_KEY
+	 * environment credential. The latter is never saved; the UI masks
+	 * credentials and GET /api/config/chat never returns them.
 	 */
 	chat: z
 		.object({
 			provider: z
-				.enum(["claude", "openai-chat", "openai-responses", "anthropic"])
+				.enum([
+					"claude",
+					"codex",
+					"openai-chat",
+					"openai-responses",
+					"anthropic",
+				])
 				.default("claude"),
 			model: z.string().optional(),
 			apiKey: z.string().optional(),

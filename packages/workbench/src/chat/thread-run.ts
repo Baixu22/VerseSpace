@@ -1,4 +1,5 @@
 import { runClaudeTurn } from "./claude-turn";
+import { runCodexTurn } from "./codex-turn";
 import { runHttp } from "./http-run";
 import { noticeParts } from "./notice-parts";
 import { ackNotices, drainNotices, selectNoticeEntries } from "./notice-queue";
@@ -115,12 +116,23 @@ export function run(
 			// Notices are folded into the next user turn (append-only, so the
 			// provider's existing context remains cache-safe).
 			try {
-				await runClaudeTurn(context, id, meta, text, emitTurn, {
-					resend: Boolean(opts.resend),
-					precedingNotices: notices,
-					onNoticesSent: acknowledgeDelivery,
-					messageId: assistantMessageId,
-				});
+				if (chat.provider === "codex") {
+					// TF-0249: the codex lane folds notices into the prompt the same
+					// way, then acknowledges delivery once the turn is under way.
+					const prompt =
+						notices.length > 0 ? `${notices.join("\n\n")}\n\n${text}` : text;
+					await runCodexTurn(context, id, meta, prompt, emitTurn, {
+						messageId: assistantMessageId,
+					});
+					if (notices.length > 0) await acknowledgeDelivery();
+				} else {
+					await runClaudeTurn(context, id, meta, text, emitTurn, {
+						resend: Boolean(opts.resend),
+						precedingNotices: notices,
+						onNoticesSent: acknowledgeDelivery,
+						messageId: assistantMessageId,
+					});
+				}
 			} catch (error) {
 				emitTurn({ type: "error", message: String(error).slice(0, 400) });
 				// A spawn/finalization failure must not leave the durable thread

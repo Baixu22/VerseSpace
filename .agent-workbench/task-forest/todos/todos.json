@@ -184,60 +184,6 @@
       "why_this_task": ""
     },
     "blocked_by": [],
-    "confidence": 0.8,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0246",
-    "kind": "decision",
-    "next_action": "docs/decisions/0016-*.md 合入，README 索引更新，任务森林 TF-0179 加 superseded 备注",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "消除 ADR-0013 与 AGENTS.md 之间的架构冲突，让阶段 3 有合法起点。",
-    "ready": true,
-    "remaining_minutes_max": 240,
-    "remaining_minutes_min": 120,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "决策：新 ADR 重定第二个可观测 provider 的接入形态——直接监督外部 CLI，每个 provider 在主包内做轻量协议适配，不引入 sidecar 与 SDK"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.6,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0247",
-    "kind": "question",
-    "next_action": "用户明确选定一个 provider 并说明真实场景",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "避免为了「多 provider」而多 provider；只做一个有人用的。",
-    "ready": true,
-    "remaining_minutes_max": 90,
-    "remaining_minutes_min": 30,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "问题：第二个 provider 选哪一个？需要用户给出真实使用需求，而不是按夹具数量选"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
     "confidence": 0.7,
     "context_tags": [],
     "desired_outcomes": [],
@@ -251,96 +197,8 @@
     "ready": true,
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
-    "status": "proposed",
+    "status": "ready",
     "success_metrics": [],
     "title": "阶段 4：真实人类使用窗口——让 fit 账本的四项护城河判决出现自然使用读数"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0246",
-      "TF-0247"
-    ],
-    "confidence": 0.75,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0248",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0246, TF-0247",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "协议形状先于运行时接线被钉住，避免边接边猜。",
-    "ready": false,
-    "remaining_minutes_max": 480,
-    "remaining_minutes_min": 240,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "用已保留的真实流夹具为选定 provider 建协议门禁测试"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0248"
-    ],
-    "confidence": 0.7,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "high",
-    "id": "TF-0249",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0248",
-    "priority": 2,
-    "progress": 0.0,
-    "purpose": "让第二个 provider 的会话产生与 claude 同等的前提账本读数。",
-    "ready": false,
-    "remaining_minutes_max": 1080,
-    "remaining_minutes_min": 480,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "实现选定 provider 的车道：复用 spawnSupervised + provider capabilities + render decision，端到端产生工具足迹"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [
-      "TF-0249"
-    ],
-    "confidence": 0.6,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "medium",
-    "id": "TF-0250",
-    "kind": "task",
-    "next_action": "先完成依赖：TF-0249",
-    "priority": 1,
-    "progress": 0.0,
-    "purpose": "多 provider 下的一致交互体验，但不为对等而对等。",
-    "ready": false,
-    "remaining_minutes_max": 720,
-    "remaining_minutes_min": 240,
-    "status": "proposed",
-    "success_metrics": [],
-    "title": "按需吸收旧 Helmor 的交互协议：用户输入请求、权限请求、模型目录、上下文用量、slash 命令、回合中打断/转向——每项必须回答它如何服务前提账本"
   }
 ]
