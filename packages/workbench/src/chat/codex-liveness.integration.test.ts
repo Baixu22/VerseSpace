@@ -175,7 +175,7 @@ for await (const line of createInterface({ input: process.stdin })) {
     const n = turn;
     const input = (msg.params && msg.params.input && msg.params.input[0] && msg.params.input[0].text) || "";
     appendFileSync("codex-prompts.jsonl", JSON.stringify(input) + "\n");
-    const delay = n === 1 ? 0 : 1200;
+    const delay = n === 1 ? 0 : 3600;
     setTimeout(() => {
       notify("turn/started", { threadId, turn: { id: "turn_" + n } });
       notify("item/started", { threadId, turnId: "turn_" + n, item: { type: "agentMessage", id: "msg_" + n, text: "", phase: "final_answer" } });
@@ -199,8 +199,10 @@ test("空闲关闭计时器在下一轮被取消：跨过窗口的回合仍能�
 		const script = join(ws.projectDir, "fake-codex-recording.mjs");
 		await writeFile(script, FAKE_RECORDING_APP_SERVER);
 		process.env.WORKBENCH_CODEX_COMMAND = `"${process.execPath}" "${script}"`;
-		// A window short enough that the second turn (1.2s) outlives it.
-		process.env.WORKBENCH_SESSION_IDLE_MS = "400";
+		// Windows chosen with slack for a loaded CI box (the workbench suite also
+		// runs on a 16 GB host): the gap before turn 2 starts must stay well
+		// under the idle window, and turn 2 must still outlive it 3×.
+		process.env.WORKBENCH_SESSION_IDLE_MS = "1200";
 		await ws.bb.config.save({ project: "", chat: { provider: "codex" } });
 
 		const thread = await chat.create();

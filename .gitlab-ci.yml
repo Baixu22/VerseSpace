@@ -132,6 +132,12 @@ typecheck:
   extends: .bun-setup
   stage: verify
   timeout: 20m
+  # Heavy jobs share one resource group: the runner is `concurrent = 4` while
+  # the host has 16 GB, so without this a single push can start the UI suite,
+  # the workbench suite and tsc at the same time (see AGENTS.md §"Windows test
+  # concurrency"). Observed 2026-09-22: workbench-test ran its full 215s under
+  # that contention and exited 1, while the same tree passed alone.
+  resource_group: heavy
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - changes: !reference [.paths, typecheck]
@@ -142,6 +148,7 @@ workbench-test:
   extends: .bun-setup
   stage: verify
   timeout: 20m
+  resource_group: heavy
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - changes: !reference [.paths, workbench]
@@ -152,6 +159,7 @@ workbench-ui-test:
   extends: .bun-setup
   stage: verify
   timeout: 25m
+  resource_group: heavy
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - changes: !reference [.paths, workbench_ui]
