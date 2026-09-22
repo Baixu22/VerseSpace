@@ -1,7 +1,9 @@
 import { runClaudeTurn } from "./claude-turn";
+import { runCodexTurn } from "./codex-turn";
 import { runHttp } from "./http-run";
 import { noticeParts } from "./notice-parts";
 import { ackNotices, drainNotices, selectNoticeEntries } from "./notice-queue";
+import { promptWithNotices } from "./prompt";
 import { capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
 import { observeForkInheritance } from "./thread-inheritance";
@@ -25,6 +27,7 @@ export function run(
 		const meta = await context.store.get(id);
 		const config = await context.bb.config.load();
 		const chat = config.chat;
+		const capabilities = capabilitiesOf(chat.provider);
 		const readObservability = readObservabilityOf(chat.provider);
 
 		// Drained before the user message is persisted so the notices that get
@@ -111,16 +114,33 @@ export function run(
 			}
 		};
 
-		if (capabilitiesOf(chat.provider).channel === "local-cli") {
+		if (capabilities.channel === "local-cli") {
 			// Notices are folded into the next user turn (append-only, so the
 			// provider's existing context remains cache-safe).
 			try {
-				await runClaudeTurn(context, id, meta, text, emitTurn, {
-					resend: Boolean(opts.resend),
-					precedingNotices: notices,
-					onNoticesSent: acknowledgeDelivery,
-					messageId: assistantMessageId,
-				});
+				if (capabilities.turnRunner === "codex") {
+					// TF-0249: the codex lane folds notices into the prompt the same
+					// way, then acknowledges delivery once the turn is under way.
+					// The framing comes from the shared `promptWithNotices` — an
+					// unframed join reads as if the notice text were the user's
+					// request.
+					await runCodexTurn(
+						context,
+						id,
+						meta,
+						promptWithNotices(text, notices),
+						emitTurn,
+						{ messageId: assistantMessageId },
+					);
+					if (notices.length > 0) await acknowledgeDelivery();
+				} else {
+					await runClaudeTurn(context, id, meta, text, emitTurn, {
+						resend: Boolean(opts.resend),
+						precedingNotices: notices,
+						onNoticesSent: acknowledgeDelivery,
+						messageId: assistantMessageId,
+					});
+				}
 			} catch (error) {
 				emitTurn({ type: "error", message: String(error).slice(0, 400) });
 				// A spawn/finalization failure must not leave the durable thread

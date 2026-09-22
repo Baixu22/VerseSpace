@@ -10067,7 +10067,8 @@
     "evidence": [
       "固化位置：docs/decisions/0013-workbench-identity-and-compliance.md 决策 3",
       "轻路的两条内容（在有 claude 凭据的环境验证足迹链 + UI 诚实标注 readObservability）写入 ADR-0013 并排入阶段 2",
-      "sidecar 重路触发条件与接入形态约束写入 ADR-0013，对应风险节点 TF-0221"
+      "sidecar 重路触发条件与接入形态约束写入 ADR-0013，对应风险节点 TF-0221",
+      "2026-09-22：接入形态一句（『只允许 spawn-sidecar』）被 ADR-0017 取代——sidecar 已随退役删除，第二个 provider（codex）改为直接监督外部 CLI + 主包内轻量协议适配；触发条件与不 import SDK 的约束继续有效"
     ],
     "execution_hints": [],
     "id": "TF-0179",
@@ -10085,7 +10086,7 @@
     "success_metrics": [],
     "summary": "修正报告一处事实：chat.provider 默认值已是 claude（types/config.ts:83）。试用走 HTTP 是因为试用机无 claude 凭据。因此轻路不是改默认值，而是：在有凭据的机器上验证 claude 车道足迹链 + UI 诚实标注 readObservability。sidecar 的真实理由是多 provider 与可靠性基础设施，不是补足迹。",
     "title": "决策 3：足迹命门走轻路；重路（sidecar）触发条件 = 出现第二个需要足迹观测的 provider",
-    "updated_at": "2026-09-17T16:04:01.719139Z"
+    "updated_at": "2026-09-22T08:52:01.524879Z"
   },
   "TF-0180": {
     "acceptance_criteria": [],
@@ -12778,7 +12779,12 @@
       "packages/workbench/src/types/config.ts:82 provider 枚举 = claude | openai-chat | openai-responses | anthropic，无 codex；AGENTS.md:122 却写有 codex adapter",
       "docs/decisions/0013:51 规定接入形态只允许 spawn-sidecar；AGENTS.md:21 禁止重新引入 sidecar 进程",
       "packages/workbench/src/git/stash.ts 只有测试引用，无生产调用者；docs/absorption-progress-2026-09-18.md 标记 unwired_export",
-      "docs/fit-ledger-2026-09-20-phase3-t1.md：seal.decisions 0/3，护城河 A/B/C/D 均未达门槛"
+      "docs/fit-ledger-2026-09-20-phase3-t1.md：seal.decisions 0/3，护城河 A/B/C/D 均未达门槛",
+      "2026-09-22 CI 收敛为单通道（ADR-0018，提交 0551660）：删除 .github/workflows/ci.yml、release-workbench.yml 与 .github/actions/setup-js/（.github/ 只剩 FUNDING.yml）；JihuLab（jihulab.com，runner verspace-local-jihulab，id 47590）成为唯一 CI 车道，取代 ADR-0015 中「保留 release-workbench.yml」一句。GitHub 上的 PR 从此没有状态检查。",
+      "2026-09-22 CI 实测：jihulab 流水线 5524299 六个 job 全绿（pipeline-heartbeat / biome / typecheck / workbench-test / workbench-ui-test / context-rot-test）。此前 workbench-test 在 concurrent=4 的重活互撞下满时长 215s 后 exit 1（同一棵树单独跑 943 pass / 0 fail）；改为 typecheck / workbench-test / workbench-ui-test 共用 resource_group: heavy 后不再复现。",
+      "2026-09-22 发行链修正：scripts/tag-workbench-release.mjs 原先执行 git push gitlab，而该 remote 根本不存在（发行车道一直推不出去），改为 origin 推真实 tag + jihulab 推同树快照 tag；scripts/win/jihulab-snapshot.sh 入库并加固（默认去掉 feat/ 前缀、受保护 ref 提前报错、用 git commit-tree 造孤儿提交）。",
+      "2026-09-23 四黑点复核（本轮现场实跑）：阶段 1/2/3 的里程碑 TF-0233 / TF-0239 / TF-0245 均 done；剩余三个非 done 节点各有归属——TF-0240（阶段 2 的边界要求）本轮核验三条验收全部成立、已收 done；TF-0237（阶段 1 的发行风险）release 车道已实测跑通 release-build（流水线 5524396），仍差一次真发版与非 Windows 冒烟，保持 review_needed；TF-0251（阶段 4）是人工门，本轮刷新基线后保持 ready。",
+      "2026-09-23 根目标处置：按用户决定保持 in_progress——desired_outcomes 第 4 条「fit 账本的四项护城河判决出现自然人类使用产生的读数」确实尚未发生，阶段 4 未收口前不把本节点收 done，也不以新 ADR 把阶段 4 记为「不做」。progress 由 0 改为 0.75（四个阶段中 1/2/3 已 done，阶段 4 未动）。"
     ],
     "execution_hints": [],
     "id": "TF-0232",
@@ -12789,7 +12795,7 @@
       "Monaco 编辑器、PR/CI 编排器等已被 ADR-0010 产品尺子排除的能力"
     ],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 0.75,
     "progress_source": "manual",
     "purpose": "让 Workbench 已有的前提账本能力真正被用户看见和用到，并让多 provider 在新架构约束下有可执行的接入路径，最终用自然人类使用数据验证价值。",
     "remaining_minutes_max": null,
@@ -12805,7 +12811,7 @@
     "success_metrics": [],
     "summary": "第一轮（TF-0176）已完成架构独立、可靠性吸收、聊天/恢复/足迹/MCP 与旧容器退役；231 个旧节点中只剩两个滞后的 blocked 收尾项。但当前 GUI 只有聊天壳，goals / workspots / checkpoints / tribunal / premises 等账本能力停留在 CLI、HTTP 与 MCP；chat provider 只有 claude 车道可观测；ADR-0013 规定的 spawn-sidecar 形态已与「不得重新引入 sidecar」的仓库总则冲突。本目标不是「把 Helmor 搬回来」：不恢复 Tauri、Rust、SQLite、sidecar，不追求旧桌面应用功能对等。",
     "title": "Workbench 第二轮选择性吸收：把账本能力做成完整产品面，再在新边界下接入第二个可观测 provider",
-    "updated_at": "2026-09-21T12:45:56.330856Z"
+    "updated_at": "2026-09-22T16:10:57.568036Z"
   },
   "TF-0233": {
     "acceptance_criteria": [
@@ -12835,25 +12841,30 @@
     "estimated_total_minutes": null,
     "evidence": [
       "对抗复审结论：thread-run.ts 重排 correct（对照 git show df2fe47）；notice-parts 首行/正文切分 robust；claude-mcp/session gate 与 --resume 无冲突；tribunal-routes GET 误方法→404 不泄漏、nonexistent→404、shelve(undefined)→默认30；tribunal-slice 404 单次回源不循环",
-      "收尾提交 7d70690：appendCommandFlags 单一来源 + 空格路径往返测试；threads.test.ts 失败路径断言 user 消息 parts；delivery 仅由 premise_notice_delivered 事件追踪"
+      "收尾提交 7d70690：appendCommandFlags 单一来源 + 空格路径往返测试；threads.test.ts 失败路径断言 user 消息 parts；delivery 仅由 premise_notice_delivered 事件追踪",
+      "2026-09-22 验收① 核对：nodes.json 全量扫描，未收口仅 TF-0232/0233/0234/0237/0240/0245/0251，均在第二轮目标分支下；旧森林无 blocked / ready",
+      "2026-09-22 验收② 核对：本轮 codex 落地使 AGENTS.md 的 chat 车道描述再次过期（原文写「只有 claude 一条车道有工具足迹」「Codex 夹具不是 adapter」），已随提交 64b3bac 更新为两个本机 CLI 车道 + 三个 HTTP 车道，并注明 codex 夹具已有消费者 codex-fixtures.test.ts",
+      "2026-09-22 验收③：TF-0236 已裁决 stash 原语去留（done）",
+      "2026-09-22 验收④：TF-0237 已落地 GitLab release 车道（.gitlab-ci.yml stages: [verify, release]，release-build + 手动 release-publish）并写入 AGENTS.md；非 Windows 平台冒烟仍缺，作为 TF-0237 的剩余风险继续跟踪"
     ],
     "execution_hints": [],
     "id": "TF-0233",
     "kind": "milestone",
+    "next_action": "",
     "non_goals": [],
     "priority": 3,
-    "progress": 90.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让任务森林与仓库文档说的和代码/远端做的一致，后续规划不再建立在过期状态上。",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "in_progress",
+    "status": "done",
     "success_metrics": [],
-    "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。\n\n【2026-09-21 进展】TF-0235 / 0236 / 0238 已完成；TF-0234 的改动已在工作树就绪待提交；TF-0237 风险已核实、替代方案已写明，等用户决定。\n\n【2026-09-21 第二轮】TF-0237 已实现 GitLab 发行车道；全部改动在 PR #29；剩余只有 PR 合入。\n\n【2026-09-22 复审收尾】阶段 1+2 全部改动经对抗式复审（general-purpose 子代理，逐文件对照 df2fe47）：无正确性回归。thread-run 通知抽取重排干净（两条车道都仍收到 notices、acknowledgeDelivery 各调一次、resend 不丢通知、append-only 未破）；tribunal 路由方法/404/shelve 默认值均正确；前端裁决竞态仅瞬时闪烁无死循环。两处收口已提交（7d70690）：MCP flag 空格路径抽 appendCommandFlags 并加往返测试；前提通知失败路径语义钉死为「本轮 prompt 折入」而非送达回执。全量绿：workbench 927 / ui 67 / context-rot 65 / typecheck / biome。",
+    "summary": "让任务森林与仓库文档说的和代码/远端做的一致，后续规划不再建立在过期状态上。\n\n【2026-09-22 收口】四条验收逐条核对：① 旧森林（TF-0001–TF-0231）已无 blocked / ready 的产品迁移节点，全森林未收口的 7 个节点全部属于第二轮目标 TF-0232 的分支；② AGENTS.md 与 types/config.ts 的 provider 枚举一致——TF-0235 修过一次，本轮 codex 落地后该行再次过期，已随本轮提交改为「两个本机 CLI 车道（claude / codex）+ 三个 HTTP 车道」，并把 Codex 夹具从「仅参考」改为「已有消费者」；③ stash 原语由 TF-0236 裁决；④ 四平台发行验证通道由 TF-0237 落地为 GitLab release 车道（release-build 交叉编译 + 手动 release-publish），AGENTS.md 已记录，剩余结案读数由 TF-0237 自身承载。",
     "title": "阶段 1：把旧任务森林收干净——状态对齐远端事实、修正文档口径、处理未接线原语",
-    "updated_at": "2026-09-22T02:28:04.531822Z"
+    "updated_at": "2026-09-22T13:41:28.451000Z"
   },
   "TF-0234": {
     "acceptance_criteria": [
@@ -12881,26 +12892,27 @@
     "estimated_total_minutes": 30,
     "evidence": [
       "https://github.com/Baixu22/VerseSpace/pull/29",
-      "git log：73bd672 chore(closeout) / a7d314a ci(release) / d35a224 style / df2fe47 fix(release)"
+      "git log：73bd672 chore(closeout) / a7d314a ci(release) / d35a224 style / df2fe47 fix(release)",
+      "2026-09-22 验收核对：PR #29 已合入 main（merge commit eb0e4cb，origin/main 指向它）；git show origin/main:.agent-workbench/task-forest/graph/nodes.json → TF-0231 status=done progress=100。两条验收均满足"
     ],
     "execution_hints": [],
     "id": "TF-0234",
     "kind": "follow_up",
-    "next_action": "GitLab 流水线绿 → 合并 PR #29 → 本节点 done",
+    "next_action": "",
     "non_goals": [],
     "priority": 3,
-    "progress": 90.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让「工作已做完」变成「成果已落库」，避免远端森林与本地森林分叉。",
     "remaining_minutes_max": 45,
     "remaining_minutes_min": 15,
     "requirements": [],
     "source_sessions": [],
-    "status": "review_needed",
+    "status": "done",
     "success_metrics": [],
     "summary": "已提交并推送。分支 chore/phase1-closeout-20260921（73bd672 + a7d314a + d35a224 + df2fe47）已推 origin 与 gitlab，PR #29 已开；等 GitLab 流水线绿后合入。",
     "title": "把 TF-0231 沙箱注入判据的研究成果提交并合入主分支",
-    "updated_at": "2026-09-21T14:15:34.287088Z"
+    "updated_at": "2026-09-22T13:41:28.451000Z"
   },
   "TF-0235": {
     "acceptance_criteria": [
@@ -13017,7 +13029,9 @@
     "created_at": "2026-09-21T12:45:56.336188Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-07ee49b62f"
+    ],
     "difficulty": "medium",
     "display_order": 400,
     "estimated_total_minutes": 120,
@@ -13028,15 +13042,21 @@
       ".gitlab-ci.yml stages: [verify, release]；release-build / release-publish 两个 job",
       "scripts/publish-workbench-release.mjs（node 无依赖）；scripts/tag-workbench-release.mjs 同时 push origin 与 gitlab",
       "AGENTS.md Releases / Licensing 两条更新",
-      "PR #29"
+      "PR #29",
+      "2026-09-22 验收第 1 条（GitHub Actions 额度）现场回答：仍未恢复——`gh run list --branch main --limit 5` 最近一次 run 35680141042（PR #29 合并，2026-09-22T02:37:25Z）4 秒即 failure，此前 #28 的 35587757735 同为 4 秒 failure；且 `.github/` 只剩 FUNDING.yml，两条 workflow 已按 ADR-0018 删除。故「若恢复」分支不成立，走第 2 条。",
+      "2026-09-22 release 车道**实测跑通**（不再只是脚本 dry-run）：用当前树（HEAD dc5fed1 的 tree 24a12340）造孤儿快照 tag `workbench-v0.0.0-smoke` 推到 jihulab，触发流水线 **5524396**。verify 六个 job 全绿（pipeline-heartbeat 10.2s / biome 46.2s / context-rot-test 46.3s / workbench-test 167.9s / typecheck 25.6s / workbench-ui-test 32.1s），随后 **release-build（job 29019253）success，82.2s**——即 `bun install --frozen-lockfile` → `bun run build:all` 四平台交叉编译 → artifacts 收集，在 CI 侧真的能跑。`release-publish` 是手动 job，本轮**没有**触发：GitHub Releases 仍是 v0.1.0 / v0.2.0 / v0.3.0 三条，origin tag 未变，无任何公开发布产物。",
+      "2026-09-22 本机同源复核（与 CI 同一条命令路径）：`bun run build:all` 本机 exit 0，产出四个二进制并核对头部——`workbench-linux-x64` = ELF 64-bit LSB、e_machine 0x3e（x86-64）；`workbench-macos-arm64` = Mach-O cputype 0x0100000c；`workbench-macos-x64` = Mach-O cputype 0x01000007；`workbench-windows-x64.exe` = MZ。`node scripts/publish-workbench-release.mjs --tag workbench-v0.3.0 --dry-run` 对真实 dist 通过（7 个发行物齐全、SHA256SUMS 四行生成、CHANGELOG 0.3.0 段落提取正确）；`bun run scripts/check-built.ts --native dist/workbench-windows-x64.exe --js dist/workbench.js` 双形态各输出 initialized / doctor / stats / headlessUi / bundledUi 全 true。",
+      "2026-09-22 验收第 2 条的「至少一个非 Windows 平台的冒烟」**本机确实做不到**（逐项排除，另见本轮偏差记录）：WSL2 起不来（Ubuntu-22.04 已注册，但 `wsl -d Ubuntu-22.04 -- echo ok` 报 Wsl/Service/CreateInstance/CreateVm/HCS/HCS_E_HYPERV_NOT_INSTALLED；根因是 `bcdedit /enum {current}` 的 `hypervisorlaunchtype Off`，需管理员改 + 重启——VirtualMachinePlatform 与 Microsoft-Windows-Subsystem-Linux 两个特性本身都是 Enabled）；无 docker / podman / qemu / multipass / vagrant；JihuLab 只有本机 Windows shell runner 且 `shared_runners_enabled=false`；GitHub Actions 额度耗尽。因此本轮只能给到「产物形态核验」（ELF/Mach-O/PE 头部 + 架构 + 完整构建），**不能**声称在非 Windows 平台上执行过。",
+      "2026-09-22 收口判定：next_action 的「真实 workbench-v* tag 走完 release-build → release-publish」只完成了前一半（release-build 已实测），release-publish 仍需一次真人确认版本号与 CHANGELOG 的真发版；非 Windows 冒烟仍缺。故本节点保持 review_needed，不结案。",
+      "2026-09-22 清理：smoke tag `workbench-v0.0.0-smoke` 已从 jihulab 删除，避免与真实发行 tag 混在一起；流水线 5524396 与 job 29019253 的记录留在 JihuLab 可查。"
     ],
     "execution_hints": [],
     "id": "TF-0237",
     "kind": "risk",
-    "next_action": "PR #29 合入；下次真实 workbench-v* tag 走完 release-build → release-publish 即结案",
+    "next_action": "真发版时走 `bun run release:tag:workbench --push`（先定版本号与 CHANGELOG）→ release-build 已实测可跑（流水线 5524396 / job 29019253）→ 手动触发 release-publish 即结案。非 Windows 冒烟在修好宿主（`bcdedit /set hypervisorlaunchtype auto` + 重启，再用 WSL 跑 workbench-linux-x64）或换一台 Linux 主机前无法产生，不要在发行说明里暗示它已做。",
     "non_goals": [],
     "priority": 3,
-    "progress": 90.0,
+    "progress": 95.0,
     "progress_source": "manual",
     "purpose": "在下一次发版前把这个缺口显性化，避免在 CI 绿的错觉下推 tag。",
     "remaining_minutes_max": 180,
@@ -13047,7 +13067,7 @@
     "success_metrics": [],
     "summary": "用户决定：建 GitLab 发行车道。已实现：.gitlab-ci.yml 新增 release 阶段——release-build 在 workbench-v* tag 上跑 bun run build:all（Bun 交叉编译四平台）并把 dist/workbench-* + NOTICE/LICENSE/LICENSE-APACHE 存为 artifacts；release-publish 为手动 job，跑 scripts/publish-workbench-release.mjs：校验 tag 与包版本一致、七个发行物齐全、生成 SHA256SUMS、取 CHANGELOG 对应段落作 notes 并附「只有 windows-x64 跑过测试」的平台覆盖说明，gh release create --verify-tag。tag 脚本改为同时推 origin 与 gitlab；AGENTS.md 发行段已记录两条车道关系。glab ci lint 有效；publish 脚本对假 dist 做过 dry-run（首段/末段 CHANGELOG 提取均正确）。尚未用真实 tag 跑过一次——下一次发版即为验收。",
     "title": "风险：四平台发行验证无处可跑——release-workbench.yml 仍依赖被卡住的 GitHub Actions，本机 GitLab runner 只有 Windows",
-    "updated_at": "2026-09-21T14:15:34.287088Z"
+    "updated_at": "2026-09-22T16:10:57.568036Z"
   },
   "TF-0238": {
     "acceptance_criteria": [
@@ -13188,24 +13208,30 @@
     "difficulty": "low",
     "display_order": 100,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "2026-09-22 收口核验·本轮现场实跑（工作树 HEAD dc5fed1，`git status --porcelain` 为空）：验收第 1 条成立——全量扫 `apps/workbench-ui/src`，对 `/api/state`、`/api/sync`、`/api/dispatch`、`/api/agent/run` 零命中；UI 实际调用的 HTTP 面只有 `/api/bootstrap`、`/api/config/chat`、`/api/chat/**`、`/api/tribunal`。",
+      "验收第 2 条成立（挂载图现场读出）：`components/chat/sidecar.tsx` 挂 branch-ledger / draft-mirror / notice-delivered / parked-bar / resume-card / suggestion-chips / tribunal-bar，由 `chat-composer.tsx` 引入；`components/chat/thread-messages.tsx` 挂 notice-row / tool-call-card / collapsed-tool-group；`App.tsx` 仍只有 MotionConfig → TooltipProvider → ChatProvider → WorkbenchShell，没有顶层视图切换、没有路由级账本视图。react-query 只服务 `/api/config/chat`（`chat/config.ts`），没有直连 `/api/state` 的面板。",
+      "验收第 3 条成立（口径说明）：验收原文写 `thread-types.ts`，该文件在 `packages/workbench/src/chat/thread-types.ts`（`NoticePart` :123-128，并入 `MessagePart` :130-133）；UI 侧镜像在 `apps/workbench-ui/src/chat/message-types.ts:26-37`，两侧由 `protocol.test.ts` 强制线协议类型互相可赋值。映射链：`apps/workbench-ui/src/chat/adapter.ts:28-33` 把 `notice` 映射为 `data-workbench-notice`，渲染在 `thread-messages.tsx:26-32`（user 消息）与 :117-123（assistant 消息）。",
+      "验收第 3 条现场实跑：`apps/workbench-ui` 下 `vitest run src/chat/adapter.test.ts` → 1 file passed / 6 tests passed / 0 fail（2026-09-22 本轮实跑）。",
+      "边界守住的旁证：兄弟节点 TF-0244（按 ADR-0012 把 sync / dispatch / review / agent run 接进面板）已 deprecated——本节点正是那条边界的反向约束，且此后没有新增顶层面板。"
+    ],
     "execution_hints": [],
     "id": "TF-0240",
     "kind": "requirement",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 1.0,
     "progress_source": "manual",
     "purpose": "防止「做产品面」演变成「把桌面应用搬回来」。",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "转向 (a) 的边界。允许的载体：StoredMessage 的 MessagePart（现有 text / tool_call / notice，可按需新增 kind）、composer 上方 sidecar 的挂点、模型通过 MCP 调用后渲染的工具卡。禁止：新的顶层视图切换、react-query 直连 /api/state 的面板、把 0.2.0 的 panels.tsx / lanes.tsx 搬回。数据仍全部来自 Blackboard 与现有 chat 路由。",
     "title": "要求：账本能力只以对话内既有形态出现——消息 part、composer 上方 sidecar、模型工具卡；不新增独立面板或路由级视图",
-    "updated_at": "2026-09-21T14:15:34.287088Z"
+    "updated_at": "2026-09-22T16:10:57.568036Z"
   },
   "TF-0241": {
     "acceptance_criteria": [
@@ -13434,27 +13460,36 @@
     "difficulty": "high",
     "display_order": 300,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "ADR-0017（docs/decisions/0017-second-observable-provider-integration.md）合入：直接 spawnSupervised 外部 CLI + 主包内轻量协议适配，不复活 sidecar、不 import SDK；README 索引已加 0017 行并标注 ADR-0013 决策 3 的接入形态被取代",
+      "codex 车道落地：codex-app-server.ts（JSON-RPC over stdio，initialize/initialized 握手、thread/start、turn/start、按 id 匹配响应、按 ADR-0017 表答复服务端请求）+ codex-session/turn/router/render-*/footprint；provider-capabilities.ts 加 codex 行，types/config.ts 的 provider 枚举加 codex，thread-run.ts 按能力表新增的 turnRunner 分派（不再比较 provider 名字）",
+      "协议门禁：11 个保留 codex 夹具全部零 undecided + 快照固化决策分布；commandActions[].path → read 足迹；turn-failed → 可见 error",
+      "对抗式复审（独立子代理，对照 bc2870b）：11 项发现、2 个 blocker。blocker/major 全部收口：接 watchLiveness（活而无声的 app-server 判死并让回合以 error 收尾）、proc.wait() 统一 reject 挂起请求并结算在飞回合、握手失败摘除 session 与 running 并杀进程、runCodexTurn 早退路径复位 idle、thread/compacted 不再当回合终结、空闲关闭计时器下一轮取消、turnInFlight 认 codex 车道、remove 允许删空闲 codex 线程、provider 分派改走能力表",
+      "对照实验（每条都在修复前的实现上跑过同一条测试）：静默 app-server → 修复前 hung / 修复后 error+idle；进程中途死亡 → 修复前 hung / 修复后 error+idle；握手失败后第二轮 → 修复前「codex 线程未能建立」且卡 running / 修复后重试并报真实传输错误；回合中压缩 → 修复前正文截断为「before 」/ 修复后「before after」；空闲窗口跨轮 → 修复前中途被杀 / 修复后正常收尾；通知折入 → 修复前裸拼接 / 修复后共享 promptWithNotices 口径",
+      "诚实性收口：ADR-0017 增「本轮实现边界」（approval 请求只回 accept、不解析其 params；写侧 WRITE_ACTIONS 与 fileChange/fileRead item 无夹具覆盖，未建模类型以 undecided 报警而非静默）；dashboard 可选中 codex 且本机 CLI 车道不再要求 API Key；AGENTS.md 的 chat 车道描述与 provider 枚举对齐",
+      "读数：workbench 943 pass / 0 fail（142 文件）、ui 67 passed（18 文件）、context-rot 65 pass / 0 fail、typecheck exit 0、biome exit 0"
+    ],
     "execution_hints": [],
     "id": "TF-0245",
     "kind": "milestone",
+    "next_action": "",
     "non_goals": [
       "同时接入多家 provider",
       "把 @anthropic-ai/claude-agent-sdk 或任何 provider SDK import 进主包"
     ],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "多 provider 是 Workbench 作为「编排器」而非「Claude 壳」的必要条件，但必须在单文件二进制、零 SDK 进主包的约束下重新设计。",
     "remaining_minutes_max": null,
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
-    "summary": "当前 provider 只有 claude 本地 CLI 可观测（有工具足迹），openai-chat / openai-responses / anthropic 三个 HTTP 协议明确不可观测。旧 Helmor 的 Codex、Cursor、Kimi、OpenCode 只剩 49 个真实流夹具（其中 Claude 19 个有消费者，其余 30 个仅参考）。ADR-0013 规定第二个可观测 provider 只能以 spawn-sidecar 接入，但退役后 AGENTS.md 明令禁止 sidecar 进程——旧方案不能照搬。",
+    "summary": "当前 provider 只有 claude 本地 CLI 可观测（有工具足迹），openai-chat / openai-responses / anthropic 三个 HTTP 协议明确不可观测。旧 Helmor 的 Codex、Cursor、Kimi、OpenCode 只剩 49 个真实流夹具（其中 Claude 19 个有消费者，其余 30 个仅参考）。ADR-0013 规定第二个可观测 provider 只能以 spawn-sidecar 接入，但退役后 AGENTS.md 明令禁止 sidecar 进程——旧方案不能照搬。\n\n【2026-09-22 收口】ADR-0017 合入并取代 ADR-0013 决策 3 的接入形态；codex 车道端到端可用（app-server JSON-RPC 客户端 + 翻译层 + 足迹提取 + 能力表加行 + 配置枚举 + 按能力分派）。独立对抗式复审报出 11 项、2 个 blocker（无静默判死、握手失败留残骸），blocker 与 major 全部收口且每条都有对照实验：在修复前的实现上跑同一条测试会失败（静默 app-server 从 hung 变 error+idle；握手失败从复用残骸报「线程未能建立」变重试并报真实传输错误；回合中压缩从正文截断为「before 」变完整落库）。诚实边界写进 ADR-0017「本轮实现边界」：approval payload 与写侧尚无夹具覆盖，「写目标照常落账」是未验证的设计意图。全量绿：workbench 943 / ui 67 / context-rot 65 / typecheck / biome。",
     "title": "阶段 3：第二个可观测 provider——先用新 ADR 重定接入形态（不复活 sidecar），再只做一个真正有需求的 provider",
-    "updated_at": "2026-09-21T12:45:56.347956Z"
+    "updated_at": "2026-09-22T13:41:28.451000Z"
   },
   "TF-0246": {
     "acceptance_criteria": [
@@ -13481,7 +13516,11 @@
     "difficulty": "medium",
     "display_order": 100,
     "estimated_total_minutes": 180,
-    "evidence": [],
+    "evidence": [
+      "docs/decisions/0017-second-observable-provider-integration.md 已写：取代 ADR-0013 决策 3 的接入形态（spawn-sidecar → 直接监督外部 CLI + 主包内轻量协议适配），保留不 import SDK / 单文件二进制的硬约束",
+      "docs/decisions/README.md 索引加入 0017 行，并在 0013 行标注决策 3 被取代",
+      "记录 codex app-server 协议事实与 TF-0250 的『只接权限进账本』结论作为决策的一部分"
+    ],
     "execution_hints": [],
     "id": "TF-0246",
     "kind": "decision",
@@ -13495,11 +13534,11 @@
     "remaining_minutes_min": 120,
     "requirements": [],
     "source_sessions": [],
-    "status": "ready",
+    "status": "done",
     "success_metrics": [],
     "summary": "候选形态：仿照当前 claude-session.ts 车道，用 supervisor/spawnSupervised 直接监督 provider 自己的 CLI 进程，在 chat/ 内实现该 provider 的 JSON Lines / SSE 协议适配，用已保留的真实流夹具做协议测试。明确记录它与 ADR-0013 决策 3 的关系（supersedes）。",
     "title": "决策：新 ADR 重定第二个可观测 provider 的接入形态——直接监督外部 CLI，每个 provider 在主包内做轻量协议适配，不引入 sidecar 与 SDK",
-    "updated_at": "2026-09-21T12:45:56.350488Z"
+    "updated_at": "2026-09-22T08:52:01.523587Z"
   },
   "TF-0247": {
     "acceptance_criteria": [
@@ -13525,7 +13564,11 @@
     "difficulty": "low",
     "display_order": 200,
     "estimated_total_minutes": 60,
-    "evidence": [],
+    "evidence": [
+      "用户在交互式选择中确认第二个 provider = Codex（OpenAI Codex CLI）",
+      "选择理由基于真实使用而非夹具数量：codex 是受监督的 local-cli，留下命令/文件足迹，结构上最贴近 claude 车道",
+      "ADR-0017 记录 codex 为本接入形态的首个实证"
+    ],
     "execution_hints": [],
     "id": "TF-0247",
     "kind": "question",
@@ -13539,11 +13582,11 @@
     "remaining_minutes_min": 30,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "候选：Codex（OpenAI CLI）、Cursor、Kimi、OpenCode。四家都有真实流夹具保留在仓库里。选择标准：用户当下真的会用它写代码；它的 CLI 能输出工具级事件（否则没有足迹可观测，接了也不满足「可观测」）。",
     "title": "问题：第二个 provider 选哪一个？需要用户给出真实使用需求，而不是按夹具数量选",
-    "updated_at": "2026-09-21T12:45:56.351491Z"
+    "updated_at": "2026-09-22T08:52:01.523587Z"
   },
   "TF-0248": {
     "acceptance_criteria": [
@@ -13570,7 +13613,11 @@
     "difficulty": "medium",
     "display_order": 300,
     "estimated_total_minutes": 360,
-    "evidence": [],
+    "evidence": [
+      "packages/workbench/src/chat/codex-render-decision.ts + codex-render-state.ts：翻译层，覆盖 13 事件类型 / 7 item 类型 / 3 commandAction 类型，每条事件有显式 render 决策",
+      "packages/workbench/src/chat/codex-fixtures.test.ts：11 个保留夹具全部零 undecided，文本累积 + command 足迹路径正确，快照固化决策分布",
+      "footprint 门禁：command-with-delta 的结构化 commandActions[].path 变为 read 足迹；spawn-agents 的子代理命令留痕；turn-failed 变为可见 error"
+    ],
     "execution_hints": [],
     "id": "TF-0248",
     "kind": "task",
@@ -13584,11 +13631,11 @@
     "remaining_minutes_min": 240,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "ADR-0015 退役时把 49 个 Claude/Codex/Cursor/Kimi/OpenCode 真实流夹具搬进 Workbench，目前只有 Claude 的 19 个有消费者。选定 provider 后，先让它的夹具有消费者：解析器能把每一帧映射到统一的 render decision 与工具足迹。",
     "title": "用已保留的真实流夹具为选定 provider 建协议门禁测试",
-    "updated_at": "2026-09-21T12:45:56.352712Z"
+    "updated_at": "2026-09-22T08:52:01.523587Z"
   },
   "TF-0249": {
     "acceptance_criteria": [
@@ -13616,7 +13663,12 @@
     "difficulty": "high",
     "display_order": 400,
     "estimated_total_minutes": 720,
-    "evidence": [],
+    "evidence": [
+      "codex-app-server.ts：JSON-RPC-over-stdio 客户端（initialize/initialized 握手、thread/start、turn/start、按 id 匹配响应），基于 spawnSupervised，不新起 sidecar",
+      "codex-session.ts + codex-router.ts + codex-turn.ts：镜像 claude 三件套，把翻译层结果 emit 成 TurnRunEvent、command 足迹写进 blackboard",
+      "provider-capabilities.ts 加 codex 行（local-cli / observesFootprint），types/config.ts 的 provider enum 加 codex，thread-run.ts 按 provider 分派 claude/codex turn runner",
+      "codex-liveness.integration.test.ts：假 app-server 端到端一轮，命令足迹落账、回合 done 收尾、线程回 idle、codexSessionId 记录；全 workbench 套件 936 pass 无回归"
+    ],
     "execution_hints": [],
     "id": "TF-0249",
     "kind": "task",
@@ -13630,11 +13682,11 @@
     "remaining_minutes_min": 480,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "沿 claude-session.ts 的模式：监督 CLI 进程、静默判定、EPIPE 区分、树杀接线、turn id 预分配。新 provider 的车道进入 chat/ 并挂到 types/config.ts 枚举。",
     "title": "实现选定 provider 的车道：复用 spawnSupervised + provider capabilities + render decision，端到端产生工具足迹",
-    "updated_at": "2026-09-21T12:45:56.355793Z"
+    "updated_at": "2026-09-22T08:52:01.524879Z"
   },
   "TF-0250": {
     "acceptance_criteria": [
@@ -13660,7 +13712,12 @@
     "difficulty": "medium",
     "display_order": 500,
     "estimated_total_minutes": 480,
-    "evidence": [],
+    "evidence": [
+      "从退役前提交恢复六个交互协议的 codex 线协议事实，逐项对前提账本表态（ADR-0017 表格）",
+      "只有权限请求直接服务账本：codex fileRead/fileChange/commandExecution approval 请求本身就是读/写声明——auto-accept，写目标照常落账（与建议式并发 + seal 唯一拦截点一致）",
+      "用户输入 auto-decline（防 wedge）、打断接 teardown、上下文用量 render noop；模型目录/slash/steer 显式不做并记原因",
+      "codex-app-server.ts 的 decideServerRequest 落地该策略，codex-app-server.test.ts 固化"
+    ],
     "execution_hints": [],
     "id": "TF-0250",
     "kind": "task",
@@ -13674,11 +13731,11 @@
     "remaining_minutes_min": 240,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "done",
     "success_metrics": [],
     "summary": "旧 sidecar 有统一的 userInputRequest / permissionRequest、模型目录、context usage、slash commands、mid-turn abort/steer。它们只在有第二个 provider 时才有「统一」的意义。逐项评估，不整体搬。",
     "title": "按需吸收旧 Helmor 的交互协议：用户输入请求、权限请求、模型目录、上下文用量、slash 命令、回合中打断/转向——每项必须回答它如何服务前提账本",
-    "updated_at": "2026-09-21T12:45:56.357870Z"
+    "updated_at": "2026-09-22T08:52:01.524879Z"
   },
   "TF-0251": {
     "acceptance_criteria": [
@@ -13704,11 +13761,18 @@
     "difficulty": "medium",
     "display_order": 400,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "codex 车道端到端可用，seal（PreToolUse hook）与恢复卡机制经核对为 provider-agnostic：fit 账本读事件不读 provider 身份",
+      "docs/phase4-human-usage-window-2026-09-22.md：真人操作指南（配 codex provider、装 seal hook、跑窗口、workbench stats --json 验收）",
+      "按来源纪律，landmarkReviews.current 走 human 口径，脚本/agent 手势永不计入 L1，故本节点保持 ready-for-human，读数由真人产生后再由真人收 done",
+      "2026-09-22 本轮实测基线（`bun packages/workbench/src/index.ts --json stats`，黑板 `D:\\helmor-main\\.workbench`）：`seal={decisions:0,blocked:0,warned:0,passed:0,hits:0,lastDecisionAt:null,reviews:{total:0}}`；`lifecycle.resumeNotesConsumed=0`（注意 `lifecycle.resumeCardCircuit.consumed=6` 是另一个量，两者不能互相顶替）；`landmarkReviews.current={total:41,reviewed:0,endorsed:0,rejected:0,denominator:\"session-top-k\"}`；`threads.footprintCoverage=0.7333`（22/30，是四项里唯一已达标的读数）。四项护城河仍全部没有方向判决。",
+      "2026-09-22 前置缺口 ①（根因级，本轮新查出）：`.claude/settings.json` 只挂了 SessionStart 的 `set-git-identity.sh`，**seal hook 根本没装**（`packages/context-rot/scripts/install-hooks.mjs` 未在本仓库运行过）。即 `seal.decisions=0` 有一部分不是「人类没用」，而是「命门压根没接上」——任何写操作都不会产生 `seal.decided`。真人跑窗口前必须先装。",
+      "2026-09-22 前置缺口 ②（本轮新查出）：`codex` 不在 PATH（`Get-Command codex` 为空），docs/phase4 指南里 provider=codex 的那条路径当前跑不了；当前可跑的是 claude 车道（`.workbench/workbench.yaml` 的 `chat.provider: claude`，claude CLI 在 PATH）。`seal.mode` 未显式配置，按 `packages/workbench/src/types/config.ts:40` 默认 `block`，满足「要产生正确的 block 需要 block 或 warn」这一前置。"
+    ],
     "execution_hints": [],
     "id": "TF-0251",
     "kind": "milestone",
-    "next_action": "等阶段 2 的观察面与裁决面可用后，安排一周自用窗口",
+    "next_action": "真人跑窗口前先补两个前置：① `node packages/context-rot/scripts/install-hooks.mjs .` 装 seal hook（不装则 seal.decisions 恒为 0）；② 定车道——装 codex CLI 并登录，或把窗口指南改成现有 claude 车道。之后按 docs/phase4-human-usage-window-2026-09-22.md 跑一次自然使用窗口，产生 seal.decisions>=1 + 恢复卡消费 + 人类地标认可读数，再由真人收 done。**不由 agent 代跑**：代理代跑会污染 fit 账本，等于把判据本身作废。",
     "non_goals": [],
     "priority": 2,
     "progress": 0.0,
@@ -13718,10 +13782,10 @@
     "remaining_minutes_min": null,
     "requirements": [],
     "source_sessions": [],
-    "status": "proposed",
+    "status": "ready",
     "success_metrics": [],
     "summary": "现有证据有真实模型、真实 Claude CLI、真实远端 CI，但使用窗口主要是脚本安排或 steward 代理操作。fit 账本（2026-09-20 phase3-t1）显示 seal.decisions 0/3，恢复卡与前提检测判决「证据不足」，护城河 A/B/C/D 均未达门槛。来源纪律：脚本化手势不计入人类背书，L1 只在自然证据下移动。",
     "title": "阶段 4：真实人类使用窗口——让 fit 账本的四项护城河判决出现自然使用读数",
-    "updated_at": "2026-09-21T12:45:56.359869Z"
+    "updated_at": "2026-09-22T16:10:57.568036Z"
   }
 }

@@ -1,0 +1,1051 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: codex decision + footprint aggregate 1`] = `
+[
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 4,
+      "noop": 25,
+      "streaming-delta": 82,
+      "undecided": 0,
+    },
+    "deltas": 82,
+    "events": 111,
+    "footprints": 0,
+    "name": "captured-command.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 1,
+      "noop": 22,
+      "streaming-delta": 63,
+      "undecided": 0,
+    },
+    "deltas": 63,
+    "events": 86,
+    "footprints": 0,
+    "name": "captured-reasoning.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 1,
+      "noop": 22,
+      "streaming-delta": 4,
+      "undecided": 0,
+    },
+    "deltas": 4,
+    "events": 27,
+    "footprints": 0,
+    "name": "captured-simple-text.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 4,
+      "noop": 25,
+      "streaming-delta": 111,
+      "undecided": 0,
+    },
+    "deltas": 111,
+    "events": 140,
+    "footprints": 1,
+    "name": "command-with-delta.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 0,
+      "noop": 4,
+      "streaming-delta": 0,
+      "undecided": 0,
+    },
+    "deltas": 0,
+    "events": 4,
+    "footprints": 0,
+    "name": "context-compaction-item.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 1,
+      "noop": 22,
+      "streaming-delta": 101,
+      "undecided": 0,
+    },
+    "deltas": 101,
+    "events": 124,
+    "footprints": 0,
+    "name": "delta-text.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 0,
+      "noop": 9,
+      "streaming-delta": 0,
+      "undecided": 0,
+    },
+    "deltas": 0,
+    "events": 9,
+    "footprints": 0,
+    "name": "plan-item.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 0,
+      "noop": 7,
+      "streaming-delta": 0,
+      "undecided": 0,
+    },
+    "deltas": 0,
+    "events": 7,
+    "footprints": 0,
+    "name": "plan-mode.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 19,
+      "noop": 28,
+      "streaming-delta": 21,
+      "undecided": 0,
+    },
+    "deltas": 21,
+    "events": 68,
+    "footprints": 2,
+    "name": "spawn-agents.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 0,
+      "noop": 2,
+      "streaming-delta": 0,
+      "undecided": 0,
+    },
+    "deltas": 0,
+    "events": 2,
+    "footprints": 0,
+    "name": "thread-compacted.jsonl",
+  },
+  {
+    "decisions": {
+      "error": 1,
+      "finalized": 0,
+      "noop": 6,
+      "streaming-delta": 0,
+      "undecided": 0,
+    },
+    "deltas": 0,
+    "events": 7,
+    "footprints": 0,
+    "name": "turn-failed.jsonl",
+  },
+]
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: captured-command.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 4,
+    "noop": 25,
+    "streaming-delta": 82,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "account/rateLimits/updated": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/agentMessage/delta": {
+      "count": 82,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "item/completed.commandExecution": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "item/started.commandExecution": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "mcpServer/startupStatus/updated": {
+      "count": 8,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "thread/tokenUsage/updated": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 82,
+  "eventCount": 111,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 89,
+        "type": "text",
+      },
+      {
+        "id": "call_1",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 267,
+        "type": "text",
+      },
+    ],
+    "textChars": 356,
+  },
+  "footprints": [],
+  "name": "captured-command.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: captured-reasoning.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 1,
+    "noop": 22,
+    "streaming-delta": 63,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "account/rateLimits/updated": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/agentMessage/delta": {
+      "count": 63,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "mcpServer/startupStatus/updated": {
+      "count": 8,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "thread/tokenUsage/updated": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 63,
+  "eventCount": 86,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 331,
+        "type": "text",
+      },
+    ],
+    "textChars": 331,
+  },
+  "footprints": [],
+  "name": "captured-reasoning.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: captured-simple-text.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 1,
+    "noop": 22,
+    "streaming-delta": 4,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "account/rateLimits/updated": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/agentMessage/delta": {
+      "count": 4,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "mcpServer/startupStatus/updated": {
+      "count": 8,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "thread/tokenUsage/updated": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 4,
+  "eventCount": 27,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 19,
+        "type": "text",
+      },
+    ],
+    "textChars": 19,
+  },
+  "footprints": [],
+  "name": "captured-simple-text.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: command-with-delta.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 4,
+    "noop": 25,
+    "streaming-delta": 111,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "account/rateLimits/updated": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/agentMessage/delta": {
+      "count": 111,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "item/completed.commandExecution": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "item/started.commandExecution": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "mcpServer/startupStatus/updated": {
+      "count": 8,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "thread/tokenUsage/updated": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 111,
+  "eventCount": 140,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 106,
+        "type": "text",
+      },
+      {
+        "id": "call_1",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 362,
+        "type": "text",
+      },
+    ],
+    "textChars": 468,
+  },
+  "footprints": [
+    {
+      "activity": "call_1",
+      "generated": [],
+      "used": [
+        "$DUMMY_REPO/package.json",
+      ],
+    },
+  ],
+  "name": "command-with-delta.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: context-compaction-item.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 0,
+    "noop": 4,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "item/completed.contextCompaction": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.contextCompaction": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "eventCount": 4,
+  "finalMessage": {
+    "partTypes": [],
+    "parts": [],
+    "textChars": 0,
+  },
+  "footprints": [],
+  "name": "context-compaction-item.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: delta-text.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 1,
+    "noop": 22,
+    "streaming-delta": 101,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "account/rateLimits/updated": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/agentMessage/delta": {
+      "count": 101,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 1,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "mcpServer/startupStatus/updated": {
+      "count": 8,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "thread/tokenUsage/updated": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 101,
+  "eventCount": 124,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 567,
+        "type": "text",
+      },
+    ],
+    "textChars": 567,
+  },
+  "footprints": [],
+  "name": "delta-text.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: plan-item.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 0,
+    "noop": 9,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.plan": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "eventCount": 9,
+  "finalMessage": {
+    "partTypes": [],
+    "parts": [],
+    "textChars": 0,
+  },
+  "footprints": [],
+  "name": "plan-item.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: plan-mode.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 0,
+    "noop": 7,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/plan/updated": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "eventCount": 7,
+  "finalMessage": {
+    "partTypes": [],
+    "parts": [],
+    "textChars": 0,
+  },
+  "footprints": [],
+  "name": "plan-mode.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: spawn-agents.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 19,
+    "noop": 28,
+    "streaming-delta": 21,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "item/agentMessage/delta": {
+      "count": 21,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 7,
+      "decision": "finalized",
+    },
+    "item/completed.collabAgentToolCall": {
+      "count": 3,
+      "decision": "finalized",
+    },
+    "item/completed.commandExecution": {
+      "count": 3,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 7,
+      "decision": "noop",
+    },
+    "item/started.collabAgentToolCall": {
+      "count": 3,
+      "decision": "finalized",
+    },
+    "item/started.commandExecution": {
+      "count": 3,
+      "decision": "finalized",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 3,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 7,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 3,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 21,
+  "eventCount": 68,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+      "tool-call",
+      "tool-call",
+      "text",
+      "tool-call",
+      "tool-call",
+      "text",
+      "tool-call",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 61,
+        "type": "text",
+      },
+      {
+        "id": "call_001",
+        "isError": false,
+        "name": "spawnAgent",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_002",
+        "isError": false,
+        "name": "spawnAgent",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 220,
+        "type": "text",
+      },
+      {
+        "id": "call_003",
+        "isError": false,
+        "name": "wait",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_004",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 205,
+        "type": "text",
+      },
+      {
+        "id": "call_005",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_006",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 430,
+        "type": "text",
+      },
+    ],
+    "textChars": 916,
+  },
+  "footprints": [
+    {
+      "activity": "call_004",
+      "generated": [],
+      "used": [
+        "sidecar",
+      ],
+    },
+    {
+      "activity": "call_006",
+      "generated": [],
+      "used": [
+        "src-tauri",
+      ],
+    },
+  ],
+  "name": "spawn-agents.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: thread-compacted.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 0,
+    "noop": 2,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "thread/compacted": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "eventCount": 2,
+  "finalMessage": {
+    "partTypes": [],
+    "parts": [],
+    "textChars": 0,
+  },
+  "footprints": [],
+  "name": "thread-compacted.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: turn-failed.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 1,
+    "finalized": 0,
+    "noop": 6,
+    "streaming-delta": 0,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/completed.failed": {
+      "count": 1,
+      "decision": "error",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 0,
+  "eventCount": 7,
+  "finalMessage": {
+    "partTypes": [],
+    "parts": [],
+    "textChars": 0,
+  },
+  "footprints": [],
+  "name": "turn-failed.jsonl",
+  "undecidedKeys": [],
+}
+`;

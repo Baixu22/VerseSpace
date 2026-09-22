@@ -18,7 +18,9 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0010](./0010-premise-custody.md) | 前提守护架构与产品边界：一条日志、两类事实、三个投影；禁内容级合并；继承以文件级复刻为准 | 已接受 | TF-0138 |
 | [0011](./0011-legacy-retention.md) | v0.1.0 后保留三块存量，按实际引用抽取，主题仍复用 | 已接受 | TF-0055 |
 | [0012](./0012-gui-write-endpoint-admission.md) | GUI 写操作端点准入：四条判据逐端点收口 ADR-0005 的「后续逐个评估」；线程删除为唯一不可撤销操作，附条件准入 | 已接受 | TF-0174 |
-| [0013](./0013-workbench-identity-and-compliance.md) | 主线身份 = 保留 monorepo + 改名 + 翻转叙事；合规三件一次做完；sidecar 触发条件 = 第二个需观测足迹的 provider；退役条件 = 四项容器耦合清零 | 已接受 | TF-0187（阶段 TF-0183） |
+| [0013](./0013-workbench-identity-and-compliance.md) | 主线身份 = 保留 monorepo + 改名 + 翻转叙事；合规三件一次做完；sidecar 触发条件 = 第二个需观测足迹的 provider；退役条件 = 四项容器耦合清零 | 已接受（决策 3 的接入形态由 ADR-0017 取代） | TF-0187（阶段 TF-0183） |
 | [0014](./0014-legacy-retirement-gate.md) | 存量退役闸门核查 = 四项耦合清零（已满足）；删除支线外围 apps/marketing 与 apps/registry；三块存量暂保留为行为参考 | 已接受 | TF-0218 / TF-0219（阶段 TF-0213） |
 | [0015](./0015-legacy-retirement-execution.md) | 执行存量退役：流夹具迁入主线、清理构建与发布引用、删除三块旧实现 | 已接受 | TF-0225 / TF-0226（归属 TF-0219） |
 | [0016](./0016-retirement-closeout.md) | 退役收口：修复干净安装的字体依赖、增加 UI 构建门禁、更新归属与首页、纠正任务依赖 | 已接受 | TF-0225 / TF-0226（上级 TF-0176） |
+| [0017](./0017-second-observable-provider-integration.md) | 第二个可观测 provider 接入形态 = 直接监督外部 CLI + 主包内轻量协议适配，不复活 sidecar、不 import SDK；取代 ADR-0013 决策 3；首个落地 = codex；交互协议只接权限请求进账本 | 已接受 | TF-0246（阶段 TF-0245，目标 TF-0232） |
+| [0018](./0018-single-ci-channel-jihulab.md) | CI 单一通道 = JihuLab（极狐）；删除 GitHub Actions 车道与 `release-workbench.yml`、不再使用 gitlab.com；取代 ADR-0015 中「保留 release-workbench.yml」一句 | 已接受 | TF-0232（落地过程中） |

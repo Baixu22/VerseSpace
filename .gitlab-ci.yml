@@ -1,23 +1,40 @@
 # GitLab CI — runs on a self-managed runner on the developer Windows machine.
 #
-# Why not GitLab-hosted runners (2026-09-21): free-plan identity verification
-# blocks CI jobs, and phone SMS verification is Unsupported for China (+86).
-# Official alternative: project / self-managed runners. The runner lives at
-# D:\software\gitlab-runner (tags: verspace-local, windows, self-hosted) and
-# uses the machine's existing Bun 1.3.14 install — no SaaS compute minutes.
+# Instance: **jihulab.com** (GitLab China / 极狐). The gitlab.com runners this
+# lane was originally written for were torn down on 2026-09-22
+# (D:\software\gitlab-runner\config.toml.bak-pre-gitlab-teardown); the runner
+# now registered is `verspace-local-jihulab` (id 47590). Why not GitLab-hosted
+# runners (2026-09-21): free-plan identity verification blocks CI jobs, and
+# phone SMS verification is Unsupported for China (+86). Official alternative:
+# project / self-managed runners. The runner lives at D:\software\gitlab-runner
+# (tags: verspace-local, windows, self-hosted, builds under builds-jh) and uses
+# the machine's existing Bun 1.3.14 install — no SaaS compute minutes.
 #
 # GitHub still hosts the repo, PRs and Releases. A branch that needs CI:
 #
 #   git push origin <branch>   # GitHub — updates the PR
-#   git push gitlab <branch>   # GitLab  — this pipeline (machine must be on)
+#   "C:\Program Files\Git\bin\bash.exe" scripts/win/jihulab-snapshot.sh [ref]
+#                              # JihuLab — this pipeline (bash on PATH is WSL here)
 #
-# Translation notes vs .github/workflows/ci.yml:
+# The second line is a script, not a plain push, on purpose: the local .git
+# carries ~2 GB of events.jsonl history, so pushing real history would drag all
+# of it up. The script force-pushes an orphan single-commit snapshot to a FLAT
+# ref name — `main` and `feat/*` are protected on jihulab and reject a
+# force-push. The machine must be on for the runner to pick the job up.
+#
+# This is the only CI lane (ADR-0018): the GitHub Actions workflows were
+# deleted, so there is no GitHub status check to compare against any more.
+#
+# Notes:
 # - Path filters stay as `rules: changes` so a docs-only push does not re-run
-#   the full suite on a single shared box.
-# - All jobs target tag `verspace-local` (shell + powershell). Docker images
-#   and GitHub-hosted OS matrices do not apply.
-# - concurrent=1 in the runner config — the 16 GB host must not run the UI
-#   suite and heavy builds at the same time (see AGENTS.md).
+#   the full suite on a single shared box. `changes` compares against the
+#   previous snapshot of this ref, so re-pushing an unchanged tree creates an
+#   empty pipeline (no jobs, nothing in the runner log).
+# - All jobs target tag `verspace-local` (shell + pwsh). Docker images and
+#   OS matrices do not apply.
+# - The heavy jobs share `resource_group: heavy`: `concurrent = 4` while the
+#   host has 16 GB, and running the UI suite, the workbench suite and tsc at
+#   once made workbench-test exit 1 after a full run (2026-09-22).
 
 workflow:
   rules:
@@ -45,14 +62,12 @@ stages: [verify, release]
 .paths:
   global:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
     - scripts/**
   biome:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -60,7 +75,6 @@ stages: [verify, release]
     - '**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,json,jsonc,css,html,vue,svelte,astro,graphql}'
   typecheck:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -70,7 +84,6 @@ stages: [verify, release]
     - apps/workbench-ui/**
   workbench:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -79,7 +92,6 @@ stages: [verify, release]
     - packages/context-rot/**
   workbench_ui:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -87,7 +99,6 @@ stages: [verify, release]
     - apps/workbench-ui/**
   context_rot:
     - .gitlab-ci.yml
-    - .github/**
     - package.json
     - bun.lock
     - biome.json
@@ -120,6 +131,12 @@ typecheck:
   extends: .bun-setup
   stage: verify
   timeout: 20m
+  # Heavy jobs share one resource group: the runner is `concurrent = 4` while
+  # the host has 16 GB, so without this a single push can start the UI suite,
+  # the workbench suite and tsc at the same time (see AGENTS.md §"Windows test
+  # concurrency"). Observed 2026-09-22: workbench-test ran its full 215s under
+  # that contention and exited 1, while the same tree passed alone.
+  resource_group: heavy
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - changes: !reference [.paths, typecheck]
@@ -130,6 +147,7 @@ workbench-test:
   extends: .bun-setup
   stage: verify
   timeout: 20m
+  resource_group: heavy
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - changes: !reference [.paths, workbench]
@@ -140,6 +158,7 @@ workbench-ui-test:
   extends: .bun-setup
   stage: verify
   timeout: 25m
+  resource_group: heavy
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - changes: !reference [.paths, workbench_ui]
@@ -157,16 +176,21 @@ context-rot-test:
   script:
     - bun run test:context-rot
 
-# Release lane (2026-09-21). `.github/workflows/release-workbench.yml` still
-# describes the intended shape — one host per target — but GitHub Actions has
-# no runner while the account quota is exhausted, so a `workbench-v*` tag
-# pushed to the gitlab remote builds here instead. All four binaries are
-# cross-compiled by Bun on this Windows host; only windows-x64 has run the
-# test suite, and the publish script says so in the release notes.
+# Release lane (2026-09-21; instance switched to JihuLab 2026-09-22).
+# `.github/workflows/release-workbench.yml` still describes the intended shape —
+# one host per target — but GitHub Actions has no runner while the account quota
+# is exhausted, so a `workbench-v*` tag on this instance builds here instead.
+# All four binaries are cross-compiled by Bun on this Windows host; only
+# windows-x64 has run the test suite, and the publish script says so in the
+# release notes.
 #
-#   bun run release:tag:workbench --push   # tags + pushes to origin AND gitlab
+#   bun run release:tag:workbench --push   # origin: real tag; jihulab: snapshot tag
 #   → release-build runs after verify      # artifacts: dist/workbench-* + legal
 #   → release-publish is manual            # gh release create (host gh login)
+#
+# The tag that reaches this instance points at an orphan snapshot commit with
+# the same TREE as the released commit (see scripts/tag-workbench-release.mjs);
+# `$CI_COMMIT_TAG` is what the rules match, and the tree is what gets built.
 
 release-build:
   extends: .bun-setup

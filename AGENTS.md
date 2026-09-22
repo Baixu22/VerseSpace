@@ -56,39 +56,68 @@ Single test file: `cd packages/workbench && bun test src/cli.test.ts` |
 Pre-commit runs `lint-staged` (Biome on JS/TS/JSON/CSS). There is **no Rust lane** — `cargo`,
 `clippy` and `insta` are no longer part of this repo.
 
-### CI remotes (GitHub Actions blocked → GitLab CI)
+### CI remotes (JihuLab is the only CI lane)
 
-GitHub still hosts the repo, PRs and Releases. **Continuous integration runs on GitLab.com**
-because the GitHub private-repo Actions billing/spending limit is exhausted — jobs never get a
-runner (PR #28, also recorded in `docs/integrity-fixes-closeout-2026-09-16.md`).
+GitHub hosts the repo, PRs and Releases — but **not CI**: the private-repo Actions billing limit
+left every workflow run without a runner (4–6s failures, PR #28), and the `gitlab.com` runners
+were torn down on 2026-09-22 (`D:\software\gitlab-runner\config.toml.bak-pre-gitlab-teardown` is
+that config). **JihuLab (`jihulab.com`, GitLab China / 极狐) is the single CI channel.** The
+GitHub workflows were deleted under
+[ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md), so a PR no longer carries GitHub
+status checks — its green light lives on JihuLab.
 
 | Remote | URL | Role |
 | --- | --- | --- |
 | `origin` | `https://github.com/Baixu22/VerseSpace.git` | PRs, Releases, source of truth for merge |
-| `gitlab` | `https://gitlab.com/Baixu22/VerseSpace.git` | CI (`.gitlab-ci.yml`, shared runners) |
+| `jihulab` | `git@jihulab.com:Baixu22/VerseSpace.git` | CI (`.gitlab-ci.yml`) |
 
-A branch that needs CI is pushed to **both** remotes:
+**Push CI as an orphan snapshot, never as real history.** The local `.git` carries ~2 GB of
+`events.jsonl` history (the task forest is committed on every closeout), so a plain
+`git push jihulab <branch>` would drag all of it up. JihuLab only needs the current tree to run
+CI:
 
 ```bash
-git push origin <branch>   # updates the GitHub PR
-git push gitlab <branch>   # runs the GitLab pipeline
+git push origin <branch>   # GitHub — updates the PR (real history)
+# JihuLab — orphan snapshot, runs the pipeline. `bash` on PATH is the WSL
+# launcher on this host and does nothing, so call Git Bash explicitly:
+"C:\Program Files\Git\bin\bash.exe" scripts/win/jihulab-snapshot.sh [ref]
 ```
 
-Local git is wired so HTTPS pushes to `gitlab.com` authenticate through glab
-(`credential.https://gitlab.com.helper` → `glab auth git-credential`). `glab` lives at
-`D:\software\glab\glab.exe` and is already logged in as `Baixu22`.
+The script commits the current tree as a single parent-less commit (`git commit-tree`, so no
+working-tree switch and no local ref is created) and force-pushes it to a **flat** ref name.
+**`main` and `feat/*` are protected on JihuLab — the pre-receive hook rejects a force-push to
+them**, so the default target strips the prefix (`feat/x` → `x`); pass an explicit ref to
+override. The same 2 GB problem applies to pushing a *tag* from real history — see the
+Releases bullet below.
 
-Quirk to know: GitLab.com free accounts must complete **identity verification** before *GitLab-hosted* CI jobs will start, and phone SMS is **Unsupported for China (+86)** — so hosted runners are not available here. The workaround is a **self-managed project runner** on this Windows machine (documented alternative in GitLab's identity-verification troubleshooting):
+Local git reaches `jihulab.com` over **SSH** (`git@jihulab.com`), not the glab HTTPS helper the
+retired `gitlab.com` remote used. There is no `glab` host config for JihuLab, so pipeline
+status is read in the browser — <https://jihulab.com/Baixu22/VerseSpace/-/pipelines> — or from
+the runner log `D:\software\gitlab-runner\runner.err.log` (it names `job_name`,
+`job-status` and `pipeline_id` per job).
+
+Runner (self-managed project runner on this Windows machine — no SaaS compute minutes):
 
 - Binary/config: `D:\software\gitlab-runner\` (`gitlab-runner.exe`, `config.toml`, `start-runner.bat`)
-- Runner id `56555227`, tags `verspace-local` / `windows` / `self-hosted`
+- Runner `verspace-local-jihulab`, id `47590`, url `https://jihulab.com`, tags `verspace-local` / `windows` / `self-hosted`
 - Executor: `shell` + **`pwsh`** (PowerShell 7 portable at `D:\software\PowerShell\pwsh-dir`) — Windows PowerShell 5.1 cannot parse the runner's UTF-8 env files on a zh-CN host
 - Uses the machine's Bun at `C:\Users\27933\AppData\Roaming\npm\node_modules\bun\bin`
 - Project has `shared_runners_enabled=false` so jobs cannot fall through to SaaS
 - Start if not running: `D:\software\gitlab-runner\start-runner.bat` (sets PATH then `gitlab-runner run`)
-- **The machine must be on** for CI to pick up jobs; `concurrent=1` by design (16 GB host)
-
-Validate config with `glab ci lint .gitlab-ci.yml -R Baixu22/VerseSpace`.
+- **The runner is a foreground process, not a Windows service.** If the console that launched it
+  closes, the runner dies and every pipeline sits *pending with no jobs running* — which looks
+  like "CI is broken" but is just a dead runner. Observed 2026-09-22 (runner died 22:09, no
+  pipeline picked up until it was restarted at 22:35). Diagnose with
+  `Get-Process gitlab-runner`: no process means restart it, not that the pipeline failed.
+  Installing it as a service (`gitlab-runner install`, or `install --user`) needs an elevated
+  shell and is the durable fix.
+- **The machine must be on** for CI to pick up jobs
+- `concurrent = 4` in `config.toml` (it was 1 when the runner served `gitlab.com`). The host has
+  16 GB, so the heavy verify jobs (`typecheck`, `workbench-test`, `workbench-ui-test`) share
+  `resource_group: heavy` in `.gitlab-ci.yml` and never run two at a time; the light ones
+  (`biome`, `context-rot-test`, the heartbeat) still overlap. Do not remove that group without
+  reading the note on it — the workbench suite failed a full 215s run under 4-way contention on
+  2026-09-22 and passed once the heavy jobs were serialized.
 
 ### Package-local commands worth knowing
 
@@ -120,7 +149,7 @@ subcommand lives in `src/commands/` and supports `--json` / `--quiet`.
 | `scheduler/` | Dispatch, dispatch guards/recovery, merge guard, branch-in-use, WIP, notifications, tick. |
 | `verifier/` | Runs a checkpoint's declared verification strategy and classifies the result (`passed` / `failed` / `needs_human` / `timeout` / `skipped`). |
 | `supervisor/` | Process supervision: spawn, liveness watch, crash-loop detection, orphan reaping. |
-| `chat/` | Chat lanes — one supervised-CLI lane (`claude`, the only lane with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Codex / Cursor / Kimi / OpenCode stream fixtures under `chat/fixtures/streams/` are retained protocol samples, **not** adapters. |
+| `chat/` | Chat lanes — two supervised-CLI lanes (`claude` and `codex`, both with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. The `codex` lane supervises `codex app-server` over JSON-RPC-on-stdio (`codex-app-server.ts`): permission requests are auto-accepted because the request *is* the read/write claim, user-input requests are auto-declined so a turn cannot wedge — see [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md). Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Cursor / Kimi / OpenCode stream fixtures under `chat/fixtures/streams/` are retained protocol samples, **not** adapters; the Codex fixtures now have a consumer (`codex-fixtures.test.ts`). |
 | `agents/` | Spawns agent sessions, captures their tool footprints, records per-session usage. |
 | `interactions/` | The user-feedback side: interest/context derivation, landmark projection, review queue, review stats (DOI). |
 | `tribunal/` | The human-decision queue: kinds, escalation, rationalization, queue store/stats, envelopes. |
@@ -160,8 +189,8 @@ symbols and package names; the workbench `doctor` reuses the path checks only.
 **Cross-package coupling to be aware of:** `packages/workbench/src/rot/scan.ts` imports
 directly from `../../../context-rot/src/scan` and `.../file-index`. Both single-file builds
 bundle the shared source, so neither installed package needs the other at runtime — but a change
-to `packages/context-rot/**` must be validated against **both** test suites (wired in
-`.github/workflows/ci.yml`).
+to `packages/context-rot/**` must be validated against **both** test suites (both run in
+`.gitlab-ci.yml`).
 
 ### Data flow
 
@@ -222,17 +251,19 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   (`workbench-v*` tag → four-platform build → GitHub Release). The npm shape is not published
   yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
   the version and `CHANGELOG.md` first. **`.changeset/` no longer exists** — bump the version and
-  write the changelog entry by hand. **While GitHub Actions has no runner** (quota, see CI
-  remotes above) the tag script pushes to both remotes and the build runs in the `release` stage
-  of `.gitlab-ci.yml`: `release-build` cross-compiles all four binaries on the Windows runner,
-  then the **manual** `release-publish` job runs `scripts/publish-workbench-release.mjs`, which
-  attaches them plus `SHA256SUMS` to the GitHub Release and states in the notes that only
-  windows-x64 ran the test suite. `release-workbench.yml` stays as the per-platform lane for
-  when Actions comes back.
+  write the changelog entry by hand. The build runs in the `release` stage of `.gitlab-ci.yml` on
+  the JihuLab runner: `release-build` cross-compiles all four binaries, then the **manual**
+  `release-publish` job runs `scripts/publish-workbench-release.mjs`, which attaches them plus
+  `SHA256SUMS` to the GitHub Release and states in the notes that only windows-x64 ran the test
+  suite. The tag script pushes the **real tag to `origin`** and a **snapshot tag to `jihulab`** —
+  the mirror holds orphan snapshots, so a tag on the real commit would try to upload the whole
+  ~2 GB forest history; the snapshot tag carries the same *tree* under the same tag *name*, which
+  is all the release rules match on. There is **no GitHub Actions fallback** any more
+  ([ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md)); this is the only release lane.
 - **Licensing**: `@baixu22/workbench` is `MIT AND Apache-2.0`. `scripts/build.ts` copies
   `NOTICE` / `LICENSE` / `LICENSE-APACHE` into `dist/`, the package `files` field keeps them in
-  the tarball, and both release lanes (`release-workbench.yml`,
-  `scripts/publish-workbench-release.mjs`) attach them to the Release. Apache-2.0 §4(d)
+  the tarball, and the release lane (`scripts/publish-workbench-release.mjs`) attaches them to the
+  Release. Apache-2.0 §4(d)
   requires a readable `NOTICE` at distribution time — do not delete those files.
 - **"Helmor" and the Helmor logo are trademarks** of Caspian Zhao and Nathan Lian. The Apache-2.0
   grant covers use, modification and redistribution of the source, but **not** use of the name or
@@ -332,10 +363,10 @@ has this cause.
 
 ### Bun version
 
-Pinned to **1.3.14** in `package.json` (`packageManager`), `.github/actions/setup-js/action.yml`,
-and `.github/workflows/release-workbench.yml`. Two version-bound behaviours must be re-checked on
-any bump: `fetch` connection-pool reuse across ports, and the HTTP layer rejecting illegal
-percent-encoding (`%ZZ`) before the request handler runs — see
+Pinned to **1.3.14** in `package.json` (`packageManager`) and in `.gitlab-ci.yml`
+(`BUN_VERSION`, plus the `BUN_BIN` path the runner puts on `PATH`). Two version-bound behaviours
+must be re-checked on any bump: `fetch` connection-pool reuse across ports, and the HTTP layer
+rejecting illegal percent-encoding (`%ZZ`) before the request handler runs — see
 `packages/workbench/src/ui/server.ts` and `ui/evidence-route.test.ts`.
 
 ### Windows test concurrency

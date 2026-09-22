@@ -53,6 +53,13 @@ export interface ThreadMeta {
 	claudeSessionId?: string;
 	/** Set once a run completed — the next run uses --resume. */
 	hasResumableSession?: boolean;
+	/**
+	 * The codex app-server thread id (TF-0249), minted by the first
+	 * `thread/start`. The codex lane's analogue of claudeSessionId: a later turn
+	 * passes it to `thread/resume` to continue the same codex thread. Only set on
+	 * threads that ran under the codex provider.
+	 */
+	codexSessionId?: string;
 	status: "idle" | "running";
 	/** plan 模式下跑出的最后回复即计划，UI 渲染批准卡 */
 	permissionMode: PermissionMode;

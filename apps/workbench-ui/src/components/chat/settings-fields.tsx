@@ -8,6 +8,11 @@ const PROVIDERS = [
 		description: "使用本机登录信息，无需 API Key。",
 	},
 	{
+		value: "codex",
+		label: "Codex · 本机",
+		description: "监督本机 codex CLI（app-server 协议），同样留下工具足迹。",
+	},
+	{
 		value: "openai-chat",
 		label: "OpenAI · Chat Completions",
 		description: "支持 OpenAI 及兼容服务。",
@@ -42,6 +47,13 @@ export function SettingsFields({
 }) {
 	const label = "mb-2 block text-ui font-medium text-fg-default";
 	const hint = "mt-2 text-small leading-relaxed text-fg-muted";
+	// TF-0204: state what the lane can do, not what it is called. Both local-CLI
+	// lanes (claude, codex) authenticate through the CLI itself — no API key or
+	// base URL — while the HTTP lanes need credentials. Falls back to the
+	// provider name when the response predates the capabilities field.
+	const needsCredentials = config.capabilities
+		? config.capabilities.requiresApiKey
+		: config.provider !== "claude" && config.provider !== "codex";
 	return (
 		<div className="space-y-6">
 			<div>
@@ -68,7 +80,7 @@ export function SettingsFields({
 						本车道只发纯文本：agent
 						读了哪些文件不会留下足迹，前提失效时无法判断本线程是否受影响，也不能作为分叉继承的读集来源。同模型不同车道也适用——Anthropic
 						直连走 Messages API，没有工具通道。要让前提链成立，请换成 Claude
-						Code。
+						Code 或 Codex（两个本机 CLI 车道都会留下工具足迹）。
 					</p>
 				) : null}
 			</div>
@@ -86,7 +98,7 @@ export function SettingsFields({
 				/>
 				<p className={hint}>留空使用默认模型，也可以输入完整的模型名称。</p>
 			</div>
-			{config.provider !== "claude" ? (
+			{needsCredentials ? (
 				<>
 					<div>
 						<label htmlFor="chat-key" className={label}>

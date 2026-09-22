@@ -1,7 +1,7 @@
 // Publish a Workbench release from a dist/ directory that already holds the
 // four cross-compiled binaries plus NOTICE / LICENSE / LICENSE-APACHE.
 //
-// Used by the GitLab `release-publish` job (the GitHub Actions release lane
+// Used by the JihuLab `release-publish` job (the GitHub Actions release lane
 // has no runner while the account's Actions quota is exhausted) and runnable
 // by hand after `cd packages/workbench && bun run build:all`.
 //
@@ -88,7 +88,7 @@ const notes = `${body}
 
 ---
 
-**平台覆盖说明。** 四个二进制由一台 Windows 主机用 Bun 交叉编译（GitLab 自托管 runner，见 \`.gitlab-ci.yml\`）。
+**平台覆盖说明。** 四个二进制由一台 Windows 主机用 Bun 交叉编译（JihuLab 自托管 runner，见 \`.gitlab-ci.yml\`）。
 只有 windows-x64 在构建前跑过完整测试；linux-x64、macos-arm64、macos-x64 只做了构建，没有在对应平台上执行过。
 校验和见 \`SHA256SUMS\`。
 `;

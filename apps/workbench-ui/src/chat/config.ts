@@ -8,6 +8,8 @@ import { apiFetch } from "../auth";
  */
 export interface ProviderCapabilities {
 	channel: "local-cli" | "http";
+	/** Which in-package turn runner drives a turn (claude | codex | http). */
+	turnRunner: "claude" | "codex" | "http";
 	observesFootprint: boolean;
 	supportsFork: boolean;
 	supportsStreamJson: boolean;
@@ -15,7 +17,12 @@ export interface ProviderCapabilities {
 }
 
 export interface ChatConfig {
-	provider: "claude" | "openai-chat" | "openai-responses" | "anthropic";
+	provider:
+		| "claude"
+		| "codex"
+		| "openai-chat"
+		| "openai-responses"
+		| "anthropic";
 	model?: string;
 	apiKey?: string;
 	baseUrl?: string;

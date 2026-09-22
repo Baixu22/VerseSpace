@@ -29,6 +29,12 @@ export type ReadObservability = "footprint" | "unobservable";
 export interface ProviderCapabilities {
 	/** Which lane a turn takes: the local CLI, or an HTTP endpoint. */
 	channel: "local-cli" | "http";
+	/**
+	 * Which in-package turn runner drives a turn. `channel` says CLI vs HTTP;
+	 * this says *which* CLI, so `thread-run.ts` dispatches without comparing the
+	 * provider's name (ADR-0017:31 — the anti-pattern this table exists to kill).
+	 */
+	turnRunner: "claude" | "codex" | "http";
 	/** Reads come back as footprints (tool channel) or not at all. */
 	observesFootprint: boolean;
 	/** A child thread can inherit the parent's real agent context (not just its transcript). */
@@ -43,13 +49,29 @@ export const PROVIDER_CAPABILITIES: Record<ChatProvider, ProviderCapabilities> =
 	{
 		claude: {
 			channel: "local-cli",
+			turnRunner: "claude",
 			observesFootprint: true,
 			supportsFork: true,
 			supportsStreamJson: true,
 			requiresApiKey: false,
 		},
+		codex: {
+			// TF-0249 / ADR-0017: a supervised external CLI, like claude. Its
+			// commandExecution items leave read/write footprints. No --fork-session
+			// equivalent (resume reattaches by thread id but cannot tail-fork a
+			// parent's context), and it streams app-server JSON-RPC, not stream-json
+			// — so supportsStreamJson is false: nothing branches on it as "claude's
+			// wire shape", and codex fixture replay drives its own reducer.
+			channel: "local-cli",
+			turnRunner: "codex",
+			observesFootprint: true,
+			supportsFork: false,
+			supportsStreamJson: false,
+			requiresApiKey: false,
+		},
 		"openai-chat": {
 			channel: "http",
+			turnRunner: "http",
 			observesFootprint: false,
 			supportsFork: false,
 			supportsStreamJson: false,
@@ -57,6 +79,7 @@ export const PROVIDER_CAPABILITIES: Record<ChatProvider, ProviderCapabilities> =
 		},
 		"openai-responses": {
 			channel: "http",
+			turnRunner: "http",
 			observesFootprint: false,
 			supportsFork: false,
 			supportsStreamJson: false,
@@ -64,6 +87,7 @@ export const PROVIDER_CAPABILITIES: Record<ChatProvider, ProviderCapabilities> =
 		},
 		anthropic: {
 			channel: "http",
+			turnRunner: "http",
 			observesFootprint: false,
 			supportsFork: false,
 			supportsStreamJson: false,

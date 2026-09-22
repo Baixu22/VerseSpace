@@ -10,6 +10,7 @@ import {
 
 const PROVIDERS = [
 	"claude",
+	"codex",
 	"openai-chat",
 	"openai-responses",
 	"anthropic",
@@ -18,19 +19,29 @@ const PROVIDERS = [
 describe("provider 能力表（TF-0204）", () => {
 	// 矩阵写全值而不是写「claude 为真」：能力表的价值就在于它是可核对的，
 	// 断言越具体，改动它时越难悄悄改错一个格子。
-	test("四种 provider 的能力矩阵", () => {
+	test("五种 provider 的能力矩阵", () => {
 		expect(
 			Object.fromEntries(PROVIDERS.map((p) => [p, capabilitiesOf(p)])),
 		).toEqual({
 			claude: {
 				channel: "local-cli",
+				turnRunner: "claude",
 				observesFootprint: true,
 				supportsFork: true,
 				supportsStreamJson: true,
 				requiresApiKey: false,
 			},
+			codex: {
+				channel: "local-cli",
+				turnRunner: "codex",
+				observesFootprint: true,
+				supportsFork: false,
+				supportsStreamJson: false,
+				requiresApiKey: false,
+			},
 			"openai-chat": {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -38,6 +49,7 @@ describe("provider 能力表（TF-0204）", () => {
 			},
 			"openai-responses": {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -45,6 +57,7 @@ describe("provider 能力表（TF-0204）", () => {
 			},
 			anthropic: {
 				channel: "http",
+				turnRunner: "http",
 				observesFootprint: false,
 				supportsFork: false,
 				supportsStreamJson: false,
@@ -77,6 +90,11 @@ describe("provider 能力表（TF-0204）", () => {
 		for (const provider of PROVIDERS) {
 			const capabilities = capabilitiesOf(provider);
 			expect(capabilities.requiresApiKey).toBe(capabilities.channel === "http");
+			// `turnRunner` is what thread-run dispatches on: it must agree with
+			// `channel` (an HTTP lane can never claim a local CLI runner).
+			expect(capabilities.turnRunner === "http").toBe(
+				capabilities.channel === "http",
+			);
 		}
 	});
 
