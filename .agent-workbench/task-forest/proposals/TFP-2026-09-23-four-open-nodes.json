@@ -1,0 +1,123 @@
+{
+  "applied_at": "2026-09-22T16:10:57.658198Z",
+  "base_graph_hash": "83d58da4dbdbf61ad277375710f665a9d13548e361193a85dac6493b969e80f3",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-22 收口核验·本轮现场实跑（工作树 HEAD dc5fed1，`git status --porcelain` 为空）：验收第 1 条成立——全量扫 `apps/workbench-ui/src`，对 `/api/state`、`/api/sync`、`/api/dispatch`、`/api/agent/run` 零命中；UI 实际调用的 HTTP 面只有 `/api/bootstrap`、`/api/config/chat`、`/api/chat/**`、`/api/tribunal`。",
+          "验收第 2 条成立（挂载图现场读出）：`components/chat/sidecar.tsx` 挂 branch-ledger / draft-mirror / notice-delivered / parked-bar / resume-card / suggestion-chips / tribunal-bar，由 `chat-composer.tsx` 引入；`components/chat/thread-messages.tsx` 挂 notice-row / tool-call-card / collapsed-tool-group；`App.tsx` 仍只有 MotionConfig → TooltipProvider → ChatProvider → WorkbenchShell，没有顶层视图切换、没有路由级账本视图。react-query 只服务 `/api/config/chat`（`chat/config.ts`），没有直连 `/api/state` 的面板。",
+          "验收第 3 条成立（口径说明）：验收原文写 `thread-types.ts`，该文件在 `packages/workbench/src/chat/thread-types.ts`（`NoticePart` :123-128，并入 `MessagePart` :130-133）；UI 侧镜像在 `apps/workbench-ui/src/chat/message-types.ts:26-37`，两侧由 `protocol.test.ts` 强制线协议类型互相可赋值。映射链：`apps/workbench-ui/src/chat/adapter.ts:28-33` 把 `notice` 映射为 `data-workbench-notice`，渲染在 `thread-messages.tsx:26-32`（user 消息）与 :117-123（assistant 消息）。",
+          "验收第 3 条现场实跑：`apps/workbench-ui` 下 `vitest run src/chat/adapter.test.ts` → 1 file passed / 6 tests passed / 0 fail（2026-09-22 本轮实跑）。",
+          "边界守住的旁证：兄弟节点 TF-0244（按 ADR-0012 把 sync / dispatch / review / agent run 接进面板）已 deprecated——本节点正是那条边界的反向约束，且此后没有新增顶层面板。"
+        ]
+      },
+      "id": "TF-0240"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0240",
+      "progress": 1,
+      "status": "done"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "gh run list --branch main --limit 1 → 2026-09-21T10:15 CI failure；jobs: Detect changes failure，其余 skipped",
+          "grep stages .gitlab-ci.yml → stages: [verify]；无 release/publish job",
+          ".github/workflows/release-workbench.yml:9-12 on push tags workbench-v*；:24 runs-on matrix.os",
+          ".gitlab-ci.yml stages: [verify, release]；release-build / release-publish 两个 job",
+          "scripts/publish-workbench-release.mjs（node 无依赖）；scripts/tag-workbench-release.mjs 同时 push origin 与 gitlab",
+          "AGENTS.md Releases / Licensing 两条更新",
+          "PR #29",
+          "2026-09-22 验收第 1 条（GitHub Actions 额度）现场回答：仍未恢复——`gh run list --branch main --limit 5` 最近一次 run 35680141042（PR #29 合并，2026-09-22T02:37:25Z）4 秒即 failure，此前 #28 的 35587757735 同为 4 秒 failure；且 `.github/` 只剩 FUNDING.yml，两条 workflow 已按 ADR-0018 删除。故「若恢复」分支不成立，走第 2 条。",
+          "2026-09-22 release 车道**实测跑通**（不再只是脚本 dry-run）：用当前树（HEAD dc5fed1 的 tree 24a12340）造孤儿快照 tag `workbench-v0.0.0-smoke` 推到 jihulab，触发流水线 **5524396**。verify 六个 job 全绿（pipeline-heartbeat 10.2s / biome 46.2s / context-rot-test 46.3s / workbench-test 167.9s / typecheck 25.6s / workbench-ui-test 32.1s），随后 **release-build（job 29019253）success，82.2s**——即 `bun install --frozen-lockfile` → `bun run build:all` 四平台交叉编译 → artifacts 收集，在 CI 侧真的能跑。`release-publish` 是手动 job，本轮**没有**触发：GitHub Releases 仍是 v0.1.0 / v0.2.0 / v0.3.0 三条，origin tag 未变，无任何公开发布产物。",
+          "2026-09-22 本机同源复核（与 CI 同一条命令路径）：`bun run build:all` 本机 exit 0，产出四个二进制并核对头部——`workbench-linux-x64` = ELF 64-bit LSB、e_machine 0x3e（x86-64）；`workbench-macos-arm64` = Mach-O cputype 0x0100000c；`workbench-macos-x64` = Mach-O cputype 0x01000007；`workbench-windows-x64.exe` = MZ。`node scripts/publish-workbench-release.mjs --tag workbench-v0.3.0 --dry-run` 对真实 dist 通过（7 个发行物齐全、SHA256SUMS 四行生成、CHANGELOG 0.3.0 段落提取正确）；`bun run scripts/check-built.ts --native dist/workbench-windows-x64.exe --js dist/workbench.js` 双形态各输出 initialized / doctor / stats / headlessUi / bundledUi 全 true。",
+          "2026-09-22 验收第 2 条的「至少一个非 Windows 平台的冒烟」**本机确实做不到**（逐项排除，另见本轮偏差记录）：WSL2 起不来（Ubuntu-22.04 已注册，但 `wsl -d Ubuntu-22.04 -- echo ok` 报 Wsl/Service/CreateInstance/CreateVm/HCS/HCS_E_HYPERV_NOT_INSTALLED；根因是 `bcdedit /enum {current}` 的 `hypervisorlaunchtype Off`，需管理员改 + 重启——VirtualMachinePlatform 与 Microsoft-Windows-Subsystem-Linux 两个特性本身都是 Enabled）；无 docker / podman / qemu / multipass / vagrant；JihuLab 只有本机 Windows shell runner 且 `shared_runners_enabled=false`；GitHub Actions 额度耗尽。因此本轮只能给到「产物形态核验」（ELF/Mach-O/PE 头部 + 架构 + 完整构建），**不能**声称在非 Windows 平台上执行过。",
+          "2026-09-22 收口判定：next_action 的「真实 workbench-v* tag 走完 release-build → release-publish」只完成了前一半（release-build 已实测），release-publish 仍需一次真人确认版本号与 CHANGELOG 的真发版；非 Windows 冒烟仍缺。故本节点保持 review_needed，不结案。",
+          "2026-09-22 清理：smoke tag `workbench-v0.0.0-smoke` 已从 jihulab 删除，避免与真实发行 tag 混在一起；流水线 5524396 与 job 29019253 的记录留在 JihuLab 可查。"
+        ],
+        "next_action": "真发版时走 `bun run release:tag:workbench --push`（先定版本号与 CHANGELOG）→ release-build 已实测可跑（流水线 5524396 / job 29019253）→ 手动触发 release-publish 即结案。非 Windows 冒烟在修好宿主（`bcdedit /set hypervisorlaunchtype auto` + 重启，再用 WSL 跑 workbench-linux-x64）或换一台 Linux 主机前无法产生，不要在发行说明里暗示它已做。"
+      },
+      "id": "TF-0237"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0237",
+      "progress": 95,
+      "status": "review_needed"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "codex 车道端到端可用，seal（PreToolUse hook）与恢复卡机制经核对为 provider-agnostic：fit 账本读事件不读 provider 身份",
+          "docs/phase4-human-usage-window-2026-09-22.md：真人操作指南（配 codex provider、装 seal hook、跑窗口、workbench stats --json 验收）",
+          "按来源纪律，landmarkReviews.current 走 human 口径，脚本/agent 手势永不计入 L1，故本节点保持 ready-for-human，读数由真人产生后再由真人收 done",
+          "2026-09-22 本轮实测基线（`bun packages/workbench/src/index.ts --json stats`，黑板 `D:\\helmor-main\\.workbench`）：`seal={decisions:0,blocked:0,warned:0,passed:0,hits:0,lastDecisionAt:null,reviews:{total:0}}`；`lifecycle.resumeNotesConsumed=0`（注意 `lifecycle.resumeCardCircuit.consumed=6` 是另一个量，两者不能互相顶替）；`landmarkReviews.current={total:41,reviewed:0,endorsed:0,rejected:0,denominator:\"session-top-k\"}`；`threads.footprintCoverage=0.7333`（22/30，是四项里唯一已达标的读数）。四项护城河仍全部没有方向判决。",
+          "2026-09-22 前置缺口 ①（根因级，本轮新查出）：`.claude/settings.json` 只挂了 SessionStart 的 `set-git-identity.sh`，**seal hook 根本没装**（`packages/context-rot/scripts/install-hooks.mjs` 未在本仓库运行过）。即 `seal.decisions=0` 有一部分不是「人类没用」，而是「命门压根没接上」——任何写操作都不会产生 `seal.decided`。真人跑窗口前必须先装。",
+          "2026-09-22 前置缺口 ②（本轮新查出）：`codex` 不在 PATH（`Get-Command codex` 为空），docs/phase4 指南里 provider=codex 的那条路径当前跑不了；当前可跑的是 claude 车道（`.workbench/workbench.yaml` 的 `chat.provider: claude`，claude CLI 在 PATH）。`seal.mode` 未显式配置，按 `packages/workbench/src/types/config.ts:40` 默认 `block`，满足「要产生正确的 block 需要 block 或 warn」这一前置。"
+        ],
+        "next_action": "真人跑窗口前先补两个前置：① `node packages/context-rot/scripts/install-hooks.mjs .` 装 seal hook（不装则 seal.decisions 恒为 0）；② 定车道——装 codex CLI 并登录，或把窗口指南改成现有 claude 车道。之后按 docs/phase4-human-usage-window-2026-09-22.md 跑一次自然使用窗口，产生 seal.decisions>=1 + 恢复卡消费 + 人类地标认可读数，再由真人收 done。**不由 agent 代跑**：代理代跑会污染 fit 账本，等于把判据本身作废。"
+      },
+      "id": "TF-0251"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "2026-09-21 交叉核验：nodes.json 231 节点 = 221 done / 8 deprecated / 2 blocked；apps/workbench-ui/src 无任何对 /api/state|sync|dispatch|agent/run|review 的调用；App.tsx 只挂 ChatProvider + WorkbenchShell",
+          "packages/workbench/src/types/config.ts:82 provider 枚举 = claude | openai-chat | openai-responses | anthropic，无 codex；AGENTS.md:122 却写有 codex adapter",
+          "docs/decisions/0013:51 规定接入形态只允许 spawn-sidecar；AGENTS.md:21 禁止重新引入 sidecar 进程",
+          "packages/workbench/src/git/stash.ts 只有测试引用，无生产调用者；docs/absorption-progress-2026-09-18.md 标记 unwired_export",
+          "docs/fit-ledger-2026-09-20-phase3-t1.md：seal.decisions 0/3，护城河 A/B/C/D 均未达门槛",
+          "2026-09-22 CI 收敛为单通道（ADR-0018，提交 0551660）：删除 .github/workflows/ci.yml、release-workbench.yml 与 .github/actions/setup-js/（.github/ 只剩 FUNDING.yml）；JihuLab（jihulab.com，runner verspace-local-jihulab，id 47590）成为唯一 CI 车道，取代 ADR-0015 中「保留 release-workbench.yml」一句。GitHub 上的 PR 从此没有状态检查。",
+          "2026-09-22 CI 实测：jihulab 流水线 5524299 六个 job 全绿（pipeline-heartbeat / biome / typecheck / workbench-test / workbench-ui-test / context-rot-test）。此前 workbench-test 在 concurrent=4 的重活互撞下满时长 215s 后 exit 1（同一棵树单独跑 943 pass / 0 fail）；改为 typecheck / workbench-test / workbench-ui-test 共用 resource_group: heavy 后不再复现。",
+          "2026-09-22 发行链修正：scripts/tag-workbench-release.mjs 原先执行 git push gitlab，而该 remote 根本不存在（发行车道一直推不出去），改为 origin 推真实 tag + jihulab 推同树快照 tag；scripts/win/jihulab-snapshot.sh 入库并加固（默认去掉 feat/ 前缀、受保护 ref 提前报错、用 git commit-tree 造孤儿提交）。",
+          "2026-09-23 四黑点复核（本轮现场实跑）：阶段 1/2/3 的里程碑 TF-0233 / TF-0239 / TF-0245 均 done；剩余三个非 done 节点各有归属——TF-0240（阶段 2 的边界要求）本轮核验三条验收全部成立、已收 done；TF-0237（阶段 1 的发行风险）release 车道已实测跑通 release-build（流水线 5524396），仍差一次真发版与非 Windows 冒烟，保持 review_needed；TF-0251（阶段 4）是人工门，本轮刷新基线后保持 ready。",
+          "2026-09-23 根目标处置：按用户决定保持 in_progress——desired_outcomes 第 4 条「fit 账本的四项护城河判决出现自然人类使用产生的读数」确实尚未发生，阶段 4 未收口前不把本节点收 done，也不以新 ADR 把阶段 4 记为「不做」。progress 由 0 改为 0.75（四个阶段中 1/2/3 已 done，阶段 4 未动）。"
+        ]
+      },
+      "id": "TF-0232"
+    },
+    {
+      "action": "set_status",
+      "id": "TF-0232",
+      "progress": 0.75,
+      "status": "in_progress"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "confidence": 0.9,
+        "correction": "本节点保持 review_needed；发行说明继续如实声明「只有 windows-x64 跑过测试」。要真正补上这一步，需先修宿主（`bcdedit /set hypervisorlaunchtype auto` + 重启，然后用 WSL 跑 workbench-linux-x64）或在一台 Linux 主机上跑一次，届时把读数补进本节点。",
+        "created_at": "2026-09-22T16:10:27.825330Z",
+        "evidence": "2026-09-22 实测：`wsl -d Ubuntu-22.04 -- echo ok` → Wsl/Service/CreateInstance/CreateVm/HCS/HCS_E_HYPERV_NOT_INSTALLED；`bcdedit /enum {current}` → hypervisorlaunchtype Off；docker / podman / qemu / multipass / vagrant 均不在 PATH。",
+        "expected_requirement": "替代方案里包含「至少一个非 Windows 平台的冒烟」，即某个 linux/macos 二进制在对应平台上真实执行过。",
+        "id": "TFD-07ee49b62f",
+        "kind": "acceptance_unreachable_on_host",
+        "observed_action_or_result": "本轮只能给到产物形态核验（ELF e_machine 0x3e / Mach-O cputype 0x0100000c 与 0x01000007 / PE MZ + 完整交叉编译 + check-built 双形态冒烟），没有任何非 Windows 平台上的执行读数。",
+        "reason": "验收把非 Windows 冒烟写成交付物，但宿主没有可用的非 Windows 执行面：WSL2 因 `bcdedit` 的 hypervisorlaunchtype=Off 起不来（需管理员改 + 重启），无 docker / podman / qemu，JihuLab 只有本机 Windows shell runner（shared_runners_enabled=false），GitHub Actions 额度耗尽。",
+        "recommendation": "把「非 Windows 冒烟」从本轮交付物改成首次真发版时的显式步骤，并写进发行检查单；不要在验收里继续默认它能在本机达成。",
+        "related_task_ids": [
+          "TF-0237"
+        ],
+        "severity": "medium",
+        "status": "open",
+        "summary": "TF-0237 验收第 2 条要求的「至少一个非 Windows 平台的冒烟」在本机无法产生"
+      }
+    }
+  ],
+  "created_at": "2026-09-22T16:10:07Z",
+  "proposal_id": "TFP-2026-09-23-four-open-nodes",
+  "rationale": "按用户 2026-09-23 决定处理森林里剩余四个非 done 节点。TF-0240 的三条验收在本轮工作树上逐条现场核验全部成立（含 adapter 测试 6/6），收口为 done。TF-0237 用孤儿快照 tag 在 jihulab 实测跑通 release-build（流水线 5524396，六个 verify job + release-build 全绿），确认了 CI 侧 tag→构建→artifacts 的接线，且刻意没有触发手动 release-publish、没有产生任何公开发布产物；但真发版与非 Windows 冒烟仍缺，故只把 progress 提到 95、保持 review_needed，并为「非 Windows 冒烟在本机无法产生」记一条偏差。TF-0251 按来源纪律不由 agent 代跑，本轮只刷新实测基线并记下两个根因级前置缺口（seal hook 从未安装、codex 不在 PATH）。TF-0232 按用户决定保持 in_progress，progress 由 0 改为 0.75 以反映阶段 1/2/3 已收口。",
+  "session_id": "four-open-nodes-20260923",
+  "status": "applied"
+}

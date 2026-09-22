@@ -30,7 +30,7 @@
     "kind": "global_task",
     "next_action": "阶段 1–4 全部收口，或以新 ADR 明确记录不做的部分",
     "priority": 3,
-    "progress": 0.0,
+    "progress": 0.8,
     "purpose": "让 Workbench 已有的前提账本能力真正被用户看见和用到，并让多 provider 在新架构约束下有可执行的接入路径，最终用自然人类使用数据验证价值。",
     "ready": true,
     "remaining_minutes_max": null,
@@ -57,7 +57,7 @@
     "kind": "risk",
     "next_action": "复核产物并决定是否标记完成",
     "priority": 3,
-    "progress": 90.0,
+    "progress": 95.0,
     "purpose": "在下一次发版前把这个缺口显性化，避免在 CI 绿的错觉下推 tag。",
     "ready": true,
     "remaining_minutes_max": 180,
@@ -65,33 +65,6 @@
     "status": "review_needed",
     "success_metrics": [],
     "title": "风险：四平台发行验证无处可跑——release-workbench.yml 仍依赖被卡住的 GitHub Actions，本机 GitLab runner 只有 Windows"
-  },
-  {
-    "alignment": {
-      "fit": "unknown",
-      "fit_confidence": 0.0,
-      "user_goal": "",
-      "validation_plan": [],
-      "why_not_enough": "",
-      "why_this_task": ""
-    },
-    "blocked_by": [],
-    "confidence": 0.9,
-    "context_tags": [],
-    "desired_outcomes": [],
-    "difficulty": "low",
-    "id": "TF-0240",
-    "kind": "requirement",
-    "next_action": "apps/workbench-ui/src 中没有对 /api/state、/api/sync、/api/dispatch、/api/agent/run 的调用",
-    "priority": 3,
-    "progress": 0.0,
-    "purpose": "防止「做产品面」演变成「把桌面应用搬回来」。",
-    "ready": true,
-    "remaining_minutes_max": null,
-    "remaining_minutes_min": null,
-    "status": "ready",
-    "success_metrics": [],
-    "title": "要求：账本能力只以对话内既有形态出现——消息 part、composer 上方 sidecar、模型工具卡；不新增独立面板或路由级视图"
   },
   {
     "alignment": {
