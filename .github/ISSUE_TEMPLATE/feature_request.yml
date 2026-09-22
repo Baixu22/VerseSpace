@@ -1,0 +1,46 @@
+name: 功能建议
+description: 提出一个能力或改进建议
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提建议前请先读 [ADR-0010](https://github.com/Baixu22/VerseSpace/blob/main/docs/decisions/0010-premise-custody.md)（前提守护架构与产品边界）与 [ADR 目录](https://github.com/Baixu22/VerseSpace/blob/main/docs/decisions/README.md)。已被产品尺子排除的方向（Monaco 编辑器、PR/CI 编排器、Tauri/Rust/sidecar 容器）不会重新引入。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你要解决什么问题
+      description: 描述处境，而不是先给方案。你正在做什么、卡在哪里。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你设想的做法
+    validations:
+      required: false
+
+  - type: textarea
+    id: ledger-fit
+    attributes:
+      label: 它如何服务前提账本
+      description: 本仓库要求每项能力都回答这个问题，而不是「别家有」。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: 它应该出现在哪一面
+      description: 账本能力只以对话内既有形态出现（消息 part、composer 上方 sidecar、模型工具卡），不新增独立面板或路由级视图。
+      options:
+        - CLI
+        - 对话内（消息 part / sidecar / 工具卡）
+        - MCP 只读工具
+        - 本地面板的其他位置
+        - 不确定
+    validations:
+      required: true

@@ -2,7 +2,16 @@
 
 ## Unreleased
 
+## 0.4.0
+
+从「可用」长到「可编排」的一版：账本能力进入对话、第二个可观测 provider 落地、CI 收敛为单通道。
+
+- **账本能力内嵌对话（阶段 2）**：claude 车道在 spawn 时挂上 Workbench 的**只读账本 MCP**（`premises` / `footprints` / `resume_cards` / `tribunal` / `notices`），模型在回合中可自己查前提与足迹；折入模型 prompt 的前提通知作为 `NoticePart` **持久化到对应的 user 轮次**并渲染，模型看见了什么在记录里查得到；裁决队列以 `TribunalBar` 出现在 composer 上方，可直接 resolve / shelve。三处都落在对话内既有形态（消息 part、composer 上方 sidecar、模型工具卡），没有新增独立面板或路由级视图。
+- **第二个可观测 provider（阶段 3 / ADR-0017）**：直接监督外部 CLI、在主包内做轻量协议适配，**不复活 sidecar、不 import SDK**——codex 车道监督 `codex app-server` 的 JSON-RPC-on-stdio：权限请求即读写声明并自动接受，用户输入请求自动拒绝以免回合悬挂，协议用保留的真实流夹具建门禁测试。
+- **CI 收敛为单通道（阶段 1 / ADR-0018）**：删除 `.github/workflows/ci.yml`、`release-workbench.yml` 与 `.github/actions/setup-js/`，不再使用 gitlab.com 车道；JihuLab（极狐）自托管 runner 成为唯一 CI 通道，verify 与 release 两个 stage 都在 `.gitlab-ci.yml`。重活（typecheck / workbench-test / workbench-ui-test）共用 `resource_group: heavy`，避免 16 GB 主机上互撞；发行链改为 origin 推真实 tag、jihulab 推同树快照 tag（`scripts/win/jihulab-snapshot.sh`）。
 - **删除未接线的 `git/stash.ts`**：TF-0202 从支线 Rust 翻译来的结构化 stash 原语（`nothing` / `clean` / `conflict` / `failed` 四种结局）自 2026-09-18 起只有测试覆盖、没有生产调用方；其原定消费者是支线的 move-local 流程，主线没有对应能力，派发走全新 worktree、恢复走按路径 checkout，都到不了"需要 stash"的状态。按 ADR-0011 的删除规则清掉；若将来出现"工位换分支但保留未提交改动"的命令，可从 `9e3f560` 及更早历史取回。
+- **文档与社区面**：新增 `CONTRIBUTING.md`、`SECURITY.md`、issue 表单与 PR 模板；ADR-0019 把阶段 4（真人使用窗口）与发行验收明确记录为**常设外部门**，不作为本轮交付——fit 账本的四项护城河判决因此仍停在「证据不足」，这是有意保留的空白。
+- **平台覆盖（务必如实理解）**：四个二进制由一台 Windows 主机用 Bun 交叉编译，**只有 windows-x64 跑过完整测试**；linux-x64、macos-arm64、macos-x64 只做了构建，没有在对应平台上执行过。
 
 ## 0.3.0
 

@@ -1,0 +1,75 @@
+name: Bug 报告
+description: 报告一个可复现的缺陷
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢报告。请先确认这不是**本机环境问题**——Windows 上的注入式 HTTP 代理、实时扫描导致的 `EBUSY` 收尾、以及 git 空父目录清理缺陷都会让测试成片变红，见 [CONTRIBUTING.md](https://github.com/Baixu22/VerseSpace/blob/main/CONTRIBUTING.md#windows-本机注意事项不是仓库缺陷)。
+        安全问题请不要走这里，见 [SECURITY.md](https://github.com/Baixu22/VerseSpace/blob/main/SECURITY.md)。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 实际行为，以及你期望的行为。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 尽量给出能照抄的命令序列。
+      placeholder: |
+        1. workbench init
+        2. workbench ui
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Workbench 版本
+      description: "`workbench --version` 的输出"
+      placeholder: "0.3.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: 安装方式
+      options:
+        - 单文件二进制（GitHub Release 下载）
+        - 从源码跑（bun packages/workbench/src/index.ts）
+        - npm 形态（尚未发布）
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      placeholder: "Windows 11 / macOS 15 / Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: 输出与日志
+      description: 相关命令的 `--json` 输出或错误信息。请先去掉凭据与密钥。
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: ledger
+    attributes:
+      label: 账本状态
+      options:
+        - label: 出问题的项目里有 `.workbench/` 目录
+        - label: `workbench --json doctor` 通过
