@@ -80,6 +80,24 @@ export function buildMcpConfig(
 }
 
 /**
+ * Append flag tokens to a command-line string, quoting any token that contains
+ * a space so the quote-aware `splitCommandLine` re-parses it as one argument.
+ * The mcp-config path lives under the workbench root, which on a Windows host
+ * can sit under `C:\Users\First Last\...` — a space there must not split the
+ * path into two argv entries.
+ */
+export function appendCommandFlags(
+	commandLine: string,
+	flags: readonly string[],
+): string {
+	let out = commandLine;
+	for (const flag of flags) {
+		out += flag.includes(" ") ? ` "${flag}"` : ` ${flag}`;
+	}
+	return out;
+}
+
+/**
  * Write the mcp-config for a workbench root and return the flags to append to
  * the Claude command line, or `[]` when the wiring is disabled. The config
  * lives under the (git-ignored) `.workbench/` so it never enters the repo, and

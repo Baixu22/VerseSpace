@@ -9,7 +9,7 @@ import {
 	UNRESPONSIVE_MS,
 	watchLiveness,
 } from "../supervisor/liveness";
-import { mcpConfigFlags } from "./claude-mcp";
+import { appendCommandFlags, mcpConfigFlags } from "./claude-mcp";
 import { registerTurnRouter } from "./claude-router";
 import type { LiveClaudeSession } from "./claude-types";
 import { capabilitiesOf } from "./provider-capabilities";
@@ -86,9 +86,10 @@ export async function ensureClaudeSession(
 	// `WORKBENCH_CHAT_COMMAND` does not understand `--mcp-config`, and
 	// `WORKBENCH_CLAUDE_MCP=off` opts out for a CLI build that lacks the flag.
 	if (chatCommand() === CHAT_COMMAND_DEFAULT) {
-		for (const flag of await mcpConfigFlags(context.bb.paths.root)) {
-			commandLine += flag.includes(" ") ? ` "${flag}"` : ` ${flag}`;
-		}
+		commandLine = appendCommandFlags(
+			commandLine,
+			await mcpConfigFlags(context.bb.paths.root),
+		);
 	}
 
 	const initialLines: string[] = [];

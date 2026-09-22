@@ -2,7 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { splitCommandLine } from "../supervisor/argv";
 import {
+	appendCommandFlags,
 	buildMcpConfig,
 	MCP_SERVER_NAME,
 	mcpConfigFlags,
@@ -115,5 +117,31 @@ describe("mcpConfigFlags", () => {
 describe("namespacing", () => {
 	test("the allowed-tools prefix matches the server name", () => {
 		expect(WORKBENCH_MCP_TOOL_PREFIX).toBe(`mcp__${MCP_SERVER_NAME}`);
+	});
+});
+
+describe("appendCommandFlags", () => {
+	test("a config path with a space survives splitCommandLine as one argv token", () => {
+		// Windows: C:\Users\First Last\proj\.workbench\mcp\claude-mcp.json
+		const spacedPath =
+			"C:/Users/First Last/proj/.workbench/mcp/claude-mcp.json";
+		const line = appendCommandFlags("claude -p --verbose", [
+			"--mcp-config",
+			spacedPath,
+			"--allowedTools",
+			WORKBENCH_MCP_TOOL_PREFIX,
+		]);
+		const argv = splitCommandLine(line);
+		const configArg = argv[argv.indexOf("--mcp-config") + 1];
+		expect(configArg).toBe(spacedPath);
+		expect(argv[argv.indexOf("--allowedTools") + 1]).toBe(
+			WORKBENCH_MCP_TOOL_PREFIX,
+		);
+	});
+
+	test("flags without spaces are appended bare", () => {
+		expect(appendCommandFlags("claude", ["--fork-session"])).toBe(
+			"claude --fork-session",
+		);
 	});
 });
