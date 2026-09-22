@@ -12833,7 +12833,10 @@
     "difficulty": "low",
     "display_order": 100,
     "estimated_total_minutes": null,
-    "evidence": [],
+    "evidence": [
+      "对抗复审结论：thread-run.ts 重排 correct（对照 git show df2fe47）；notice-parts 首行/正文切分 robust；claude-mcp/session gate 与 --resume 无冲突；tribunal-routes GET 误方法→404 不泄漏、nonexistent→404、shelve(undefined)→默认30；tribunal-slice 404 单次回源不循环",
+      "收尾提交 7d70690：appendCommandFlags 单一来源 + 空格路径往返测试；threads.test.ts 失败路径断言 user 消息 parts；delivery 仅由 premise_notice_delivered 事件追踪"
+    ],
     "execution_hints": [],
     "id": "TF-0233",
     "kind": "milestone",
@@ -12848,9 +12851,9 @@
     "source_sessions": [],
     "status": "in_progress",
     "success_metrics": [],
-    "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。\n\n【2026-09-21 进展】TF-0235 / 0236 / 0238 已完成；TF-0234 的改动已在工作树就绪待提交；TF-0237 风险已核实、替代方案已写明，等用户决定。\n\n【2026-09-21 第二轮】TF-0237 已实现 GitLab 发行车道；全部改动在 PR #29；剩余只有 PR 合入。",
+    "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。\n\n【2026-09-21 进展】TF-0235 / 0236 / 0238 已完成；TF-0234 的改动已在工作树就绪待提交；TF-0237 风险已核实、替代方案已写明，等用户决定。\n\n【2026-09-21 第二轮】TF-0237 已实现 GitLab 发行车道；全部改动在 PR #29；剩余只有 PR 合入。\n\n【2026-09-22 复审收尾】阶段 1+2 全部改动经对抗式复审（general-purpose 子代理，逐文件对照 df2fe47）：无正确性回归。thread-run 通知抽取重排干净（两条车道都仍收到 notices、acknowledgeDelivery 各调一次、resend 不丢通知、append-only 未破）；tribunal 路由方法/404/shelve 默认值均正确；前端裁决竞态仅瞬时闪烁无死循环。两处收口已提交（7d70690）：MCP flag 空格路径抽 appendCommandFlags 并加往返测试；前提通知失败路径语义钉死为「本轮 prompt 折入」而非送达回执。全量绿：workbench 927 / ui 67 / context-rot 65 / typecheck / biome。",
     "title": "阶段 1：把旧任务森林收干净——状态对齐远端事实、修正文档口径、处理未接线原语",
-    "updated_at": "2026-09-21T14:15:34.287088Z"
+    "updated_at": "2026-09-22T02:28:04.531822Z"
   },
   "TF-0234": {
     "acceptance_criteria": [
