@@ -12779,7 +12779,10 @@
       "packages/workbench/src/types/config.ts:82 provider 枚举 = claude | openai-chat | openai-responses | anthropic，无 codex；AGENTS.md:122 却写有 codex adapter",
       "docs/decisions/0013:51 规定接入形态只允许 spawn-sidecar；AGENTS.md:21 禁止重新引入 sidecar 进程",
       "packages/workbench/src/git/stash.ts 只有测试引用，无生产调用者；docs/absorption-progress-2026-09-18.md 标记 unwired_export",
-      "docs/fit-ledger-2026-09-20-phase3-t1.md：seal.decisions 0/3，护城河 A/B/C/D 均未达门槛"
+      "docs/fit-ledger-2026-09-20-phase3-t1.md：seal.decisions 0/3，护城河 A/B/C/D 均未达门槛",
+      "2026-09-22 CI 收敛为单通道（ADR-0018，提交 0551660）：删除 .github/workflows/ci.yml、release-workbench.yml 与 .github/actions/setup-js/（.github/ 只剩 FUNDING.yml）；JihuLab（jihulab.com，runner verspace-local-jihulab，id 47590）成为唯一 CI 车道，取代 ADR-0015 中「保留 release-workbench.yml」一句。GitHub 上的 PR 从此没有状态检查。",
+      "2026-09-22 CI 实测：jihulab 流水线 5524299 六个 job 全绿（pipeline-heartbeat / biome / typecheck / workbench-test / workbench-ui-test / context-rot-test）。此前 workbench-test 在 concurrent=4 的重活互撞下满时长 215s 后 exit 1（同一棵树单独跑 943 pass / 0 fail）；改为 typecheck / workbench-test / workbench-ui-test 共用 resource_group: heavy 后不再复现。",
+      "2026-09-22 发行链修正：scripts/tag-workbench-release.mjs 原先执行 git push gitlab，而该 remote 根本不存在（发行车道一直推不出去），改为 origin 推真实 tag + jihulab 推同树快照 tag；scripts/win/jihulab-snapshot.sh 入库并加固（默认去掉 feat/ 前缀、受保护 ref 提前报错、用 git commit-tree 造孤儿提交）。"
     ],
     "execution_hints": [],
     "id": "TF-0232",
@@ -12806,7 +12809,7 @@
     "success_metrics": [],
     "summary": "第一轮（TF-0176）已完成架构独立、可靠性吸收、聊天/恢复/足迹/MCP 与旧容器退役；231 个旧节点中只剩两个滞后的 blocked 收尾项。但当前 GUI 只有聊天壳，goals / workspots / checkpoints / tribunal / premises 等账本能力停留在 CLI、HTTP 与 MCP；chat provider 只有 claude 车道可观测；ADR-0013 规定的 spawn-sidecar 形态已与「不得重新引入 sidecar」的仓库总则冲突。本目标不是「把 Helmor 搬回来」：不恢复 Tauri、Rust、SQLite、sidecar，不追求旧桌面应用功能对等。",
     "title": "Workbench 第二轮选择性吸收：把账本能力做成完整产品面，再在新边界下接入第二个可观测 provider",
-    "updated_at": "2026-09-21T12:45:56.330856Z"
+    "updated_at": "2026-09-22T15:10:42.758972Z"
   },
   "TF-0233": {
     "acceptance_criteria": [
