@@ -1,0 +1,70 @@
+{
+  "applied_at": "2026-09-22T02:39:02.170101Z",
+  "base_graph_hash": "8f02db23ad7a589caee110e5ba28ae7ac3f39aff5b2eae8b3884dd1d2824aaf8",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "https://github.com/Baixu22/VerseSpace/pull/29",
+          "git log：73bd672 chore(closeout) / a7d314a ci(release) / d35a224 style / df2fe47 fix(release)",
+          "gh pr view 29 state=MERGED mergedAt=2026-09-22T02:37:22Z mergeCommit=eb0e4cbb59b5b8668bf758f03a4f3f150619385f",
+          "origin/main 与 gitlab main 均 eb0e4cb；本地 main 已快进对齐"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "已合入。PR #29 于 2026-09-22 02:37 UTC 合入 main（合并提交 eb0e4cb，父 8610d18 + 48a40f1）；TF-0231 沙箱注入判据成果、阶段 1 收口与阶段 2 全部改动随之落到 origin/main 与 gitlab main。"
+      },
+      "id": "TF-0234"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "gh run list --branch main --limit 1 → 2026-09-21T10:15 CI failure；jobs: Detect changes failure，其余 skipped",
+          "grep stages .gitlab-ci.yml → stages: [verify]；无 release/publish job",
+          ".github/workflows/release-workbench.yml:9-12 on push tags workbench-v*；:24 runs-on matrix.os",
+          ".gitlab-ci.yml stages: [verify, release]；release-build / release-publish 两个 job",
+          "scripts/publish-workbench-release.mjs（node 无依赖）；scripts/tag-workbench-release.mjs 同时 push origin 与 gitlab",
+          "AGENTS.md Releases / Licensing 两条更新",
+          "PR #29",
+          "PR #29 合入 eb0e4cb：.gitlab-ci.yml release 阶段与 publish 脚本已在 main"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "用户决定：建 GitLab 发行车道。已实现：.gitlab-ci.yml 新增 release 阶段——release-build 在 workbench-v* tag 上跑 bun run build:all（Bun 交叉编译四平台）并把 dist/workbench-* + NOTICE/LICENSE/LICENSE-APACHE 存为 artifacts；release-publish 为手动 job，跑 scripts/publish-workbench-release.mjs：校验 tag 与包版本一致、七个发行物齐全、生成 SHA256SUMS、取 CHANGELOG 对应段落作 notes 并附「只有 windows-x64 跑过测试」的平台覆盖说明，gh release create --verify-tag。tag 脚本改为同时推 origin 与 gitlab；AGENTS.md 发行段已记录两条车道关系。glab ci lint 有效；publish 脚本对假 dist 做过 dry-run（首段/末段 CHANGELOG 提取均正确）。已随 PR #29 合入 main。GitLab 发行车道（.gitlab-ci.yml release 阶段 + scripts/publish-workbench-release.mjs）在库中就位；glab ci lint 有效、publish 脚本 dry-run 通过。真实 workbench-v* tag 的端到端发版留待下次实际发版验证（不阻塞本轮，届时走 release-build → 手动 release-publish 即结案确认）。"
+      },
+      "id": "TF-0237"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "对抗复审结论：thread-run.ts 重排 correct（对照 git show df2fe47）；notice-parts 首行/正文切分 robust；claude-mcp/session gate 与 --resume 无冲突；tribunal-routes GET 误方法→404 不泄漏、nonexistent→404、shelve(undefined)→默认30；tribunal-slice 404 单次回源不循环",
+          "收尾提交 7d70690：appendCommandFlags 单一来源 + 空格路径往返测试；threads.test.ts 失败路径断言 user 消息 parts；delivery 仅由 premise_notice_delivered 事件追踪",
+          "PR #29 MERGED → eb0e4cb；阶段 1 五个收口子节点全部 done 并落库"
+        ],
+        "next_action": "",
+        "progress": 100,
+        "progress_source": "manual",
+        "status": "done",
+        "summary": "两个 blocked 节点里，TF-0228 已被现实完成（PR #28 合入、GitLab 流水线绿），TF-0230 是历史取证且不可达；TF-0231 成果已研究完但未提交；AGENTS.md 错写了 codex adapter；stash 原语无调用者；发行流水线仍依赖被卡住的 GitHub Actions。\n\n【2026-09-21 进展】TF-0235 / 0236 / 0238 已完成；TF-0234 的改动已在工作树就绪待提交；TF-0237 风险已核实、替代方案已写明，等用户决定。\n\n【2026-09-21 第二轮】TF-0237 已实现 GitLab 发行车道；全部改动在 PR #29；剩余只有 PR 合入。\n\n【2026-09-22 复审收尾】阶段 1+2 全部改动经对抗式复审（general-purpose 子代理，逐文件对照 df2fe47）：无正确性回归。thread-run 通知抽取重排干净（两条车道都仍收到 notices、acknowledgeDelivery 各调一次、resend 不丢通知、append-only 未破）；tribunal 路由方法/404/shelve 默认值均正确；前端裁决竞态仅瞬时闪烁无死循环。两处收口已提交（7d70690）：MCP flag 空格路径抽 appendCommandFlags 并加往返测试；前提通知失败路径语义钉死为「本轮 prompt 折入」而非送达回执。全量绿：workbench 927 / ui 67 / context-rot 65 / typecheck / biome。\n\n【2026-09-22 合入】阶段 1 全部收口项（TF-0234 提交/合入、TF-0235 AGENTS.md、TF-0236 删 stash、TF-0238 清 Helmor 残留、TF-0237 GitLab 发行车道）随 PR #29 合入 main（eb0e4cb）。阶段 1 关闭。"
+      },
+      "id": "TF-0233"
+    }
+  ],
+  "created_at": "2026-09-22T02:39:01.784692Z",
+  "proposal_id": "TFP-2026-09-22-pr29-merged",
+  "rationale": "PR #29 合入 main（eb0e4cb）：阶段 1 收口 + 阶段 2 账本能力内嵌对话全部落库。收口 TF-0234（提交合入）、TF-0237（发行车道在库）、TF-0233（阶段 1 里程碑）为 done。GitHub Actions 因额度失败的 Detect changes 是已知非门禁项；GitLab 为真实 CI。",
+  "session_id": "session-2026-09-21-second-round-absorption-plan",
+  "status": "applied"
+}
