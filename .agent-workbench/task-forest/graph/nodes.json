@@ -13057,7 +13057,9 @@
       "2026-09-22 清理：smoke tag `workbench-v0.0.0-smoke` 已从 jihulab 删除，避免与真实发行 tag 混在一起；流水线 5524396 与 job 29019253 的记录留在 JihuLab 可查。",
       "2026-09-23 结案方式变更（用户指示「发行也 pass，有一个编译版本做好 github 的社区工作即可，不要做多余的内容」）：本节点按 TF-0232 验收的第二条路转 deprecated，不再把「真实 tag 走完 release-build → release-publish」与「非 Windows 平台冒烟」作为结案条件；决策写进 `docs/decisions/0019-phase4-and-release-acceptance-as-external-gates.md`。已实测的能力证据保留：release-build 在 JihuLab 上真跑通过（流水线 5524396 / job 29019253，82.2s）。",
       "2026-09-23 发行车道保留不删：`.gitlab-ci.yml` 的 release stage、`scripts/tag-workbench-release.mjs`、`scripts/publish-workbench-release.mjs` 都留在树里——它们是恢复正式发版时要用的东西，只是当前无人按验收跑。恢复时先按 `packages/workbench/README.md` 的「发行」一节重跑 dry-run。",
-      "2026-09-23 本轮实际发行的形态：不跑 tag → release-build → release-publish 流程，改为把现成四平台二进制直接挂成一个 GitHub Release（发行说明继续如实声明只有 windows-x64 跑过测试）。"
+      "2026-09-23 本轮实际发行的形态：不跑 tag → release-build → release-publish 流程，改为把现成四平台二进制直接挂成一个 GitHub Release（发行说明继续如实声明只有 windows-x64 跑过测试）。",
+      "2026-09-23 0.4.0 已发布：GitHub Release `workbench-v0.4.0`，8 个资产（四平台二进制 + NOTICE / LICENSE / LICENSE-APACHE + SHA256SUMS），tag 指向 `9ec88c9`。发布前验证：本机三套测试全绿（workbench 943 pass / 0 fail、workbench-ui 67 pass、context-rot 65 pass / 0 fail）、typecheck 与 lint 绿、`check-built` 双形态冒烟全 true；JihuLab 流水线 **5527539** 六个 verify job 全绿（pipeline-heartbeat / biome / typecheck / workbench-test 230.8s / workbench-ui-test / context-rot-test）——这是最终树的独立 CI 确认。发行说明按脚本生成，含 CHANGELOG 0.4.0 段落与「只有 windows-x64 跑过测试」的平台覆盖声明。",
+      "2026-09-23 运维读数（值得记）：快照推上去后流水线一度停在 pending、runner 日志无任何 job——原因是 **GitLab runner 进程已死**（`Get-Process gitlab-runner` 为空，日志末尾是 `couldn't execute POST https://jihulab.com/api/v4/jobs/request: EOF`），不是 CI 或代码故障；网络实测正常（jihulab SSH 可列 ref、HTTPS API 返回 401 而非连接失败）。按 AGENTS.md 的 `start-runner.bat` 重启后立刻取到 pipeline 5527539。这再次印证 AGENTS.md「runner 是前台进程而非 Windows 服务，死了流水线会空等，看起来像 CI 坏了」那一条——诊断顺序应当是先看进程，再看代码。"
     ],
     "execution_hints": [],
     "id": "TF-0237",
@@ -13076,7 +13078,7 @@
     "success_metrics": [],
     "summary": "按用户 2026-09-23 指示 pass：不再把「真实 workbench-v* tag 走完 release-build → release-publish」与「至少一个非 Windows 平台的冒烟」作为结案条件（决策见 ADR-0019）。原验收第 2 条的非 Windows 冒烟在本机结构性不可达（WSL2 因 hypervisorlaunchtype=Off 起不来、无 docker/qemu/Linux runner、GitHub Actions 额度耗尽），已记偏差 TFD-07ee49b62f。发行改为以「一个可下载的编译版本 + GitHub Release + 社区面」为准。已实测的 release-build（流水线 5524396 / job 29019253）保留为能力证据，不升级为验收；发行车道保留不删，恢复发版时先 dry-run。**不得**因为本节点转 deprecated 把「四平台未在真实宿主上验证」读成「已验证」。",
     "title": "风险：四平台发行验证无处可跑——release-workbench.yml 仍依赖被卡住的 GitHub Actions，本机 GitLab runner 只有 Windows",
-    "updated_at": "2026-09-22T16:41:11.118254Z"
+    "updated_at": "2026-09-23T04:04:31.854397Z"
   },
   "TF-0238": {
     "acceptance_criteria": [

@@ -1,0 +1,42 @@
+{
+  "applied_at": "2026-09-23T04:04:31.948752Z",
+  "base_graph_hash": "a9afd3a5dacb07a249ff751d6f55b02ce4c1b7d115cbbe6ab35ce92bedeee432",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "evidence": [
+          "gh run list --branch main --limit 1 → 2026-09-21T10:15 CI failure；jobs: Detect changes failure，其余 skipped",
+          "grep stages .gitlab-ci.yml → stages: [verify]；无 release/publish job",
+          ".github/workflows/release-workbench.yml:9-12 on push tags workbench-v*；:24 runs-on matrix.os",
+          ".gitlab-ci.yml stages: [verify, release]；release-build / release-publish 两个 job",
+          "scripts/publish-workbench-release.mjs（node 无依赖）；scripts/tag-workbench-release.mjs 同时 push origin 与 gitlab",
+          "AGENTS.md Releases / Licensing 两条更新",
+          "PR #29",
+          "2026-09-22 验收第 1 条（GitHub Actions 额度）现场回答：仍未恢复——`gh run list --branch main --limit 5` 最近一次 run 35680141042（PR #29 合并，2026-09-22T02:37:25Z）4 秒即 failure，此前 #28 的 35587757735 同为 4 秒 failure；且 `.github/` 只剩 FUNDING.yml，两条 workflow 已按 ADR-0018 删除。故「若恢复」分支不成立，走第 2 条。",
+          "2026-09-22 release 车道**实测跑通**（不再只是脚本 dry-run）：用当前树（HEAD dc5fed1 的 tree 24a12340）造孤儿快照 tag `workbench-v0.0.0-smoke` 推到 jihulab，触发流水线 **5524396**。verify 六个 job 全绿（pipeline-heartbeat 10.2s / biome 46.2s / context-rot-test 46.3s / workbench-test 167.9s / typecheck 25.6s / workbench-ui-test 32.1s），随后 **release-build（job 29019253）success，82.2s**——即 `bun install --frozen-lockfile` → `bun run build:all` 四平台交叉编译 → artifacts 收集，在 CI 侧真的能跑。`release-publish` 是手动 job，本轮**没有**触发：GitHub Releases 仍是 v0.1.0 / v0.2.0 / v0.3.0 三条，origin tag 未变，无任何公开发布产物。",
+          "2026-09-22 本机同源复核（与 CI 同一条命令路径）：`bun run build:all` 本机 exit 0，产出四个二进制并核对头部——`workbench-linux-x64` = ELF 64-bit LSB、e_machine 0x3e（x86-64）；`workbench-macos-arm64` = Mach-O cputype 0x0100000c；`workbench-macos-x64` = Mach-O cputype 0x01000007；`workbench-windows-x64.exe` = MZ。`node scripts/publish-workbench-release.mjs --tag workbench-v0.3.0 --dry-run` 对真实 dist 通过（7 个发行物齐全、SHA256SUMS 四行生成、CHANGELOG 0.3.0 段落提取正确）；`bun run scripts/check-built.ts --native dist/workbench-windows-x64.exe --js dist/workbench.js` 双形态各输出 initialized / doctor / stats / headlessUi / bundledUi 全 true。",
+          "2026-09-22 验收第 2 条的「至少一个非 Windows 平台的冒烟」**本机确实做不到**（逐项排除，另见本轮偏差记录）：WSL2 起不来（Ubuntu-22.04 已注册，但 `wsl -d Ubuntu-22.04 -- echo ok` 报 Wsl/Service/CreateInstance/CreateVm/HCS/HCS_E_HYPERV_NOT_INSTALLED；根因是 `bcdedit /enum {current}` 的 `hypervisorlaunchtype Off`，需管理员改 + 重启——VirtualMachinePlatform 与 Microsoft-Windows-Subsystem-Linux 两个特性本身都是 Enabled）；无 docker / podman / qemu / multipass / vagrant；JihuLab 只有本机 Windows shell runner 且 `shared_runners_enabled=false`；GitHub Actions 额度耗尽。因此本轮只能给到「产物形态核验」（ELF/Mach-O/PE 头部 + 架构 + 完整构建），**不能**声称在非 Windows 平台上执行过。",
+          "2026-09-22 收口判定：next_action 的「真实 workbench-v* tag 走完 release-build → release-publish」只完成了前一半（release-build 已实测），release-publish 仍需一次真人确认版本号与 CHANGELOG 的真发版；非 Windows 冒烟仍缺。故本节点保持 review_needed，不结案。",
+          "2026-09-22 清理：smoke tag `workbench-v0.0.0-smoke` 已从 jihulab 删除，避免与真实发行 tag 混在一起；流水线 5524396 与 job 29019253 的记录留在 JihuLab 可查。",
+          "2026-09-23 结案方式变更（用户指示「发行也 pass，有一个编译版本做好 github 的社区工作即可，不要做多余的内容」）：本节点按 TF-0232 验收的第二条路转 deprecated，不再把「真实 tag 走完 release-build → release-publish」与「非 Windows 平台冒烟」作为结案条件；决策写进 `docs/decisions/0019-phase4-and-release-acceptance-as-external-gates.md`。已实测的能力证据保留：release-build 在 JihuLab 上真跑通过（流水线 5524396 / job 29019253，82.2s）。",
+          "2026-09-23 发行车道保留不删：`.gitlab-ci.yml` 的 release stage、`scripts/tag-workbench-release.mjs`、`scripts/publish-workbench-release.mjs` 都留在树里——它们是恢复正式发版时要用的东西，只是当前无人按验收跑。恢复时先按 `packages/workbench/README.md` 的「发行」一节重跑 dry-run。",
+          "2026-09-23 本轮实际发行的形态：不跑 tag → release-build → release-publish 流程，改为把现成四平台二进制直接挂成一个 GitHub Release（发行说明继续如实声明只有 windows-x64 跑过测试）。",
+          "2026-09-23 0.4.0 已发布：GitHub Release `workbench-v0.4.0`，8 个资产（四平台二进制 + NOTICE / LICENSE / LICENSE-APACHE + SHA256SUMS），tag 指向 `9ec88c9`。发布前验证：本机三套测试全绿（workbench 943 pass / 0 fail、workbench-ui 67 pass、context-rot 65 pass / 0 fail）、typecheck 与 lint 绿、`check-built` 双形态冒烟全 true；JihuLab 流水线 **5527539** 六个 verify job 全绿（pipeline-heartbeat / biome / typecheck / workbench-test 230.8s / workbench-ui-test / context-rot-test）——这是最终树的独立 CI 确认。发行说明按脚本生成，含 CHANGELOG 0.4.0 段落与「只有 windows-x64 跑过测试」的平台覆盖声明。",
+          "2026-09-23 运维读数（值得记）：快照推上去后流水线一度停在 pending、runner 日志无任何 job——原因是 **GitLab runner 进程已死**（`Get-Process gitlab-runner` 为空，日志末尾是 `couldn't execute POST https://jihulab.com/api/v4/jobs/request: EOF`），不是 CI 或代码故障；网络实测正常（jihulab SSH 可列 ref、HTTPS API 返回 401 而非连接失败）。按 AGENTS.md 的 `start-runner.bat` 重启后立刻取到 pipeline 5527539。这再次印证 AGENTS.md「runner 是前台进程而非 Windows 服务，死了流水线会空等，看起来像 CI 坏了」那一条——诊断顺序应当是先看进程，再看代码。"
+        ]
+      },
+      "id": "TF-0237"
+    }
+  ],
+  "created_at": "2026-09-23T04:04:31Z",
+  "proposal_id": "TFP-2026-09-23-release-0-4-0-shipped",
+  "rationale": "0.4.0 已按用户决定以「编译版本 + GitHub Release + 社区面」的形式发布（不跑 tag → release-build → release-publish 流程），但森林里只记了计划、没记结果；TF-0237 的 deprecation reason 以「发行以 GitHub Release 为准」结案，若发布本身不入账，后来者无法判断它是否真的发生过。本提案补两条读数：发布结果与最终树的 CI 确认，以及本轮「runner 进程已死导致流水线空等」的运维读数。不改任何状态。",
+  "session_id": "phase4-release-passed-20260923",
+  "status": "applied"
+}
