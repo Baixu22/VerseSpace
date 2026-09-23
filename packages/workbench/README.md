@@ -18,7 +18,7 @@ bun install -g @baixu22/workbench
 
 ## 发行
 
-**当前对外承诺的形态是方式一的单文件二进制**（`workbench-v*` tag → 四平台构建 → 挂到 GitHub Release）。npm 形态的目标没变，但被两件事挡住，都不是代码问题：本机 `~/.npmrc` 里的 npm token 已被 registry 拒绝（`/-/whoami` → 401），且仓库里没有把 publish 接进任何 workflow。
+**当前对外承诺的形态是方式一的单文件二进制**（`workbench-v*` tag → 四平台构建 → 挂到 GitHub Release）。npm 形态的目标没变，但**发布本身是维护者的明确暂缓决定，不是待办**；另有一个环境障碍：本机 `~/.npmrc` 里的 npm token 已被 registry 拒绝（`/-/whoami` → 401）。
 
 ```bash
 # 看这一版会打什么 tag（默认 dry-run，不做任何写操作）
@@ -28,7 +28,7 @@ bun run release:tag:workbench
 bun run release:tag:workbench --push
 ```
 
-JihuLab（极狐）的 release 阶段先跑 `packages/workbench` 的测试，再交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64，`release-publish`（手动）把产物挂到该 tag 的 GitHub Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役，GitHub Actions 车道已随 ADR-0018 退役。
+JihuLab（极狐）流水线在 **verify 阶段**跑 `packages/workbench` 的测试，**release 阶段**的 `release-build` 交叉编译 windows-x64 / linux-x64 / macos-arm64 / macos-x64，`release-publish`（手动）把产物挂到该 tag 的 GitHub Release。也可以完全不走这条车道：本机用同一条命令构建（`cd packages/workbench && bun run build:all`）后跑 `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`——0.4.0 就是这么发的。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役，GitHub Actions 车道已随 ADR-0018 退役。
 
 ## 5 分钟上手
 

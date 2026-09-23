@@ -44,7 +44,7 @@
       "不引入数据库、消息队列、Web 服务器"
     ],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "得到一个不依赖任何编辑器、零数据库、git 可直接追踪的 AI 协作元结构管理工具，作为 Helmor 的下一代架构基座；MVP 达成『手动模式可用』，v0.1.0 达成『可安装、可发行』。",
     "remaining_minutes_max": null,
@@ -55,7 +55,7 @@
     "success_metrics": [],
     "summary": "把 Helmor 仓库从 Tauri 桌面应用演进为《Workbench 实现架构骨架》定义的七模块三层 CLI 工具：Blackboard（.workbench/ 下 YAML+JSONL 存储）、Automaton 纯函数状态机、Verifier 验证执行器、Scheduler 调度器、CLI、Watcher 文件监听、ContextGen 上下文生成器，由 Runtime 组合成事件循环。",
     "title": "Workbench 新架构：CLI + 文件系统状态管理器（交付 MVP 与 v0.1.0 发行版）",
-    "updated_at": "2026-08-28T12:57:56.799471Z"
+    "updated_at": "2026-09-23T04:27:40.657079Z"
   },
   "TF-0002": {
     "acceptance_criteria": [
@@ -64,7 +64,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -90,7 +90,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把『改成什么、建在哪里、旧代码怎么办、借什么轮子』四个方向性问题一次性定死，避免开发中途反复。",
     "remaining_minutes_max": null,
@@ -101,7 +101,7 @@
     "success_metrics": [],
     "summary": "确认运行时、包落位、存量处置、基座策略四项决策，并补齐 git 仓库基线；所有后续里程碑都以这些决策为前提。",
     "title": "里程碑一：技术决策与基座选型（开工前置）",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.657079Z"
   },
   "TF-0003": {
     "acceptance_criteria": [
@@ -111,7 +111,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -140,7 +140,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让后续所有模块代码有一个可测试、可 lint、可 CI 的家。",
     "remaining_minutes_max": null,
@@ -151,7 +151,7 @@
     "success_metrics": [],
     "summary": "创建 packages/workbench 独立包（复刻 sidecar 的独立 lockfile/tsconfig/bun test 模板），接入 CLI 框架与 bin 入口，补齐 biome 覆盖确认与 CI 车道。",
     "title": "里程碑二：工程骨架与新 CLI 包落地",
-    "updated_at": "2026-08-28T10:30:48.037729Z"
+    "updated_at": "2026-09-23T04:27:40.657079Z"
   },
   "TF-0004": {
     "acceptance_criteria": [
@@ -161,7 +161,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -188,7 +188,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "数据层是骨架 Phase 1，其他一切模块都依赖它；类型定义是所有模块的契约。",
     "remaining_minutes_max": null,
@@ -199,7 +199,7 @@
     "success_metrics": [],
     "summary": "先定义全部跨模块类型（goal/checkpoint/workspot/decision/interface/event/transition/config）与运行时校验，再实现 .workbench/ 目录的结构化读写：原子写、JSONL 追加、goals/decisions/interfaces/state/checkpoints 全套 API 与 WorldSnapshot 聚合。",
     "title": "里程碑三：类型契约与 Blackboard 数据层（骨架 Phase 1）",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-23T04:27:40.657079Z"
   },
   "TF-0005": {
     "acceptance_criteria": [
@@ -209,7 +209,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -236,7 +236,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "状态流转是系统正确性的核心，必须纯逻辑、独立可测（不读文件、不执行命令）。",
     "remaining_minutes_max": null,
@@ -247,7 +247,7 @@
     "success_metrics": [],
     "summary": "实现 goal/checkpoint/workspot 三个子状态机与 evaluator 组合器：输入 WorldSnapshot、输出 Transition[]，无状态、无副作用、幂等，配表驱动单测。",
     "title": "里程碑四：Automaton 纯函数状态机引擎（骨架 Phase 2）",
-    "updated_at": "2026-08-28T11:05:09.680262Z"
+    "updated_at": "2026-09-23T04:27:40.657079Z"
   },
   "TF-0006": {
     "acceptance_criteria": [
@@ -256,7 +256,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -283,7 +283,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 Blackboard 信息翻译给任意 Agent（Claude Code/Codex/Copilot），是『不侵入 Agent、利用项目指令机制』集成方式的落点。",
     "remaining_minutes_max": null,
@@ -294,7 +294,7 @@
     "success_metrics": [],
     "summary": "按工位的 context_needs 从 Blackboard 查询目标、验收条件、决策、接口、最近事件，渲染 .agent-context.md；支持单工位与全量刷新。",
     "title": "里程碑五：ContextGen 上下文生成器（骨架 Phase 2）",
-    "updated_at": "2026-08-28T11:08:22.582483Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0007": {
     "acceptance_criteria": [
@@ -304,7 +304,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -331,7 +331,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让 checkpoint 的『已验证』状态有真实执行背书，而不是 agent 自述。",
     "remaining_minutes_max": null,
@@ -342,7 +342,7 @@
     "success_metrics": [],
     "summary": "按 checkpoint 的验证策略（test/type-check/build/human-review/缺省 skipped）在对应 worktree 内受控执行命令：超时控制、exit code 判定、失败输出截断归档。",
     "title": "里程碑六：Verifier 验证执行器（骨架 Phase 3）",
-    "updated_at": "2026-08-28T11:12:11.445317Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0008": {
     "acceptance_criteria": [
@@ -352,7 +352,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -379,7 +379,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把七个模块串成可用产品，达成骨架 Phase 1-4 的『第一个真正可用版本』。",
     "remaining_minutes_max": null,
@@ -390,7 +390,7 @@
     "success_metrics": [],
     "summary": "Runtime.runOnce 按 snapshot → automaton.evaluate → 逐条落 Blackboard（含调 Verifier）→ 事件落盘 的顺序组合全部模块（幂等、单轮不递归）；CLI 提供 goal/decision/interface/ws/checkpoint/sync/status/map/log 命令。达成即 MVP：手动模式全链路可用。",
     "title": "里程碑七：Runtime 组合与基础 CLI（骨架 Phase 3-4 · MVP 收口）",
-    "updated_at": "2026-08-28T11:41:30.079611Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0009": {
     "acceptance_criteria": [
@@ -400,7 +400,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -427,7 +427,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "上线调度能力，从单工位手动走向多工位并行（骨架 Phase 5）。",
     "remaining_minutes_max": null,
@@ -438,7 +438,7 @@
     "success_metrics": [],
     "summary": "scheduler.tick 按 manual/semi-auto/auto 三策略决定是否把 ready 目标派发到空闲工位（含并发上限）；dispatch 落地 = worktree 创建/绑定 + 上下文刷新 + CLI dispatch/queue 命令。",
     "title": "里程碑八：Scheduler 调度与派发（骨架 Phase 5）",
-    "updated_at": "2026-08-28T11:55:19.141473Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0010": {
     "acceptance_criteria": [
@@ -448,7 +448,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -475,7 +475,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "免手动 sync，达成骨架 Phase 6 的『后台持续运行』。",
     "remaining_minutes_max": null,
@@ -486,7 +486,7 @@
     "success_metrics": [],
     "summary": "监听 .workbench/checkpoints/staging、blackboard/goals、接口契约目录，500ms 防抖后触发 Runtime.runOnce；处理信号、崩溃恢复与单实例锁。",
     "title": "里程碑九：Watcher 后台监听模式（骨架 Phase 6）",
-    "updated_at": "2026-08-28T12:10:21.057633Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0011": {
     "acceptance_criteria": [
@@ -525,7 +525,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "发行前的质量闸门（骨架 Phase 7）。",
     "remaining_minutes_max": null,
@@ -536,7 +536,7 @@
     "success_metrics": [],
     "summary": "doctor 全量体检：DAG 完整性、接口 hash 漂移、孤儿 checkpoint、队列与状态机结论矛盾；并补容错测试（部分写入、崩溃恢复、并发 CLI 写入）。",
     "title": "里程碑十：doctor 一致性检查与容错收口（骨架 Phase 7）",
-    "updated_at": "2026-09-16T08:37:16.177754Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0012": {
     "acceptance_criteria": [
@@ -575,7 +575,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "达成『完成一个发行版』的能力：可安装、可分发、可被新人按文档上手。",
     "remaining_minutes_max": null,
@@ -586,7 +586,7 @@
     "success_metrics": [],
     "summary": "workbench 纳入 changesets 版本管理与 npm 发行链路，bun build --compile 产出三平台单文件二进制（npm 包 + 二进制双形态），扩展 CI 发行流水线，交付 README/docs/示例项目，完成首版验收清单。",
     "title": "里程碑十一：v0.1.0 发行能力（发行阶段，仓库自有）",
-    "updated_at": "2026-09-16T08:37:16.177848Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0013": {
     "acceptance_criteria": [
@@ -594,7 +594,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -620,7 +620,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -631,7 +631,7 @@
     "success_metrics": [],
     "summary": "沿用 sidecar 已验证的独立包形态（自带 lockfile、tsconfig、bun test、bun build --compile 单文件编译）；骨架文档的 types/*.ts 契约直接落地为 TS 类型。手写 4-6 状态的 switch/case，不引入状态机库。",
     "title": "决策：运行时 = Bun 1.3 + TypeScript",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0014": {
     "acceptance_criteria": [
@@ -639,7 +639,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -665,7 +665,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -676,7 +676,7 @@
     "success_metrics": [],
     "summary": "根 workspaces 已含 packages/* 通配（当前空置），biome 的 ** 通配会自动覆盖新包、lint-staged 自动生效；与 sidecar（刻意不在 workspace 内、自带独立 lockfile）并存，两条集成模式都有先例。",
     "title": "决策：包落位 = packages/workbench",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0015": {
     "acceptance_criteria": [
@@ -685,7 +685,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -712,7 +712,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -723,7 +723,7 @@
     "success_metrics": [],
     "summary": "src/、src-tauri/、sidecar/ 在 Workbench 达发行线前不删不改（仅必要修复）；一次性全量重写风险过高，新架构以新包并行生长。helmor-cli 的 clap 命令组织与 git/ops.rs 的 worktree 实现作为行为参考长期保留。",
     "title": "决策：Helmor 存量处置 = MVP 期间冻结 GUI，v0.1.0 后再评估退役",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0016": {
     "acceptance_criteria": [
@@ -732,7 +732,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -759,7 +759,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -770,7 +770,7 @@
     "success_metrics": [],
     "summary": "调研结论：beads（JSONL 图任务跟踪）、claude-task-master（PRD → 依赖任务）、Backlog.md（Markdown 任务文件）、claude-squad / vibe-kanban / conductor（worktree 多代理编排）、spec-kit（spec 驱动流程）都只覆盖单一切面，没有一个能整体充当 Blackboard + Automaton + Verifier 组合的基座。按骨架『不造轮子』清单引入组件库：yaml、citty 或 commander、chokidar、zod、picocolors；上述开源项目作为数据模型与交互参考。",
     "title": "决策：基座策略 = 核心自研 + 组件级借库（不整体 fork）",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0017": {
     "acceptance_criteria": [
@@ -779,7 +779,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -805,7 +805,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -816,7 +816,7 @@
     "success_metrics": [],
     "summary": "当前目录不是 git 仓库（疑似解压副本）：workspot 的 worktree 能力、changesets 发行与 CI 全部依赖 git 仓库存在；需初始化并确认是否保留上游 Helmor 提交历史。",
     "title": "git init 与远端配置",
-    "updated_at": "2026-08-28T09:11:45.733644Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0018": {
     "acceptance_criteria": [],
@@ -917,7 +917,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -944,7 +944,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -955,7 +955,7 @@
     "success_metrics": [],
     "summary": "package.json（bin: workbench）、独立 tsconfig（types: node+bun，参考 sidecar/tsconfig.json）、bun test 接入；根 package.json 增加 test:workbench 脚本并扩展 typecheck 链。",
     "title": "创建 packages/workbench 独立包",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0021": {
     "acceptance_criteria": [
@@ -964,7 +964,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -991,7 +991,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1002,7 +1002,7 @@
     "success_metrics": [],
     "summary": "citty 或 commander 二选一后搭出全部子命令占位；统一参数解析、--json/--quiet 双输出、退出码约定（参考 helmor-cli 的 args.rs/output.rs 分层模式）。",
     "title": "CLI 框架与命令树骨架",
-    "updated_at": "2026-08-28T09:48:35.844852Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0022": {
     "acceptance_criteria": [
@@ -1010,7 +1010,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1039,7 +1039,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1050,7 +1050,7 @@
     "success_metrics": [],
     "summary": "确认 biome ** 通配自动覆盖新包；ci.yml 的 dorny/paths-filter 增加 packages/** 车道触发 biome + typecheck + bun test。",
     "title": "biome 与 CI 车道接入",
-    "updated_at": "2026-08-28T10:30:48.037729Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0023": {
     "acceptance_criteria": [],
@@ -1105,7 +1105,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1132,7 +1132,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1143,7 +1143,7 @@
     "success_metrics": [],
     "summary": "按骨架第六节落地 goal/checkpoint/workspot/decision/interface/event/transition/config 八组类型；运行时用 zod 校验外部输入（YAML 文件内容），内部逻辑用纯 TS 类型。",
     "title": "定义 types/ 全量类型与运行时校验 schema",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0025": {
     "acceptance_criteria": [
@@ -1152,7 +1152,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1179,7 +1179,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1190,7 +1190,7 @@
     "success_metrics": [],
     "summary": "实现骨架定义的目录结构（blackboard/goals、state、checkpoints 三区、events.jsonl、workbench.yaml）与 workbench init 的幂等初始化。",
     "title": ".workbench/ 目录布局与 init 落盘",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0026": {
     "acceptance_criteria": [
@@ -1199,7 +1199,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1226,7 +1226,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1237,7 +1237,7 @@
     "success_metrics": [],
     "summary": "tmp+rename 原子写（注意 Windows 上覆盖已存在文件的 rename 语义差异）与 events.jsonl 单行追加；为 Blackboard 所有写路径提供统一原语。",
     "title": "原子写与 JSONL 追加基础设施",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0027": {
     "acceptance_criteria": [
@@ -1275,7 +1275,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1286,7 +1286,7 @@
     "success_metrics": [],
     "summary": "YAML 目标与决策的读写；接口注册表（内容 hash、getSubscribers、checkDrift 漂移检查）。返回纯数据对象，不做任何业务判断。",
     "title": "Blackboard API：goals / decisions / interfaces",
-    "updated_at": "2026-09-16T04:48:02.582953Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0028": {
     "acceptance_criteria": [
@@ -1294,7 +1294,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1321,7 +1321,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1332,7 +1332,7 @@
     "success_metrics": [],
     "summary": "workspot 状态、execution/queue.yaml 队列、conflicts 读写；staging/verified/failed 三区 checkpoint 扫描与原子移动。",
     "title": "Blackboard API：state 与 checkpoints 三区",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0029": {
     "acceptance_criteria": [
@@ -1341,7 +1341,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1368,7 +1368,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1379,7 +1379,7 @@
     "success_metrics": [],
     "summary": "聚合 goals/checkpoints/interfaces/workspots/queue 为 Automaton 的输入快照；搭临时目录夹具（每个测试独立 .workbench/）。",
     "title": "getWorldSnapshot 聚合与测试夹具",
-    "updated_at": "2026-08-28T10:55:26.128275Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0030": {
     "acceptance_criteria": [],
@@ -1461,7 +1461,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1472,13 +1472,13 @@
     "success_metrics": [],
     "summary": "planned → ready（依赖满足）→ in_progress（被派发）→ done（验证通过）→ stale_done（锚定接口漂移）/ cancelled 的转移规则；含 stale 是否阻塞下游的策略点。",
     "title": "goal-machine 状态机",
-    "updated_at": "2026-09-16T04:48:02.583009Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0032": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1505,7 +1505,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1516,13 +1516,13 @@
     "success_metrics": [],
     "summary": "draft → pending → verified → applied 主链与 failed / awaiting_review / rejected 分支的转移规则。",
     "title": "checkpoint-machine 状态机",
-    "updated_at": "2026-08-28T11:05:09.680262Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0033": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1549,7 +1549,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1560,13 +1560,13 @@
     "success_metrics": [],
     "summary": "idle → active → blocked / borrowed / completed 的转移规则，含借用与归还。",
     "title": "workspot-machine 状态机",
-    "updated_at": "2026-08-28T11:05:09.680262Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0034": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1593,7 +1593,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1604,7 +1604,7 @@
     "success_metrics": [],
     "summary": "组合三个子状态机扫描 WorldSnapshot 产出 Transition[]；无状态幂等（同输入同输出、进程随时重启不丢正确性）；合法/非法转移全表单测。",
     "title": "evaluator 组合器与表驱动单测",
-    "updated_at": "2026-08-28T11:05:09.680262Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0035": {
     "acceptance_criteria": [
@@ -1612,7 +1612,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1639,7 +1639,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1650,7 +1650,7 @@
     "success_metrics": [],
     "summary": "读取工位的 context_needs，查询目标/验收/决策/接口/最近事件，字符串模板拼装 Markdown；文件头声明自动生成、列出契约目录约束与 checkpoint 落点提示。",
     "title": ".agent-context.md 模板渲染",
-    "updated_at": "2026-08-28T11:08:22.582483Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0036": {
     "acceptance_criteria": [
@@ -1659,7 +1659,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1686,7 +1686,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1697,13 +1697,13 @@
     "success_metrics": [],
     "summary": "全工位刷新入口；用快照测试锁定模板形状防止无意漂移。",
     "title": "generateAll 全工位刷新与快照测试",
-    "updated_at": "2026-08-28T11:08:22.582483Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0037": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1730,7 +1730,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1741,13 +1741,13 @@
     "success_metrics": [],
     "summary": "test / type-check / build / human-review / 缺省 skipped 五种策略；human-review 直接返回 needs_human 交给人。",
     "title": "验证策略分发",
-    "updated_at": "2026-08-28T11:12:11.445317Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0038": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1774,7 +1774,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1785,7 +1785,7 @@
     "success_metrics": [],
     "summary": "spawn 子进程在工位 worktree 内执行：exit code 判定（expectedExitCode 默认 0）、可配置超时（默认 5 分钟）到点强杀、失败输出截断归档进 checkpoint。",
     "title": "受控子进程执行",
-    "updated_at": "2026-08-28T11:12:11.445317Z"
+    "updated_at": "2026-09-23T04:27:40.658095Z"
   },
   "TF-0039": {
     "acceptance_criteria": [
@@ -1823,7 +1823,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1834,13 +1834,13 @@
     "success_metrics": [],
     "summary": "snapshot → automaton.evaluate → 逐条执行转移（含调 Verifier）→ scheduler 决策 → 接口漂移检测 → 事件落盘；幂等可重入，本轮转移触发的变化下一轮才生效（不递归）。",
     "title": "Runtime.runOnce 编排",
-    "updated_at": "2026-09-16T04:48:02.583053Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0040": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1867,7 +1867,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1878,13 +1878,13 @@
     "success_metrics": [],
     "summary": "goal add/list/show/cancel、decision add、interface register/list/check，全部接 Blackboard 并支持 --json。",
     "title": "CLI：goal / decision / interface 子树",
-    "updated_at": "2026-08-28T11:41:30.079611Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0041": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1911,7 +1911,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1922,13 +1922,13 @@
     "success_metrics": [],
     "summary": "ws create/list/reassign/status、checkpoint create（交互式）/list/review，全部接 Blackboard 并支持 --json。",
     "title": "CLI：ws 与 checkpoint 子树",
-    "updated_at": "2026-08-28T11:41:30.079611Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0042": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -1955,7 +1955,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -1966,7 +1966,7 @@
     "success_metrics": [],
     "summary": "sync = Runtime.runOnce；status 全局概览；map 的 DAG 文本渲染（递归缩进）；log --tail N 事件流查看。",
     "title": "CLI：sync / status / map / log",
-    "updated_at": "2026-08-28T11:41:30.079611Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0043": {
     "acceptance_criteria": [
@@ -1975,7 +1975,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2002,7 +2002,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2013,13 +2013,13 @@
     "success_metrics": [],
     "summary": "真实 git 仓库夹具：init → 添加两目标（含依赖）→ 创建工位 → 手工落 staging checkpoint → sync 走通 verified/applied 与 failed 两分支 → 接口漂移触发下游 stale。全绿即 MVP 达成。",
     "title": "MVP 端到端集成测试",
-    "updated_at": "2026-08-28T11:41:30.079611Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0044": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2046,7 +2046,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2057,13 +2057,13 @@
     "success_metrics": [],
     "summary": "manual 恒 noop（调度全靠 CLI 手动）；semi-auto 返回 notify_human 提示可派发；auto 在有空闲工位且未超 maxConcurrentWorkspots 时返回 dispatch。队列就是 queue.yaml 里的数组，不引入消息中间件。",
     "title": "scheduler.tick 与三种调度策略",
-    "updated_at": "2026-08-28T11:55:19.141473Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0045": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2091,7 +2091,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2102,13 +2102,13 @@
     "success_metrics": [],
     "summary": "dispatch 动作 = git worktree 创建/绑定工位分支 + 刷新上下文文件 + 更新工位状态；CLI dispatch/queue 命令。",
     "title": "dispatch 落地与 CLI 派发命令",
-    "updated_at": "2026-08-28T11:55:19.141473Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0046": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2135,7 +2135,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2146,13 +2146,13 @@
     "success_metrics": [],
     "summary": "chokidar 监听 checkpoints/staging、goals 目录、接口契约目录；500ms 防抖合并后调用 Runtime.runOnce。",
     "title": "文件监听与防抖循环",
-    "updated_at": "2026-08-28T12:10:21.057106Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0047": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2179,7 +2179,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2190,7 +2190,7 @@
     "success_metrics": [],
     "summary": "SIGINT/SIGTERM 优雅退出、崩溃后重启自恢复（状态全在文件）、lock 文件单实例互斥。",
     "title": "watch 进程生命周期管理",
-    "updated_at": "2026-08-28T12:10:21.057106Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0048": {
     "acceptance_criteria": [],
@@ -2225,7 +2225,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2236,7 +2236,7 @@
     "success_metrics": [],
     "summary": "检查 DAG 引用完整性、接口 hash 与注册表漂移、孤儿 checkpoint、队列中目标与状态机结论的矛盾、worktree 与分支绑定一致性；输出定位与修复建议。",
     "title": "doctor 全量一致性体检",
-    "updated_at": "2026-09-16T04:48:02.583092Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0049": {
     "acceptance_criteria": [],
@@ -2271,7 +2271,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2282,7 +2282,7 @@
     "success_metrics": [],
     "summary": "写入中途 kill（半截 YAML/半行 JSONL）后 sync 自愈或明确报错；两个 CLI 进程并发写的串行化行为验证。",
     "title": "容错与并发写入测试",
-    "updated_at": "2026-09-16T04:48:02.583130Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0050": {
     "acceptance_criteria": [],
@@ -2316,7 +2316,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2327,13 +2327,13 @@
     "success_metrics": [],
     "summary": "把 packages/workbench 纳入 changesets：现 config 为 access: restricted 且 ignore 里只有 marketing，需改 public 并确认 privatePackages 行为；sidecar 不在 workspace 内的先例要显式处理，避免发行脚本漏掉新包。",
     "title": "changesets 接入与 npm 发布链路",
-    "updated_at": "2026-09-16T04:48:02.583166Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0051": {
     "acceptance_criteria": [],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2364,7 +2364,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2375,7 +2375,7 @@
     "success_metrics": [],
     "summary": "bun build --compile 产出 Windows/macOS/Linux 三平台单文件二进制（参考 sidecar/scripts/build.ts 的交叉编译与目标三元组处理）；npm 包形态（内嵌平台二进制 vs 纯 JS）二选一落地。",
     "title": "构建产物：单文件二进制 + npm 双形态",
-    "updated_at": "2026-09-07T08:42:43.439648Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0052": {
     "acceptance_criteria": [],
@@ -2410,7 +2410,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2421,7 +2421,7 @@
     "success_metrics": [],
     "summary": "publish.yml 扩展或新增独立 workflow：平台矩阵构建、npm token、GitHub Release 产物挂载、tag 触发；沿用 release-plan.yml 的 changesets/action 模式。",
     "title": "发行流水线扩展",
-    "updated_at": "2026-09-16T04:48:02.583204Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0053": {
     "acceptance_criteria": [],
@@ -2456,7 +2456,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2467,7 +2467,7 @@
     "success_metrics": [],
     "summary": "quickstart（5 分钟从 init 到 sync）、命令参考、.agent-context.md 生成示例、pre-commit 保护 hook 示例、架构说明（可直接引用骨架文档）。",
     "title": "README、docs 与示例项目",
-    "updated_at": "2026-09-16T04:48:02.583240Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0054": {
     "acceptance_criteria": [],
@@ -2502,7 +2502,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2513,7 +2513,7 @@
     "success_metrics": [],
     "summary": "三平台安装冒烟、示例项目按文档端到端复现、CHANGELOG 与 tag v0.1.0、首个发行说明。",
     "title": "v0.1.0 发行验收清单",
-    "updated_at": "2026-09-16T04:48:02.583277Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0055": {
     "acceptance_criteria": [
@@ -2573,7 +2573,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2600,7 +2600,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2611,7 +2611,7 @@
     "success_metrics": [],
     "summary": "v0.2.0 新增本地 Web GUI：apps/workbench-ui 复用仓库 React 19 + Vite + Tailwind v4 + shadcn/ui 栈，主题直接引用仓库 color-theme.css；workbench ui 用 Bun.serve 提供只读 API + 静态 SPA，UI 资源构建时内嵌进四平台单文件二进制。首版 vanilla HTML 方案被用户否决（重复造轮子）后按 ADR-0005 重做。",
     "title": "GUI：workbench ui 本地面板（React + shadcn，ADR-0005）",
-    "updated_at": "2026-08-28T14:37:32.289519Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0057": {
     "acceptance_criteria": [
@@ -2907,7 +2907,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 1,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2918,7 +2918,7 @@
     "success_metrics": [],
     "summary": "三项缺陷 + 一项二元风险 + 自举。在这些完成之前，关于 runtime 的一切声明都不可信。",
     "title": "里程碑 S0：前置修复与二元风险验证（不加功能）",
-    "updated_at": "2026-09-16T04:16:24.177631Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0062": {
     "acceptance_criteria": [
@@ -2927,7 +2927,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -2960,7 +2960,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -2975,7 +2975,7 @@
     "success_metrics": [],
     "summary": "ui/server.ts 每个响应带 access-control-allow-origin:*；绑 127.0.0.1 挡不住浏览器，而 POST /api/agent/run 是任意 agent 执行、PATCH /api/config/chat 写 API key。",
     "title": "修复 UI server 的 CORS／鉴权漏洞",
-    "updated_at": "2026-08-30T07:07:48.675387Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0063": {
     "acceptance_criteria": [
@@ -2985,7 +2985,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3020,7 +3020,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3038,7 +3038,7 @@
     "success_metrics": [],
     "summary": "三处 spawn 三套纪律，只有 verifier 是对的。chat 的取消在 Windows 上杀 cmd.exe shim 而孤儿化 claude；runner 无 kill、无超时、pid 不落盘、输出无界累积在内存。",
     "title": "抽取进程 supervisor（结构化并发 + OTP 升级放弃）",
-    "updated_at": "2026-08-30T08:04:57.447539Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0064": {
     "acceptance_criteria": [
@@ -3047,7 +3047,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3080,7 +3080,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3095,7 +3095,7 @@
     "success_metrics": [],
     "summary": "唯一并发原语是 tmp+rename，没有 CAS、没有版本前置条件。interfaces.version 递增但从不用作 precondition。两进程同写会静默丢更新，而有一条测试把它断言成了正确行为。",
     "title": "blackboard 写前置条件（CAS）+ 队列改一条一文件",
-    "updated_at": "2026-08-30T07:38:03.521426Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0065": {
     "acceptance_criteria": [
@@ -3104,7 +3104,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3133,7 +3133,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3147,7 +3147,7 @@
     "success_metrics": [],
     "summary": "watcher/lock.ts 是 check-then-write 不是 O_EXCL，两个 watcher 同时起会都拿到锁；且它只护 watch，sync 与 POST /api/sync 与 POST /api/dispatch 全部绕过。",
     "title": "runOnce 单写者保证（O_EXCL，覆盖全路径）",
-    "updated_at": "2026-08-30T07:18:35.634383Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0066": {
     "acceptance_criteria": [
@@ -3155,7 +3155,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3194,7 +3194,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3208,7 +3208,7 @@
     "success_metrics": [],
     "summary": "整套架构唯一的二元风险：能不能从外部往一个活着的会话投递消息。半天可以打掉，且必须在写任何功能代码之前打掉。",
     "title": "升级 claude CLI 至 2.1.234+ 并验证跨会话 socket 连通性",
-    "updated_at": "2026-08-30T08:27:50.503683Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0067": {
     "acceptance_criteria": [
@@ -3217,7 +3217,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3243,7 +3243,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3254,7 +3254,7 @@
     "success_metrics": [],
     "summary": "仓库里至今没有 .workbench/——这套系统从没跑过自己。闭环合上之前，关于 runtime 的一切声明都没被唯一重要的用户验证过。",
     "title": "自举：在本仓库 workbench init 并用它推进下一个里程碑",
-    "updated_at": "2026-08-30T08:33:03.656704Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0068": {
     "acceptance_criteria": [
@@ -3299,7 +3299,7 @@
       "不做任务身份证的治理展示——那是副产品，不是验收项"
     ],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3313,7 +3313,7 @@
     "success_metrics": [],
     "summary": "把会话、人的编辑器、git、CI 统一注册为『写者』，并采集它们的读写足迹。这不是治理功能——runtime 无法通知一个不在模型里的写者，所以它是协调的前置条件。",
     "title": "里程碑 R1：写者成为黑板公民（足迹采集）",
-    "updated_at": "2026-09-16T08:37:16.177932Z"
+    "updated_at": "2026-09-23T04:27:40.659315Z"
   },
   "TF-0069": {
     "acceptance_criteria": [
@@ -3321,7 +3321,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3355,7 +3355,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3370,7 +3370,7 @@
     "success_metrics": [],
     "summary": "新增 blackboard 的 sessions 区：写者记录带 task／workspot／status 与 footprint.jsonl。关键是把非 agent 的写者也注册进来。",
     "title": "sessions/ 区与写者注册（含人、git、CI）",
-    "updated_at": "2026-08-30T09:23:45.167522Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0070": {
     "acceptance_criteria": [
@@ -3414,7 +3414,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3429,7 +3429,7 @@
     "success_metrics": [],
     "summary": "tool_use 与 tool_result 已经在被解析，渲染完就丢掉。采集是在既有解析点加几行落盘，不是新搭管线。",
     "title": "stream-json 足迹采集（复用既有解析点）",
-    "updated_at": "2026-09-16T04:48:02.583318Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0071": {
     "acceptance_criteria": [
@@ -3438,7 +3438,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3471,7 +3471,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3486,7 +3486,7 @@
     "success_metrics": [],
     "summary": "借 W3C PROV 的词汇与 OpenLineage 的 facets 可扩展性，让『哪个写者、读了什么、生成了什么』成为一次查询而不是一次考古。",
     "title": "PROV 式事件 schema + 单调 seq",
-    "updated_at": "2026-08-30T09:23:46.427874Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0072": {
     "acceptance_criteria": [
@@ -3494,7 +3494,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3526,7 +3526,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3540,7 +3540,7 @@
     "success_metrics": [],
     "summary": "现在自己生成 t-<base36> 线程 id，再从流里捕获 claudeSessionId 拿去 --resume。用 --session-id 由 runtime 指定，两个标识符塌成一个。",
     "title": "用 --session-id 铸币，塌缩双标识符",
-    "updated_at": "2026-08-30T09:23:47.065095Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0073": {
     "acceptance_criteria": [
@@ -3579,7 +3579,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3594,7 +3594,7 @@
     "success_metrics": [],
     "summary": "差异化本体。reconciliation 循环比对活跃写者的读集与磁盘现值，不匹配则通知，由 LLM 判断是否真推翻前提并只修补受影响的那几步。",
     "title": "里程碑 R2：陈旧前提检测（建议式并发控制）",
-    "updated_at": "2026-09-16T04:16:24.177703Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0074": {
     "acceptance_criteria": [
@@ -3603,7 +3603,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3633,7 +3633,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3647,7 +3647,7 @@
     "success_metrics": [],
     "summary": "抄 Salsa 的 durability。node_modules／vendor／dist／生成物为 durable，src 为 volatile；每 tier 一个计数器的版本向量。纯精度收益、零召回损失。",
     "title": "谓词第 1 层：读集来源分级（durability tiers）",
-    "updated_at": "2026-08-30T14:08:09.665142Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0075": {
     "acceptance_criteria": [
@@ -3655,7 +3655,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3686,7 +3686,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3700,7 +3700,7 @@
     "success_metrics": [],
     "summary": "记录字节／行区间而非整文件。grep 记命中 hunk，读文件记真正进上下文的部分；有写入时按 diff hunk 重定位，只在重叠时通知。",
     "title": "谓词第 2 层：跨度限定的读",
-    "updated_at": "2026-09-07T07:35:14.316089Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0076": {
     "acceptance_criteria": [
@@ -3747,7 +3747,7 @@
       "不追求抓到纯方法体的语义变化（改默认值、翻布尔、收紧校验、换异常类型）——所有 ABI 式谓词对此按构造盲，这是已接受并记录在案的空洞"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3762,7 +3762,7 @@
     "success_metrics": [],
     "summary": "H(surface) 为有序的（导出符号名、种类、签名文本），剥掉方法体／注释／空白／私有成员／位置。依赖式读只在导出面变化时通知；主题式读方法体变化也通知。",
     "title": "谓词第 3 层：导出面哈希 + 依赖式读与主题式读分离",
-    "updated_at": "2026-09-16T04:17:26.651954Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0077": {
     "acceptance_criteria": [
@@ -3808,7 +3808,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3823,7 +3823,7 @@
     "success_metrics": [],
     "summary": "通知通过现有会话的 stdin stream-json 输入送达，由 runtime 排队、chat 路径投递并记录确认。socket 是废止的早期方案，不是当前实现。",
     "title": "失效通知投递（stdin stream-json，现有会话输入边界）",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0078": {
     "acceptance_criteria": [
@@ -3831,7 +3831,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -3859,7 +3859,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3873,7 +3873,7 @@
     "success_metrics": [],
     "summary": "唯一允许打断的例外。若 agent 的下一个调用正是写入失效区域，同步阻塞该调用——那不是打断，那是封印点。",
     "title": "封印点：下一调用写入失效区域则同步阻塞",
-    "updated_at": "2026-08-30T15:27:05.983811Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0079": {
     "acceptance_criteria": [
@@ -3923,7 +3923,7 @@
       "不做 Cassandra 式约束调度"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3938,7 +3938,7 @@
     "success_metrics": [],
     "summary": "合并安全网已接入共用派发入口：自动、CLI 和 HTTP 派发前运行真实合并预测及稀有写集重叠检查，告警进入裁决队列；失败可见，保持建议性质。",
     "title": "便宜的合并安全网（ConE 式写集重叠 + git merge-tree）",
-    "updated_at": "2026-09-14T00:00:56.687809Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0080": {
     "acceptance_criteria": [
@@ -3986,7 +3986,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -3997,7 +3997,7 @@
     "success_metrics": [],
     "summary": "notify_human 已有 9 个发射点遍布三个状态机与 scheduler，目前只是被丢掉的数组。把它变成按 ISA-18.2 纪律运作的真队列。",
     "title": "里程碑 R3：裁决队列 + WIP 推导 + 每车道计量",
-    "updated_at": "2026-09-16T04:16:24.177739Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0081": {
     "acceptance_criteria": [
@@ -4005,7 +4005,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4043,7 +4043,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4060,7 +4060,7 @@
     "success_metrics": [],
     "summary": "合理化五准则：异常／有后果／要求动作／相关／唯一。没有既定动作的不是告警。工业实测砍掉 40-60% 事件。",
     "title": "notify_human 变成真队列（ISA-18.2 合理化）",
-    "updated_at": "2026-08-31T07:07:41.164733Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0082": {
     "acceptance_criteria": [
@@ -4069,7 +4069,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4106,7 +4106,7 @@
       "不做分级／似然告警——能核验时其优势消失，而本场景永远能核验"
     ],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4122,7 +4122,7 @@
     "success_metrics": [],
     "summary": "保守门槛的二元告警在灵敏度与漏报上双双打赢四级似然显示，且没有狼来了效应。低于门槛的内容是拉取式软摘要，不是第二个告警级别。",
     "title": "人类通道用高门槛二元告警（不分级）+ SBAR 卡片",
-    "updated_at": "2026-08-31T07:07:41.164733Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0083": {
     "acceptance_criteria": [
@@ -4131,7 +4131,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4167,7 +4167,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4183,7 +4183,7 @@
     "success_metrics": [],
     "summary": "drum-buffer-rope：复核者就是 drum。agent 启动速率由裁决吞吐量闸住，而非任务数量。用 CONWIP 全局令牌池而非逐段限流。",
     "title": "WIP 由小定律推导 + 准入控制",
-    "updated_at": "2026-08-31T07:07:41.164733Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0084": {
     "acceptance_criteria": [
@@ -4228,7 +4228,7 @@
       "不做全局填充率水位线"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4244,7 +4244,7 @@
     "success_metrics": [],
     "summary": "从 usage 对象取绝对 token（不是填充百分比）、缓存三分、每轮命中率、压缩次数、工具结果占比、连续失败数，以及全局唯一真正共享的未复核积压。",
     "title": "每车道计量（竞品全员空白）",
-    "updated_at": "2026-09-14T00:00:56.687809Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0085": {
     "acceptance_criteria": [
@@ -4338,7 +4338,7 @@
       "不做预测式检索（Mylyn 的这一半只有五个用户重复使用过）"
     ],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4352,7 +4352,7 @@
     "success_metrics": [],
     "summary": "L1 隐式上下文层收口：交互事件日志（TF-0087，与 R1 足迹同日志同 seq）→ Mylyn DOI（TF-0088，衰减重置/双阈值/父级传播/生命周期自适应）→ 地标投影（TF-0089，过滤/排序/装饰/折叠）。链路完整：事件流 → DOI 模型 → 可直接回答『这次干了什么』的地标列表。下一步候选：L2 里程碑（晋升/分叉/恢复）或把 L1 产物接入 UI。",
     "title": "里程碑 L1：隐式上下文层（Mylyn DOI）",
-    "updated_at": "2026-09-16T04:17:26.652005Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0087": {
     "acceptance_criteria": [
@@ -4360,7 +4360,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4393,7 +4393,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4407,7 +4407,7 @@
     "success_metrics": [],
     "summary": "交互事件日志落地：InteractionEvent 6 字段（time/kind/origin/contentType/handle/delta）。agent 侧由 R1 PROV 足迹派生（used→selection、generated→edit，权重 1/2），在 sessions.recordActivity 内与 footprint 事件同序落进同一 events.jsonl（seq=行号，因果有序），按写者 origin 分组；人类侧未来由前端交互层直接上报同一日志。",
     "title": "交互事件日志（6 字段）",
-    "updated_at": "2026-08-31T12:52:52.294705Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0088": {
     "acceptance_criteria": [
@@ -4416,7 +4416,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4449,7 +4449,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4465,7 +4465,7 @@
     "success_metrics": [],
     "summary": "DOI 纯函数计算器：DOI = Σweight(kind) − 自上次触碰以来的衰减。衰减重置（score = max(score,0) + weight，负值一碰即正）；双阈值（>0 可见、>10 地标、≤0 完全过滤）；父级链按 ×share^depth 指数传播到目录与项目根；生命周期自适应（上下文年龄 <10min 年轻端 decayScale=0.5/传播 0.7，>60min 成熟端 2/0.3，中间线性插值）——修 Mylyn 单一全局常数在双向同时失败的洞。出厂权重 selection=1/edit=2/command=0，decay=0.1/小时。",
     "title": "Mylyn DOI（含重置规则与生命周期自适应常数）",
-    "updated_at": "2026-08-31T13:26:35.418573Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0089": {
     "acceptance_criteria": [
@@ -4473,7 +4473,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4504,7 +4504,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4518,7 +4518,7 @@
     "success_metrics": [],
     "summary": "地标投影：过滤（只留地标，空时回退可见 top-8 保列表非空）→ 折叠（文件地标折进『直接父目录是地标』的条目，回退池中的非地标目录不作折叠目标）→ 排序（DOI 降序、同分按最近触碰）→ 装饰（编辑/触碰次数、累计 delta、来源写者、最近触碰 + 『编辑 N 次 · 触碰 M 次 · 改动 L 行 · 最后 HH:MM』一句话）。纯函数无副作用，绝不基于 DOI 触发自动动作。",
     "title": "地标投影（过滤／排序／装饰）",
-    "updated_at": "2026-08-31T13:32:46.963463Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0090": {
     "acceptance_criteria": [
@@ -4556,7 +4556,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4571,7 +4571,7 @@
     "success_metrics": [],
     "summary": "L2 里程碑完成（8 个子任务全 done）。TF-0091 实测 B/C/K → ADR-0009；TF-0098 回退 + diff 主安全网；TF-0092 加法式晋升；TF-0093 追溯式分叉；TF-0094 生成 N 展示 1（fanout）；TF-0095 提议下一步 + 决策账本；TF-0096 切换清场 + 停放快照；TF-0097 恢复笔记 + 有序叙事。",
     "title": "里程碑 L2：晋升、分叉与恢复（加法式的一层）",
-    "updated_at": "2026-09-16T04:16:24.177841Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0091": {
     "acceptance_criteria": [
@@ -4579,7 +4579,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4616,7 +4616,7 @@
       "不通过不等式检验就不建提议 UI，直接选一边站"
     ],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4631,7 +4631,7 @@
     "success_metrics": [],
     "summary": "实测并裁定：不建『要不要 X』式提议 UI。实测（measure-ask-costs.ts，本机真实 IO 中位数）：B_goal=3ms（晋升）、C_goal=12ms（拆除轻路径）、C_worktree=1.30s（拆除重路径）。K（问一句）2-30s。关键不等式 C ≤ K ⟹ 提议区间为空；含认知成本估计（B=30s-5min、C=1-5s、K=2-10s）下 K(1/B+1/C)≈1.8-5>1 恒成立。裁定：永远直接做 + 廉价撤销（TF-0098 回退+diff 从可选升级为正式替代品），C 设计预算写死为 ≤ 一次撤销 ≤ K。",
     "title": "先实测 B／C／K 并计算提议区间（决定要不要建提议 UI）",
-    "updated_at": "2026-08-31T14:35:51.401608Z"
+    "updated_at": "2026-09-23T04:27:40.660314Z"
   },
   "TF-0092": {
     "acceptance_criteria": [
@@ -4674,7 +4674,7 @@
       "不做自动任务边界检测——Bardram 试过 RFID，太粗太不精确，退回人工信号；自动推断相关性，让边界保持廉价、延后、由人来划"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4690,7 +4690,7 @@
     "success_metrics": [],
     "summary": "加法式晋升落地：对话从第 0 个事件起就是无名上下文，命名发生在事后由既有事件触发。新模块 chat/promote.ts 是纯函数晋升引擎（5 种信号形状、evaluatePromotion 判定、deriveTitle 确定性命名、promotionPatch 产出标题+可观测记录）；threads.ts 移除即时自动标题、在 claude 与 HTTP 两条轮次边界的完成点评估晋升、reload 记录分叉计数（二次分叉信号输入）、公开 promote(id) 手动晋升（任意时刻一个手势）；UI server 暴露 POST /api/chat/threads/:id/promote。已命名的对话不再晋升（不覆盖用户的编辑），空对话无可派生名字保持无名。 2026-09-14 已在 Workbench 对话标题栏补命名按钮；可见性由 collectRestoreView 返回，失败显示重试反馈。",
     "title": "加法式晋升 + 触发信号绑定到既有事件",
-    "updated_at": "2026-09-14T00:00:56.687809Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0093": {
     "acceptance_criteria": [
@@ -4699,7 +4699,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4730,7 +4730,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4745,7 +4745,7 @@
     "success_metrics": [],
     "summary": "追溯式分叉落地：每条消息悬停即「分叉」手势，一次 POST 生成兄弟线程（不要求标题/类型、不弹任何对话框）；新线程继承锚点（含）之前的前缀，源线程 messages.jsonl 逐字节不动；继承声明随响应返回并在两处呈现——分叉后的瞬态声明条（继承几条、什么从新开始）与线程列表「分叉」徽标的悬停说明；标题从继承前缀确定性推导（与晋升同规则），血统记录进 meta.forkOf。",
     "title": "追溯式分叉，零仪式",
-    "updated_at": "2026-09-01T18:25:14.661892+00:00"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0094": {
     "acceptance_criteria": [
@@ -4753,7 +4753,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4784,7 +4784,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4798,7 +4798,7 @@
     "success_metrics": [],
     "summary": "生成 N、展示 1、备选一击可达：config.chat.fanout（1-3，默认 1=关）下，HTTP provider 的主请求照常流式展示，shadow 变体与主请求并发、只捕获不展示，作为备选文本挂上同一条助手消息；UI 在消息下常显「备选 n」chip，一击展开——全程没有任何「请选择」界面，默认路径拿到结果不需要任何动作。claude CLI 路径保持单发（持久会话 KV 复用与并发 shadow 不兼容，留作后续接线点）。",
     "title": "生成 N 个、展示 1 个、其余留在一个按键之外",
-    "updated_at": "2026-09-01T18:25:14.661892+00:00"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0095": {
     "acceptance_criteria": [
@@ -4806,7 +4806,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4837,7 +4837,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4851,7 +4851,7 @@
     "success_metrics": [],
     "summary": "系统提议的下一步 + 安静的决策账本：chat/suggest.ts 从最后一条助手回答推导 2-3 个发散续写（编号/列表选项、助手留下的开放问题、下一步标记，无结构时回退通用发散方向），随线程 GET 返回，UI 在 composer 上方渲染 chip，点击即作为下一条用户消息发送——每个建议一次点击，不要求打字。chat/ledger.ts 从既有事实（meta.forks 分叉/重跑计数 + 消息上的扇出备选）自动收集决策点，UI 默认折叠条呈现，无分歧时数组为空、完全不渲染。",
     "title": "系统提议的下一步（每个一次点击）+ 安静的决策账本",
-    "updated_at": "2026-09-01T18:25:14.661892+00:00"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0096": {
     "acceptance_criteria": [
@@ -4859,7 +4859,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4889,7 +4889,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4903,7 +4903,7 @@
     "success_metrics": [],
     "summary": "切换清场 + 返回带筛选还原：切换线程的瞬间，离开车道的 composer 草稿被自动收进该线程的停放快照（parked），composer 对任何新进入的线程都从空开始——产物不再跨车道泄漏；返回一条有停放项的车道时，快照以默认折叠的条带呈现（「停放快照 · n 项」），展开为可筛选列表（>1 项出现筛选输入），每项可恢复（回填 composer）或丢弃，另有全部丢弃。",
     "title": "切换时自动关闭，返回时带筛选还原",
-    "updated_at": "2026-09-01T18:25:14.661892+00:00"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0097": {
     "acceptance_criteria": [
@@ -4911,7 +4911,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4943,7 +4943,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -4958,7 +4958,7 @@
     "success_metrics": [],
     "summary": "离开车道的那一刻从既有事实推导一份恢复笔记（agent 起草），写进 meta 持久化——3-5 个有序节拍：你在做什么（最后一条 user）/你决定了什么（分叉+晋升）/脚下什么动了（最后一条 assistant 的 tool-call）/下一步（复用 suggestNext）。返回时随线程 GET 呈现为折叠条，展开看叙事；用户可确认（置 confirmedAt，不阻塞）。返回时若离开后又有新消息，呈现层对比 leaveSignature 显示『你不在时多了 N 条』，不写回 meta——严格满足『笔记在离开时生成，不在返回时索取』。",
     "title": "离开时生成『准备恢复』笔记 + 返回时给有序叙事",
-    "updated_at": "2026-09-02T04:35:22.916Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0098": {
     "acceptance_criteria": [
@@ -4966,7 +4966,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -4998,7 +4998,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5013,7 +5013,7 @@
     "success_metrics": [],
     "summary": "回退 + diff 主安全网落地，两个面分开处理：代码面（git 支撑）与上下文面（blackboard 键值）。checkpoint 落盘时采集代码面快照（工作区 HEAD + 全部改动文件内容 hash）；checkpoint_lifecycle 在 effects 生效之前采集上下文面快照（将被改动的键的旧值，原本不存在的键记 null）。三个动作是三个有明确标签的不同动作：restore --code（只恢复代码）| --context（只恢复上下文）| --both（两者都恢复），互斥且必须显式指定，不给默认值。默认 dry-run 打印 diff，--yes 才执行；每一次撤销记为带标签的负样本事件（source=restore, type=undo）。没有快照的 checkpoint 明确拒绝回退，不假装成功。",
     "title": "回退 + diff 作为主安全网（三个动作分别标注）",
-    "updated_at": "2026-09-01T04:24:29.663856Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0099": {
     "acceptance_criteria": [
@@ -5228,7 +5228,7 @@
     "kind": "milestone",
     "non_goals": [],
     "priority": 4,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5242,7 +5242,7 @@
     "success_metrics": [],
     "summary": "发行与分发形态收口：形态是开源 hook／linter／daemon，旗号 context rot。两条验收均达成——① 一条命令可安装（npx context-rot 扫描 + scripts/install-hooks.mjs 足迹采集，npm 发布按用户决定延后为 follow_up TF-0119）；② 同一份 .claude/settings.json hook 配置在 Claude Code 与 Cursor 都能加载。机制独占 stale premise 的检测与足迹采集，多会话协调留在代码库内不做宣传。",
     "title": "里程碑 R4：发行与分发形态",
-    "updated_at": "2026-09-16T04:16:24.177915Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0103": {
     "acceptance_criteria": [
@@ -5250,7 +5250,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5276,7 +5276,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5287,7 +5287,7 @@
     "success_metrics": [],
     "summary": "workbench 车道新增的 15 行以 TAB 缩进，YAML 禁止 tab，GitHub 判定文件本身无效。这与计费无关，计费恢复后仍须先修。",
     "title": "修复 ci.yml 的 15 处 tab 缩进",
-    "updated_at": "2026-08-30T06:52:19.682026Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0104": {
     "acceptance_criteria": [
@@ -5327,7 +5327,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 4,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5341,7 +5341,7 @@
     "success_metrics": [],
     "summary": "doctor 与 context-rot 复用一套扫描实现：指引文件发现、路径提取、索引和忽略规则共用；独立 CLI 额外检查符号与包，doctor 保持唯一文件引用的统计口径。",
     "title": "context-rot doctor（获客钩子，护城河最弱）",
-    "updated_at": "2026-09-14T00:15:47.456568Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0105": {
     "acceptance_criteria": [
@@ -5349,7 +5349,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5380,7 +5380,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5391,7 +5391,7 @@
     "success_metrics": [],
     "summary": "PostToolUse hooks 采集 Read/Write/Edit/Grep/Glob 的确定性读写足迹，追加 .context-rot/footprints.jsonl。分发三形态：① 安装器 scripts/install-hooks.mjs 一条命令合并进 .claude/settings.json（保留已有 hooks，支持 --uninstall）；② Claude Code 插件 plugin/（plugin.json + hooks/hooks.json + ${CLAUDE_PLUGIN_ROOT} 脚本）；③ Cursor 兼容靠同一份 .claude/settings.json 自动加载。脚本纯 Node 零依赖、按工具行为分类（Cursor 的 Edit→Write 映射不影响）、只观测永不阻塞。",
     "title": "hooks 分发：Claude Code plugin + Cursor 兼容 bundle",
-    "updated_at": "2026-08-31T11:11:37.366043Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0106": {
     "acceptance_criteria": [],
@@ -5424,7 +5424,7 @@
     "kind": "risk",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -5438,7 +5438,7 @@
     "success_metrics": [],
     "summary": "风险已验证并处理：K(1/B+1/C)>1 在所有合理参数下成立（实测 B/C 为 ms 级机械成本，K 为秒级），提议区间为空——『要不要变成任务』式提示不通过检验，已按 ADR-0009 裁定删除该品类 UI，选『直接做』一边。",
     "title": "风险：提议区间为空，提议 UI 建了也没用",
-    "updated_at": "2026-09-16T04:16:24.177950Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0107": {
     "acceptance_criteria": [],
@@ -5784,7 +5784,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让本地每一轮验证都能真实跑起来，而不是被机器本身的 IO 开销伪装成代码缺陷。",
     "remaining_minutes_max": null,
@@ -5799,7 +5799,7 @@
     "success_metrics": [],
     "summary": "本机（Windows / D 盘）单次 unlink 约 70ms，宿主注入的 safe-delete 钩子再叠加约 40ms；临时目录里 100 个条目的 rm -rf 实测 5–35 秒，随并发负载大幅波动。bun 默认的 5000ms 超时恰好卡在这个区间的边界上，凡用 makeTempWorkbench() 的用例会随机假失败。",
     "title": "抬高 workbench 测试超时上限，抵消本机超慢的文件删除",
-    "updated_at": "2026-09-16T04:16:24.178194Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0114": {
     "acceptance_criteria": [
@@ -5869,7 +5869,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5900,7 +5900,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把这层唯一剩下的假阳性来源补掉：可复现目录在仓库根部同样是生成物。",
     "remaining_minutes_max": null,
@@ -5914,7 +5914,7 @@
     "success_metrics": [],
     "summary": "tierOf 的可复现目录段都带前导斜杠（\"/dist/\"、\"/.git/\"、\"/target/\"…），所以绝对路径能命中，而 agent 报告的相对路径 \"dist/app.js\"、\".git/config\"、\"target/debug/x\" 会被判成 volatile，仍会进入前提检查。node_modules 因为段本身不带前导斜杠，不受影响。",
     "title": "精度缺口：仓库根部的 dist/、.git/、target/ 等相对路径没被判成 durable",
-    "updated_at": "2026-08-30T14:40:37.683270Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0116": {
     "acceptance_criteria": [
@@ -5923,7 +5923,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -5955,7 +5955,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让 R2 的验收标准『A 写入后 60 秒内把带 diff 的通知投递进 B 的活会话』在不依赖 UI 面板的前提下也成立。",
     "remaining_minutes_max": null,
@@ -5969,7 +5969,7 @@
     "success_metrics": [],
     "summary": "reconcilePremises 已经实现，但全仓库唯一的调用点是 ui/server.ts 的 15 秒定时器——因为只有它持有活着的 chat 会话、能真正投递。watcher 与 runtime 的 runOnce 周期都没有调用它，所以不开 UI 面板时检测根本不会发生。",
     "title": "前提高和循环目前只在 UI server 里跑，watcher 与 runtime 周期没接",
-    "updated_at": "2026-08-30T14:15:57.600259Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0117": {
     "acceptance_criteria": [
@@ -6034,7 +6034,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -6062,7 +6062,7 @@
     "kind": "follow_up",
     "non_goals": [],
     "priority": 4,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让『每车道三个数』的口径保持干净：车道就是工位，聊天线程另算。",
     "remaining_minutes_max": null,
@@ -6073,7 +6073,7 @@
     "success_metrics": [],
     "summary": "决定：聊天线程不进每车道计量。车道键只用工位 id；thread:<id> 会把「每车道」口径混进非车道键。口径已写进 blackboard/metrics.ts 模块注释。",
     "title": "待办：聊天线程路径还没接进每车道计量",
-    "updated_at": "2026-08-31T07:07:41.164733Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0119": {
     "acceptance_criteria": [
@@ -6081,7 +6081,7 @@
     ],
     "alignment": {
       "fit": "unknown",
-      "fit_confidence": 0,
+      "fit_confidence": 0.0,
       "user_goal": "",
       "validation_plan": [],
       "why_not_enough": "",
@@ -6112,7 +6112,7 @@
     "next_action": "已按 commit 25682da 的用户决定跳过 npm 发布关闭。无剩余动作。",
     "non_goals": [],
     "priority": 3,
-    "progress": 1,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让『跳过发布』是一个明示的待办而不是无声遗漏，开发主线不受打扰。",
     "ready": true,
@@ -6128,7 +6128,7 @@
     "success_metrics": [],
     "summary": "发布物已就绪：包名 context-rot 未被占用、changeset 已创建、files 补全（dist/README/hooks/scripts/plugin）、CLI 新增 install-hooks 子命令（dist 端到端验证通过：安装→配置→事件采集）。硬阻塞：本机 npm 未登录（E401），需用户登录 npm 后执行 bun run changeset version + changeset publish。",
     "title": "后续：npm 发布 context-rot（当前按用户决定跳过）",
-    "updated_at": "2026-09-09T02:30:00.000000Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0120": {
     "acceptance_criteria": [
@@ -8193,7 +8193,7 @@
       "不把体量问题算进前提守护路线图的验收"
     ],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "在继续往这个仓库写规划之前定下体量口径，否则每次 proposal-apply 都会往历史里再压进约 100–200MB。",
     "remaining_minutes_max": 60,
@@ -8212,7 +8212,7 @@
     ],
     "summary": "裁决：exports/ 与 snapshots/ 出仓（gitignore），canonical 只保留 graph/ + config + events.jsonl；events.jsonl 的 before/after 全图冗余属 task-forest 引擎缺陷，交 TF-0152 承载。对森林自身执行与 TF-0145 相同的载荷纪律：历史留引用，不留快照体。",
     "title": "裁决：task-forest 历史与派生产物的体量口径（events / snapshots / exports）",
-    "updated_at": "2026-09-16T08:37:16.178060Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0148": {
     "acceptance_criteria": [
@@ -8857,7 +8857,7 @@
     "non_goals": [],
     "parent_id": "TF-0114",
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -8868,7 +8868,7 @@
     "success_metrics": [],
     "summary": "7 个用例全部通过（25ms）后进程不退出：无总账、CPU 静止、无残留子进程；单独跑如此，scripts/e2e 并行跑则 Bun 段错误（panic: Segmentation fault at address 0xFFFFFFFFFFFFFFFF，停在 e2e.test.ts 的 S7 之后），--concurrency 1 跑到 S11 后停在没有总账。文件里 11 个 Bun.serve 都已在 finally 里 stop(true)，所以泄漏不在监听器上；怀疑在 fetch 连接池 / AbortSignal.timeout / Bun 运行时与沙箱的交互。影响：`bun test`（全量）在本机永远给不出总账，只能按文件排除后跑。",
     "title": "scripts/e2e/live-provider.test.ts 第 8 个用例被前置用例拖住不返回（单跑可过）",
-    "updated_at": "2026-09-12T07:27:34.805950Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0159": {
     "acceptance_criteria": [
@@ -8911,7 +8911,7 @@
     "next_action": "已结项（2026-09-12）。三条验收全部落实：① 分母切换已在全部读数面生效——stats/账本/队列/监控的主读数都是 session-top-k（显式声明口径），threshold 降为对照并报；L1 在全部落盘现场（VAS1EM/1OioVM/moyu）均可计算（覆盖 100%），函数级默认保留 threshold 正是「切换必须显式」原则的体现而非未切换。② K=3 与 §11「每会话 3–5 条」已对表（positioning-v6 §11 现行文本即 K=3）。③ 迁移不丢数据已实测两轮：分母迁移（VAS1EM legacy 5、1OioVM legacy 7，集合内旧结论照常计数）与翻默认迁移（moyu legacy 0、对照读数逐条归因），legacy 只计数不删不改判的契约在四处读数面可见。",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -8922,7 +8922,7 @@
     "success_metrics": [],
     "summary": "CLI/账本/复核队列的 L1 主读数已迁移为 session-top-k（K=3），保留 threshold 与未过滤对照；底层函数的 threshold 默认供历史口径使用，调用面显式选择主口径。",
     "title": "把 L1 的分母切换到相对选择（每会话文件级 top-3），并与复核队列迁移一起做",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0160": {
     "acceptance_criteria": [
@@ -9021,7 +9021,7 @@
     "next_action": "工程实现已结项；真实使用评估由 GitHub #7 承载。若出现新的真实失败案例，再判断是否需要修改候选规则。",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -9032,7 +9032,7 @@
     "success_metrics": [],
     "summary": "工程实现已落库：按会话隔离的文件候选、记录型写者过滤、requireEdits 默认开启、只读会话豁免和三种口径并报。历史人答用于规则校准，独立用户认可率另行评估。",
     "title": "修地标投影：让「这次干活的核心」真的进集合，且不误杀真实重复编辑",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0162": {
     "acceptance_criteria": [
@@ -9079,7 +9079,7 @@
     "next_action": "采集与读数工程已结项。历史 0.6/0.5、过滤后的旧答映射、三条新增回答均按原来源保留；不再用“终局 1.0”替代独立产品评估。后者转 GitHub #7。",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "证明 L1 的输入不是「攒得不够」而是「从未产生」，并在真实现场对相对口径与种类门做一次独立复核；为 TF-0159 的口径切换与 TF-0161 的种类门提供活证据。",
     "remaining_minutes_max": null,
@@ -9090,7 +9090,7 @@
     "success_metrics": [],
     "summary": "用真实模型（senseaudio-s2-flash）跑通 live-run 集成场景，把此前一直为空的 interaction 输入链路走通，得到 L1 口径与种类门在真实现场的第一组可复核读数。此前的四个现场是脚本驱动，记录的是「文件被动过」；本轮是模型自主开发会话（reader/writer 双线程 + 独立验收打回重改），记录的是「这次干的活是什么」。",
     "title": "真实模型会话首次产出文件级交互沉淀，并用它验收 L1 口径与种类门",
-    "updated_at": "2026-09-14T11:13:03.297477Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0163": {
     "acceptance_criteria": [
@@ -9137,7 +9137,7 @@
     "next_action": "已结项（2026-09-12）。A 达成 57 行且单调可复现，累积入口已落库（commit 98f8bd8）。剩余三项不在本节点范围，另立节点承载：B 需要一次**真实 git 提交（或人写）**在读者持有前提时使前提失效，需要给驱动加一个受控的 git-writer 步骤并写清它与脚本手势的区别；C 需要一次**人工**封印复核（红线禁止脚本代答）；D 需要 `notifiedRatio` 落回 10–30%（实测在 0.296–0.395 之间漂移，是口径带而非可累积量）。",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把「闸门缺 A」从一句长期告警变成可执行的累积计划：明确样本源（多轮持久租户 `run.ts --rounds N --live --workspace <dir>`）、明确不许做假的红线（不得伪造经过的日期、不得把脚本手势计为真人认可、不得为凑行数放宽校准判据）、明确每轮的验收读数（A 行数单调上升 + 四路读数一致）。",
     "remaining_minutes_max": null,
@@ -9148,7 +9148,7 @@
     "success_metrics": [],
     "summary": "第二轮 live-run 把样本窗口三格全部拉满（restores 7 / noticeOutcomes 8 / sealDecisions 6），但护城河 A（校准表行数 ≥ 50）只有 8 行，benchmark 闸门仍关。这不是 bug，是样本量问题：A 需要长期真实使用累积，单轮真实开发（一次开发回合产生 8 行 noticeOutcome）在数量级上够不到 50。本节点承接「如何在不伪造日期的前提下，用可重复的真实驱动把 A 慢慢推上去」。",
     "title": "把护城河 A（校准表 ≥ 50 行）当作长期样本累积项推进，而非单轮冲刺",
-    "updated_at": "2026-09-12T12:09:41.715437Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0164": {
     "acceptance_criteria": [
@@ -9196,7 +9196,7 @@
     "next_action": "已结项（2026-09-12）。四条验收全部满足：① 工作区 `git status --porcelain` = 0，四笔提交的主题各自说清了改了什么（口径与读数面 / 现场驱动 / 实测文档 / 森林状态）；② 验绿读数见证据栏，含两个 HEAD 既有失败的点名，且改动核心区全绿；③ 每次 git 写操作之后重钉 refs，全程没有出现 refs 清空，跟踪文件数 2482 → 2502 可逐项解释；④ 森林权威文件（nodes / forest / edges / events / todos / deviations 与 15 份提案）连同 TF-0164 本身一起落在 dcc6c4f，HTML 由 apply 之后的状态导出。真正的收口不是这一次提交，而是把「结项前先看工作区是否干净」当成惯例——已写进本节点的要求与项目 memory；导出体积（HTML 17.8 MB / timeline 108 MB）仍是未立节点的遗留项。",
     "non_goals": [],
     "priority": 1,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "消除「森林说完成、仓库里查不到」的漂移。阶段 A 已经立过一次同样的闸门（7 个提交），本轮是同一动作在 L1 线上的第二次；本机 git 有宿主钩子清空 refs 的毛病，所以每次写操作之后都要跑一次 ref 修复器。",
     "remaining_minutes_max": null,
@@ -9210,7 +9210,7 @@
     "success_metrics": [],
     "summary": "上一轮把 L1 的「只认可落笔」翻成默认、把真实项目现场驱动补齐、把五处读数面统一之后，森林里三条节点都标了完成——但这些代码到 2026-09-12 还停在工作区里没有入库：19 个已跟踪文件被改动、5 个新脚本未跟踪。结果是「L1 = 1.0000、复核覆盖 100%」这个结论换一台机器就复现不出来。本节点把这一轮改动按主题分次提交落库，并把森林自身（节点图、事件、待办）与之一并入库，使森林里的完成状态能指向具体提交。",
     "title": "提交闸门（L1 线）：把地标口径翻默认这一轮的改动落库，让森林的「完成」有代码可指",
-    "updated_at": "2026-09-12T07:20:30.558507Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0165": {
     "acceptance_criteria": [
@@ -9258,7 +9258,7 @@
     "next_action": "已结项（2026-09-12）。五条验收全部落地，见证据栏。两个后续不在本节点范围内，各自需要单独决定：(1) 导出体积——timeline 108 MB / HTML 18.1 MB 来自 212 张快照的内嵌全量图，是 TF-0147 裁决「保留 snapshots 供回放」的直接后果，要缩小就得改回放策略（例如只内嵌增量或按需分片），那是一个新的设计决策而不是缺陷修复；(2) 另一份副本（~/.claude/skills/task-forest）已加 SUPERSEDED.md 标记但目录仍在，确认无需回溯后可整体删除。",
     "non_goals": [],
     "priority": 2,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "把 TF-0147 定下的载荷纪律真正落到生效副本上：canonical 只留 graph/ + config + events.jsonl，历史留引用、不留快照体；同时终结「同一 skill 两份副本各自演化」的状态，避免出现第三次分叉。",
     "remaining_minutes_max": null,
@@ -9273,7 +9273,7 @@
     "success_metrics": [],
     "summary": "机器上有两份 task-forest skill 副本，已经分叉，而且各有对方没有的东西：~/.claude/skills 那份 3332 行、含精简事件载荷（以 before_snapshot/after_snapshot + 变更 id 列表代替全图）与 13 个子命令，但导出校验器只有 313 行；~/.workbuddy/skills 那份 2250 行、只有全图内嵌写法与 12 个子命令，但带有 ordering 模块与 1152 行的导出校验器。两文件差异 2134 行。当前会话加载的是 .workbuddy 那份，于是 TF-0152 当年在 .claude 那份上修掉的载荷纪律在这里不存在：events.jsonl 已涨到 86.7 MB，209 行里有 165 行超过 100 KB，其中 8 行最大的就是今天与昨天写下的（约 900 KB/行）。事件形态的分界点很清楚——第 197-199 行（截至 09-11T03:09）是约 590 字节的引用式，第 200-209 行（09-11T09:16 起）回到约 900 KB 的全图式，时间点正好是副本切换生效的时刻。",
     "title": "把「事件不内嵌全图」的载荷修复补到当前生效的 skill 副本上，并定下唯一权威副本",
-    "updated_at": "2026-09-16T04:48:02.583401Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0166": {
     "acceptance_criteria": [
@@ -9315,7 +9315,7 @@
     "kind": "subtask",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让「跑完 export 后工作区仍然干净」这件事不再需要额外提交来收尾，并把 TF-0147 的口径从「整个 graph/ 目录」收窄到真正权威的那几个文件。",
     "remaining_minutes_max": null,
@@ -9329,7 +9329,7 @@
     "success_metrics": [],
     "summary": "2026-09-05 那次出仓把 exports/ 与 snapshots/ 移出了版本控制，但漏掉了 graph/forest.json——只因为它躺在 graph/ 下，而当时 .gitignore 的注释把「canonical state」写成整个 graph/ 目录。它的性质与那两份完全相同：是 build_export 的全量派生视图，与 exports/task-forest.graph.json 逐字节相同（同为 649420 字节），带 generated_at，且 skill 侧只写不读。被跟踪的代价是每次 export 或 apply 都会在工作区留下一行时间戳改动，收尾时要额外提交一次才能回到干净。",
     "title": "把 graph/forest.json 出仓：它是只写不读的派生副本，跟踪它让每次导出都弄脏工作区",
-    "updated_at": "2026-09-12T09:33:18.063266Z"
+    "updated_at": "2026-09-23T04:27:40.661315Z"
   },
   "TF-0167": {
     "acceptance_criteria": [
@@ -9433,7 +9433,7 @@
       "不改 events/快照/导出体量口径（TF-0147 已裁决：大是设计性的）"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让交付物在守住「不展示未开工内容」的同时，不再对读者隐瞒「还有多少未完成的活、挂在哪条分支上」——否则闭环讨论的答案在唯一交付面里不可见。",
     "remaining_minutes_max": null,
@@ -9444,7 +9444,7 @@
     "success_metrics": [],
     "summary": "task-forest.html 此前只渲染 done/in_progress 节点，概览也只给 doneCount/inProgressCount 两个数——唯一开口 TF-0167（proposed）在导出物里完全不存在，第一阅读者会把森林误读成全部完工。本次守住树的投影口径不变（契约「不展示未开始任务」依旧成立），把「隐瞒」改成「声明边界」：summary 增加 hiddenOpenCount（proposed/ready/blocked/review_needed 的未纳入总数），每个可见节点增加 hiddenChildCount（直接子节点中未纳入的未完成数，deprecated 不计）；概览条在 hiddenOpenCount>0 时显示「未完成项未纳入本页 N」，卡片显示「另有 N 项未完成未纳入本页」——开口既报总数也定位到分支。契约与 SKILL.md 同步加「投影边界必须声明：不展示 ≠ 隐瞒」。",
     "title": "导出 HTML 声明投影边界：未纳入的未完成项不再被隐瞒",
-    "updated_at": "2026-09-16T04:48:02.583441Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0169": {
     "acceptance_criteria": [
@@ -9484,7 +9484,7 @@
       "不校验提案目录健康（那是缺口②提案分诊的事，待用户逐项确认）"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让「森林的 done 在仓库里查不到」这类漂移从两次踩坑后的口头纪律，变成结项流程里必跑且退出码可判的一步。",
     "remaining_minutes_max": null,
@@ -9495,7 +9495,7 @@
     "success_metrics": [],
     "summary": "TF-0144/TF-0164 两次踩到「验收通过、代码停在工作区」，处置至今只是记忆里「结项前先看 git status」一句话，没有任何可运行的检查。本次在 task_forest.py 新增 check-landing 子命令：对 workspace 定位 git 根，取 HEAD 提交时间与 porcelain 改动，列出 status=done 且 updated_at 晚于 HEAD 的节点（含仓库无提交时全部 done 兜底）。设计为只报告读数、不做裁决（符合产品「只观测与通知、永不指挥」判据）：疑似节点可能是纯森林/文档操作，也可能是代码未落库，处置由人判断。退出码 0/1 可直接当闸门，支持 --json。SKILL.md 命令表与 session-close-workflow.md 第 6 步同步。",
     "title": "check-landing 子命令：把「done ≠ 已落库」的人肉纪律变成可跑的对账",
-    "updated_at": "2026-09-12T16:21:03.611569Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0170": {
     "acceptance_criteria": [
@@ -9538,7 +9538,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -9549,7 +9549,7 @@
     "success_metrics": [],
     "summary": "收尾扫描（.agent-contexts/closeout-scan-2026-09-13/integrity-report.md）发现 #1–#5 修复停在工作区、check-landing 因无对应节点抓不到漂移。本节点把修复链显式落库：四组主题提交 + 三个卫生提交，并让 done 状态有提交可指。",
     "title": "issue #1–#5 修复与收尾卫生落库（closeout-scan 2026-09-13 第二轮的 P0/P2 修复链）",
-    "updated_at": "2026-09-13T10:25:56.310408Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0171": {
     "acceptance_criteria": [
@@ -9985,7 +9985,7 @@
       "现在抽独立仓库（216 commit 历史、CI、release 全搬，收益是心理上的）"
     ],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -9998,7 +9998,7 @@
     "success_metrics": [],
     "summary": "推荐：根 package 改名（脱离 helmor 商标），@helmor/workbench-ui 改为 @baixu22/workbench-ui，README 叙事翻转为「workbench 是产品，src/src-tauri/sidecar 是冻结的参考实现」。抽仓的条件并入决策 6。",
     "title": "决策 1：主线身份收口 = 保留 monorepo、改名、翻转叙事，不抽独立仓库",
-    "updated_at": "2026-09-17T16:04:01.719073Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0178": {
     "acceptance_criteria": [],
@@ -10031,7 +10031,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10042,7 +10042,7 @@
     "success_metrics": [],
     "summary": "推荐：断掉全仓唯一跨目录 import（color-theme.css），build 把 NOTICE 与 Apache-2.0 归属打进 dist/，包元数据改为 MIT + portions Apache-2.0。图标层生成脚本暂不拆（输出是 reicon 映射，非 Helmor 版权物）。",
     "title": "决策 2：合规做到最小合规，但三件一次做完（内联 CSS + NOTICE/LICENSE 进 dist + 改名）",
-    "updated_at": "2026-09-17T16:04:01.719107Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0179": {
     "acceptance_criteria": [],
@@ -10075,7 +10075,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10086,7 +10086,7 @@
     "success_metrics": [],
     "summary": "修正报告一处事实：chat.provider 默认值已是 claude（types/config.ts:83）。试用走 HTTP 是因为试用机无 claude 凭据。因此轻路不是改默认值，而是：在有凭据的机器上验证 claude 车道足迹链 + UI 诚实标注 readObservability。sidecar 的真实理由是多 provider 与可靠性基础设施，不是补足迹。",
     "title": "决策 3：足迹命门走轻路；重路（sidecar）触发条件 = 出现第二个需要足迹观测的 provider",
-    "updated_at": "2026-09-22T08:52:01.524879Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0180": {
     "acceptance_criteria": [],
@@ -10213,7 +10213,7 @@
     "kind": "decision",
     "non_goals": [],
     "priority": 3,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10224,7 +10224,7 @@
     "success_metrics": [],
     "summary": "四项：CSS 跨目录 import 断；图标层生成能在主线独立跑；postinstall 不再装 sidecar 依赖；pre-commit 对主线提交不跑 clippy。用户数是产品指标，与能否删目录无关。",
     "title": "决策 6：支线退役条件 = 四项容器引用清零，而非用户数；满足后另立 ADR-0014 删除 src/src-tauri/sidecar",
-    "updated_at": "2026-09-17T16:04:01.719171Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0183": {
     "acceptance_criteria": [],
@@ -10313,7 +10313,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10327,7 +10327,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "内联 color-theme.css 的 Base 层 token 子集进 workbench-ui，断掉全仓唯一跨目录 import",
-    "updated_at": "2026-09-17T16:04:01.718917Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0185": {
     "acceptance_criteria": [
@@ -10366,7 +10366,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10381,7 +10381,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "发布物附 NOTICE 与 Apache-2.0 归属；包元数据 license 改为 MIT + portions Apache-2.0",
-    "updated_at": "2026-09-17T16:04:01.718965Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0186": {
     "acceptance_criteria": [
@@ -10421,7 +10421,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10436,7 +10436,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "改名：根 package 与 @helmor/workbench-ui 脱离 Helmor 商标；README 叙事翻转",
-    "updated_at": "2026-09-17T16:04:01.719003Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0187": {
     "acceptance_criteria": [
@@ -10472,7 +10472,7 @@
     "kind": "task",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "",
     "remaining_minutes_max": null,
@@ -10487,7 +10487,7 @@
     "success_metrics": [],
     "summary": "",
     "title": "ADR-0013：主线身份、合规解法、重路触发条件与退役条件（固化决策 1/2/3/6）",
-    "updated_at": "2026-09-17T16:04:01.719039Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0188": {
     "acceptance_criteria": [
@@ -12766,12 +12766,13 @@
     "deprecated_at": null,
     "desired_outcomes": [
       "旧任务森林没有任何产品迁移阻塞项，状态与远端事实一致",
-      "dashboard 从聊天壳变为能看见 goals / workspots / checkpoints / 队列 / doctor / tribunal / 前提证据的账本控制台",
+      "账本能力从 CLI/HTTP/MCP 走进对话：前提通知落进对话记录、模型回合中可读账本、裁决在对话里完成——**不做独立面板或路由级视图**（2026-09-21 阶段 2 改口径，见 TFP-2026-09-21-phase2-replan-chat-embedded 与 TF-0240/TF-0239；原文「dashboard 账本控制台」在改口径时未同步，2026-09-23 修正）",
       "第二个可观测 provider 有新 ADR 定边界并落地，不引入 sidecar 进程或 SDK 进主包",
       "fit 账本的四项护城河判决出现自然人类使用产生的读数"
     ],
     "deviations": [
-      "TFD-0dab4149f2"
+      "TFD-0dab4149f2",
+      "TFD-c794ae5928"
     ],
     "difficulty": "high",
     "display_order": 2800,
@@ -12800,7 +12801,7 @@
       "Monaco 编辑器、PR/CI 编排器等已被 ADR-0010 产品尺子排除的能力"
     ],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让 Workbench 已有的前提账本能力真正被用户看见和用到，并让多 provider 在新架构约束下有可执行的接入路径，最终用自然人类使用数据验证价值。",
     "remaining_minutes_max": null,
@@ -12816,7 +12817,7 @@
     "success_metrics": [],
     "summary": "第一轮（TF-0176）已完成架构独立、可靠性吸收、聊天/恢复/足迹/MCP 与旧容器退役；231 个旧节点中只剩两个滞后的 blocked 收尾项。但当前 GUI 只有聊天壳，goals / workspots / checkpoints / tribunal / premises 等账本能力停留在 CLI、HTTP 与 MCP；chat provider 只有 claude 车道可观测；ADR-0013 规定的 spawn-sidecar 形态已与「不得重新引入 sidecar」的仓库总则冲突。本目标不是「把 Helmor 搬回来」：不恢复 Tauri、Rust、SQLite、sidecar，不追求旧桌面应用功能对等。",
     "title": "Workbench 第二轮选择性吸收：把账本能力做成完整产品面，再在新边界下接入第二个可观测 provider",
-    "updated_at": "2026-09-22T16:41:11.118888Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0233": {
     "acceptance_criteria": [
@@ -13157,7 +13158,8 @@
     "deprecated_at": null,
     "desired_outcomes": [],
     "deviations": [
-      "TFD-7c3e19a4b2"
+      "TFD-7c3e19a4b2",
+      "TFD-c794ae5928"
     ],
     "difficulty": "high",
     "display_order": 200,
@@ -13215,7 +13217,9 @@
     "created_at": "2026-09-21T12:45:56.340747Z",
     "deprecated_at": null,
     "desired_outcomes": [],
-    "deviations": [],
+    "deviations": [
+      "TFD-c794ae5928"
+    ],
     "difficulty": "low",
     "display_order": 100,
     "estimated_total_minutes": null,
@@ -13231,7 +13235,7 @@
     "kind": "requirement",
     "non_goals": [],
     "priority": 3,
-    "progress": 1.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "防止「做产品面」演变成「把桌面应用搬回来」。",
     "remaining_minutes_max": null,
@@ -13242,7 +13246,7 @@
     "success_metrics": [],
     "summary": "转向 (a) 的边界。允许的载体：StoredMessage 的 MessagePart（现有 text / tool_call / notice，可按需新增 kind）、composer 上方 sidecar 的挂点、模型通过 MCP 调用后渲染的工具卡。禁止：新的顶层视图切换、react-query 直连 /api/state 的面板、把 0.2.0 的 panels.tsx / lanes.tsx 搬回。数据仍全部来自 Blackboard 与现有 chat 路由。",
     "title": "要求：账本能力只以对话内既有形态出现——消息 part、composer 上方 sidecar、模型工具卡；不新增独立面板或路由级视图",
-    "updated_at": "2026-09-22T16:10:57.568036Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0241": {
     "acceptance_criteria": [
@@ -13538,7 +13542,7 @@
     "next_action": "读 claude-session.ts、provider-capabilities.ts、supervisor/ 的现状，起草 ADR-0016",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "消除 ADR-0013 与 AGENTS.md 之间的架构冲突，让阶段 3 有合法起点。",
     "remaining_minutes_max": 240,
@@ -13549,7 +13553,7 @@
     "success_metrics": [],
     "summary": "候选形态：仿照当前 claude-session.ts 车道，用 supervisor/spawnSupervised 直接监督 provider 自己的 CLI 进程，在 chat/ 内实现该 provider 的 JSON Lines / SSE 协议适配，用已保留的真实流夹具做协议测试。明确记录它与 ADR-0013 决策 3 的关系（supersedes）。",
     "title": "决策：新 ADR 重定第二个可观测 provider 的接入形态——直接监督外部 CLI，每个 provider 在主包内做轻量协议适配，不引入 sidecar 与 SDK",
-    "updated_at": "2026-09-22T08:52:01.523587Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0247": {
     "acceptance_criteria": [
@@ -13586,7 +13590,7 @@
     "next_action": "向用户提问；同时核对四家夹具里哪些含工具读写事件",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "避免为了「多 provider」而多 provider；只做一个有人用的。",
     "remaining_minutes_max": 90,
@@ -13597,7 +13601,7 @@
     "success_metrics": [],
     "summary": "候选：Codex（OpenAI CLI）、Cursor、Kimi、OpenCode。四家都有真实流夹具保留在仓库里。选择标准：用户当下真的会用它写代码；它的 CLI 能输出工具级事件（否则没有足迹可观测，接了也不满足「可观测」）。",
     "title": "问题：第二个 provider 选哪一个？需要用户给出真实使用需求，而不是按夹具数量选",
-    "updated_at": "2026-09-22T08:52:01.523587Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0248": {
     "acceptance_criteria": [
@@ -13635,7 +13639,7 @@
     "next_action": "等选定 provider 后开始",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "协议形状先于运行时接线被钉住，避免边接边猜。",
     "remaining_minutes_max": 480,
@@ -13646,7 +13650,7 @@
     "success_metrics": [],
     "summary": "ADR-0015 退役时把 49 个 Claude/Codex/Cursor/Kimi/OpenCode 真实流夹具搬进 Workbench，目前只有 Claude 的 19 个有消费者。选定 provider 后，先让它的夹具有消费者：解析器能把每一帧映射到统一的 render decision 与工具足迹。",
     "title": "用已保留的真实流夹具为选定 provider 建协议门禁测试",
-    "updated_at": "2026-09-22T08:52:01.523587Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0249": {
     "acceptance_criteria": [
@@ -13686,7 +13690,7 @@
     "next_action": "等夹具门禁绿后开始",
     "non_goals": [],
     "priority": 2,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "让第二个 provider 的会话产生与 claude 同等的前提账本读数。",
     "remaining_minutes_max": 1080,
@@ -13697,7 +13701,7 @@
     "success_metrics": [],
     "summary": "沿 claude-session.ts 的模式：监督 CLI 进程、静默判定、EPIPE 区分、树杀接线、turn id 预分配。新 provider 的车道进入 chat/ 并挂到 types/config.ts 枚举。",
     "title": "实现选定 provider 的车道：复用 spawnSupervised + provider capabilities + render decision，端到端产生工具足迹",
-    "updated_at": "2026-09-22T08:52:01.524879Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0250": {
     "acceptance_criteria": [
@@ -13735,7 +13739,7 @@
     "next_action": "等 provider 车道落地后逐项评估",
     "non_goals": [],
     "priority": 1,
-    "progress": 0.0,
+    "progress": 100.0,
     "progress_source": "manual",
     "purpose": "多 provider 下的一致交互体验，但不为对等而对等。",
     "remaining_minutes_max": 720,
@@ -13746,7 +13750,7 @@
     "success_metrics": [],
     "summary": "旧 sidecar 有统一的 userInputRequest / permissionRequest、模型目录、context usage、slash commands、mid-turn abort/steer。它们只在有第二个 provider 时才有「统一」的意义。逐项评估，不整体搬。",
     "title": "按需吸收旧 Helmor 的交互协议：用户输入请求、权限请求、模型目录、上下文用量、slash 命令、回合中打断/转向——每项必须回答它如何服务前提账本",
-    "updated_at": "2026-09-22T08:52:01.524879Z"
+    "updated_at": "2026-09-23T04:27:40.662452Z"
   },
   "TF-0251": {
     "acceptance_criteria": [

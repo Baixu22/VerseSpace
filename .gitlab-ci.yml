@@ -177,16 +177,19 @@ context-rot-test:
     - bun run test:context-rot
 
 # Release lane (2026-09-21; instance switched to JihuLab 2026-09-22).
-# `.github/workflows/release-workbench.yml` still describes the intended shape —
-# one host per target — but GitHub Actions has no runner while the account quota
-# is exhausted, so a `workbench-v*` tag on this instance builds here instead.
-# All four binaries are cross-compiled by Bun on this Windows host; only
-# windows-x64 has run the test suite, and the publish script says so in the
-# release notes.
+# The GitHub Actions release workflow was deleted under ADR-0018, so this is the
+# only tag-triggered lane left — there is no second workflow describing an
+# "intended shape" any more. All four binaries are cross-compiled by Bun on this
+# Windows host; only windows-x64 has run the test suite, and the publish script
+# says so in the release notes.
 #
 #   bun run release:tag:workbench --push   # origin: real tag; jihulab: snapshot tag
 #   → release-build runs after verify      # artifacts: dist/workbench-* + legal
 #   → release-publish is manual            # gh release create (host gh login)
+#
+# A release does not have to go through this lane: build locally with the same
+# command (`cd packages/workbench && bun run build:all`) and publish with
+# `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`.
 #
 # The tag that reaches this instance points at an orphan snapshot commit with
 # the same TREE as the released commit (see scripts/tag-workbench-release.mjs);

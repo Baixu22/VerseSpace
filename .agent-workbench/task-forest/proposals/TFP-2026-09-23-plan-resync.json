@@ -1,0 +1,926 @@
+{
+  "applied_at": "2026-09-23T04:27:40.743500Z",
+  "base_graph_hash": "64917a894f9ded1b03841918605108dc49f055e95ce8fb64fe36daef35268ac4",
+  "base_summary": {
+    "edge_count": 391,
+    "node_count": 251,
+    "workspace_path": "D:\\helmor-main"
+  },
+  "changes": [
+    {
+      "action": "update_node",
+      "fields": {
+        "desired_outcomes": [
+          "旧任务森林没有任何产品迁移阻塞项，状态与远端事实一致",
+          "账本能力从 CLI/HTTP/MCP 走进对话：前提通知落进对话记录、模型回合中可读账本、裁决在对话里完成——**不做独立面板或路由级视图**（2026-09-21 阶段 2 改口径，见 TFP-2026-09-21-phase2-replan-chat-embedded 与 TF-0240/TF-0239；原文「dashboard 账本控制台」在改口径时未同步，2026-09-23 修正）",
+          "第二个可观测 provider 有新 ADR 定边界并落地，不引入 sidecar 进程或 SDK 进主包",
+          "fit 账本的四项护城河判决出现自然人类使用产生的读数"
+        ]
+      },
+      "id": "TF-0232"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0001"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0002"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0003"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0004"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0005"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0006"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0007"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0008"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0009"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0010"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0011"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0012"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0013"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0014"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0015"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0016"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0017"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0020"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0021"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0022"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0024"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0025"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0026"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0027"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0028"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0029"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0031"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0032"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0033"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0034"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0035"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0036"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0037"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0038"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0039"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0040"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0041"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0042"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0043"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0044"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0045"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0046"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0047"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0048"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0049"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0050"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0051"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0052"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0053"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0054"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0056"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0061"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0062"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0063"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0064"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0065"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0066"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0067"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0068"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0069"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0070"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0071"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0072"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0073"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0074"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0075"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0076"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0077"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0078"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0079"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0080"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0081"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0082"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0083"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0084"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0086"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0087"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0088"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0089"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0090"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0091"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0092"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0093"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0094"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0095"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0096"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0097"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0098"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0102"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0103"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0104"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0105"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0106"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0113"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0115"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0116"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0118"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0119"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0147"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0158"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0159"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0161"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0162"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0163"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0164"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0165"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0166"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0168"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0169"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0170"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0177"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0178"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0179"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0182"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0184"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0185"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0186"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0187"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0232"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0240"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0246"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0247"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0248"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0249"
+    },
+    {
+      "action": "update_node",
+      "fields": {
+        "progress": 100
+      },
+      "id": "TF-0250"
+    },
+    {
+      "action": "record_deviation",
+      "deviation": {
+        "confidence": 0.9,
+        "correction": "本提案把 TF-0232 的 desired_outcomes 第 2 条改写为实际交付的形态，并在条文里写明改口径的时间、依据节点与原文作废的事实。根目标的状态与其余三条不变。",
+        "created_at": "2026-09-23T04:27:33.212582Z",
+        "evidence": "对比三处：TFP-2026-09-21-second-round-absorption-plan 原始阶段 2 子节点（p1-state-view「面板消费 /api/state」、p1-evidence「前提证据浏览面」）→ TFP-2026-09-21-phase2-replan-chat-embedded 的重写理由（「把阶段 2 的四个交付重写为：通知落盘、MCP 接进车道、对话内裁决；废止写端点接入节点」）→ TF-0239 验收第 4 条（「没有新增任何独立于聊天的路由级视图」）。2026-09-23 现场复核：`apps/workbench-ui/src` 对 `/api/state|sync|dispatch|agent/run` 零调用，`App.tsx` 仍只有 ChatProvider + WorkbenchShell。",
+        "expected_requirement": "根目标的 desired_outcomes 应当描述本轮实际决定要交付的东西；口径改变时同步改写，而不是让根目标继续宣传一个被否掉的形态。",
+        "id": "TFD-c794ae5928",
+        "kind": "acceptance_scope_not_resynced",
+        "observed_action_or_result": "TF-0232 已于 2026-09-23 收 done，而它的四条 desired_outcomes 里有一条（账本控制台）指向的是被明确否掉的产品面；实际交付是对话内的三种形态（NoticePart / MCP 工具卡 / TribunalBar）。",
+        "reason": "2026-09-21 用户拍板把阶段 2 从「面板上可见可操作」改为「账本能力内嵌对话」（TFP-2026-09-21-phase2-replan-chat-embedded），并据此废止了写端点接入节点 TF-0244；TF-0239 的验收也明写「没有新增任何独立于聊天的路由级视图」。但根目标 TF-0232 的 desired_outcomes 第 2 条仍写着「dashboard 从聊天壳变为……账本控制台」，改口径时没有回头改它。",
+        "recommendation": "口径变更的提案应当顺带检查父节点/根目标的 desired_outcomes 是否还成立——本轮这类「父目标宣传被否形态」的漂移只有人工对比提案原文才能发现，validate 测不出来。",
+        "related_task_ids": [
+          "TF-0232",
+          "TF-0239",
+          "TF-0240"
+        ],
+        "severity": "medium",
+        "status": "open",
+        "summary": "TF-0232 的 desired_outcomes 第 2 条在阶段 2 改口径后从未同步，根目标带着一条已经作废的产品面收口"
+      }
+    }
+  ],
+  "created_at": "2026-09-23T04:27:33Z",
+  "proposal_id": "TFP-2026-09-23-plan-resync",
+  "rationale": "按用户 2026-09-23 的要求核对「规划内还有没有没做完/对不上的」。查出两处并修正：(1) TF-0232 的 desired_outcomes 第 2 条仍写「dashboard 账本控制台」，而阶段 2 在 2026-09-21 已改口径为「账本能力内嵌对话」并废止了面板写端点节点 TF-0244——根目标带着一条作废的产品面收口，另记偏差 acceptance_scope_not_resynced；(2) 进度单位缺陷（工具按 0–100 读 progress，done 却存 0 或 1）此前只在 tf0193-0200-progress-unit-fix 里修了 5 个节点，仍有 125 个 done 节点在权威文件里读作「0%/1%」，本轮补齐到 100（derived 来源的节点不动，其原始值不参与计算）。不改任何节点状态。",
+  "session_id": "plan-resync-20260923",
+  "status": "applied"
+}
