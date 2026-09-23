@@ -1,3 +1,19 @@
+> **⚠️ 已退役，保留为记录——这不是本仓库的功能说明。**
+>
+> 本目录是**旧 Helmor 桌面应用**（Tauri v2 + Rust + SQLite）的用户指南。Helmor 已于
+> 2026-09-21 退役并从工作树删除，见 [ADR-0014](../decisions/0014-legacy-retirement-gate.md)、
+> [ADR-0015](../decisions/0015-legacy-retirement-execution.md)、
+> [ADR-0016](../decisions/0016-retirement-closeout.md)。
+>
+> 文中提到的安装包（DMG / NSIS）、`~/helmor/logs/`、**Settings → Accounts**、内嵌终端、
+> Monaco 编辑器、workspace / stacked PR 等**在本仓库中都不存在**；安装页的下载链接指向的是
+> **上游仓库 `dohooo/helmor`**，不是本仓库的发行物。
+>
+> **为什么留着**：它是「旧产品对用户承诺了什么」的一手记录，被吸收叙事引用
+> （见 [fable-brief/03](../fable-brief/03-deep-state-appendix.md)）。删掉它，这份记录就只剩
+> git 历史可查。本仓库当前的功能与用法见根 [README](../../README.md) 与
+> [packages/workbench/README](../../packages/workbench/README.md)。
+
 # Helmor User Guide
 
 Helmor is a local-first desktop app for running many coding agents in

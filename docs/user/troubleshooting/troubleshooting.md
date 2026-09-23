@@ -1,3 +1,5 @@
+> **⚠️ 已退役**：本页是**旧 Helmor 桌面应用**的用户指南（该应用已按 [ADR-0015](../../decisions/0015-legacy-retirement-execution.md) 从工作树删除），**不是本仓库的功能说明**，文中提到的功能在本仓库均不存在。见[本目录说明](../README.md)。
+
 # Troubleshooting
 
 ## First stop: the logs
