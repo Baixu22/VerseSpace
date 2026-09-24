@@ -15,6 +15,13 @@ dist-ssr
 .local-data/
 .local-docs/
 
+# `.agent-contexts/` is process evidence and session drafts by its own README —
+# the same class of maintainer-local material as the task-forest. No product code,
+# CI job, or shipped doc depends on it; the docs that DO reference it are themselves
+# local-only. Keep the whole tree local. Previously a curated subset was tracked;
+# it is now untracked (files remain on disk).
+/.agent-contexts/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -80,24 +87,17 @@ packages/workbench/.evidence-sites/
 # nested task-forest written under packages/workbench when the CLI runs there
 /packages/workbench/.agent-workbench/
 # throwaway scratch scripts and export intermediates
-/.agent-workbench/tmp/
 /.tf-tmp/
-# task-forest derived products stay out of history (TF-0147).
-# canonical state is graph/nodes.json + graph/edges.json + config.json +
-# events/events.jsonl; exports are rebuildable via `task_forest.py export`.
-# Keep or back up local snapshots for history playback: compact audit events
-# reference them rather than embed them.
-# A fresh checkout can rebuild current state, not missing historical snapshots.
-# Measured 2026-09-05: exports
-# 109MB, snapshots 61MB against 864KB of canonical graph — GitHub was already
-# returning GH001 large-file warnings on every push.
-/.agent-workbench/task-forest/exports/
-/.agent-workbench/task-forest/snapshots/
-# graph/forest.json 是 build_export 的全量派生视图，与 exports/task-forest.graph.json
-# 逐字节相同（649,420 B），且 skill 侧只写不读（仅 rebuild_generated 写出，无任何读取方）。
-# 它曾被跟踪，于是每次 export/apply 都因 generated_at 弄脏工作区——按 TF-0147 的
-# 「派生产物不进历史」补漏出仓。权威来源仍是 graph/nodes.json + graph/edges.json。
-/.agent-workbench/task-forest/graph/forest.json
+# The task-forest (`.agent-workbench/`) is the maintainer's PERSONAL orchestration
+# scaffolding, not an engineering deliverable. The dev flow uses it locally, but a
+# cloner does not need it — so the whole tree stays out of version control. Files
+# remain on disk; nothing here is deleted. Product code, CI (`.gitlab-ci.yml`) and
+# the shipped packages have zero dependency on it being tracked; `scripts/check-forest-landing.mjs`
+# degrades to "cannot measure" (exit 2) when the forest is absent, by design.
+# NOTE: this only stops FUTURE tracking. The ~85 MB of historical `events/events.jsonl`
+# blobs already live in pushed history (111 commits) and still transfer on clone;
+# removing that needs a history rewrite, which issue #27 / TF-0147 deliberately declined.
+/.agent-workbench/
 # local session work log + scratch scripts (tf-* probes, tmp-* exit codes,
 # repin.py, scan reports) — personal workspace state, not repo history
 /.workbuddy/
@@ -177,6 +177,7 @@ packages/workbench/.evidence-sites/
 !/docs/reicon-icons.md
 !/docs/fit-ledger.md
 !/docs/phase4-human-usage-window-2026-09-22.md
+!/docs/engineering-defect-localization-and-qa-plan-2026-09-24.md
 
 # TF-0194 window round: the per-branch prompt scratch and the three driver
 # scripts are working state. The round's curated readings stay tracked
@@ -185,5 +186,4 @@ packages/workbench/.evidence-sites/
 /.agent-contexts/tf0194-window/serve.ts
 /.agent-contexts/tf0194-window/step.ts
 /.agent-contexts/tf0194-window/window.ts
-
 

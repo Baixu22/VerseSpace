@@ -71,10 +71,11 @@ status checks — its green light lives on JihuLab.
 | `origin` | `https://github.com/Baixu22/VerseSpace.git` | PRs, Releases, source of truth for merge |
 | `jihulab` | `git@jihulab.com:Baixu22/VerseSpace.git` | CI (`.gitlab-ci.yml`) |
 
-**Push CI as an orphan snapshot, never as real history.** The local `.git` carries ~2 GB of
-`events.jsonl` history (the task forest is committed on every closeout), so a plain
-`git push jihulab <branch>` would drag all of it up. JihuLab only needs the current tree to run
-CI:
+**Push CI as an orphan snapshot, never as real history.** The local `.git` still carries ~2 GB of
+historical `events.jsonl` blobs from the 111 commits made **before** the task forest was untracked
+(2026-09-24) — see the note under "Where the project's own records live". Those blobs remain in
+pushed history, so a plain `git push jihulab <branch>` would drag all of it up. JihuLab only needs
+the current tree to run CI:
 
 ```bash
 git push origin <branch>   # GitHub — updates the PR (real history)
@@ -395,8 +396,11 @@ excluded from collection.
   decision means adding a new one and noting the relationship. `docs/decisions/README.md` indexes
   them and maps each to its task-forest node. **Read the ADRs before proposing an architectural
   change.**
-- **`.agent-workbench/task-forest/`** — the task forest: the authority for what is planned and what
-  is done. Canonical state is `.agent-workbench/task-forest/graph/nodes.json` +
+- **`.agent-workbench/task-forest/`** — the task forest: the maintainer's **personal** authority for
+  what is planned and what is done. **It is untracked (`.gitignore`, 2026-09-24)** — it is
+  orchestration scaffolding for the dev flow, not an engineering deliverable a cloner needs, and
+  product code / CI / the shipped packages have zero dependency on it. It lives on the maintainer's
+  disk only. Canonical state is `.agent-workbench/task-forest/graph/nodes.json` +
   `.agent-workbench/task-forest/graph/edges.json` +
   `.agent-workbench/task-forest/config.json` +
   `.agent-workbench/task-forest/events/events.jsonl`; exports are derived and rebuildable.
@@ -405,6 +409,12 @@ excluded from collection.
   `node scripts/check-forest-landing.mjs` re-implements the landing half in-repo and against
   the **default branch** rather than HEAD (exit 0 clean · 1 drift · 2 cannot measure) — HEAD-only
   comparison is what let the 2026-09-23 stage-3 gap read as landed (`TFD-0dab4149f2`).
+  It degrades to "cannot measure" (exit 2) when the forest is absent, by design, so a fresh clone
+  without the forest is a supported state. **Historical caveat:** the forest was tracked through
+  2026-09-24 (111 commits), so ~2 GB of old `events.jsonl` blobs still live in pushed history;
+  untracking only stops future growth. Removing the old blobs needs a history rewrite, which
+  issue #27 / TF-0147 deliberately declined.
 - **`docs/*.md`** — historical reports and evidence records. Most are **point-in-time readings**,
   not current state. Check the date in the filename before treating one as authoritative.
-- **`.agent-contexts/`** — local session scratch, mostly gitignored.
+- **`.agent-contexts/`** — local session scratch and process evidence, **untracked (2026-09-24)**;
+  local-only, same class as the task forest.
