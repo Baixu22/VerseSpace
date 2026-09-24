@@ -1,3 +1,0 @@
-你在分支线程里，仓库 D:/helmor-main。主线已完成 adoptThread() 的评审修整（thread-promotion.ts），ThreadMeta 已有 adoptSnapshot 字段。
-
-任务：实现 revertAdopt()。用 Read 读 thread-promotion.ts 的 adoptThread() 与 thread-types.ts 的 adoptSnapshot 字段，然后用 Edit 在 thread-promotion.ts 末尾追加 revertAdopt(context, sourceThreadId)（≤40 行）：读 source.adoptSnapshot，不存在则抛错「无可反转的收养快照」；存在则恢复源线程 archived、恢复子线程 forkOf 与 archived、置空快照、落 thread.adoption_reverted 事件（payload 带 sourceThreadId / adoptedThreadId / snapshotId，refs 溯源）。只改这一个文件。

@@ -1,6 +1,0 @@
-你在分支线程里，仓库 D:/helmor-main。主线已定：thread-list.tsx 第 83-112 行区域加「已归档」徽章（thread?.archived），反转手势按钮放线程头部。
-
-任务：用 Read 读 apps/workbench-ui/src/components/chat/thread-list.tsx 与线程头部组件（找 title/线程名渲染处，可能在 sidecar.tsx 或独立 header 组件），然后用 Edit：
-1. thread-list.tsx：归档线程挂「已归档」徽章 + 整行降透明度；
-2. 线程头部：archived 线程显示「已归档」标记 + 「反转收养」按钮（新 store 动作 revertAdoption(threadId) → POST /threads/{id}/revert，照 adoptBranch 模式；store-types.ts 加签名）。
-只改必要的文件，风格对齐。完成后一句话说明。

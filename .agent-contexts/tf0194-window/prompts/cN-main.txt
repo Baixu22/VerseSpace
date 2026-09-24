@@ -1,1 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，TF-0200 收尾。任务：doctor 检查扩展。用 Read 读 packages/workbench/src/doctor/ 的报告结构（它现在检查哪些项、怎么组织条目），回答（≤6 行）：加「收养一致性」检查的最小落点——查什么（adoptSnapshot 挂在非归档线程上=悬空快照；thread.adopted 有但 adoptSnapshot 缺=半收养）？条目怎么登记？不要修改任何文件。

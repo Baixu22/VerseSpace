@@ -1,8 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，这是 workbench（packages/workbench）自身仓库的开发侦察任务。
-
-任务：为「adopt 以分支为主线」手势（TF-0200）做只读侦察。请：
-1. 用 Read 读 packages/workbench/src/chat/thread-fork.ts 和 packages/workbench/src/chat/threads.ts 中与 fork 相关的部分；
-2. 回答两个问题（各不超过 5 行）：
-   a) 「以分支为主线」需要改动哪些函数/文件（列文件路径与函数名）；
-   b) fork 元数据（forkOf.sourceThreadId / anchorMessageId）在列表与恢复面上是怎么被消费的。
-不要修改任何文件。

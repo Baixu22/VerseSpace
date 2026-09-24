@@ -1,6 +1,0 @@
-你在这个分支线程里，仓库 D:/helmor-main。你上一轮写的 adoptThread() 初稿经主线评审，有两个问题要修：
-
-1. `thread.adopted` 还没进事件白名单：types/event.ts 的 THREAD_EVENT_TYPES 需要登记（照 thread.merged_back 的注释风格写一句为什么）。
-2. 快照构建后没有持久化：把快照挂到 source.adoptSnapshot 再 saveMeta（thread-types.ts 的 ThreadMeta 加可选字段 adoptSnapshot?: { id: string; version: number; at: string }）。
-
-用 Edit 完成这两处 + thread-promotion.ts 的持久化修正，不要动其他逻辑。完成后一句话说明改了什么。

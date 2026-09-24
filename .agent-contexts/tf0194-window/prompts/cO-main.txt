@@ -1,7 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，TF-0200 收尾。真实缺陷：claude 回合静默挂死时（子进程活着但无输出），liveness 只打「已静默 Ns」警告（软阈值 45s/硬阈值 135s），回合永远不收尾——今天复现 3 次。
-
-任务：为「硬阈值动作」做只读侦察。用 Read 读 packages/workbench/src/supervisor/liveness.ts 与 packages/workbench/src/chat/claude-session.ts 的接线，回答（≤8 行）：
-1. 硬阈值判死时现在发生什么（回调？只日志？）；子进程句柄在哪、能不能从判死路径杀掉它；
-2. 杀掉后走既有 exit 收尾（error 事件 + status idle）需要什么条件；
-3. 测试落点（liveness 有没有测试文件）。
-不要修改任何文件。

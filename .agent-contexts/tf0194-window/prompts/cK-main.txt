@@ -1,7 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，继续 TF-0200 及其周边。真实缺陷：ui 服务器进程死亡时，正处回合中的线程 meta 永久卡 status=running（重启后无恢复路径，busy 判定再也回不去，操作员只能手改 meta.json——今天发生过两次）。
-
-任务：为「启动清扫」做只读侦察。用 Read 读 packages/workbench/src/ui/server.ts 的 createUiServer 启动路径与 packages/workbench/src/chat/threads.ts 的 list/get，回答（≤8 行）：
-1. 启动时扫一遍 threads、把 status=running 的复位为 idle 的最小落点（server.ts 哪个位置？直接 store.saveMeta？）；
-2. 要不要落一条事件（比如沿用现有事件类型）还是纯 meta 修复？
-3. 测试怎么写（现有 ui/server.test.ts 的夹具）。
-不要修改任何文件。

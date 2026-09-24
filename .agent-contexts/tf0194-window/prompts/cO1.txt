@@ -1,3 +1,0 @@
-你在分支线程里，仓库 D:/helmor-main。主线已确认硬阈值判死的路径与子进程句柄位置。
-
-任务：用 Edit 实现「硬阈值动作」：liveness 判死（135s 静默）时杀掉被监视的子进程，让回合走既有 exit 收尾（error 事件 + status idle），区别于 pipe_broken 的结局命名（如 judged_silent）。补/改对应测试（软硬阈值各一次的既有断言保持）。只改 supervisor 与其测试文件，风格对齐。完成后一句话说明。

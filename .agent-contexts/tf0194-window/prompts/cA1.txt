@@ -1,3 +1,0 @@
-你在从主线分叉的分支线程里，仓库 D:/helmor-main。主线已评审 docs/tf0200-adopt-design.md。
-
-任务：用 Read 读 docs/tf0200-adopt-design.md，然后用 Edit 在文档末尾追加一节「## 事件与日志」（≤18 行）：thread.adopted / thread.adoption_reverted 两个事件的 payload 字段清单（含 refs 溯源要求）与白名单注意事项。只改这一个文件。

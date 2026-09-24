@@ -1,7 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，继续 TF-0200。adopt/revert 后端与 adopt 前端手势已通。设计文档的「恢复面呈现」节要求：源线程（被归档）在侧栏标「已归档」，恢复卡附「已归档·自锚点后 N 条不在此线程」，反转手势可用。
-
-任务：为归档呈现做只读侦察。用 Grep/Read 找 apps/workbench-ui 里线程列表项与线程头部的组件（archived 字段现在有没有被消费？），回答（≤8 行）：
-1. 侧栏列表项加「已归档」标记的最小落点（文件 + 位置）；
-2. 反转手势（POST /threads/{source}/revert）的按钮放哪最贴现有交互？
-3. meta.archived 现在是否已经随 /api/chat/threads 下发？
-不要修改任何文件。

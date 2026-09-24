@@ -1,3 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，继续 TF-0200。adoptThread() 初稿已落（含快照持久化与 thread.adopted 白名单）。
-
-任务：用 Read 读 packages/workbench/src/chat/thread-promotion.ts 的 adoptThread() 与 docs/tf0200-adopt-design.md 的「快照可逆语义」节，回答（≤6 行）：revertAdopt() 要恢复哪些字段？thread.adoption_reverted 的 payload 该带什么？不要修改任何文件。

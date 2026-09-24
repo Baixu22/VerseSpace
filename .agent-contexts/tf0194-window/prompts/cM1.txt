@@ -1,3 +1,0 @@
-你在分支线程里，仓库 D:/helmor-main。主线已确认 S6 场景落点。
-
-任务：用 Edit 给 packages/workbench/scripts/e2e/scenario.ts 追加 adopt/revert 场景（照既有场景的结构与断言风格，≤40 行）：fork → POST adopt → 断言源 archived/子 forkOf 清空 → POST revert → 断言复原。只改这一个文件。

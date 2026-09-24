@@ -1,6 +1,0 @@
-你在分支线程里，仓库 D:/helmor-main。你上一轮完成的 adoptThread() 初稿已经过主线评审修整（快照持久化 + thread.adopted 白名单）。
-
-任务：实现 revertAdopt()。用 Read 读 thread-promotion.ts（adoptThread 部分）、thread-types.ts 的 adoptSnapshot 字段、types/event.ts 白名单，然后用 Edit：
-1. thread-promotion.ts 追加 revertAdopt(context, sourceThreadId)：读 source.adoptSnapshot → 校验存在 → 恢复双方身份（源线程 archived 复原、子线程恢复 forkOf 血统与归档状态）→ 消费快照（置 undefined）→ 落 thread.adoption_reverted 事件（refs 溯源）；snapshot 不存在时抛错防重复反转；
-2. types/event.ts 白名单登记 thread.adoption_reverted（照既有注释风格，一句为什么）。
-只改这两个文件，风格对齐。完成后一句话说明。

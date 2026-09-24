@@ -1,6 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，继续 TF-0200。adoptThread/revertAdopt 已实现（thread-promotion.ts，typecheck 干净）。
-
-任务：为它们补测试做只读侦察。用 Read/Grep 看 packages/workbench/src/chat/threads.test.ts（或邻近测试文件）的 fixture 模式，回答（≤6 行）：
-1. adopt/revert 的测试该放哪个文件、用什么夹具（makeTempWorkbench？chat.fork？）；
-2. thread.adopted / thread.adoption_reverted 事件断言怎么写最贴现有风格。
-不要修改任何文件。

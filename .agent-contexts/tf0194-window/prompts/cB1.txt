@@ -1,3 +1,0 @@
-你在分支线程里，仓库 D:/helmor-main。主线程已确认 adoptThread() 落在 packages/workbench/src/chat/thread-promotion.ts，快照存 ThreadMeta.adoptSnapshot。
-
-任务：用 Read 读 thread-promotion.ts 与 docs/tf0200-adopt-design.md 的「快照可逆语义」节，然后用 Edit 给 thread-promotion.ts 追加 adoptThread() 的初稿（≤60 行）：打身份快照 → 子线程升主线（清 forkOf）→ 源线程 archived=true → 落 thread.adopted 事件（refs 溯源）→ 返回快照 id。不做 revert（下轮做）。只改这一个文件，风格对齐文件内既有函数。

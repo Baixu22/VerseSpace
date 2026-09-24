@@ -1,1 +1,0 @@
-你在 git 仓库 D:/helmor-main 里。任务：用 Read 读 docs/tf0200-adopt-design.md，然后给出不超过 3 行的评审意见（重点：边界是否完整、有没有漏掉「并发 adopt」的竞态问题）。不要修改任何文件。

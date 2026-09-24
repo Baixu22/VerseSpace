@@ -1,6 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，继续 TF-0200。adoptThread/revertAdopt 已实现并有测试（thread-promotion.ts / threads.test.ts）。
-
-任务：为路由接线做只读侦察。用 Read 读 packages/workbench/src/ui/chat-routes.ts 的 fork/promote 路由和 packages/workbench/src/chat/threads.ts 的对应门面方法，回答（≤8 行）：
-1. POST /api/chat/threads/:id/adopt 与 /revert 该怎么落：门面方法签名 + 路由分支的最小形状；
-2. adopt 的调用方是谁（子线程 id 还是源线程 id）？revert 呢？
-不要修改任何文件。

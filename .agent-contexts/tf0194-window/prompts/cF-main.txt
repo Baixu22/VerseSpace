@@ -1,3 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，TF-0200 评审跟进。tsc 报错：threads.test.ts(338) —— ThreadMeta.adoptSnapshot 是窄类型 { id; version; at }，测试与 revertAdopt 需要完整快照（adoptedThreadId / adoptedForkOfBefore / sourceArchivedBefore / anchorMessageId）。
-
-任务：用 Read 读 packages/workbench/src/chat/thread-types.ts 的 adoptSnapshot 字段、thread-promotion.ts 的 AdoptSnapshot 接口与两个函数的用法，回答（≤6 行）：把 AdoptSnapshot 接口挪到 thread-types.ts（或结构化收窄字段）哪个方案更贴现有风格？列出要改的文件与每处改动一句话。不要修改任何文件。

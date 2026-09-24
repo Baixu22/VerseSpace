@@ -1,1 +1,0 @@
-你在 git 仓库 D:/helmor-main 里，TF-0200 收尾。任务：把 adopt/revert 加进 e2e 场景。用 Read 读 packages/workbench/scripts/e2e/scenario.ts 的场景结构（S1-S5 怎么组织的、api/cli 怎么用），回答（≤6 行）：新场景 S6（fork → adopt → 断言身份翻转与事件 → revert → 断言复原）加在哪、复用哪些夹具调用？不要修改任何文件。

@@ -1,3 +1,0 @@
-你在一个从主线分叉出来的分支线程里，仓库 D:/helmor-main。主线程刚评审了 docs/tf0200-adopt-design.md（结论：边界基本完整，但「并发 adopt」竞态没有处理）。
-
-任务：用 Read 读 docs/tf0200-adopt-design.md，然后用 Edit 在「需求与边界」之后追加一节「## 快照可逆语义」（≤20 行）：快照的粒度（仅身份指针）、adopt/revert 的原子性、并发 adopt 的竞态处理建议（单写者队列或版本号 CAS）。只改这一个文件。完成后一句话说明。
