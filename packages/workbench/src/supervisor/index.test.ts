@@ -81,89 +81,92 @@ describe("spawnSupervised", () => {
 		}
 	});
 
-	test("路径带空格的 .cmd 垫片也能跑通（cmd /s 的双引号规则）", async () => {
-		if (process.platform !== "win32") {
-			return; // POSIX 没有 .cmd 垫片这条路径
-		}
-		// 前缀里故意留一个空格：npm 全局垫片的常见位置（`C:\Users\John Doe\
-		// AppData\Roaming\npm\x.cmd`）和本机沙箱运行时都在带空格的目录下。
-		// 2026-09-11 之前这里是坏的：`cmd /c` 只给路径加引号，而 Node/bun 会把
-		// 元素内部的引号转义成 `\"`，cmd 不认 `\"`，于是报「不是内部或外部命令」，
-		// 对话整条链路表现为「agent 退出码 1」且零输出——而这一族问题在测试里
-		// 一直看不见，因为临时目录从来不带空格。
-		const { dir, cleanup } = await makeDir("workbench supervisor shim");
-		try {
-			await writeFile(
-				join(dir, "shim.cmd"),
-				["@echo off", "echo shim-ran", ""].join("\r\n"),
-				"utf8",
-			);
-			const lines: string[] = [];
-			const proc = spawnSupervised(`"${join(dir, "shim.cmd")}"`, {
-				label: "space-shim",
-				onLine: (line, kind) => lines.push(`${kind}:${line}`),
-			});
-			const outcome = await proc.wait();
-			expect(outcome.error).toBeUndefined();
-			expect(outcome.exitCode).toBe(0);
-			// cmd.exe 的行以 CRLF 结尾，逐行比较前去掉尾部空白
-			expect(lines.map((line) => line.trim())).toContain("out:shim-ran");
-		} finally {
-			await cleanup();
-		}
-	});
+	// POSIX 没有 .cmd 垫片这条路径：用 skipIf 让跳过在报告里可见，而不是
+	// 静默 return（静默 return 会被记成 pass，等于什么都没验证）。
+	test.skipIf(process.platform !== "win32")(
+		"路径带空格的 .cmd 垫片也能跑通（cmd /s 的双引号规则）",
+		async () => {
+			// 前缀里故意留一个空格：npm 全局垫片的常见位置（`C:\Users\John Doe\
+			// AppData\Roaming\npm\x.cmd`）和本机沙箱运行时都在带空格的目录下。
+			// 2026-09-11 之前这里是坏的：`cmd /c` 只给路径加引号，而 Node/bun 会把
+			// 元素内部的引号转义成 `\"`，cmd 不认 `\"`，于是报「不是内部或外部命令」，
+			// 对话整条链路表现为「agent 退出码 1」且零输出——而这一族问题在测试里
+			// 一直看不见，因为临时目录从来不带空格。
+			const { dir, cleanup } = await makeDir("workbench supervisor shim");
+			try {
+				await writeFile(
+					join(dir, "shim.cmd"),
+					["@echo off", "echo shim-ran", ""].join("\r\n"),
+					"utf8",
+				);
+				const lines: string[] = [];
+				const proc = spawnSupervised(`"${join(dir, "shim.cmd")}"`, {
+					label: "space-shim",
+					onLine: (line, kind) => lines.push(`${kind}:${line}`),
+				});
+				const outcome = await proc.wait();
+				expect(outcome.error).toBeUndefined();
+				expect(outcome.exitCode).toBe(0);
+				// cmd.exe 的行以 CRLF 结尾，逐行比较前去掉尾部空白
+				expect(lines.map((line) => line.trim())).toContain("out:shim-ran");
+			} finally {
+				await cleanup();
+			}
+		},
+	);
 
-	test("kill() takes down the whole tree on Windows", async () => {
-		if (process.platform !== "win32") {
-			return; // POSIX group-kill is exercised by the same code path shape
-		}
-		const { dir, cleanup } = await makeDir("workbench-supervisor-tree");
-		try {
-			// the parent spawns a long-lived grandchild and records its pid;
-			// killing the parent through the supervisor must reap the
-			// grandchild too — the exact failure mode of `child.kill()` on a
-			// cmd.exe shim
-			await writeFile(
-				join(dir, "sleeper.js"),
-				"setInterval(() => {}, 1000);\n",
-				"utf8",
-			);
-			await writeFile(
-				join(dir, "parent.js"),
-				[
-					"const { execSync } = require('node:child_process');",
-					"const grand = require('node:child_process').spawn(process.execPath, [process.argv[1].replace('parent.js', 'sleeper.js')], { detached: true, stdio: 'ignore' });",
-					"grand.unref();",
-					"require('node:fs').writeFileSync(process.argv[1] + '.pid', String(grand.pid));",
-					"setInterval(() => {}, 1000);",
-				].join("\n"),
-				"utf8",
-			);
-			const proc = spawnSupervised(`bun ${join(dir, "parent.js")}`, {
-				label: "tree",
-			});
-			await pollFor(async () => {
-				try {
-					await readFile(join(dir, "parent.js.pid"), "utf8");
-					return true;
-				} catch {
-					return false;
-				}
-			});
-			const grandPid = Number(
-				await readFile(join(dir, "parent.js.pid"), "utf8"),
-			);
-			expect(Number.isFinite(grandPid)).toBe(true);
-			expect(isProcessAlive(grandPid)).toBe(true);
+	// POSIX 的 group-kill 由同一代码路径形状覆盖：同样用 skipIf 显式跳过。
+	test.skipIf(process.platform !== "win32")(
+		"kill() takes down the whole tree on Windows",
+		async () => {
+			const { dir, cleanup } = await makeDir("workbench-supervisor-tree");
+			try {
+				// the parent spawns a long-lived grandchild and records its pid;
+				// killing the parent through the supervisor must reap the
+				// grandchild too — the exact failure mode of `child.kill()` on a
+				// cmd.exe shim
+				await writeFile(
+					join(dir, "sleeper.js"),
+					"setInterval(() => {}, 1000);\n",
+					"utf8",
+				);
+				await writeFile(
+					join(dir, "parent.js"),
+					[
+						"const { execSync } = require('node:child_process');",
+						"const grand = require('node:child_process').spawn(process.execPath, [process.argv[1].replace('parent.js', 'sleeper.js')], { detached: true, stdio: 'ignore' });",
+						"grand.unref();",
+						"require('node:fs').writeFileSync(process.argv[1] + '.pid', String(grand.pid));",
+						"setInterval(() => {}, 1000);",
+					].join("\n"),
+					"utf8",
+				);
+				const proc = spawnSupervised(`bun ${join(dir, "parent.js")}`, {
+					label: "tree",
+				});
+				await pollFor(async () => {
+					try {
+						await readFile(join(dir, "parent.js.pid"), "utf8");
+						return true;
+					} catch {
+						return false;
+					}
+				});
+				const grandPid = Number(
+					await readFile(join(dir, "parent.js.pid"), "utf8"),
+				);
+				expect(Number.isFinite(grandPid)).toBe(true);
+				expect(isProcessAlive(grandPid)).toBe(true);
 
-			await proc.kill();
-			await proc.wait();
-			await pollFor(() => !isProcessAlive(grandPid));
-			expect(isProcessAlive(proc.pid ?? -1)).toBe(false);
-		} finally {
-			await cleanup();
-		}
-	});
+				await proc.kill();
+				await proc.wait();
+				await pollFor(() => !isProcessAlive(grandPid));
+				expect(isProcessAlive(proc.pid ?? -1)).toBe(false);
+			} finally {
+				await cleanup();
+			}
+		},
+	);
 
 	test("pid registry records a running process and reapOrphans kills it", async () => {
 		const { dir, cleanup } = await makeDir("workbench-supervisor-reap");

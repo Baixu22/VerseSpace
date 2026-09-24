@@ -114,8 +114,16 @@ describe("buildResumeNote（TF-0097）", () => {
 		expect(shifted.text).toContain("run(bun test)");
 	});
 
-	test("节拍封顶 5 个", () => {
-		// 构造一个能产生 doing + decided(2) + shifted + next = 5 的对话
+	test("素材齐全：四类节拍按序出场（四类各一个，共 4 个）", () => {
+		// 构造一个把四类素材都用满的对话：doing（最后一条 user）、decided
+		// （分叉 + 晋升，合并成一个节拍）、shifted（最后一条 assistant 的
+		// tool-call）、next（suggestNext 从编号列表推导）。
+		//
+		// 断言的是**确切的**节拍序列，不是 `<= 5`：后者既接受空数组，也接受
+		// 任何数量的节拍，删掉任何一类节拍（或让 buildResumeNote 提前返回）
+		// 都不会红。buildResumeNote 只有四个 push 点，所以最大就是 4——
+		// 原先 `beats.slice(0, 5)` 的「封顶」永远够不到，已按死代码删除
+		// （见 resume.ts 的注释）。这条测试钉住的是四类节拍都真的产出。
 		const assistant = msg("assistant", "好\n1. 第一步\n2. 第二步", {
 			parts: [
 				{ type: "text", text: "好" },
@@ -135,7 +143,14 @@ describe("buildResumeNote（TF-0097）", () => {
 			},
 			fixedNow,
 		);
-		expect(note!.beats.length).toBeLessThanOrEqual(5);
+		expect(note).not.toBeNull();
+		expect(note!.beats.map((beat) => beat.kind)).toEqual([
+			"doing",
+			"decided",
+			"shifted",
+			"next",
+		]);
+		expect(note!.beats.length).toBe(4);
 	});
 
 	test("leaveSignature 记录离开时的消息数与最后消息时间", () => {

@@ -177,7 +177,11 @@ export function buildResumeNote(
 	}
 	const last = messages[messages.length - 1]!;
 	return {
-		beats: beats.slice(0, 5),
+		// No cap on purpose: `beats` has exactly four push sites (doing / decided /
+		// shifted / next), so the former `slice(0, 5)` could never fire — it looked
+		// like a boundary while protecting nothing. If a fifth beat kind is added,
+		// add a real cap together with a fixture that exceeds it.
+		beats,
 		draftedAt: now.toISOString(),
 		leaveSignature: {
 			lastMessageAt: last.at,

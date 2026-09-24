@@ -36,20 +36,39 @@ test("证据接口要求认证，拒绝无效引用和目录越界，读取不�
 			(await fetch(`${root}/..%2Foutside/evidence?ref=${ref}`, { headers }))
 				.status,
 		).toBe(400);
-		let illegalPct: string;
+		// %ZZ 探针必须能区分「服务端拒收」和「请求根本没出去」：先把同一
+		// origin 上的合法请求再走一遍，证明服务器此刻可达、loopback 没被代理
+		// 吞掉——否则下面的失败什么也证明不了。
+		expect(
+			(await fetch(`${root}/${thread.id}/evidence?ref=${ref}`, { headers }))
+				.status,
+		).toBe(200);
 		try {
-			illegalPct = String(
+			const status = String(
 				(await fetch(`${root}/%ZZ/evidence?ref=${ref}`, { headers })).status,
 			);
-		} catch {
-			// Bun 1.3.14 起在 HTTP 解析层直接断开含非法百分号编码（%ZZ）的
-			// 请求：fetch 以 ECONNRESET 失败，handler 根本不被调用。不在此层
-			// 断开请求的运行时（更早的 Bun、非 Bun 实现）会走到 server.ts 的
-			// decodeURIComponent catch 返回 400。两条路径都是「拒收」，均接受
-			// （2026-09-13 分诊；CI 与本地已统一到 1.3.14）。
-			illegalPct = "connection-rejected";
+			// 请求到达了 handler ⇒ 非法引用必须被拒（server.ts 的
+			// decodeURIComponent catch 返回 400），放行就是回归。
+			expect(status).toBe("400");
+		} catch (error) {
+			// 请求没到达 handler：只有 HTTP 解析层对非法百分号编码的断开
+			// 算「拒收」。Bun 1.3.14 在部分版本上会直接断开含 %ZZ 的请求，
+			// fetch 以 ECONNRESET 失败。连接被拒 / 超时 / DNS 失败说明请求
+			// 从未离开客户端（本机的注入代理就会这样），不能算作服务端拒收
+			// ——这两条断言就是用来把二者分开的。
+			const code =
+				typeof error === "object" && error !== null && "code" in error
+					? String((error as { code?: unknown }).code ?? "")
+					: "";
+			const message = error instanceof Error ? error.message : String(error);
+			const detail = `${code} ${message}`;
+			expect(detail).not.toMatch(
+				/ECONNREFUSED|ConnectionRefused|Unable to connect|timed? ?out|ENOTFOUND|EAI_AGAIN/i,
+			);
+			expect(detail).toMatch(
+				/ECONNRESET|EPIPE|reset|invalid|illegal|parse|percent|%ZZ/i,
+			);
 		}
-		expect(["400", "connection-rejected"]).toContain(illegalPct);
 		expect(
 			(await fetch(`${root}/missing/evidence?ref=${ref}`, { headers })).status,
 		).toBe(404);
