@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { replayCodexFixture } from "./codex-fixture-replay";
+import { replayCodexFixture } from "../test/codex-fixture-replay";
 
 // 夹具于 2026-09-21 随存量退役轮从 `src-tauri/tests/fixtures/streams/codex/`
 // 迁入本包（ADR-0015）；本测试是第二个可观测 provider 的协议门禁（TF-0248），

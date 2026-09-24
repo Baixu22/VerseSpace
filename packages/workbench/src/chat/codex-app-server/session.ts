@@ -1,82 +1,13 @@
-import type { ProcHandle } from "../supervisor";
-import { spawnSupervised } from "../supervisor";
-
-/**
- * Codex `app-server` transport (TF-0249 / ADR-0017).
- *
- * The codex CLI's `app-server` subcommand speaks a JSON-RPC-style protocol over
- * stdio (newline-delimited JSON, `jsonrpc` version field omitted). This module
- * is the thin driver: spawn the CLI under `spawnSupervised` (same process
- * supervision as the claude lane — no sidecar), run the `initialize` handshake,
- * open a thread, submit turns, and normalize every server notification into the
- * `type`-tagged shape the retained fixtures use, so the render reducer and the
- * fixture gate face the identical input.
- *
- * What this module deliberately does NOT do: parse or render. It emits raw
- * normalized lines through `onEvent`; `codex-router.ts` owns the render
- * decision and footprint side effects, exactly as `claude-router.ts` does for
- * the claude lane.
- */
-
-export const CODEX_COMMAND_DEFAULT = "codex app-server -c notify=[]";
-
-export const codexCommand = (): string =>
-	process.env.WORKBENCH_CODEX_COMMAND ?? CODEX_COMMAND_DEFAULT;
-
-/** Client identity sent in the `initialize` handshake (mirrors the retired sidecar). */
-const CLIENT_INFO = {
-	clientInfo: { name: "workbench", title: "Workbench", version: "0.1.0" },
-	capabilities: { experimentalApi: true },
-} as const;
-
-/** How a server-initiated request should be answered (ADR-0017 interaction table). */
-export type ServerRequestDecision =
-	| { kind: "approval"; decision: "accept" | "decline" }
-	| { kind: "userInput"; action: "decline" }
-	| { kind: "ignore" };
-
-const APPROVAL_METHODS = new Set([
-	"item/commandExecution/requestApproval",
-	"item/fileChange/requestApproval",
-	"item/fileRead/requestApproval",
-]);
-const USER_INPUT_METHODS = new Set([
-	"item/tool/requestUserInput",
-	"mcpServer/elicitation/request",
-]);
-
-/**
- * ADR-0017: permission requests are auto-accepted (seal is the one interception
- * point, not a per-tool gate) — the read/write target still lands in the ledger
- * via the `commandExecution` item's structured `commandActions[].path`. The
- * approval request's own params are not parsed (no retained fixture documents
- * their shape; ADR-0017 records that boundary). User-input requests are
- * auto-declined so the turn cannot wedge. Anything else is not a ledger
- * decision, but is still answered so the server is not left blocked on a reply.
- */
-export function decideServerRequest(method: string): ServerRequestDecision {
-	if (APPROVAL_METHODS.has(method)) {
-		return { kind: "approval", decision: "accept" };
-	}
-	if (USER_INPUT_METHODS.has(method)) {
-		return { kind: "userInput", action: "decline" };
-	}
-	return { kind: "ignore" };
-}
-
-interface JsonRpcMessage {
-	id?: number | string;
-	method?: string;
-	params?: unknown;
-	result?: unknown;
-	error?: { message?: string };
-}
-
-function asRecord(value: unknown): Record<string, unknown> | undefined {
-	return typeof value === "object" && value !== null && !Array.isArray(value)
-		? (value as Record<string, unknown>)
-		: undefined;
-}
+import type { ProcHandle } from "../../supervisor";
+import { spawnSupervised } from "../../supervisor";
+import {
+	asRecord,
+	CLIENT_INFO,
+	codexCommand,
+	decideServerRequest,
+	type JsonRpcMessage,
+	normalizeNotification,
+} from "./protocol";
 
 /**
  * A live codex app-server session. One process per thread, reused across turns
@@ -119,22 +50,6 @@ export interface CodexAppServerOptions {
 	/** Raw stderr line (diagnostics only). */
 	onStderr?: (line: string) => void;
 	commandLine?: string;
-}
-
-/**
- * Normalize a server notification into the fixture's `type`-tagged shape.
- * The app-server notification already carries `{ method, params }`; the retained
- * fixtures flattened `params` up under a `type` = method. We reproduce that so
- * the reducer sees one shape whether it is fed a fixture or a live line.
- */
-export function normalizeNotification(
-	method: string,
-	params: unknown,
-): Record<string, unknown> {
-	const base = asRecord(params) ?? {};
-	// `type` last: a `type` key inside the params must not override the
-	// method-derived event type the reducer dispatches on.
-	return { ...base, type: method };
 }
 
 export function createCodexAppServer(

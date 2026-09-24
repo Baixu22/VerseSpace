@@ -1,104 +1,20 @@
-import { incompleteDependencies } from "../automaton/goal-validity";
-import type { Blackboard } from "../blackboard";
-import { generateContext } from "../contextgen/generate";
-import { createWorktree, git } from "../git";
-import { branchNameProblem } from "../git/refname";
+import { incompleteDependencies } from "../../automaton/goal-validity";
+import type { Blackboard } from "../../blackboard";
+import { generateContext } from "../../contextgen/generate";
+import { createWorktree } from "../../git";
 import {
 	removeWorktree,
 	samePath,
 	worktreeHoldingBranch,
-} from "../git/worktree";
-import { envelopes } from "../tribunal/envelopes";
-import type { SchedulerPolicy } from "../types/config";
-import type { Workspot, WorkspotStatus } from "../types/workspot";
-import { guardBeforeDispatch } from "./merge-guard";
-import { type SchedulerNotify, schedulerNotifier } from "./notifications";
-import { type DispatchDecision, type SchedulerState, tick } from "./tick";
-import { admitDispatch } from "./wip";
-
-export interface DispatchResult {
-	ok: boolean;
-	goalId: string;
-	workspotId?: string;
-	worktree?: string;
-	reason?: string;
-	/**
-	 * TF-0117 / TF-0202: a machine-readable refusal, so a caller can branch on
-	 * the cause instead of matching substrings in `reason`. Present only on
-	 * failures that were diagnosed rather than relayed from git's stderr.
-	 */
-	error?:
-		| { code: "invalid_branch_name"; branch: string; detail: string }
-		| {
-				code: "branch_in_use";
-				branch: string;
-				holder: string;
-				detail: string;
-		  };
-}
-
-/**
- * Refuse an unusable branch name before anything is created (TF-0117).
- *
- * Two layers on purpose: the local predicate names the problem precisely and
- * costs nothing, and `git check-ref-format --branch` is the authority — a git
- * build that refuses a name our rules allow still gets caught, and the failure
- * is a structured result rather than a bare `fatal:` line from
- * `git worktree add`.
- */
-async function checkBranchName(
-	projectRoot: string,
-	branch: string,
-): Promise<string | null> {
-	const problem = branchNameProblem(branch);
-	if (problem !== null) {
-		return problem;
-	}
-	const check = await git(
-		["check-ref-format", "--branch", branch],
-		projectRoot,
-	);
-	if (check.ok) {
-		return null;
-	}
-	return (
-		check.stderr.trim() ||
-		`git check-ref-format 拒绝了分支名（退出码 ${check.code ?? "未知"}）`
-	);
-}
-
-export async function dispatchGoal(
-	bb: Blackboard,
-	goalId: string,
-	workspotId?: string,
-	options: { force?: boolean; notify?: SchedulerNotify } = {},
-): Promise<DispatchResult> {
-	const notify = options.notify ?? schedulerNotifier(bb);
-	const result = await performDispatch(bb, goalId, workspotId, {
-		...options,
-		notify,
-	});
-	if (!result.ok) {
-		await bb.events.append({
-			timestamp: new Date().toISOString(),
-			source: "scheduler",
-			type: "dispatch_failed",
-			payload: { ...result },
-		});
-		// Structured refusals already carry their own diagnostic card.
-		if (!result.error) {
-			const card = envelopes.dispatchFailed(
-				goalId,
-				result.workspotId ?? workspotId,
-				result.reason ?? "调度器未给出原因",
-			);
-			await notify(card.sbar.situation, "error", card).catch((err) => {
-				console.error(`[scheduler] 派发失败告警投递失败（${goalId}）:`, err);
-			});
-		}
-	}
-	return result;
-}
+} from "../../git/worktree";
+import { envelopes } from "../../tribunal/envelopes";
+import type { Workspot } from "../../types/workspot";
+import { guardBeforeDispatch } from "../merge-guard";
+import type { SchedulerNotify } from "../notifications";
+import { admitDispatch } from "../wip";
+import { checkBranchName } from "./branch";
+import { claimOf, restoreIdle } from "./rollback";
+import type { DispatchResult } from "./types";
 
 /**
  * The concrete dispatch action (skeleton Phase 5): create/bind the git
@@ -106,7 +22,7 @@ export async function dispatchGoal(
  * workspot's context file. Used by `workbench dispatch` regardless of policy,
  * and by the Runtime when the auto scheduler decides.
  */
-async function performDispatch(
+export async function performDispatch(
 	bb: Blackboard,
 	goalId: string,
 	workspotId: string | undefined,
@@ -344,133 +260,4 @@ async function performDispatch(
 		},
 	});
 	return { ok: true, goalId, workspotId: workspot.id, worktree: worktree.path };
-}
-
-/** The workspot row dispatch writes in phase 1 and phase 3 — one claim shape. */
-function claimOf(
-	workspot: Workspot,
-	goalId: string,
-	status: WorkspotStatus,
-): Workspot {
-	return {
-		...workspot,
-		status,
-		primaryTask: goalId,
-		currentTask: undefined,
-		binding: "primary",
-	};
-}
-
-/**
- * Put a workspot back to `idle` after a failed dispatch step.
- *
- * Returns false when even the rollback write failed; the caller says so in its
- * reason instead of pretending the world is clean — `runOnce` is the backstop
- * either way, because an `initializing` row is exactly what it repairs.
- */
-async function restoreIdle(
-	bb: Blackboard,
-	workspot: Workspot,
-	cause: string,
-): Promise<boolean> {
-	try {
-		await bb.state.workspots.save({
-			...workspot,
-			status: "idle",
-			currentTask: undefined,
-			binding: "primary",
-		});
-		return true;
-	} catch (error) {
-		await bb.events
-			.append({
-				timestamp: new Date().toISOString(),
-				source: "scheduler",
-				type: "dispatch_rollback_failed",
-				payload: {
-					workspotId: workspot.id,
-					cause,
-					detail: error instanceof Error ? error.message : String(error),
-				},
-			})
-			.catch(() => {});
-		return false;
-	}
-}
-
-/**
- * TF-0203: repair workspots left mid-dispatch by a crash.
- *
- * An `initializing` workspot is invisible to the rest of the system: the
- * scheduler only dispatches `idle` ones and the automaton only maintains
- * `active` ones, so without this the row would wait for a human. Called at the
- * start of every cycle, under the run lock.
- *
- * The checkout is deliberately left alone. If phase 2 completed before the
- * crash the worktree is real and this workspot is its owner — the next
- * dispatch reuses it (createWorktree is idempotent and the branch-occupancy
- * pre-check accepts the workspot's own checkout, TF-0202).
- */
-export async function recoverInterruptedDispatches(
-	bb: Blackboard,
-): Promise<string[]> {
-	const stuck = (await bb.state.workspots.list())
-		.filter((workspot) => workspot.status === "initializing")
-		.sort((a, b) => a.id.localeCompare(b.id));
-	const recovered: string[] = [];
-	for (const workspot of stuck) {
-		await bb.state.workspots.save({
-			...workspot,
-			status: "idle",
-			currentTask: undefined,
-			binding: "primary",
-		});
-		await bb.events.append({
-			timestamp: new Date().toISOString(),
-			source: "scheduler",
-			type: "dispatch_recovered",
-			payload: {
-				workspotId: workspot.id,
-				branch: workspot.branch,
-				worktree: workspot.worktreePath,
-			},
-		});
-		recovered.push(workspot.id);
-	}
-	return recovered;
-}
-
-/** Scheduler stage for the Runtime: tick and execute what policy allows. */
-export async function runScheduler(
-	bb: Blackboard,
-	policy: Exclude<SchedulerPolicy, "manual">,
-	maxConcurrentWorkspots: number,
-	notify: SchedulerNotify,
-): Promise<DispatchResult[]> {
-	const state: SchedulerState = {
-		policy,
-		queue: await bb.state.queue.get(),
-		goals: await bb.goals.list(),
-		workspots: await bb.state.workspots.list(),
-		maxConcurrentWorkspots,
-	};
-	const decisions: DispatchDecision[] = tick(state);
-	const results: DispatchResult[] = [];
-
-	for (const decision of decisions) {
-		if (decision.type === "notify_human") {
-			await notify(decision.message, decision.severity, decision.tribunal);
-			continue;
-		}
-		if (decision.type === "dispatch") {
-			const result = await dispatchGoal(
-				bb,
-				decision.goalId,
-				decision.workspotId,
-				{ notify },
-			);
-			results.push(result);
-		}
-	}
-	return results;
 }

@@ -1,18 +1,18 @@
-import { extractCodexFootprint } from "./codex-footprint";
-import { asRecord, itemOf, stringField } from "./codex-render-blocks";
+import { extractCodexFootprint } from "../chat/codex-footprint";
+import { asRecord, itemOf, stringField } from "../chat/codex-render-blocks";
 import {
 	createCodexRenderState,
 	finalCodexParts,
 	foldedCodexParts,
 	reduceCodexRenderEvent,
-} from "./codex-render-state";
+} from "../chat/codex-render-state";
 import type {
 	RunEvent,
 	StoredMessage,
 	StoredPart,
 	TurnRunEvent,
-} from "./thread-types";
-import { flattenToolParts } from "./tool-collapse";
+} from "../chat/thread-types";
+import { flattenToolParts } from "../chat/tool-collapse";
 
 const MESSAGE_ID = "00000000-0000-4000-8000-000000000002";
 const AT = "2026-09-22T00:00:00.000Z";

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { ipcTotals, replayClaudeFixture } from "./claude-fixture-replay";
+import { ipcTotals, replayClaudeFixture } from "../test/claude-fixture-replay";
 import { asRecord, contentBlocks } from "./claude-render-blocks";
 import { flattenToolParts } from "./tool-collapse";
 

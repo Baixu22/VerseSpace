@@ -3,13 +3,13 @@ import {
 	finalClaudeParts,
 	foldedClaudeParts,
 	reduceClaudeRenderEvent,
-} from "./claude-render-state";
+} from "../chat/claude-render-state";
 import type {
 	RunEvent,
 	StoredMessage,
 	StoredPart,
 	TurnRunEvent,
-} from "./thread-types";
+} from "../chat/thread-types";
 
 const MESSAGE_ID = "00000000-0000-4000-8000-000000000002";
 const AT = "2026-09-18T00:00:00.000Z";
