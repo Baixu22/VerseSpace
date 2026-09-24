@@ -26,18 +26,14 @@ export {
 	AGGREGATION_WINDOW_MS,
 	CRITICAL_SHARE_LIMIT,
 	effectiveState,
-	FLOOD_LIMIT,
-	FLOOD_WINDOW_MS,
 	MAX_SHELVE_MINUTES,
 	MIN_SHELVE_MINUTES,
 	RATE_LIMIT_PER_HOUR,
 	RESOLVED_RETENTION_MS,
 } from "./queue-state";
 export function tribunalApi(paths: WorkbenchPaths, events: TribunalEvents) {
-	const { readAll, save, log, findTwin, listItems, getItem } = tribunalStore(
-		paths,
-		events,
-	);
+	const { readAll, readAllReport, save, log, findTwin, listItems, getItem } =
+		tribunalStore(paths, events);
 	async function createItem(
 		draft: Omit<TribunalItem, "id">,
 		at: string,
@@ -160,6 +156,16 @@ export function tribunalApi(paths: WorkbenchPaths, events: TribunalEvents) {
 
 		async get(id: string): Promise<TribunalItem | null> {
 			return getItem(id);
+		},
+
+		/**
+		 * 无法解析的队列文件名（损坏或被手工编辑）。队列本身照常可读——一个坏
+		 * 文件不能藏起其余条目——但这些条目必须被**报出来**：把「读不出来」
+		 * 呈现成「队列是空的」，等于把一条人类决策从所有界面上抹掉。
+		 * `workbench tribunal` 与 `GET /api/tribunal` 据此显示「N 条无法读取」。
+		 */
+		async unreadable(): Promise<string[]> {
+			return (await readAllReport()).unreadable;
 		},
 
 		async shelve(id: string, minutes = 30): Promise<TribunalItem | null> {

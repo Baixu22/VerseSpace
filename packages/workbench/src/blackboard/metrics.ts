@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { z } from "zod";
 import type { UsageSample } from "../agents/usage";
-import { safeReaddir } from "../fs/atomic";
+import { pathExists, safeReaddir } from "../fs/atomic";
 import type { WorkbenchPaths } from "../paths";
 import { readYamlFile, writeYamlFile } from "../yamlio";
 
@@ -115,11 +115,18 @@ export function metricsApi(paths: WorkbenchPaths) {
 	}
 
 	async function read(workspot: string): Promise<LaneMetrics> {
-		try {
-			return await readYamlFile(fileFor(workspot), laneMetricsSchema);
-		} catch {
+		const file = fileFor(workspot);
+		// A lane that has never been observed is the ONE honest zero. Anything
+		// else — torn YAML, a hand-edited counter, a file we cannot open — must
+		// not be laundered into `emptyLaneMetrics`: `record()` folds onto this
+		// read and writes the result straight back, so a fake zero would erase
+		// the lane's accumulated totals and report success while doing it. The
+		// read throws (BlackboardDataError, carrying the path) and the caller
+		// sees a failure instead of a healthy-looking lane.
+		if (!(await pathExists(file))) {
 			return emptyLaneMetrics(workspot);
 		}
+		return await readYamlFile(file, laneMetricsSchema);
 	}
 
 	return {
@@ -134,6 +141,10 @@ export function metricsApi(paths: WorkbenchPaths) {
 		 * sample as it arrives and `save` the result: accumulating samples
 		 * first would collapse a run's turns into one, and the cache hit rate
 		 * is a PER-TURN number — three turns folded as one would report 100%.
+		 *
+		 * Throws when the lane's existing counters cannot be read, BEFORE the
+		 * write: folding onto a fake zero and persisting it would destroy the
+		 * lane's accumulated totals while reporting success.
 		 */
 		async record(workspot: string, sample: UsageSample): Promise<LaneMetrics> {
 			const next = foldUsage(await read(workspot), sample);
@@ -158,8 +169,14 @@ export function metricsApi(paths: WorkbenchPaths) {
 								join(paths.metrics, name),
 								laneMetricsSchema,
 							);
-						} catch {
-							return null; // torn file: the panel stays readable
+						} catch (error) {
+							// torn file: the panel stays readable — but the lane is
+							// named on stderr instead of just vanishing from it.
+							console.error(
+								`[metrics] 无法读取车道文件 ${name}（已从面板中省略）:`,
+								error,
+							);
+							return null;
 						}
 					}),
 			);

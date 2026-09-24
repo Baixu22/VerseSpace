@@ -1,10 +1,24 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Blackboard } from "../blackboard";
 
+import { BlackboardDataError } from "../errors";
 import type { WorkbenchEvent } from "../types/event";
 import type { StoredMessage, ThreadMeta } from "./thread-types";
+
+/**
+ * One listing of `threads/`: the metas that parsed, plus the ids that did not.
+ *
+ * The two cases that used to collapse into `[]` are different facts: "you have
+ * no conversations yet" and "I could not look". Reporting the second as the
+ * first empties the sidebar while telling the user nothing is wrong.
+ */
+export interface ThreadListReport {
+	threads: ThreadMeta[];
+	/** Thread ids under `threads/` whose meta could not be read. */
+	unreadable: string[];
+}
 
 export class ThreadRepository {
 	readonly cache = new Map<string, ThreadMeta>();
@@ -32,19 +46,54 @@ export class ThreadRepository {
 		return join(this.dir(id), "messages.jsonl");
 	}
 
-	async list(): Promise<ThreadMeta[]> {
-		const { readdir } = await import("node:fs/promises");
+	/**
+	 * The thread list WITH its diagnostics: the metas that parsed, plus the ids
+	 * that could not be read.
+	 *
+	 * Two very different facts used to collapse into `[]` here. A missing
+	 * `threads/` directory is genuinely "no conversations yet" and stays empty.
+	 * A directory that EXISTS but cannot be listed is not empty — it is
+	 * unreadable, and reporting it as empty silently clears the user's whole
+	 * conversation list. That case throws, with the path, instead.
+	 */
+	async listReport(): Promise<ThreadListReport> {
+		const dir = join(this.bb.paths.root, "threads");
+		let ids: string[];
 		try {
-			const ids = await readdir(join(this.bb.paths.root, "threads"));
-			const metas = await Promise.all(
-				ids.map((id) => this.get(id).catch(() => null)),
+			ids = await readdir(dir);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+				return { threads: [], unreadable: [] };
+			}
+			throw new BlackboardDataError(
+				`cannot read the threads directory: ${String(error)}`,
+				dir,
 			);
-			return metas
-				.filter((m): m is ThreadMeta => m !== null)
-				.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-		} catch {
-			return [];
 		}
+		const unreadable: string[] = [];
+		const metas = await Promise.all(
+			ids.map(async (id) => {
+				try {
+					return await this.get(id);
+				} catch (error) {
+					// One unreadable thread must not hide its siblings — but it
+					// must not vanish either. It is named, here and on stderr.
+					unreadable.push(id);
+					console.error(`[chat] 无法读取对话 ${id}（已从列表中省略）:`, error);
+					return null;
+				}
+			}),
+		);
+		return {
+			threads: metas
+				.filter((meta): meta is ThreadMeta => meta !== null)
+				.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+			unreadable,
+		};
+	}
+
+	async list(): Promise<ThreadMeta[]> {
+		return (await this.listReport()).threads;
 	}
 
 	async create(title?: string): Promise<ThreadMeta> {

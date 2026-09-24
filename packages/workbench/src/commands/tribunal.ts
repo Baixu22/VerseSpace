@@ -78,12 +78,21 @@ export async function tribunalListCommand(
 		options.push === true
 			? await bb.tribunal.pushable()
 			: await bb.tribunal.list({ includeResolved: options.all === true });
+	// Read failures are part of the report, not a hidden filter: an item the
+	// store could not parse is a human decision this surface must not drop.
+	const unreadable = await bb.tribunal.unreadable();
 	if (opts.json) {
-		emitJson({ tribunal: items });
+		emitJson({ tribunal: items, unreadable });
 		return;
 	}
 	if (opts.quiet) {
 		return;
+	}
+	if (unreadable.length > 0) {
+		console.log(
+			`⚠ ${unreadable.length} 条无法读取：${unreadable.join("、")}` +
+				" —— 文件损坏或被手工编辑，未计入下面的队列",
+		);
 	}
 	if (items.length === 0) {
 		console.log(

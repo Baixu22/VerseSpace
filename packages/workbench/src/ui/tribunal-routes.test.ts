@@ -1,4 +1,6 @@
 import { expect, test } from "bun:test";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { makeTempWorkbench } from "../test/fixtures";
 import type { TribunalItem } from "../types/tribunal";
 import { createUiServer } from "./server";
@@ -120,6 +122,29 @@ test("非法裁决项标识返回 400", async () => {
 			headers,
 		});
 		expect(bad.status).toBe(400);
+	} finally {
+		await server.stop();
+		await ws.cleanup();
+	}
+});
+
+test("GET /api/tribunal 把无法读取的队列文件一并上报，不当作空队列", async () => {
+	const ws = await makeTempWorkbench();
+	await writeFile(
+		join(ws.bb.paths.tribunal, "t-torn.yaml"),
+		"id: t-torn\nkind: [unclosed\n",
+		"utf8",
+	);
+	const server = await createUiServer(ws.bb, 0);
+	const headers = { "x-workbench-token": server.authToken };
+	const base = `http://127.0.0.1:${server.port}/api/tribunal`;
+	try {
+		const body = (await (await fetch(base, { headers })).json()) as {
+			items: TribunalItem[];
+			unreadable: string[];
+		};
+		expect(body.items).toHaveLength(0);
+		expect(body.unreadable).toEqual(["t-torn.yaml"]);
 	} finally {
 		await server.stop();
 		await ws.cleanup();

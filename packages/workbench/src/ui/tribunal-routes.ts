@@ -22,7 +22,11 @@ export async function tribunalRoute(
 		const items = (await bb.tribunal.list())
 			.filter((item) => item.state !== "resolved")
 			.sort((a, b) => b.score - a.score);
-		return Response.json({ items });
+		// Unreadable files ride along with the list: a queue the store could not
+		// fully parse must not be served as if it were simply empty. `items`
+		// keeps its shape, so the dashboard bar is unaffected.
+		const unreadable = await bb.tribunal.unreadable();
+		return Response.json({ items, unreadable });
 	}
 
 	const match = url.pathname.match(

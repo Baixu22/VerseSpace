@@ -1,6 +1,6 @@
 import { createCodexRenderState, finalCodexParts } from "./codex-render-state";
 import { type CodexTurnState, routeCodexEvent } from "./codex-router";
-import { ensureCodexSession } from "./codex-session";
+import { ensureCodexSession, resetCodexThreadToIdle } from "./codex-session";
 import type { ThreadContext } from "./thread-context";
 import { maybePromote } from "./thread-promotion";
 import type { StoredMessage, ThreadMeta, TurnRunEvent } from "./thread-types";
@@ -41,12 +41,10 @@ export async function runCodexTurn(
 		emit({ type: "error", message: "codex 线程未能建立" });
 		// `run()` already marked the durable thread running; returning without
 		// resetting it left the thread busy forever (a second turn then deadlocks
-		// behind the same enqueue lock).
-		const failed = await context.store.get(id).catch(() => null);
-		if (failed) {
-			failed.status = "idle";
-			await context.store.saveMeta(failed).catch(() => {});
-		}
+		// behind the same enqueue lock). The reset itself reports its own
+		// write failure — swallowing it here would hide a thread stuck at
+		// `running`, which is the same failure the claude lane refuses to hide.
+		await resetCodexThreadToIdle(context.store, id);
 		return;
 	}
 

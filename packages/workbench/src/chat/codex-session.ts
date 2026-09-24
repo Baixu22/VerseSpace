@@ -9,6 +9,7 @@ import {
 } from "../supervisor/liveness";
 import { type CodexAppServer, createCodexAppServer } from "./codex-app-server";
 import type { ThreadContext } from "./thread-context";
+import type { ThreadRepository } from "./thread-repository";
 import type { ThreadMeta } from "./thread-types";
 
 /**
@@ -158,11 +159,7 @@ export async function ensureCodexSession(
 				clearTimeout(session.idleTimer);
 				session.idleTimer = undefined;
 			}
-			const latest = await context.store.get(id).catch(() => null);
-			if (latest && latest.status === "running") {
-				latest.status = "idle";
-				await context.store.saveMeta(latest).catch(() => {});
-			}
+			await resetCodexThreadToIdle(context.store, id);
 			if (context.liveCodex.get(id) === session) {
 				context.liveCodex.delete(id);
 				context.running.delete(id);
@@ -173,6 +170,37 @@ export async function ensureCodexSession(
 		});
 
 	return session;
+}
+
+/**
+ * Return a codex thread's durable meta to `idle`.
+ *
+ * Both codex exit paths need this — the app-server going away, and a turn that
+ * never got a thread id — because `run()` already marked the durable thread
+ * running and nothing else resets it.
+ *
+ * The WRITE failure must not be swallowed. If the reset does not land, the
+ * thread stays `status: "running"` forever and every surface keeps showing the
+ * busy indicator with no turn behind it. The claude lane treats the same
+ * failure as worth reporting (`thread-run.ts`: "线程永远停在 running"), and the
+ * two lanes must not disagree about that — so this reports it the same way
+ * instead of `.catch(() => {})`.
+ */
+export async function resetCodexThreadToIdle(
+	store: Pick<ThreadRepository, "get" | "saveMeta">,
+	id: string,
+): Promise<void> {
+	const latest = await store.get(id).catch(() => null);
+	if (latest?.status !== "running") {
+		return;
+	}
+	latest.status = "idle";
+	await store.saveMeta(latest).catch((error) => {
+		console.error(
+			`[chat] codex 线程 ${id} 出错后无法把状态复位为 idle（线程会一直停在 running）:`,
+			error,
+		);
+	});
 }
 
 /**
