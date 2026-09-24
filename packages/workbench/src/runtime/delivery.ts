@@ -4,7 +4,7 @@ import { noticeIdForClaims } from "./notice-id";
 import { renderNotice } from "./notice-render";
 import type { StalePremiseClaim } from "./premises";
 
-export { DEFAULT_NOTICE_TOKEN_BUDGET, renderNotice } from "./notice-render";
+export { renderNotice } from "./notice-render";
 
 /**
  * R2 delivery (TF-0077): turn recorded `premise_stale` events into actual

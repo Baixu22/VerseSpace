@@ -1,9 +1,9 @@
 # Icons: the unified layer & the Reicon MCP server
 
-Helmor draws every UI icon from one module — `@/components/icon` — backed by
-[Reicon](https://reicon.dev). This doc covers how to use the layer, how to
-regenerate it, and how to give an AI agent the Reicon MCP server so it can
-search icons itself instead of guessing names.
+The Workbench dashboard draws every UI icon from one module —
+`@/components/icon` — backed by [Reicon](https://reicon.dev). This doc covers
+how to use the layer, how to regenerate it, and how to give an AI agent the
+Reicon MCP server so it can search icons itself instead of guessing names.
 
 ## The layer
 
@@ -23,8 +23,7 @@ migration to Reicon changed 166 import lines and zero JSX.
 
 | Location | Scope |
 | --- | --- |
-| `src/components/icon/` | Helmor desktop app |
-| `apps/workbench-ui/src/components/icon/` | Workbench web dashboard |
+| `apps/workbench-ui/src/components/icon/` | Workbench web dashboard — the only frontend since [ADR-0015](decisions/0015-legacy-retirement-execution.md) |
 
 ### Props
 
@@ -47,36 +46,35 @@ left exactly as authored.
 
 ## Coverage
 
-184 icons: **154 backed by Reicon**, 30 by lucide.
+39 icons: **34 backed by Reicon**, 5 by lucide.
 
-Reicon ships 2,676 icons but has **no git, panel-collapse, or keyboard-key
-glyphs** — a real gap for an app built around branches and PRs. Those 30 stay
-on lucide to preserve their exact meaning, and live in `compat.ts`:
+This is a curated set, not the full Reicon catalogue: the mapping table carries
+only the identifiers a call site actually imports. An earlier revision carried
+184 entries (154 Reicon + 30 lucide); the residue cleanup dropped the 145 that
+nothing imported — including every `*Icon` alias, which came from lucide's own
+alias convention and which no call site here ever used.
+
+Reicon ships 2,676 icons but has **no git glyphs** — a real gap for an app built
+around branches and PRs. The 5 that stay on lucide preserve their exact meaning,
+and live in `compat.ts`:
 
 ```
-ArchiveRestore ArrowBigUp Bot Brain BrainIcon Circle CircleDashed CircleDot
-CornerDownLeft Delete FileAudio FileDiff FolderGit2 FolderSearch GitBranch
-GitBranchPlus GitFork GitMerge GitPullRequest GitPullRequestArrow GripVertical
-Option Orbit Pickaxe Rows3 ShieldQuestion Space Split Square Workflow
+ArchiveRestore GitBranch GitFork GitMerge Square
 ```
 
 Most notable substitutions where Reicon uses different vocabulary:
 
 | Was (lucide) | Now (Reicon) |
 | --- | --- |
-| `Zap` | `Bolt` |
-| `Goal` | `Target` |
-| `Smartphone` | `Mobile` |
-| `PanelLeft` / `PanelRight*` | `SidebarLeft` / `SidebarRight` |
-| `Terminal` / `SquareTerminal` | `TerminalSquare` |
-| `ExternalLink` | `ArrowUpRightSquare` |
+| `PanelLeft` | `SidebarLeft` |
+| `Terminal` | `TerminalSquare` |
 | `RotateCcw` | `RotateLeft` |
-| `RefreshCw` / `RefreshCcw` | `Refresh` |
-| `Loader2` / `LoaderCircle` | `Loader` |
-| `ChevronsUpDown` | `SortDownUp` |
-| `MoreHorizontal` | `MoreH` |
+| `Loader2` | `Loader` |
 | `Info` | `InfoCircle` |
-| `LogIn` | `Login` |
+| `BookOpenText` | `BookOpen` |
+| `CircleCheck` | `CheckCircle` |
+| `ListChecks` | `ListCheck` |
+| `Volume2` | `Volume` |
 
 ## Regenerating
 
@@ -87,9 +85,10 @@ generated files.
 node scripts/gen-icon-layer.mjs
 ```
 
-This writes `reicon.ts`, `compat.ts`, `types.ts`, and `index.ts` into **both**
-apps. It hard-fails if a mapping points at a Reicon icon that does not exist,
-so a typo or an upstream rename surfaces immediately instead of at runtime.
+This writes `reicon.ts`, `compat.ts`, `types.ts`, and `index.ts` into
+`apps/workbench-ui/src/components/icon/`. It hard-fails if a mapping points at
+a Reicon icon that does not exist, so a typo or an upstream rename surfaces
+immediately instead of at runtime.
 
 To add an icon:
 
@@ -97,8 +96,7 @@ To add an icon:
    agent using the MCP server below.
 2. Add `AppName: "ReiconName"` to `MAP` in `scripts/gen-icon-layer.mjs`.
    Use `null` for a glyph Reicon lacks — it then falls into the lucide compat
-   set, and you must add its name to `COMPAT` in
-   `src/components/icon/index.test.tsx` too.
+   set (`compat.ts`, i.e. the `lucide-react` import block).
 3. Re-run the generator.
 
 `biome.json` exempts the two generated modules from `organizeImports`, so the
@@ -140,11 +138,10 @@ because Node cannot spawn a `.cmd` without a shell.
 
 **Cursor** — project scope, committed in `.cursor/mcp.json` (identical body).
 
-**Helmor's own agent sessions** — Helmor runs the Claude and Cursor SDKs without
-`settingSources`, so it does not pick up the project-scope files. It reads
-project MCPs from machine-local user config instead
-(`sidecar/src/claude/project-mcp.ts`, `sidecar/src/cursor/project-mcp.ts`).
-Use an **absolute** launcher path there, so worktree sessions still resolve it:
+**Agent sessions in a git worktree** — a session whose cwd is a worktree has no
+`node_modules` of its own, so it cannot resolve the project-scope files above.
+Register the server in machine-local user config instead, and use an
+**absolute** launcher path so worktree sessions still resolve it:
 
 ```jsonc
 // ~/.claude.json  ->  projects["<repo root>"].mcpServers

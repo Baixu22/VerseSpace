@@ -25,7 +25,6 @@ export {
 	type LandmarkCandidateOptions,
 	type LandmarkDenominator,
 	landmarkCandidates,
-	RECORDING_WRITER_KINDS,
 	type WriterRef,
 } from "./landmark-set";
 

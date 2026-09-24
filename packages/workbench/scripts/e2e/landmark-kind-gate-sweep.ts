@@ -23,6 +23,8 @@
  */
 
 import { existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { openBlackboard } from "../../src/blackboard";
 import { computeDoi, DEFAULT_DOI_CONFIG } from "../../src/interactions/doi";
 import { RECORDING_WRITER_KINDS as RECORDING_KINDS } from "../../src/interactions/landmark-set";
@@ -38,6 +40,13 @@ const at = (flag: string): string | undefined => {
 	return index >= 0 ? (argv[index + 1] as string | undefined) : undefined;
 };
 
+/** 包根 `packages/workbench`（本脚本位于 `scripts/e2e/` 下）。 */
+const PKG_ROOT = resolve(import.meta.dir, "..", "..");
+/** 落盘现场根：仓库内 `.evidence-sites/`（见下方落盘纪律）。 */
+const EVIDENCE_ROOT = join(PKG_ROOT, ".evidence-sites");
+/** TEMP 根：取宿主真实 tmpdir，不写死某台机器的盘符。 */
+const TEMP_ROOT = tmpdir();
+
 /**
  * 现成现场：TF-0161 §2c 四个 + 2026-09-11 两个真实 live-run（缺一即报）。
  *
@@ -49,25 +58,29 @@ const at = (flag: string): string | undefined => {
 const SITES: Array<{ label: string; path: string }> = [
 	{
 		label: "live-tenant",
-		path: "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-live-tenant\\.workbench",
+		path: join(TEMP_ROOT, "workbench-e2e-live-tenant", ".workbench"),
 	},
 	{
 		label: "node-verified",
-		path: "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-node-verified-032fd3ea64a74c539a5d9d8cfeb3bf37\\.workbench",
+		path: join(
+			TEMP_ROOT,
+			"workbench-node-verified-032fd3ea64a74c539a5d9d8cfeb3bf37",
+			".workbench",
+		),
 	},
 	{
 		label: "LHA3I4",
-		path: "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-LHA3I4\\.workbench",
+		path: join(TEMP_ROOT, "workbench-e2e-LHA3I4", ".workbench"),
 	},
 	{
 		label: "VAKSgQ",
-		path: "C:\\Users\\27933\\AppData\\Local\\Temp\\workbench-e2e-VAKSgQ\\.workbench",
+		path: join(TEMP_ROOT, "workbench-e2e-VAKSgQ", ".workbench"),
 	},
 	{
 		// 2026-09-11 第一轮 live-run：首个「模型自主开发」会话（reader/writer 双线程 +
 		// 独立验收打回重改），interactions 首次非空。已从 TEMP 落盘归档。
 		label: "VAS1EM（live-run 1）",
-		path: "D:\\helmor-main\\packages\\workbench\\.evidence-sites\\live-run-2026-09-11-VAS1EM\\.workbench",
+		path: join(EVIDENCE_ROOT, "live-run-2026-09-11-VAS1EM", ".workbench"),
 	},
 	{
 		// 2026-09-11 第二轮 live-run：修掉整轮/单 hop 预算 bug 后**首次整轮通过**
@@ -75,7 +88,7 @@ const SITES: Array<{ label: string; path: string }> = [
 		// 样本窗口三格首次全齐（restores 7 / noticeOutcomes 8 / sealDecisions 6），
 		// 是「真实多文件开发会让相对口径信息量上升」的最强现场。
 		label: "1OioVM（live-run 2）",
-		path: "D:\\helmor-main\\packages\\workbench\\.evidence-sites\\live-run-2026-09-11-1OioVM\\.workbench",
+		path: join(EVIDENCE_ROOT, "live-run-2026-09-11-1OioVM", ".workbench"),
 	},
 ];
 

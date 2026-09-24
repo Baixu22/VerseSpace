@@ -33,7 +33,7 @@ const only = argv.includes("--only") ? argv[argv.indexOf("--only") + 1] : null;
 const jsonPath =
 	jsonIndex >= 0 && argv[jsonIndex + 1]
 		? argv[jsonIndex + 1]!
-		: join(tmpdir(), "helmor-suite-total.json");
+		: join(tmpdir(), "workbench-suite-total.json");
 
 /** 包根目录：glob 与 bun test 都以它为基准（相对路径要带 scripts/ 前缀）。 */
 const root = join(import.meta.dir, "..");

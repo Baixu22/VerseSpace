@@ -85,7 +85,7 @@ bun run release:tag:workbench            # dry-run，只打印计划
 bun run release:tag:workbench --push     # 真正发布：推 tag + 创建公开 Release
 ```
 
-推 tag 是**真实发布动作**，先确认版本号与 `CHANGELOG.md`。四个二进制都由一台 Windows 主机交叉编译，**只有 windows-x64 跑过测试**；macOS / Linux 只做了构建，没有在对应平台上执行过，发行说明里必须如实声明。
+推 tag 是**真实发布动作**，先确认版本号与 `packages/workbench/CHANGELOG.md`。根目录的 `CHANGELOG.md` 不是这份产品的发布史。四个二进制都由一台 Windows 主机交叉编译，**只有 windows-x64 跑过测试**；macOS / Linux 只做了构建，没有在对应平台上执行过，发行说明里必须如实声明。
 
 ## 许可与归属
 

@@ -1,3 +1,9 @@
+/**
+ * CLI-equivalent HTTP, not dashboard features. The UI never calls
+ * /api/sync, /api/dispatch, /api/agent/run, or /api/review (TF-0244, which
+ * would have put them on a panel, is deprecated). A green route test does
+ * not mean the panel can dispatch.
+ */
 import type { Blackboard } from "../blackboard";
 import { publicChatConfig } from "../chat/credentials";
 

@@ -38,7 +38,7 @@ export interface AdoptSnapshot {
 	at: string;
 }
 
-export type { ResumeBeat, ResumeNote } from "./resume";
+export type { ResumeNote } from "./resume";
 
 export interface ThreadMeta {
 	id: string;

@@ -1,3 +1,16 @@
+> **⚠️ 已退役，保留为记录——这不是本仓库的功能说明。**
+>
+> 本页是**旧 Helmor 桌面应用**的 CLI 与 MCP 说明。Helmor 已于 2026-09-21 退役并从工作树
+> 删除，见 [ADR-0014](decisions/0014-legacy-retirement-gate.md)、
+> [ADR-0015](decisions/0015-legacy-retirement-execution.md)、
+> [ADR-0016](decisions/0016-retirement-closeout.md)。
+>
+> 文中提到的 `helmor` / `helmor-dev` CLI、`src-tauri/target/debug/helmor-cli`、
+> `bun run dev:cli:build` / `bun run dev:cli:install`、Settings → Experimental 等
+> **在本仓库中都不存在**（那两个 npm 脚本全仓没有定义）。本仓库当前的 CLI 与 MCP 用法见
+> [packages/workbench/README](../packages/workbench/README.md)；用户指南版本的同名保留页见
+> [user/reference/cli-and-mcp.md](user/reference/cli-and-mcp.md)。
+
 # Helmor CLI & MCP Server
 
 Helmor ships a companion CLI inside the desktop app bundle. Release builds

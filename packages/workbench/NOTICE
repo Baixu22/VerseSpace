@@ -32,8 +32,11 @@ licensed under the Apache License, Version 2.0:
     This code is included in the binary and JS bundle.
 
   packages/workbench/src/chat/fixtures/streams/
+  packages/workbench/fixtures/streams/
     The 49 JSONL stream fixtures moved from
-    `src-tauri/tests/fixtures/streams/`, with their contents unchanged.
+    `src-tauri/tests/fixtures/streams/`, with their contents unchanged. The 30
+    with test consumers live under `src/`; the 19 with no consumer (cursor 7 /
+    kimi 3 / opencode 9) are reference samples kept under `fixtures/`.
     These are source/test materials; they are not embedded in release binaries
     or included in the npm package's files list.
 

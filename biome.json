@@ -24,7 +24,6 @@
 			"!!**/worktrees",
 			"!!**/coverage",
 			"!**/.local-data",
-			"!**/.bundle-cache",
 			"!packages/workbench/src/ui/assets.generated.js"
 		]
 	},

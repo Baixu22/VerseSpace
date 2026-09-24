@@ -14,7 +14,7 @@ import {
 } from "./types";
 
 export { FORBIDDEN_CARD_PHRASES } from "./coverage";
-export { isResumeCardDismissed, type LifecycleEventLike } from "./dismissal";
+export { isResumeCardDismissed } from "./dismissal";
 export * from "./types";
 
 const PATH_RE = /(?:[\w.-]+\/)+[\w.-]+\.\w+/g;

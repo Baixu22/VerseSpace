@@ -9,13 +9,12 @@ import {
 } from "./codex-app-server";
 
 /**
- * TF-0250: codex's app-server issues six interaction protocols; ADR-0017 admits
- * exactly one into the premise ledger — permission requests, because the
- * request *is* the read/write claim. The rest are answered only enough to keep
- * the turn from wedging, or ignored. This pins that policy.
+ * TF-0250 / ADR-0017: codex approval requests are auto-accepted and
+ * user-input requests are auto-declined. Auto-accept is not a seal.
+ * `decideSeal` is not called on this path.
  */
 describe("codex server-request policy (TF-0250 / ADR-0017)", () => {
-	test("permission requests are auto-accepted — seal is the one interception point", () => {
+	test("permission requests are auto-accepted and do not consult seal", () => {
 		for (const method of [
 			"item/commandExecution/requestApproval",
 			"item/fileChange/requestApproval",

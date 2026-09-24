@@ -152,11 +152,5 @@ export function explainWip(flow: FlowObservations): string {
 	);
 }
 
-export type { FlowObservations, FlowSample, WipBasis } from "./flow-model";
-export {
-	joinFlow,
-	littleLawWip,
-	MAX_RESIDENCE_MINUTES,
-	MIN_SAMPLES,
-	OBSERVATION_WINDOW_MS,
-} from "./flow-model";
+export type { FlowObservations, WipBasis } from "./flow-model";
+export { joinFlow, littleLawWip, MIN_SAMPLES } from "./flow-model";

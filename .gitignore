@@ -143,3 +143,47 @@ packages/workbench/.evidence-sites/
 # The findings went into .workbuddy/memory/2026-09-21.md; nothing here needs to be tracked.
 /.agent-contexts/tf-inspect-*/
 /.agent-contexts/todo-current.json
+
+# Agent skills are third-party content vendored from `assistant-ui/skills` and
+# recorded in `skills-lock.json` (which stays tracked). Two copies had been
+# committed at `agent/skills/` and `.agents/skills/`, and `.claude/skills/<name>`
+# are local junctions into `.agents/skills/<name>` — git followed those junctions
+# and committed 78 more files that were byte-identical to the junction target.
+# Keep the whole skill tree local and reinstall from the lock file when needed.
+/agent/skills/
+/.agents/skills/
+/.claude/skills/
+# context-rot footprint hook output (`install-hooks` writes footprints.jsonl
+# here). Local observation data; the installer itself recommends ignoring it.
+/.context-rot/
+
+# docs/ holds the project's own record, but most of it is point-in-time working
+# artifact. Only these stay in history:
+#   decisions/  the ADR set — the authority
+#   user/       retired Helmor guide (bannered as a record)
+#   fable-brief/  linked from ADR-0010, ADR-0016 and docs/user/README.md
+#   perf/       phase1-trace-summary.json is deliberately whitelisted above
+#   reicon-icons.md  referenced by AGENTS.md
+#   fit-ledger.md    referenced by the shipped packages/workbench/README.md
+#   phase4-human-usage-window-2026-09-22.md  the operating guide for the one
+#     remaining human gate; ADR-0019 calls it durable and re-runnable, so
+#     untracking it would make that gate unreproducible from the repo (P4).
+# Everything else (dated reports, evidence dumps, closeout logs) stays local.
+/docs/*
+!/docs/decisions/
+!/docs/user/
+!/docs/fable-brief/
+!/docs/perf/
+!/docs/reicon-icons.md
+!/docs/fit-ledger.md
+!/docs/phase4-human-usage-window-2026-09-22.md
+
+# TF-0194 window round: the per-branch prompt scratch and the three driver
+# scripts are working state. The round's curated readings stay tracked
+# (README.md, shown-state.json, t1-baseline.json).
+/.agent-contexts/tf0194-window/prompts/
+/.agent-contexts/tf0194-window/serve.ts
+/.agent-contexts/tf0194-window/step.ts
+/.agent-contexts/tf0194-window/window.ts
+
+

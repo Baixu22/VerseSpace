@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { pathExists, writeFileAtomic } from "../fs/atomic";
 import { withPidLock } from "../fs/lockfile";
 import { noticeIdForText } from "../runtime/notice-id";
+import { DEFAULT_NOTICE_TOKEN_BUDGET } from "../runtime/notice-render";
 
 import type { ThreadContext } from "./thread-context";
 
@@ -32,7 +33,7 @@ export function selectNoticeEntries(
 ): NoticeSelection {
 	const budget = Number.isFinite(tokenBudget)
 		? Math.max(0, Math.trunc((tokenBudget as number) * 4))
-		: 300 * 4;
+		: DEFAULT_NOTICE_TOKEN_BUDGET * 4;
 	if (budget === 0) {
 		return { entries: [], notices: [] };
 	}

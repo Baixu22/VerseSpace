@@ -200,7 +200,6 @@ export async function reconcilePremises(
 	return notices;
 }
 
-export type { DiffHunk } from "./premise-diff";
-export { diffFor, findSpool, parseHunks } from "./premise-diff";
+export { diffFor, parseHunks } from "./premise-diff";
 
 export { spanInvalidated } from "./premise-predicate";

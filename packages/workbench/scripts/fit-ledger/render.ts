@@ -84,12 +84,20 @@ function fitLabel(row: Row): string {
 export function renderMarkdown(report: Report): string {
 	const { histogram, moat, gate, rows } = report;
 	const counted = rows.filter((r) => r.kind !== "milestone").length;
+	const notNatural =
+		report.evidenceKind === "natural"
+			? []
+			: [
+					"> **不是护城河验收。** 来源不是自然使用。下文「本现场支持判据」和「数字闸门开」只描述这份黑板，不能写成产品已验证。",
+					"",
+				];
 	const lines: string[] = [
 		"# fit 账本（TF-0137）",
 		"",
 		"> 本文件由 `bun run scripts/fit-ledger.ts --out ../../docs/fit-ledger.md` 生成，",
 		"> 每周重跑覆盖一次。不要手工编辑：手写的结论没有来源，也就不能用于砍留决策。",
 		"",
+		...notNatural,
 		`- 生成时间：${report.generatedAt}`,
 		`- 数据源黑板：\`${report.blackboard}\``,
 		`- 样本来源（运行者声明）：${EVIDENCE_LABEL[report.evidenceKind]}。该声明不筛选或认证事件，混合现场须单独核对。`,

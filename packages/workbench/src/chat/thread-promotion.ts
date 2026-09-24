@@ -65,9 +65,8 @@ export async function promote(
 
 /**
  * 收养：一次身份迁移，不搬内容。子线程升为主线、源线程就地归档，双方消息
- * 一字不动。单事务原子完成（打快照 + 提升 + 归档），失败即整体回滚。不做
- * revert（下轮）。TODO：`thread.adopted` 须先登记进 THREAD_EVENT_TYPES 白名单
- * （types/event.ts），否则 validateThreadEvent 拦截丢弃。
+ * 一字不动。单事务原子完成（打快照 + 提升 + 归档），失败即整体回滚。
+ * `thread.adopted` 已在 THREAD_EVENT_TYPES 里。
  */
 export async function adoptThread(
 	context: ThreadContext,
@@ -117,8 +116,7 @@ export async function adoptThread(
 /**
  * 反转收养：消费源线程上的整份快照，把双方身份复归收养前——源线程解档、
  * 子线程还原 forkOf 与 archived、清空快照，落 thread.adoption_reverted。
- * 单事务原子完成；无快照即抛错。TODO：`thread.adoption_reverted` 须先登记进
- * 事件白名单（types/event.ts），否则 validateThreadEvent 拦截丢弃。
+ * 单事务原子完成；无快照即抛错。`thread.adoption_reverted` 已在事件白名单里。
  */
 export async function revertAdopt(
 	context: ThreadContext,

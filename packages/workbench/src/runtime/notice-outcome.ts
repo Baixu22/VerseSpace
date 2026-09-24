@@ -173,4 +173,3 @@ export type {
 	NoticeOutcome,
 	UnknownReason,
 } from "./notice-window";
-export { NOTICE_OUTCOMES } from "./notice-window";

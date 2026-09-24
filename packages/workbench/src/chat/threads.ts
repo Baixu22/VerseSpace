@@ -28,9 +28,6 @@ import type { RunEvent, StoredMessage, ThreadMeta } from "./thread-types";
 
 export type { ResumeBeat, ResumeNote } from "./resume";
 export type {
-	CollapsedGroupPart,
-	MessagePart,
-	PermissionMode,
 	RunEvent,
 	StoredMessage,
 	StoredPart,

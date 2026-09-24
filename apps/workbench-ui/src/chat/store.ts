@@ -11,24 +11,11 @@ import type { ChatState } from "./store-types";
 import { createThreadSlice } from "./thread-slice";
 import { createTribunalSlice } from "./tribunal-slice";
 
+export type { StoredMessage, ThreadMeta } from "./message-types";
 export type {
-	DecisionPoint,
-	MessagePart,
-	ParkedItem,
-	PermissionMode,
-	StoredMessage,
-	Suggestion,
-	ThreadMeta,
-} from "./message-types";
-export type {
-	ReadSetDiff,
-	ReadSetDiffFact,
-	ResumeBeat,
-	ResumeCardAnnotation,
 	ResumeCardFactRow,
 	ResumeCardNarrativeRow,
 	ResumeCardView,
-	ResumeNote,
 } from "./resume-types";
 
 export const useChatStore = create<ChatState>((...args) => ({

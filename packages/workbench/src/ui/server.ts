@@ -15,8 +15,8 @@ import { collectState } from "./state";
 import { tribunalRoute } from "./tribunal-routes";
 import { workspaceRoute } from "./workspace-routes";
 
-export { resolveUiAssets, type UiAssets } from "./assets";
-export { collectState, type UiState } from "./state";
+export { resolveUiAssets } from "./assets";
+export { collectState } from "./state";
 
 type UiServer = Bun.Server<undefined> & {
 	authToken: string;

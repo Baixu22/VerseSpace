@@ -53,6 +53,7 @@ codex 的 `app-server` 会发出六类交互协议。逐项按「它如何服务
 - **approval 请求只回 accept，不解析其 params**（`codex-app-server.ts` 的 `answerServerRequest`）。退役时迁入的 11 个 codex 夹具里没有任何一个包含 approval 请求，其 payload 形状没有可核对的样本；按猜测解析会把无法验证的声明写进账本。
 - **真正进账的读足迹**来自 `commandExecution` item 的结构化 `commandActions[].path`（`codex-footprint.ts`），这条路径由夹具门禁证明（11/11 零 undecided）。
 - **写侧尚无证据**：`WRITE_ACTIONS`（edit / write / applyPatch / createFile）与 `fileChange` / `fileRead` item 类型都没有夹具覆盖——11 个夹具里只有 `read` / `listFiles`。因此「写目标照常落账」目前是未验证的设计意图；未建模的 item 类型会以 `undecided` 被 `codex-turn.ts` 报警，不会静默丢失。
+- **seal 不在这条车道上。** 上文「把该不该落地留给 seal」没有实现：`decideServerRequest` 不调用 `decideSeal`。`seal.decided` 只来自 Claude Code 的 PreToolUse hook（`workbench premises seal`）。codex 写文件被自动接受，不会因为前提失效而被拦住。在有 approval 夹具之前，不要为了补上这句话去猜 params。
 - **复核条件**：拿到一个包含 approval 请求或写动作的真实 codex 会话后，补夹具门禁，并把本节收窄为已证事实。
 
 ## 验证方式
