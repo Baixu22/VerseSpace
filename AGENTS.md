@@ -229,6 +229,14 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   `thresholds.checkpointTimeout` is the verifier's default when a checkpoint declares none;
   `thresholds.idleNotification` raises one notification per silent window while a workspot is
   active; `protection.gitHook` and `config.project` are asserted by `doctor`.
+- **The seal is a hook-only interception point.** `decideSeal` runs from exactly one place —
+  the Claude Code **PreToolUse** hook (`workbench premises seal`, wired in `.claude/settings.json`).
+  `runtime/apply.ts` reconciles premises and emits notices but never seals. So a writer that does
+  **not** pass through that hook is never blocked on a stale premise: **git, a bare editor, and the
+  `codex` lane all write without sealing** (the codex half is [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md);
+  the general rule is stated here). `protection.readonlyAreas` has the same reach — it is enforced
+  *at* the seal point, so it too only covers hook-routed writes. Do not describe the seal as a
+  ledger-wide write guard; it guards the Claude Code lane.
 - **Linting**: Biome, tab indent. `lint-staged` enforces on pre-commit.
 - **Testing**: `bun test` for `packages/workbench` and `packages/context-rot`; Vitest + jsdom
   for `apps/workbench-ui`. Tests are co-located with source.

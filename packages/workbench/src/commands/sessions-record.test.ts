@@ -187,8 +187,16 @@ describe("workbench sessions record（TF-0150 验收一、四）", () => {
 		const previous = process.cwd();
 		try {
 			process.chdir(bare);
-			// 不抛：hook 在任意仓库里都会被 git 调用
-			await sessionsRecordCommand({ generated: ["README.md"] }, cmd());
+			// 没有账本时的契约是「安静退出」，有两条边都要钉住：
+			// ① 不抛——否则每个没有 .workbench 的仓库的 merge 都会被 hook 弄红；
+			// ② 零副作用——不能顺手 init 一个账本，那会让 hook 变成到处建
+			//    .workbench 的副作用源。此前本用例只调用不断言，两条边都测不到。
+			await expect(
+				sessionsRecordCommand({ generated: ["README.md"] }, cmd()),
+			).resolves.toBeUndefined();
+			expect(await Bun.file(`${bare}/.workbench/workbench.yaml`).exists()).toBe(
+				false,
+			);
 		} finally {
 			process.chdir(previous);
 			await Bun.$`rm -rf ${bare}`.quiet().nothrow();

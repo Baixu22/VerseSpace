@@ -1,7 +1,8 @@
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
 import type { Blackboard } from "../../blackboard";
-import type { ThreadMeta } from "../../chat/thread-types";
+import {
+	type ThreadListReport,
+	ThreadRepository,
+} from "../../chat/thread-repository";
 import type { DoctorIssue } from "../types";
 
 export async function checkAdoption(
@@ -9,7 +10,33 @@ export async function checkAdoption(
 	issues: DoctorIssue[],
 ): Promise<void> {
 	// ── adoption consistency (TF-0200): dangling snapshots and half-adoptions ──
-	const threads = await listThreadMetas(bb);
+	// Reuse ThreadRepository.listReport() rather than a private re-listing: this
+	// check is a CI gate, and "I could not read the threads" must not collapse
+	// into "you have no threads" (which reports zero adoption issues and lets a
+	// corrupt ledger pass green). listReport throws on an unreadable directory
+	// and names every corrupt meta.json — both are surfaced as errors below.
+	let report: ThreadListReport;
+	try {
+		report = await new ThreadRepository(bb).listReport();
+	} catch (error) {
+		issues.push({
+			check: "threads_unreadable",
+			severity: "error",
+			message: `threads/ 目录无法读取，收养一致性无法核对（不作「没有对话」处理）：${String(error)}`,
+		});
+		return;
+	}
+	// A meta.json that exists but cannot be parsed is a blind spot for this
+	// check, not a clean thread — flip the exit code instead of skipping it.
+	for (const id of report.unreadable) {
+		issues.push({
+			check: "thread_meta_unreadable",
+			severity: "error",
+			message: `线程 ${id} 的 meta.json 无法读取，其收养一致性无法核对`,
+			subject: id,
+		});
+	}
+	const threads = report.threads;
 	// 悬空快照：收养快照只应挂在被归档的源线程上。未归档却挂着快照，说明 revert
 	// 半途而废或 meta.json 被手工改坏——此时侧栏不会把它当归档呈现，快照却仍在。
 	for (const thread of threads) {
@@ -50,30 +77,6 @@ export async function checkAdoption(
 			});
 		}
 	}
-}
-
-/** Read-only thread meta sweep: mirrors ThreadRepository.list, tolerant of a
- * missing threads dir (no chat yet) and unparseable meta.json. */
-async function listThreadMetas(bb: Blackboard): Promise<ThreadMeta[]> {
-	const threadsDir = join(bb.paths.root, "threads");
-	let ids: string[];
-	try {
-		ids = await readdir(threadsDir);
-	} catch {
-		return [];
-	}
-	const metas = await Promise.all(
-		ids.map(async (id) => {
-			try {
-				return JSON.parse(
-					await readFile(join(threadsDir, id, "meta.json"), "utf8"),
-				) as ThreadMeta;
-			} catch {
-				return null;
-			}
-		}),
-	);
-	return metas.filter((meta): meta is ThreadMeta => meta !== null);
 }
 
 function sourceThreadIdOf(payload: unknown): string | null {

@@ -274,6 +274,43 @@ describe("runDoctor", () => {
 		}
 	});
 
+	test("a corrupt meta.json is reported, not swallowed as an empty thread list (P-audit)", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const { mkdir, writeFile } = await import("node:fs/promises");
+			// One good thread and one whose meta.json is not valid JSON. The old
+			// private re-listing dropped the corrupt one to null and read it as
+			// "no such thread", so doctor greenlit a corrupt ledger. It must now
+			// surface as an error and flip report.ok.
+			const good = join(ws.workbenchRoot, "threads", "thread-good");
+			await mkdir(good, { recursive: true });
+			await writeFile(
+				join(good, "meta.json"),
+				JSON.stringify({
+					id: "thread-good",
+					title: "好",
+					createdAt: new Date().toISOString(),
+					status: "idle",
+					permissionMode: "default",
+				}),
+				"utf8",
+			);
+			const broken = join(ws.workbenchRoot, "threads", "thread-broken");
+			await mkdir(broken, { recursive: true });
+			await writeFile(join(broken, "meta.json"), "{ not valid json", "utf8");
+
+			const report = await runDoctor(ws.bb);
+			const broke = report.issues.find(
+				(issue) => issue.check === "thread_meta_unreadable",
+			);
+			expect(broke?.subject).toBe("thread-broken");
+			expect(broke?.severity).toBe("error");
+			expect(report.ok).toBe(false);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
 	test("old checkpoints without thread/writer link parse and stay clean (TF-0196)", async () => {
 		const ws = await makeTempWorkbench();
 		try {

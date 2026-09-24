@@ -14,6 +14,7 @@
 - **测试假阳性（P3）**：MCP 工具的体积上限用例原本跑在空账本上（删掉五处 `truncate()` 仍绿），现在用超限账本并断言截断标记；`protocol.test.ts` 的恒真断言改为断言 pre-turn error 的保留与 JSON 往返；`evidence-route.test.ts` 的 `%ZZ` 分支不再把任何 fetch 失败都当成「已拒收」；`supervisor` 两处静默平台守卫改为可见的 `skipIf`；`resume.ts` 中永远够不到的 `beats.slice(0, 5)` 按死代码删除。
 - **结构收口（P4）**：7 个超 300 行的生产文件拆成模块目录（`scheduler/dispatch/`、`git/host-filesystem/`、`chat/codex-app-server/`、`doctor/`、`chat/render-decision/`、`tribunal/envelopes/`、`runtime/merge-guard/`），生产源码超 300 行的文件回到 0；两个只被测试导入的 fixture-replay 驱动移入 `src/test/`，不再进入生产模块图；`rollback.ts` 那条「这是回退的唯一依据」的注释与事实相反（该函数无生产调用方），已改写；`.workbench/workbench.yaml` 的 `agent.command` 改为生效形态，不再由 loader 静默改写；`WORKBENCH_CLAUDE_MCP=on` 允许自定义命令仍接上账本 MCP；阶段 4 的人工门操作指南重新纳入版本控制（ADR-0019 称其长期有效）。
 - **森林门禁可复现（P1）**：`node scripts/check-forest-landing.mjs` 把 `check-landing` 的落库检查搬进仓库，并改为对**默认分支**比对（原来只比 HEAD 时间戳，这正是 2026-09-23 阶段 3「代码只在未合并分支、森林却报 done」的成因，`TFD-0dab4149f2`）；无法测量时 exit 2，绝不冒充绿。
+- **审计复盘补漏（P5）**：P2 把 `thread-repository.ts` 的「读不到 `threads/` 冒充没有对话」修成可见，却漏了 `doctor/checks/adoption.ts` 里同款的私有翻版——目录读不了 `catch → []`、`meta.json` 损坏 `catch → null`，于是 doctor 这个 CI 闸门在账本损坏时反而放绿。改为复用 `ThreadRepository.listReport()`，目录不可读报 `threads_unreadable`（error）、损坏 meta 报 `thread_meta_unreadable`（error），并加测试钉住损坏 meta 翻红退出码。`sessions-record` 的「没有 .workbench 静默返回」用例此前只调用不断言,补上「resolve 为 undefined 且不顺手建 `.workbench/`」两条断言。`seal` 只在 Claude Code PreToolUse hook 生效、非 hook 写者（git/编辑器/codex 车道）不被封印这一边界写进 AGENTS.md（原先只有 codex 半边记在 ADR-0017）。
 
 ## 0.4.0
 
