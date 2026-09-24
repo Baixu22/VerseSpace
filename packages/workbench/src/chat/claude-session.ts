@@ -85,7 +85,12 @@ export async function ensureClaudeSession(
 	// when the command is the genuine claude CLI (the default) — a test's fake
 	// `WORKBENCH_CHAT_COMMAND` does not understand `--mcp-config`, and
 	// `WORKBENCH_CLAUDE_MCP=off` opts out for a CLI build that lacks the flag.
-	if (chatCommand() === CHAT_COMMAND_DEFAULT) {
+	//
+	// `WORKBENCH_CLAUDE_MCP=on` forces the wiring even for a custom command, so
+	// "I set WORKBENCH_CHAT_COMMAND and silently lost the ledger MCP" has an
+	// explicit answer instead of being an invisible side effect.
+	const forceMcp = process.env.WORKBENCH_CLAUDE_MCP === "on";
+	if (forceMcp || chatCommand() === CHAT_COMMAND_DEFAULT) {
 		commandLine = appendCommandFlags(
 			commandLine,
 			await mcpConfigFlags(context.bb.paths.root),

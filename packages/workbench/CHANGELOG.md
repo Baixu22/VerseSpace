@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+审计回补（P0–P4）：把「看起来有保护、实际没有」的地方改成真的能拦住、或真的会报错。
+
+- **封印守卫链修好了（P0-1）**：`.claude/settings.json` 的 PreToolUse hook 原本调 `workbench premises seal`，解析到机器上 2026-08-29 构建的 0.3.0 二进制——那个版本根本没有 `premises` 命令，所以守卫从未触发过一次（账本里 `seal.decided` 事件数为 0）。hook 改为直接调仓库源码，并在隔离账本里实测：命中时 exit 2、`seal.decided` 落盘。
+- **`protection.readonlyAreas` 真的拦写（P0-2）**：此前只声明、只校验、`config set` 还打印成功，全仓零消费者。现在经封印点拒绝受保护路径的写入，且**不受 `seal.mode` 影响**（模式管的是前提失效姿态，不是「声明的保护算不算数」）。同时新增 `readonlyBlocks` / `premiseBlocked` 计数，避免只读拒绝冒充护城河读数。
+- **`thresholds.checkpointTimeout` 真的生效（P0-2）**：验证超时改为「checkpoint 声明 → 配置 → 模块常量」三级，此前配置值被完全忽略（默认恰好等于 300s，所以漂移被掩盖）。
+- **`thresholds.idleNotification` 真的发通知（P0-2）**：有工位在办而事件日志整段静默超过阈值时提醒一次；通知本身是事件，因此不会重复刷屏。
+- **`protection.gitHook` / `config.project` 有了消费者（P0-2）**：`doctor` 新增 `git_hook_missing`（error）与 `project_path_mismatch`（warning）。
+- **`doctor` 双向失真修正（P0-3）**：扫描器把 `https://…` 折成 `https:/…` 后当成仓库路径（AGENTS.md 的 remote 表贡献了两条误报），scp 形式的 git remote 同样被误报——两处已修；`interface_drift`（契约漂移＝前提失效本身）从 warning 升为 error；退出码首次有测试钉住；`doctor` 接入 `.gitlab-ci.yml` 的 verify 阶段，实测 exit 0。
+- **静默吞错改为可见（P2）**：损坏的裁决条目不再从队列里无声消失（CLI/HTTP 报告「N 条无法读取」）；损坏的 lane metrics 不再被读成全零后写回（累计统计不再被销毁，改为抛出）；codex 车道的状态复位失败与 claude 车道同样上报；读不到 `threads/` 目录不再冒充「你没有对话」。
+- **测试假阳性（P3）**：MCP 工具的体积上限用例原本跑在空账本上（删掉五处 `truncate()` 仍绿），现在用超限账本并断言截断标记；`protocol.test.ts` 的恒真断言改为断言 pre-turn error 的保留与 JSON 往返；`evidence-route.test.ts` 的 `%ZZ` 分支不再把任何 fetch 失败都当成「已拒收」；`supervisor` 两处静默平台守卫改为可见的 `skipIf`；`resume.ts` 中永远够不到的 `beats.slice(0, 5)` 按死代码删除。
+- **结构收口（P4）**：7 个超 300 行的生产文件拆成模块目录（`scheduler/dispatch/`、`git/host-filesystem/`、`chat/codex-app-server/`、`doctor/`、`chat/render-decision/`、`tribunal/envelopes/`、`runtime/merge-guard/`），生产源码超 300 行的文件回到 0；两个只被测试导入的 fixture-replay 驱动移入 `src/test/`，不再进入生产模块图；`rollback.ts` 那条「这是回退的唯一依据」的注释与事实相反（该函数无生产调用方），已改写；`.workbench/workbench.yaml` 的 `agent.command` 改为生效形态，不再由 loader 静默改写；`WORKBENCH_CLAUDE_MCP=on` 允许自定义命令仍接上账本 MCP；阶段 4 的人工门操作指南重新纳入版本控制（ADR-0019 称其长期有效）。
+- **森林门禁可复现（P1）**：`node scripts/check-forest-landing.mjs` 把 `check-landing` 的落库检查搬进仓库，并改为对**默认分支**比对（原来只比 HEAD 时间戳，这正是 2026-09-23 阶段 3「代码只在未合并分支、森林却报 done」的成因，`TFD-0dab4149f2`）；无法测量时 exit 2，绝不冒充绿。
+
 ## 0.4.0
 
 从「可用」长到「可编排」的一版：账本能力进入对话、第二个可观测 provider 落地、CI 收敛为单通道。

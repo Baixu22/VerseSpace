@@ -54,7 +54,7 @@ third-party skills enabled, so one config serves both hosts.
 `workbench premises seal` is the **PreToolUse** hook built on top of that: it is the one place the
 runtime interrupts a writer. It reads a PreToolUse payload on stdin (or `--target`), and exit `2`
 blocks the call and feeds the evidence back to the model. Every decision — block, warn and pass
-alike — is recorded as a `seal.decided` event. `seal.mode` in `workbench.yaml` picks the posture
+alike — is recorded as a `seal.decided` event. `seal.mode` in `.workbench/workbench.yaml` picks the posture
 (`block` | `warn` | `off`); no mode is silent.
 
 ---

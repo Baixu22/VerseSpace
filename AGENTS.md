@@ -98,7 +98,7 @@ the runner log `D:\software\gitlab-runner\runner.err.log` (it names `job_name`,
 
 Runner (self-managed project runner on this Windows machine — no SaaS compute minutes):
 
-- Binary/config: `D:\software\gitlab-runner\` (`gitlab-runner.exe`, `config.toml`, `start-runner.bat`)
+- Binary/config: `D:\software\gitlab-runner\` (`gitlab-runner.exe`, `D:\software\gitlab-runner\config.toml`, `D:\software\gitlab-runner\start-runner.bat`)
 - Runner `verspace-local-jihulab`, id `47590`, url `https://jihulab.com`, tags `verspace-local` / `windows` / `self-hosted`
 - Executor: `shell` + **`pwsh`** (PowerShell 7 portable at `D:\software\PowerShell\pwsh-dir`) — Windows PowerShell 5.1 cannot parse the runner's UTF-8 env files on a zh-CN host
 - Uses the machine's Bun at `C:\Users\27933\AppData\Roaming\npm\node_modules\bun\bin`
@@ -112,7 +112,7 @@ Runner (self-managed project runner on this Windows machine — no SaaS compute 
   Installing it as a service (`gitlab-runner install`, or `install --user`) needs an elevated
   shell and is the durable fix.
 - **The machine must be on** for CI to pick up jobs
-- `concurrent = 4` in `config.toml` (it was 1 when the runner served `gitlab.com`). The host has
+- `concurrent = 4` in `D:\software\gitlab-runner\config.toml` (it was 1 when the runner served `gitlab.com`). The host has
   16 GB, so the heavy verify jobs (`typecheck`, `workbench-test`, `workbench-ui-test`) share
   `resource_group: heavy` in `.gitlab-ci.yml` and never run two at a time; the light ones
   (`biome`, `context-rot-test`, the heartbeat) still overlap. Do not remove that group without
@@ -149,15 +149,15 @@ subcommand lives in `src/commands/` and supports `--json` / `--quiet`.
 | `scheduler/` | Dispatch, dispatch guards/recovery, merge guard, branch-in-use, WIP, notifications, tick. |
 | `verifier/` | Runs a checkpoint's declared verification strategy and classifies the result (`passed` / `failed` / `needs_human` / `timeout` / `skipped`). |
 | `supervisor/` | Process supervision: spawn, liveness watch, crash-loop detection, orphan reaping. |
-| `chat/` | Chat lanes — two supervised-CLI lanes (`claude` and `codex`, both with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. The `codex` lane supervises `codex app-server` over JSON-RPC-on-stdio (`codex-app-server.ts`): permission requests are auto-accepted because the request *is* the read/write claim, user-input requests are auto-declined so a turn cannot wedge — see [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md). Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Cursor / Kimi / OpenCode stream fixtures under `chat/fixtures/streams/` are retained protocol samples, **not** adapters; the Codex fixtures now have a consumer (`codex-fixtures.test.ts`). |
+| `chat/` | Chat lanes — two supervised-CLI lanes (`claude` and `codex`, both with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. The `codex` lane supervises `codex app-server` over JSON-RPC-on-stdio (`codex-app-server/`): permission requests are auto-accepted and do not call seal (`decideSeal` runs only from `workbench premises seal`); read footprints come from `commandActions[].path`, not from the approval params. User-input requests are auto-declined so a turn cannot wedge — see [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md). Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Claude and Codex fixtures under `chat/fixtures/streams/` have consumers (`claude-fixtures.test.ts`, `codex-fixtures.test.ts`); the Cursor / Kimi / OpenCode samples are retained protocol samples, **not** adapters, and live outside `src/` under `packages/workbench/fixtures/streams/` so they cannot be mistaken for test fixtures. |
 | `agents/` | Spawns agent sessions, captures their tool footprints, records per-session usage. |
 | `interactions/` | The user-feedback side: interest/context derivation, landmark projection, review queue, review stats (DOI). |
 | `tribunal/` | The human-decision queue: kinds, escalation, rationalization, queue store/stats, envelopes. |
-| `contextgen/` | Generates the per-workspot `.agent-context.md` from the workspot's declared `contextNeeds`. |
-| `doctor/` | Whole-ledger consistency checks; non-zero exit makes it usable as a CI gate. |
+| `contextgen/` | Generates the per-workspot `<workspot>/.agent-context.md` from the workspot's declared `contextNeeds`. |
+| `doctor/` | Whole-ledger consistency checks; non-zero exit makes it usable as a CI gate (the `doctor` job in `.gitlab-ci.yml`). Only `severity: "error"` flips the exit code, and no test pinned it until P0-3. `interface_drift` is an error because it *is* a stale premise; the remaining warning-level checks (`dangling_subscriber`, `half_adopted`, …) still exit 0. |
 | `rot/` | Adapts the `context-rot` scanner into the doctor's unique-path report. |
 | `mcp/` | stdio MCP server exposing five **read-only** ledger tools: `premises`, `footprints`, `resume_cards`, `tribunal`, `notices`. |
-| `ui/` | The dashboard HTTP server: `server.ts`, chat routes, workspace routes, evidence route, promotion route, chat config, embedded assets. |
+| `ui/` | The dashboard HTTP server: `server.ts`, chat routes, workspace routes, tribunal routes, evidence route, chat config, embedded assets. Promotion / adopt / revert are sub-routes of `chat-routes.ts`, not a separate module. `GET /api/state` exists and is tested, but no dashboard code calls it — it is a curl/human surface, not part of the SPA. |
 | `watcher/` | chokidar-based watch mode — file changes trigger a runtime pass. |
 | `git/` | Thin, never-throwing git runner (worktrees, `merge-tree`, refs). |
 | `fs/` | `atomic.ts` (atomic write/rename, with `EBUSY`/`EPERM` retry) and `lockfile.ts` (run locks). |
@@ -224,6 +224,11 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
 - **Append-only where it matters.** Decisions and events are never rewritten — corrections are
   new entries that supersede. Preserve this when adding anything to `blackboard/`.
 - **`--json` on every command.** Machine-readable output is part of the contract, not an extra.
+- **`.workbench/workbench.yaml` options are enforced, not decorative** (P0-2). `protection.readonlyAreas`
+  refuses writes into a declared area through the seal point, independent of `seal.mode`;
+  `thresholds.checkpointTimeout` is the verifier's default when a checkpoint declares none;
+  `thresholds.idleNotification` raises one notification per silent window while a workspot is
+  active; `protection.gitHook` and `config.project` are asserted by `doctor`.
 - **Linting**: Biome, tab indent. `lint-staged` enforces on pre-commit.
 - **Testing**: `bun test` for `packages/workbench` and `packages/context-rot`; Vitest + jsdom
   for `apps/workbench-ui`. Tests are co-located with source.
@@ -250,7 +255,7 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
 - **Releases**: the workbench package's public shape is the **single-file binary**
   (`workbench-v*` tag → four-platform build → GitHub Release). The npm shape is not published
   yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
-  the version and `CHANGELOG.md` first. **`.changeset/` no longer exists** — bump the version and
+  the version and `packages/workbench/CHANGELOG.md` first. The root `CHANGELOG.md` is not this product's history. **the .changeset/ directory no longer exists** — bump the version and
   write the changelog entry by hand. The build runs in the `release` stage of `.gitlab-ci.yml` on
   the JihuLab runner: `release-build` cross-compiles all four binaries, then the **manual**
   `release-publish` job runs `scripts/publish-workbench-release.mjs`, which attaches them plus
@@ -334,7 +339,7 @@ powershell.exe -NoProfile -File scripts/win/check-git-filesystem.ps1
 
 It keeps only its own fixture and returns `1` for corruption even when Git exits `0`.
 
-`packages/workbench/src/git/host-filesystem.ts` is the same probe in-process, and
+`packages/workbench/src/git/host-filesystem/` is the same probe in-process, and
 `packages/workbench/src/git/index.ts` wires it into `git()`: while the host is judged unsafe,
 read-only verbs still run, but anything that could rewrite the worktree or refs fails loudly
 with a message naming TF-0173 instead of corrupting silently. On a healthy host the guard is
@@ -383,8 +388,15 @@ excluded from collection.
   them and maps each to its task-forest node. **Read the ADRs before proposing an architectural
   change.**
 - **`.agent-workbench/task-forest/`** — the task forest: the authority for what is planned and what
-  is done. Canonical state is `graph/nodes.json` + `graph/edges.json` + `config.json` +
-  `events/events.jsonl`; exports are derived and rebuildable.
+  is done. Canonical state is `.agent-workbench/task-forest/graph/nodes.json` +
+  `.agent-workbench/task-forest/graph/edges.json` +
+  `.agent-workbench/task-forest/config.json` +
+  `.agent-workbench/task-forest/events/events.jsonl`; exports are derived and rebuildable.
+  The authoritative `validate` / `check-landing` CLI lives **outside this repo**
+  (`C:\Users\27933\.workbuddy\skills\task-forest\scripts\task_forest.py`), so
+  `node scripts/check-forest-landing.mjs` re-implements the landing half in-repo and against
+  the **default branch** rather than HEAD (exit 0 clean · 1 drift · 2 cannot measure) — HEAD-only
+  comparison is what let the 2026-09-23 stage-3 gap read as landed (`TFD-0dab4149f2`).
 - **`docs/*.md`** — historical reports and evidence records. Most are **point-in-time readings**,
   not current state. Check the date in the filename before treating one as authoritative.
 - **`.agent-contexts/`** — local session scratch, mostly gitignored.

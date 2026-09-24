@@ -2,7 +2,7 @@
 
 - 森林节点：TF-0251（阶段 4），目标 TF-0232
 - 前置：阶段 3 已落地（codex 车道端到端可用，ADR-0017）；阶段 2 已把账本能力内嵌对话（PR #29）
-- 状态：**ready-for-human**——本文件是让真实人类产生 L1 读数的操作路径，读数本身不能由脚本或 agent 代跑
+- 状态：**不是本轮交付**（ADR-0019 将 TF-0251 转为常设外部门）。下面仍是将来真人窗口的路径。codex 车道不会产生 `seal.decided`。读数不能由脚本或 agent 代跑
 
 ## 为什么这一步不能自动化
 
@@ -19,10 +19,10 @@ L1 只在自然证据下移动。因此我把窗口做到端到端可用，但 `
 
 | 读数 | 来源事件 | 如何自然产生 |
 | --- | --- | --- |
-| `seal.decisions ≥ 1`（且至少一次正确的 block） | `seal.decided`（`seal-counts.ts`） | 一次写操作命中一条**已失效的前提**：先读某文件、该文件在你之外被改动、再对它发起写 |
+| `seal.decisions ≥ 1`（且至少一次正确的 block） | `seal.decided`（`seal-counts.ts`） | 写操作必须经过已安装的 Claude Code PreToolUse hook（`workbench premises seal`）。codex 车道只自动接受权限，不调用 seal |
 | 恢复卡消费 | `thread.resume_note_consumed` / `resumeCardCircuit`（`stats.ts:183`） | 离开一条线程、隔一段时间回来、消费它的恢复卡 |
 | 人类地标认可 | 落笔过滤后的 landmark review（`review-stats.ts`） | 真人在会话里对某个改动落笔认可 |
-| 足迹覆盖 | `sessions.footprint`（每线程） | 任意会读/写文件的真实回合——codex 车道已保证留痕 |
+| 足迹覆盖 | `sessions.footprint`（每线程） | 可观测车道的真实回合。codex 的读足迹来自 `commandActions[].path`；写动作没有夹具，不能当成已经保证 |
 
 ## 前置配置（一次性）
 
@@ -41,6 +41,7 @@ L1 只在自然证据下移动。因此我把窗口做到端到端可用，但 `
    ```
    或用 CLI：`workbench config set chat.provider codex`（若已提供该子命令），
    否则直接编辑 yaml。默认仍是 claude，切过去只影响对话车道，不改账本结构。
+   切到 codex 只能产生足迹，不能产生 seal。要 `seal.decided`，写操作必须发生在已安装 hook 的 Claude Code 里。
 
 3. **装 seal hook**（PreToolUse 命门，唯一的运行时拦截点）：
    ```bash
@@ -58,9 +59,9 @@ L1 只在自然证据下移动。因此我把窗口做到端到端可用，但 `
    这一步在账本里留下该文件的读足迹——面板的证据面或 MCP `footprints` 工具应能看到。
 3. **在你之外改动那个文件**：换一个编辑器/终端，真实修改并保存 `cli.ts`（哪怕加一行注释）。
    这让第 2 步的读前提失效——`workbench premises pending` 应出现一条待投递通知。
-4. 回到线程，让 codex **写**那个文件（例如"给 `cli.ts` 顶部加一句 doc 注释"）。
-   写操作经过 seal hook，命中失效前提 → 产生一次 `seal.decided: block`，证据回喂给模型。
-   这就是**一次真实且正确的 block**。
+4. **不要让 codex 写这个文件来制造 seal。** codex 对 `requestApproval` 一律 accept，
+   不调用 `decideSeal`。回到 **Claude Code**（hook 已安装）再写那个文件。
+   PreToolUse 跑 `workbench premises seal`，命中失效前提才产生 `seal.decided: block`。
 5. **离开这条线程**（切到另一条，或 `workbench` 里 leave），隔一段时间**回来**，
    面板会呈现恢复卡；**消费它**（按恢复卡里的动作继续）。这产生 `thread.resume_note_consumed`。
 6. 对本轮某个你**认可**的改动落笔认可（在面板的复核入口）。这动 `landmarkReviews.current`。
