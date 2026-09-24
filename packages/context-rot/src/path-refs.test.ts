@@ -63,4 +63,32 @@ describe("normalizeRef", () => {
 		expect(normalizeRef("./src\\\\foo.ts.")).toBe("src/foo.ts");
 		expect(normalizeRef("'src/foo.ts'")).toBe("src/foo.ts");
 	});
+
+	test("URLs are rejected before the slash collapse can disguise them", () => {
+		// 曾经的缺陷：`https://github.com/x.git` 先被 `/\/+/ → /` 折成
+		// `https:/github.com/x.git`，于是 `startsWith("https://")` 与
+		// `includes("://")` 两条判断都不成立，它被当成仓库相对路径报成 stale。
+		// AGENTS.md 的 remote 表因此贡献了两条误报。
+		expect(
+			normalizeRef("https://github.com/Baixu22/VerseSpace.git"),
+		).toBeNull();
+		expect(normalizeRef("https://jihulab.com")).toBeNull();
+		expect(normalizeRef("http://example.com/a.ts")).toBeNull();
+		expect(normalizeRef("ssh://git@host/x.git")).toBeNull();
+	});
+
+	test("scp-style git remotes are not paths", () => {
+		expect(normalizeRef("git@jihulab.com:Baixu22/VerseSpace.git")).toBeNull();
+		expect(normalizeRef("git@github.com:owner/repo.git")).toBeNull();
+	});
+
+	test("the new rejections do not swallow real relative paths", () => {
+		expect(normalizeRef("packages/workbench/src/cli.ts")).toBe(
+			"packages/workbench/src/cli.ts",
+		);
+		expect(normalizeRef("src/a.ts")).toBe("src/a.ts");
+		expect(normalizeRef("docs/decisions/README.md")).toBe(
+			"docs/decisions/README.md",
+		);
+	});
 });

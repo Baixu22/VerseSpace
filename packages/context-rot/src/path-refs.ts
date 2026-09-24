@@ -105,6 +105,17 @@ export function normalizeRef(raw: string): string | null {
 	) {
 		value = value.slice(1, -1);
 	}
+	// Reject URLs and scp-style git remotes BEFORE collapsing slashes below.
+	// `https://github.com/x.git` would otherwise become `https:/github.com/x.git`,
+	// slip past the `://` checks further down, and be reported as a stale repo
+	// path — which is exactly what happened to AGENTS.md's remote table.
+	if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) {
+		return null;
+	}
+	// `git@jihulab.com:Baixu22/VerseSpace.git` — an SSH remote, not a file.
+	if (/^[^/\s@]+@[^/\s:]+:/.test(value)) {
+		return null;
+	}
 	value = value.replace(/^\.\//, "").replace(/\/+/g, "/");
 	value = stripLineSuffix(value).replace(/[.,;:!?)]+$/, "");
 	if (value.startsWith("/") || /^[a-z]:\//i.test(value)) return null;

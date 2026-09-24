@@ -104,6 +104,17 @@ stages: [verify, release]
     - biome.json
     - scripts/**
     - packages/context-rot/**
+  doctor:
+    - .gitlab-ci.yml
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    - AGENTS.md
+    - CLAUDE.md
+    - docs/**
+    - packages/workbench/**
+    - packages/context-rot/**
 
 pipeline-heartbeat:
   stage: verify
@@ -175,6 +186,21 @@ context-rot-test:
     - changes: !reference [.paths, context_rot]
   script:
     - bun run test:context-rot
+
+# `doctor` as an actual gate (P0-3). AGENTS.md had claimed since 0.1.0 that its
+# non-zero exit "makes it usable as a CI gate", but no job ever ran it, so the
+# claim was aspirational. The scanner's URL/scp false positives are fixed and
+# the ambiguous doc refs are now fully qualified, so the tree is green — and
+# `interface_drift` is an error, so a stale premise actually fails this job.
+doctor:
+  extends: .bun-setup
+  stage: verify
+  timeout: 10m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, doctor]
+  script:
+    - bun packages/workbench/src/index.ts doctor
 
 # Release lane (2026-09-21; instance switched to JihuLab 2026-09-22).
 # The GitHub Actions release workflow was deleted under ADR-0018, so this is the

@@ -6,6 +6,7 @@ import {
 	SEAL_EVENT,
 	type SealDecision,
 	type SealDecisionRecord,
+	type SealKind,
 	type SealMode,
 } from "./seal-counts";
 
@@ -28,9 +29,25 @@ import {
  * changes far more often than the question "did this write land on a claim".
  */
 
+/**
+ * Why the seal stopped a write. The two reasons are different facts and must
+ * not be folded together: `stale_premise` means the write was built on
+ * something that moved (the ledger's own thesis), while `readonly_area` means
+ * the path was declared off-limits by `protection.readonlyAreas`. Counting a
+ * protected-path refusal as a premise seal would inflate the moat number, so
+ * every record carries the kind (`SealKind`, defined with the record shape).
+ */
 export type SealVerdict =
 	| { blocked: false }
-	| { blocked: true; reason: string; evidence: StalePremiseClaim[] };
+	| {
+			blocked: true;
+			kind: SealKind;
+			reason: string;
+			/** Paths that matched, whichever predicate fired. Paths, not bodies. */
+			matched: string[];
+			/** Stale claims only; empty for a protected-path refusal. */
+			evidence: StalePremiseClaim[];
+	  };
 
 /** Tool inputs that carry a file target, in the shape the CLI sends them. */
 export function targetOfHookInput(
@@ -69,12 +86,39 @@ function overlaps(target: string, claim: string): boolean {
 	);
 }
 
+/**
+ * The pure predicate. `readonlyAreas` is checked first and wins: a path the
+ * project declared off-limits is refused whether or not its premise also
+ * moved, and the refusal does not depend on `seal.mode` — that knob governs
+ * the stale-premise posture, not whether a declared protection is real.
+ */
 export function judgeSeal(
 	projectRoot: string,
 	target: string,
 	claims: StalePremiseClaim[],
+	readonlyAreas: readonly string[] = [],
 ): SealVerdict {
 	const normalized = normalizeTarget(projectRoot, target);
+
+	const protectedArea = readonlyAreas
+		.map((area) => normalizeTarget(projectRoot, area))
+		.find((area) => area !== "" && overlaps(normalized, area));
+	if (protectedArea !== undefined) {
+		return {
+			blocked: true,
+			kind: "readonly_area",
+			matched: [protectedArea],
+			evidence: [],
+			reason:
+				`受保护路径：${normalized} 位于 protection.readonlyAreas 声明的只读区域 ` +
+				`${protectedArea} 内。\n` +
+				"这不是前提失效——该区域被配置显式声明为只读，任何写入都会被拒绝，" +
+				"与 seal.mode 无关。\n" +
+				"如果这次写入确实必要，请先修改 workbench.yaml 的 protection.readonlyAreas，" +
+				"让这个决定留在记录里，而不是绕过它。",
+		};
+	}
+
 	const hit = claims.filter((claim) => overlaps(normalized, claim.path));
 	if (hit.length === 0) {
 		return { blocked: false };
@@ -88,6 +132,8 @@ export function judgeSeal(
 		.join("\n");
 	return {
 		blocked: true,
+		kind: "stale_premise",
+		matched: hit.map((claim) => claim.path),
 		reason:
 			`封印点：${normalized} 在你读过后已被其他写者修改。` +
 			"这不是打断——基于已失效的前提写下去，事后返工的代价远高于现在停一下。\n" +
@@ -132,26 +178,52 @@ export async function decideSeal(
 	const mode = options.mode ?? config.seal.mode;
 	const limit = config.seal.consecutiveBlockLimit;
 	const writer = options.writerId ?? null;
-	const verdict = judgeSeal(bb.projectRoot, options.target, options.claims);
+	const verdict = judgeSeal(
+		bb.projectRoot,
+		options.target,
+		options.claims,
+		config.protection.readonlyAreas,
+	);
 	const path = normalizeTarget(bb.projectRoot, options.target);
+	const kind: SealKind | null = verdict.blocked ? verdict.kind : null;
+	// A protected path is not negotiable: neither `seal.mode` nor the
+	// consecutive-block downgrade may turn a declared readonly area writable.
+	// A protection that an unrelated knob can switch off is the same paper
+	// guard this repo keeps having to remove.
+	const readonly = verdict.blocked && verdict.kind === "readonly_area";
 
-	const priorBlockStreak = verdict.blocked
-		? consecutiveHitStreak(await bb.events.query({ type: SEAL_EVENT }), writer)
-		: 0;
+	const priorBlockStreak =
+		verdict.blocked && !readonly
+			? consecutiveHitStreak(
+					await bb.events.query({ type: SEAL_EVENT }),
+					writer,
+				)
+			: 0;
 	// `consecutiveBlockLimit` is how many hits in a row a writer may absorb
 	// before the seal stops interrupting it. The streak counts hits rather than
 	// blocks so the downgrade, once it fires, stays in force.
 	const downgraded =
-		verdict.blocked && mode === "block" && priorBlockStreak >= limit;
-	const effectiveMode: SealMode = downgraded ? "warn" : mode;
+		!readonly &&
+		verdict.blocked &&
+		mode === "block" &&
+		priorBlockStreak >= limit;
+	const effectiveMode: SealMode = readonly
+		? "block"
+		: downgraded
+			? "warn"
+			: mode;
 
 	let decision: SealDecision = "pass";
 	if (verdict.blocked) {
-		decision = effectiveMode === "block" ? "block" : "warn";
-		if (effectiveMode === "off") {
-			// `off` stops the interruption, not the observation: the write goes
-			// through as a pass, but `hit` and the reason stay on the record.
-			decision = "pass";
+		if (readonly) {
+			decision = "block";
+		} else {
+			decision = effectiveMode === "block" ? "block" : "warn";
+			if (effectiveMode === "off") {
+				// `off` stops the interruption, not the observation: the write goes
+				// through as a pass, but `hit` and the reason stay on the record.
+				decision = "pass";
+			}
 		}
 	}
 
@@ -159,10 +231,9 @@ export async function decideSeal(
 		writer,
 		path,
 		decision,
+		kind,
 		hit: verdict.blocked,
-		matchedDeclarations: verdict.blocked
-			? verdict.evidence.map((claim) => claim.path)
-			: [],
+		matchedDeclarations: verdict.blocked ? verdict.matched : [],
 		mode,
 		effectiveMode,
 		downgraded,

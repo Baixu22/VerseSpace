@@ -1,5 +1,6 @@
 import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
+import { parseDurationSeconds } from "../duration";
 import type { Checkpoint } from "../types/checkpoint";
 import { runVerification } from "../verifier";
 import { event } from "./events";
@@ -43,9 +44,13 @@ export async function verifyCheckpoint(
 	const pending: Checkpoint = { ...checkpoint, lifecycle: "pending" };
 	await bb.checkpoints.save(pending, "staging");
 
+	// P0-2: `thresholds.checkpointTimeout` is the default when the checkpoint
+	// does not declare its own timeout. Before this it was read by nothing.
+	const config = await bb.config.load();
 	const result = await runVerification(
 		checkpoint.verification,
 		await resolveWorktree(bb, checkpoint),
+		parseDurationSeconds(config.thresholds.checkpointTimeout) ?? undefined,
 	);
 	const withResult: Checkpoint = {
 		...pending,

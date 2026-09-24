@@ -326,3 +326,99 @@ describe("stats 里的封印计数（TF-0134 验收二）", () => {
 		expect(folded.hits).toBe(1);
 	});
 });
+
+/**
+ * P0-2：`protection.readonlyAreas` 曾经只声明、只校验、`config set` 还打印成功，
+ * 但全仓没有任何消费者——一个"安全形状"的选项实际上是装饰。这些用例把它钉住：
+ * 声明为只读的路径必须真的拦，且不能被 `seal.mode` 或降级机制关掉。
+ */
+describe("protection.readonlyAreas 真的拦写（P0-2）", () => {
+	test("只读路径即使 seal.mode=off 也被拒绝，并记为 readonly_area", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await ws.bb.config.save({
+				protection: { readonlyAreas: ["docs/generated"] },
+				seal: { mode: "off" },
+			});
+			const outcome = await decideSeal(ws.bb, {
+				target: "docs/generated/api.md",
+				writerId: "w",
+				claims: [],
+			});
+			expect(outcome.decision).toBe("block");
+			expect(outcome.kind).toBe("readonly_area");
+			expect(outcome.hit).toBe(true);
+			expect(outcome.matchedDeclarations).toEqual(["docs/generated"]);
+			expect(outcome.reason).toContain("只读区域");
+			// 结论必须落进事件日志，否则"拦了没有"仍然无从查证。
+			expect(await sealEvents(ws)).toHaveLength(1);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("只读拒绝不冒充前提封印：readonlyBlocks 单独计，hits 与 premiseBlocked 不动", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await ws.bb.config.save({
+				protection: { readonlyAreas: ["docs/generated"] },
+			});
+			await decideSeal(ws.bb, {
+				target: "docs/generated/api.md",
+				writerId: "w",
+				claims: [],
+			});
+			const folded = foldSealDecisions(await sealEvents(ws));
+			expect(folded.blocked).toBe(1);
+			expect(folded.readonlyBlocks).toBe(1);
+			expect(folded.premiseBlocked).toBe(0);
+			expect(folded.hits).toBe(0);
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("只读区域之外的写入不受影响", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await ws.bb.config.save({
+				protection: { readonlyAreas: ["docs/generated"] },
+			});
+			const outcome = await decideSeal(ws.bb, {
+				target: "src/app.ts",
+				writerId: "w",
+				claims: [],
+			});
+			expect(outcome.decision).toBe("pass");
+			expect(outcome.kind).toBeNull();
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("只读拒绝既不推进也不打断降级连击", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			await ws.bb.config.save({
+				protection: { readonlyAreas: ["docs/generated"] },
+				seal: { mode: "block", consecutiveBlockLimit: 1 },
+			});
+			await decideSeal(ws.bb, {
+				target: "docs/generated/a.md",
+				writerId: "w",
+				claims: [],
+			});
+			const second = await decideSeal(ws.bb, {
+				target: "docs/generated/b.md",
+				writerId: "w",
+				claims: [],
+			});
+			// limit=1 时第二次前提命中就会降级；只读拒绝不能顶替那次命中。
+			expect(second.priorBlockStreak).toBe(0);
+			expect(second.downgraded).toBe(false);
+			expect(second.decision).toBe("block");
+		} finally {
+			await ws.cleanup();
+		}
+	});
+});

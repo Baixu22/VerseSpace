@@ -19,12 +19,26 @@ export type SealMode = "block" | "warn" | "off";
 /** What actually happened to the write. */
 export type SealDecision = "block" | "warn" | "pass";
 
+/**
+ * Why the seal fired. `stale_premise` is the ledger's own thesis — the write
+ * was built on something that moved. `readonly_area` is a project-declared
+ * `protection.readonlyAreas` refusal. They are different facts, and the moat
+ * number only counts the first, so the record must say which one it was.
+ */
+export type SealKind = "stale_premise" | "readonly_area";
+
 export interface SealDecisionRecord {
 	/** Writer id when the host supplied one, else null (hook payloads may not). */
 	writer: string | null;
 	/** Project-relative target of the intercepted write. */
 	path: string;
 	decision: SealDecision;
+	/**
+	 * Which predicate fired, or null when nothing matched (a plain pass).
+	 * Records written before readonly areas were enforced have no `kind`; they
+	 * can only have been stale-premise hits, so they are read back as such.
+	 */
+	kind: SealKind | null;
 	/**
 	 * Whether the predicate matched at all. `pass` + `hit: true` is the honest
 	 * shape of "the seal saw a stale premise and mode was off" — the write went
@@ -43,11 +57,20 @@ export interface SealDecisionRecord {
 
 export interface SealTotals {
 	decisions: number;
+	/** Every refusal, whatever the reason. `readonlyBlocks ⊆ blocked`. */
 	blocked: number;
+	/**
+	 * Refusals whose reason was a stale premise. This is the number the moat
+	 * judgment reads — a protected-path refusal is not evidence that the
+	 * premise ledger works.
+	 */
+	premiseBlocked: number;
+	/** Refusals caused by `protection.readonlyAreas`. */
+	readonlyBlocks: number;
 	warned: number;
 	/** Decisions that let the write through with no predicate match. */
 	passed: number;
-	/** Decisions where the predicate matched, whatever the mode did about it. */
+	/** Stale-premise matches, whatever the mode did about them. */
 	hits: number;
 	/** Hits that were let through because the seal was warn or off. */
 	hitsAllowed: number;
@@ -63,6 +86,10 @@ function isDecision(value: unknown): value is SealDecision {
 
 function isMode(value: unknown): value is SealMode {
 	return value === "block" || value === "warn" || value === "off";
+}
+
+function isKind(value: unknown): value is SealKind {
+	return value === "stale_premise" || value === "readonly_area";
 }
 
 /** Read one `seal.decided` payload back, tolerating older or partial shapes. */
@@ -87,15 +114,17 @@ export function readSealRecord(
 			)
 		: [];
 	const mode = isMode(payload.mode) ? payload.mode : "block";
+	const hit =
+		typeof payload.hit === "boolean"
+			? payload.hit
+			: // Older records had no `hit`; a non-empty match set implies one.
+				matched.length > 0 || payload.decision !== "pass";
 	return {
 		writer: typeof payload.writer === "string" ? payload.writer : null,
 		path: typeof payload.path === "string" ? payload.path : "",
 		decision: payload.decision,
-		hit:
-			typeof payload.hit === "boolean"
-				? payload.hit
-				: // Older records had no `hit`; a non-empty match set implies one.
-					matched.length > 0 || payload.decision !== "pass",
+		kind: isKind(payload.kind) ? payload.kind : hit ? "stale_premise" : null,
+		hit,
 		matchedDeclarations: matched,
 		mode,
 		effectiveMode: isMode(payload.effectiveMode) ? payload.effectiveMode : mode,
@@ -114,6 +143,10 @@ export function readSealRecord(
  * downgraded state persists until the writer either clears the stale premise
  * (no more match) or moves on to a clean file.
  *
+ * Protected-path refusals are skipped rather than counted: they are not
+ * premise hits, and they must not be able to push a writer into (or out of)
+ * the stale-premise downgrade.
+ *
  * The streak is per writer: one writer repeatedly hitting the same seal is a
  * fact about that writer's situation, not about the project.
  */
@@ -125,6 +158,9 @@ export function consecutiveHitStreak(
 	for (let index = events.length - 1; index >= 0; index -= 1) {
 		const record = readSealRecord(events[index]!);
 		if (!record || record.writer !== writer) {
+			continue;
+		}
+		if (record.kind === "readonly_area") {
 			continue;
 		}
 		if (!record.hit) {
@@ -140,6 +176,8 @@ export function foldSealDecisions(events: WorkbenchEvent[]): SealTotals {
 	const totals: SealTotals = {
 		decisions: 0,
 		blocked: 0,
+		premiseBlocked: 0,
+		readonlyBlocks: 0,
 		warned: 0,
 		passed: 0,
 		hits: 0,
@@ -158,7 +196,10 @@ export function foldSealDecisions(events: WorkbenchEvent[]): SealTotals {
 		if (record.downgraded) {
 			totals.downgraded += 1;
 		}
-		if (record.hit) {
+		if (record.kind === "readonly_area") {
+			totals.readonlyBlocks += 1;
+		}
+		if (record.hit && record.kind === "stale_premise") {
 			totals.hits += 1;
 			if (record.decision !== "block") {
 				totals.hitsAllowed += 1;
@@ -166,6 +207,9 @@ export function foldSealDecisions(events: WorkbenchEvent[]): SealTotals {
 		}
 		if (record.decision === "block") {
 			totals.blocked += 1;
+			if (record.kind === "stale_premise") {
+				totals.premiseBlocked += 1;
+			}
 		} else if (record.decision === "warn") {
 			totals.warned += 1;
 		} else if (!record.hit) {

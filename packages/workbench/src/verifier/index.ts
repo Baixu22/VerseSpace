@@ -76,17 +76,41 @@ function execute(
 }
 
 /**
+ * Timeout precedence: the checkpoint's own `verification.timeout`, then the
+ * caller's default (`thresholds.checkpointTimeout`, passed by the runtime),
+ * then the module constant. Kept pure so the precedence is testable without
+ * spawning a process.
+ */
+export function resolveTimeoutSeconds(
+	verification: VerificationStrategy | undefined,
+	defaultTimeoutSeconds?: number,
+): number {
+	return (
+		verification?.timeout ??
+		defaultTimeoutSeconds ??
+		DEFAULT_VERIFICATION_TIMEOUT_SECONDS
+	);
+}
+
+/**
  * The Verifier (skeleton module 3): run one checkpoint's verification inside
  * the workspot worktree. Strategy dispatch:
  * - test / type-check / build → spawn the command (or the strategy default),
  *   judge by exit code (`expectedExitCode`, default 0), enforce the timeout
- *   (default 5 minutes, hard-kill on expiry);
+ *   (hard-kill on expiry);
  * - human-review → needs_human, nothing executes;
  * - no strategy → skipped.
+ *
+ * Timeout precedence: the checkpoint's own `verification.timeout` wins, then
+ * the caller's `defaultTimeoutSeconds` (the runtime passes
+ * `thresholds.checkpointTimeout`), then `DEFAULT_VERIFICATION_TIMEOUT_SECONDS`.
+ * Before P0-2 the middle step did not exist, so `checkpointTimeout` in
+ * `workbench.yaml` changed nothing.
  */
 export async function runVerification(
 	verification: VerificationStrategy | undefined,
 	cwd: string,
+	defaultTimeoutSeconds?: number,
 ): Promise<VerifyResult> {
 	if (!verification) {
 		return {
@@ -100,8 +124,10 @@ export async function runVerification(
 
 	const command =
 		verification.command ?? DEFAULT_COMMANDS[verification.strategy];
-	const timeoutSeconds =
-		verification.timeout ?? DEFAULT_VERIFICATION_TIMEOUT_SECONDS;
+	const timeoutSeconds = resolveTimeoutSeconds(
+		verification,
+		defaultTimeoutSeconds,
+	);
 	const expectedExitCode = verification.expectedExitCode ?? 0;
 
 	const { timedOut, exitCode, output } = await execute(
