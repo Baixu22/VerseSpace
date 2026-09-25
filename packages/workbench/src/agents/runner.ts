@@ -26,6 +26,34 @@ export {
 } from "./session";
 export { describeStreamLine, readAgentView } from "./view";
 
+/**
+ * One captured output line into the session's JSONL log.
+ *
+ * TF-0269 (OPEN-5): this was `appendFile(...).catch(() => {})`. A transcript that
+ * stopped accepting lines was indistinguishable from an agent with nothing to
+ * say — and the transcript *is* this lane's deliverable. It still does not fail
+ * the run (the child is already going and killing it over a log write would be
+ * worse), but it says so.
+ *
+ * Exported so the failure branch is testable on every platform: putting a
+ * directory at `logFile` makes `appendFile` fail deterministically, with no
+ * permission fiddling and no race.
+ */
+export async function appendAgentLogLine(
+	logFile: string,
+	kind: "out" | "err",
+	line: string,
+): Promise<void> {
+	try {
+		await appendFile(logFile, `${JSON.stringify({ kind, line })}\n`, "utf8");
+	} catch (error) {
+		console.error(
+			`[agent] 输出日志写入失败（${logFile}），该行不会出现在 transcript 里:`,
+			error,
+		);
+	}
+}
+
 /** One batch per workspot, across CLI and HTTP processes. */
 export async function startAgent(
 	bb: Blackboard,
@@ -140,9 +168,7 @@ async function startAgentLocked(
 	// output streams to the JSONL log as lines arrive — nothing accumulates
 	// unbounded in memory
 	const logLine = (kind: "out" | "err") => (line: string) =>
-		appendFile(logFile, `${JSON.stringify({ kind, line })}\n`, "utf8").catch(
-			() => {},
-		);
+		appendAgentLogLine(logFile, kind, line);
 
 	const writerId = `agent:${workspot.id}`;
 	await bb.sessions.register(writerId, "agent", command, {

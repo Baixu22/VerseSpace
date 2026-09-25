@@ -6,7 +6,12 @@ import { openBlackboard } from "../blackboard";
 import { emptyLaneMetrics, foldUsage } from "../blackboard/metrics";
 import { initWorkbench } from "../commands/init";
 import type { AgentSession } from "./runner";
-import { describeStreamLine, readAgentView, startAgent } from "./runner";
+import {
+	appendAgentLogLine,
+	describeStreamLine,
+	readAgentView,
+	startAgent,
+} from "./runner";
 import { emptyUsage } from "./usage";
 
 async function makeProject(): Promise<{
@@ -287,4 +292,31 @@ describe("agent runner", () => {
 			await cleanup();
 		}
 	}, 30_000);
+});
+
+// TF-0269 (OPEN-5)：transcript 就是这条车道的交付物。写不进去以前完全静默——
+// 「日志停了」与「agent 什么都没说」在报告里长得一模一样。
+describe("agent 输出日志的失败可见性（TF-0269）", () => {
+	test("日志路径不可写时点名，且不把异常抛给流回调", async () => {
+		const { projectDir, cleanup } = await makeProject();
+		const originalError = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		try {
+			// 把目录放在日志路径上：appendFile 在任何平台都确定性失败，
+			// 不用改权限、不靠竞态。
+			const asDir = join(projectDir, "log-is-a-directory.jsonl");
+			await mkdir(asDir, { recursive: true });
+
+			await appendAgentLogLine(asDir, "out", "这一行写不进去");
+
+			expect(errors.join("\n")).toContain("输出日志写入失败");
+			expect(errors.join("\n")).toContain("log-is-a-directory.jsonl");
+		} finally {
+			console.error = originalError;
+			await cleanup();
+		}
+	});
 });

@@ -219,8 +219,10 @@ export async function ensureClaudeSession(
  * explaining, and "the agent finished" is not one of them. The exception is an
  * exit that follows a broken pipe, because that combination says the pipe
  * failure was real after all.
+ *
+ * Exported so its failure branch can be driven directly (TF-0269 / OPEN-8).
  */
-async function reportLiveness(
+export async function reportLiveness(
 	context: ThreadContext,
 	id: string,
 	verdict: LivenessVerdict,
@@ -228,14 +230,24 @@ async function reportLiveness(
 	const turn = context.live.get(id)?.turn ?? null;
 	const unremarkable = verdict.kind === "exited" && !verdict.afterPipeBreak;
 	if (!unremarkable) {
-		await context.bb.events
-			.append({
+		// TF-0269 (OPEN-8): this was a bare `.catch(() => {})`. The verdict also
+		// reaches the turn below, but the event is its only *persistent* record —
+		// so a failed append meant the silence left no trace anywhere. Still
+		// best-effort (a wedged CLI must not be made worse by bookkeeping), now
+		// named instead of dropped.
+		try {
+			await context.bb.events.append({
 				timestamp: new Date().toISOString(),
 				source: "chat",
 				type: "agent_liveness",
 				payload: { threadId: id, ...verdict },
-			})
-			.catch(() => {});
+			});
+		} catch (error) {
+			console.error(
+				`[chat] 线程 ${id} 的 agent_liveness 事件写入失败（${verdict.kind} 判定不会留在事件日志里）:`,
+				error,
+			);
+		}
 	}
 	if (verdict.kind === "stalled") {
 		console.warn(
