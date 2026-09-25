@@ -97,6 +97,16 @@ stages: [verify, release]
     - biome.json
     - scripts/**
     - apps/workbench-ui/**
+  # The browser suite drives a real `workbench ui` backend, so backend source
+  # counts as a change for this job even though the spec lives in apps/.
+  workbench_ui_e2e:
+    - .gitlab-ci.yml
+    - package.json
+    - bun.lock
+    - biome.json
+    - scripts/**
+    - apps/workbench-ui/**
+    - packages/workbench/src/**
   context_rot:
     - .gitlab-ci.yml
     - package.json
@@ -182,6 +192,35 @@ workbench-ui-test:
   script:
     - bun run test:workbench-ui
     - bun run build:ui
+
+# Browser E2E (TF-0255, acceptance item 2). Real Chromium + real Vite frontend
+# against a real `workbench ui` backend on an isolated workspace.
+#
+# The job is a thin wrapper around scripts/win/e2e-browser.ps1 on purpose: the
+# sequence (init an isolated workspace → configure the opt-in lane → start the
+# backend and Vite on movable ports → seed the spec's two conversations → run
+# Playwright → tear the process tree down) is the one that was executed on this
+# host before the job existed, rather than a draft nobody has run. The script
+# exits with Playwright's code.
+#
+# No model credentials are needed: the opt-in settings test only checks that the
+# settings API persists the choice, it never calls a provider.
+#
+# Browsers are NOT installed here — this self-hosted runner is the developer's
+# machine and `%LOCALAPPDATA%\ms-playwright` already has them. If the runner ever
+# runs as a different user, add `-InstallBrowsers` to the script line.
+#
+# Heavy (Vite dev server + Chromium), so it shares `resource_group: heavy`.
+workbench-ui-e2e:
+  extends: .bun-setup
+  stage: verify
+  timeout: 25m
+  resource_group: heavy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, workbench_ui_e2e]
+  script:
+    - ./scripts/win/e2e-browser.ps1
 
 context-rot-test:
   extends: .bun-setup

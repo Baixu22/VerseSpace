@@ -15,9 +15,12 @@ export default defineConfig({
 		},
 	},
 	server: {
-		port: 5188,
+		// TF-0255: the browser-E2E runner starts its own backend and Vite, so both
+		// ports have to be movable — a fixed 7700/5188 collides with whatever the
+		// developer already has running. Defaults are unchanged.
+		port: Number(process.env.WORKBENCH_UI_DEV_PORT ?? 5188),
 		proxy: {
-			"/api": "http://127.0.0.1:7700",
+			"/api": process.env.WORKBENCH_API_TARGET ?? "http://127.0.0.1:7700",
 		},
 	},
 });

@@ -112,4 +112,12 @@ test("dropdown choices persist through the actual settings API", async ({
 	await expect(
 		page.getByRole("combobox", { name: "推理力度", exact: true }),
 	).toHaveText("默认");
+
+	// TF-0255: put the workspace back the way this lane found it. The lane's
+	// precondition IS `effort: high`, so the assertions above consume it — a
+	// second run on the same workspace then fails at line 108 with "默认" instead
+	// of "高" (measured 2026-09-25). Restoring makes the opt-in test re-runnable,
+	// which a CI job that reuses a workspace needs. The assertions above are
+	// unchanged; this only undoes their side effect.
+	expect((await select("推理力度", "高")).effort).toBe("high");
 });
