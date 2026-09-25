@@ -5,6 +5,33 @@ import { collectRestoreView } from "../chat/restore-view";
 import type { ChatThreads, RunEvent } from "../chat/threads";
 
 import { evidenceResponse } from "./evidence-route";
+
+/**
+ * TF-0256 (F-04): parse a JSON request body that must be an object. Before
+ * this, create/switch/resume-note-consume/resume-card-shown used
+ * `request.json().catch(() => ({}))` — a malformed body, an array or a bare
+ * `null` all collapsed to `{}` and the route then executed its default action
+ * (creating an untitled thread, writing an incomplete switch observation).
+ * A malformed or non-object body is a client error, not a default: return 400
+ * and let the caller short-circuit so no event is written and no state moves.
+ * `fork`/`resume-action` already validate a required field and `restore` uses
+ * safeParse, so they are out of scope and keep their own shapes.
+ */
+async function jsonObjectBody(
+	request: Request,
+): Promise<Record<string, unknown> | Response> {
+	let parsed: unknown;
+	try {
+		parsed = await request.json();
+	} catch {
+		return Response.json({ error: "请求体不是合法 JSON" }, { status: 400 });
+	}
+	if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+		return Response.json({ error: "请求体必须是 JSON 对象" }, { status: 400 });
+	}
+	return parsed as Record<string, unknown>;
+}
+
 export async function chatRoute(
 	bb: Blackboard,
 	chat: ChatThreads,
@@ -16,10 +43,9 @@ export async function chatRoute(
 	}
 
 	if (url.pathname === "/api/chat/threads" && request.method === "POST") {
-		const body = (await request.json().catch(() => ({}))) as {
-			title?: string;
-		};
-		return Response.json(await chat.create(body.title));
+		const body = await jsonObjectBody(request);
+		if (body instanceof Response) return body;
+		return Response.json(await chat.create(body.title as string | undefined));
 	}
 
 	const chatMatch = url.pathname.match(
@@ -101,10 +127,12 @@ export async function chatRoute(
 			return Response.json(await chat.leave(threadId));
 		}
 		if (sub === "switch" && request.method === "POST") {
-			const body = (await request.json().catch(() => ({}))) as {
-				fromThreadId?: string | null;
-			};
-			await chat.recordSwitch(body.fromThreadId ?? null, threadId);
+			const body = await jsonObjectBody(request);
+			if (body instanceof Response) return body;
+			await chat.recordSwitch(
+				(body.fromThreadId as string | null | undefined) ?? null,
+				threadId,
+			);
 			return Response.json({ ok: true });
 		}
 		if (sub === "restore" && request.method === "POST") {
@@ -122,13 +150,13 @@ export async function chatRoute(
 			return Response.json({ ok: true });
 		}
 		if (sub === "resume-note/consume" && request.method === "POST") {
-			const body = (await request.json().catch(() => ({}))) as {
-				surface?: string;
-			};
+			const body = await jsonObjectBody(request);
+			if (body instanceof Response) return body;
+			const surface = body.surface;
 			await chat.recordResumeNoteConsumed(
 				threadId,
-				typeof body.surface === "string" && body.surface.trim()
-					? body.surface.slice(0, 80)
+				typeof surface === "string" && surface.trim()
+					? surface.slice(0, 80)
 					: "card",
 			);
 			return Response.json({ ok: true });
@@ -140,9 +168,8 @@ export async function chatRoute(
 		}
 		if (sub === "resume-card/shown" && request.method === "POST") {
 			// TF-0199：恢复卡展示观测——fit 指标 7 的分母（渲染了才计数）。
-			const body = (await request.json().catch(() => ({}))) as {
-				branchRows?: unknown;
-			};
+			const body = await jsonObjectBody(request);
+			if (body instanceof Response) return body;
 			const rows = Array.isArray(body.branchRows)
 				? body.branchRows.filter(
 						(row): row is string => typeof row === "string",
