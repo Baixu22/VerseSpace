@@ -4,10 +4,24 @@
  * would have put them on a panel, is deprecated). A green route test does
  * not mean the panel can dispatch.
  */
+import { z } from "zod";
 import type { Blackboard } from "../blackboard";
 import { publicChatConfig } from "../chat/credentials";
 
 import { workbenchConfigSchema } from "../types/config";
+
+/**
+ * TF-0261 (stage B): the feedback route used to write whatever the client sent
+ * straight into the event log (`payload: body`), so a malformed or hostile body
+ * became an audit record and a missing field was silently accepted. It is a
+ * schema now: unknown fields are dropped, and a missing or mistyped field is a
+ * 400 with no event — an audit fact is never invented from a bad request.
+ */
+const feedbackSchema = z.object({
+	threadId: z.string().min(1),
+	messageId: z.string().min(1),
+	kind: z.enum(["positive", "negative"]),
+});
 
 export async function workspaceRoute(
 	bb: Blackboard,
@@ -76,16 +90,20 @@ export async function workspaceRoute(
 	}
 
 	if (url.pathname === "/api/chat/feedback" && request.method === "POST") {
-		const body = (await request.json()) as {
-			threadId?: string;
-			messageId?: string;
-			kind?: string;
-		};
+		const parsed = feedbackSchema.safeParse(
+			await request.json().catch(() => null),
+		);
+		if (!parsed.success) {
+			return Response.json(
+				{ ok: false, reason: "反馈字段无效" },
+				{ status: 400 },
+			);
+		}
 		await bb.events.append({
 			timestamp: new Date().toISOString(),
 			source: "human",
 			type: "feedback",
-			payload: body,
+			payload: parsed.data,
 		});
 		return Response.json({ ok: true });
 	}
