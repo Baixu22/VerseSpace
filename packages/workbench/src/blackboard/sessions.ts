@@ -135,12 +135,23 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 		async list(): Promise<Writer[]> {
 			const names = await safeReaddir(paths.sessions);
 			const writers = await Promise.all(
-				names.map((name) =>
-					readYamlFile(
-						join(paths.sessions, name, "writer.yaml"),
-						writerSchema,
-					).catch(() => null),
-				),
+				names.map(async (name) => {
+					try {
+						return await readYamlFile(
+							join(paths.sessions, name, "writer.yaml"),
+							writerSchema,
+						);
+					} catch (err) {
+						// 一个读不出来的写者会静默从名册里消失：写集重叠判定随之少一个
+						// 来源，而界面上看不出区别。与 recentGeneratedPaths 同一条口径——
+						// 降级可以，静默不行（TF-0261 sweep，2026-09-25）。
+						console.error(
+							`[sessions] list: 写者 ${name} 无法读取（已从名册中省略）:`,
+							err,
+						);
+						return null;
+					}
+				}),
 			);
 			return writers
 				.filter((writer): writer is Writer => writer !== null)

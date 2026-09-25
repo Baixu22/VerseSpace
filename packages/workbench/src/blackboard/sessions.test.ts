@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { makeTempWorkbench } from "../test/fixtures";
 
 describe("sessions region (R1 writers)", () => {
@@ -114,6 +116,36 @@ describe("sessions region (R1 writers)", () => {
 			// human writes are NOT agent claims
 			expect(claimed.has("D:/proj/human.ts")).toBe(false);
 		} finally {
+			await cleanup();
+		}
+	});
+
+	// TF-0261 sweep: an unreadable writer.yaml used to vanish from the roster
+	// with no trace at all, while the sibling attribution path
+	// (recentGeneratedPaths) had already been made to name its failure.
+	test("list: an unreadable writer is omitted AND named, not silently dropped", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		const originalError = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		try {
+			await bb.sessions.register("t-readable", "agent", "可读");
+			const corrupt = join(bb.paths.sessions, "t-corrupt");
+			await mkdir(corrupt, { recursive: true });
+			await writeFile(
+				join(corrupt, "writer.yaml"),
+				"id: t-corrupt\nkind: [unclosed\n",
+				"utf8",
+			);
+
+			const list = await bb.sessions.list();
+			expect(list.map((w) => w.id)).toEqual(["t-readable"]);
+			// the omission is named on stderr — "degraded" is allowed, "silent" is not
+			expect(errors.join("\n")).toContain("t-corrupt");
+		} finally {
+			console.error = originalError;
 			await cleanup();
 		}
 	});
