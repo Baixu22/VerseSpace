@@ -1,33 +1,8 @@
 import type { ChatConfig } from "../../chat/config";
+// TF-0255: the provider table is shared with the browser spec (e2e/dropdown.spec.ts)
+// so the assertion cannot drift from what this component renders.
+import { PROVIDERS } from "../../chat/providers";
 import { Select } from "../ui/select";
-
-const PROVIDERS = [
-	{
-		value: "claude",
-		label: "Claude Code · 本机",
-		description: "使用本机登录信息，无需 API Key。",
-	},
-	{
-		value: "codex",
-		label: "Codex · 本机",
-		description: "监督本机 codex CLI（app-server 协议），同样留下工具足迹。",
-	},
-	{
-		value: "openai-chat",
-		label: "OpenAI · Chat Completions",
-		description: "支持 OpenAI 及兼容服务。",
-	},
-	{
-		value: "openai-responses",
-		label: "OpenAI · Responses",
-		description: "支持推理力度与 Responses 接口。",
-	},
-	{
-		value: "anthropic",
-		label: "Anthropic · Messages",
-		description: "通过 Anthropic 接口使用 Claude。",
-	},
-] as const;
 
 const EFFORTS = [
 	{ value: "default", label: "默认", description: "由提供商决定推理力度。" },

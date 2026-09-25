@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { PROVIDERS } from "../src/chat/providers";
 
 for (const viewport of [
 	{ width: 1440, height: 1000 },
@@ -29,7 +30,9 @@ for (const viewport of [
 				Number.parseFloat(getComputedStyle(element).animationDuration),
 			),
 		).toBe(0.14);
-		await expect(menu.getByRole("option")).toHaveCount(4);
+		// TF-0255: derived from the same table the panel renders — never a copy
+		// of the count (this said 4 while the panel already offered 5).
+		await expect(menu.getByRole("option")).toHaveCount(PROVIDERS.length);
 		await expect(menu.getByRole("option", { selected: true })).toHaveText(
 			new RegExp(original),
 		);
