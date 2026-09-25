@@ -73,10 +73,12 @@ test("planning controls never submit the draft", async ({ page }) => {
 		(thread) =>
 			!thread.archived && ["default", "plan"].includes(thread.permissionMode),
 	);
-	test.skip(
-		!candidate,
-		"Requires a local conversation in default or plan mode.",
-	);
+	// TF-0255 (item 3)：缺前置数据是 **fail with reason**，不是静默 skip。
+	// 静默 skip 会让「这个场景从没跑过」与「这个场景跑过了」在报告里长得一样。
+	expect(
+		candidate,
+		"Requires a local conversation in default or plan mode（缺前置数据：fail with reason，不静默 skip）",
+	).toBeDefined();
 	const row = page.locator(`aside [data-lineage-id="${candidate!.id}"]`);
 	await row.getByRole("button").first().click();
 	await expect(row).toHaveAttribute("data-active", "true");
@@ -152,16 +154,26 @@ test("reduced motion removes drawer animation", async ({ page }) => {
 test("switching away parks a draft and restoring it keeps the text", async ({
 	page,
 }) => {
+	const threadsReady = page.waitForResponse(
+		(response) =>
+			new URL(response.url()).pathname === "/api/chat/threads" &&
+			response.request().method() === "GET",
+	);
 	await page.goto("/");
 	await expect(
 		page.getByRole("textbox", { name: "消息", exact: true }),
 	).toBeVisible();
+	const threads = (await (await threadsReady).json()) as Array<{
+		archived?: boolean;
+	}>;
+	// TF-0255 (item 3)：同上——缺两个会话是 fail with reason，不是静默 skip。
+	// 先等 API 的答案再断言，否则空工作区会以一个超时失败收场，而不是这条理由。
+	expect(
+		threads.filter((thread) => !thread.archived).length,
+		"Requires two existing local conversations（缺前置数据：fail with reason，不静默 skip）",
+	).toBeGreaterThanOrEqual(2);
 	const rows = page.locator("aside [data-lineage-id]");
 	await expect(rows.first()).toBeVisible();
-	test.skip(
-		(await rows.count()) < 2,
-		"Requires two existing local conversations.",
-	);
 	const draft = "E2E 草稿恢复：保留输入，不发送消息。";
 	await page.getByRole("textbox", { name: "消息", exact: true }).fill(draft);
 	await rows.nth(1).getByRole("button").first().click();
