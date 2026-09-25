@@ -9,6 +9,8 @@ export interface UiState {
 	version: string;
 	project: string;
 	config: unknown;
+	/** Set when `.workbench/workbench.yaml` could not be read (TF-0260). */
+	configError: string | null;
 	goals: unknown[];
 	queue: string[];
 	workspots: unknown[];
@@ -29,12 +31,30 @@ export interface UiState {
 	interfaces: unknown[];
 	decisions: unknown[];
 	events: unknown[];
-	doctor: { ok: boolean; issues: unknown[] };
+	doctor: { ok: boolean; issues: unknown[]; error?: string };
+}
+
+/**
+ * TF-0260 (F-06): a corrupt `workbench.yaml` must not collapse the whole state
+ * surface into a bare 500 — the failure is data, so `/api/state` can report
+ * "config unreadable" instead of looking like a dead server.
+ */
+async function settle<T>(
+	run: () => Promise<T>,
+): Promise<{ ok: true; value: T } | { ok: false; error: string }> {
+	try {
+		return { ok: true, value: await run() };
+	} catch (error) {
+		return {
+			ok: false,
+			error: error instanceof Error ? error.message : String(error),
+		};
+	}
 }
 
 export async function collectState(bb: Blackboard): Promise<UiState> {
 	const [
-		config,
+		configResult,
 		goals,
 		queue,
 		workspots,
@@ -42,9 +62,9 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		interfaces,
 		decisions,
 		events,
-		doctor,
+		doctorResult,
 	] = await Promise.all([
-		bb.config.load(),
+		settle(() => bb.config.load()),
 		bb.goals.list(),
 		bb.state.queue.get(),
 		bb.state.workspots.list(),
@@ -52,7 +72,7 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		bb.interfaces.list(),
 		bb.decisions.list(),
 		bb.events.tail(200),
-		runDoctor(bb),
+		settle(() => runDoctor(bb)),
 	]);
 
 	// map every checkpoint to its workspot so lane cards can show their own
@@ -102,10 +122,16 @@ export async function collectState(bb: Blackboard): Promise<UiState> {
 		agentSessions[workspot.id] = await readAgentView(bb, workspot.id);
 	}
 
+	const config = configResult.ok ? configResult.value : null;
+	const doctor = doctorResult.ok
+		? doctorResult.value
+		: { ok: false, issues: [], error: doctorResult.error };
+
 	return {
 		version: WORKBENCH_VERSION,
 		project: bb.projectRoot,
-		config: { ...config, chat: publicChatConfig(config.chat) },
+		config: config ? { ...config, chat: publicChatConfig(config.chat) } : null,
+		configError: configResult.ok ? null : configResult.error,
 		goals,
 		queue,
 		workspots,

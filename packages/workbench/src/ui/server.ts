@@ -4,13 +4,11 @@ import type { Blackboard } from "../blackboard";
 
 import { ChatThreads } from "../chat/threads";
 
-import { drainPremiseQueue } from "../runtime/delivery";
-import { reconcilePremises } from "../runtime/premises";
-
 import { WORKBENCH_VERSION } from "../version";
 
 import { FALLBACK_PAGE, readUiAsset, resolveUiAssets } from "./assets";
 import { chatRoute } from "./chat-routes";
+import { newReconcileStats, runReconcileTick } from "./reconcile-loop";
 import { collectState } from "./state";
 import { tribunalRoute } from "./tribunal-routes";
 import { workspaceRoute } from "./workspace-routes";
@@ -22,10 +20,20 @@ type UiServer = Bun.Server<undefined> & {
 	authToken: string;
 	handle: (request: Request) => Promise<Response>;
 };
+
+export interface UiServerOptions {
+	/**
+	 * Background reconcile period. Tests drive the tick deterministically at a
+	 * short period instead of sleeping the production 15s (TF-0260).
+	 */
+	reconcileIntervalMs?: number;
+}
+
 export async function createUiServer(
 	bb: Blackboard,
 	port: number,
 	uiDirOverride?: string,
+	options: UiServerOptions = {},
 ): Promise<UiServer> {
 	const assets = await resolveUiAssets(uiDirOverride);
 
@@ -38,9 +46,7 @@ export async function createUiServer(
 
 	const token = randomUUID();
 
-	let reconcileFailures = 0;
-
-	let lastReconcileError: string | null = null;
+	const reconcileStats = newReconcileStats();
 
 	async function handle(request: Request): Promise<Response> {
 		const url = new URL(request.url);
@@ -67,8 +73,12 @@ export async function createUiServer(
 			return Response.json({
 				...state,
 				reconcile: {
-					failures: reconcileFailures,
-					lastError: lastReconcileError,
+					failures: reconcileStats.reconcileFailures,
+					lastError: reconcileStats.lastReconcileError,
+					// TF-0260 (F-06): a corrupt workbench.yaml is its own identity,
+					// not folded into the generic reconcile failure count.
+					configLoadFailures: reconcileStats.configLoadFailures,
+					lastConfigError: reconcileStats.lastConfigError,
 				},
 			});
 		}
@@ -90,8 +100,17 @@ export async function createUiServer(
 			if (index) {
 				return index;
 			}
+			// No asset resolved and no index to fall back on: the UI build is
+			// missing or corrupt. Return a non-2xx with a machine-readable
+			// marker so a health probe can tell "UI assets failed to load" from
+			// "UI healthy" — a 200 shell would look identical to success
+			// (TF-0257 / F-05).
 			return new Response(FALLBACK_PAGE, {
-				headers: { "content-type": "text/html; charset=utf-8" },
+				status: 503,
+				headers: {
+					"content-type": "text/html; charset=utf-8",
+					"x-workbench-ui-assets": "missing",
+				},
 			});
 		}
 
@@ -109,36 +128,13 @@ export async function createUiServer(
 		idleTimeout: 120,
 	});
 
-	const RECONCILE_INTERVAL_MS = 15_000;
+	const RECONCILE_INTERVAL_MS = options.reconcileIntervalMs ?? 15_000;
 
+	// TF-0260 (F-06): the tick body lives in reconcile-loop.ts so the config-read
+	// failure has its own identity (counter + last error + one-shot event) instead
+	// of being swallowed by `bb.config.load().catch(() => null)` here.
 	const reconcileTimer = setInterval(() => {
-		void (async () => {
-			try {
-				await reconcilePremises(bb);
-			} catch (err) {
-				reconcileFailures++;
-				lastReconcileError = err instanceof Error ? err.message : String(err);
-				console.error(
-					`[workbench-ui] reconcilePremises failed (#${reconcileFailures}):`,
-					err,
-				);
-			}
-			const config = await bb.config.load().catch(() => null);
-			try {
-				await drainPremiseQueue(bb, {
-					tokenBudget: config?.chat.noticeTokenBudget,
-					deliver: (writerId, message, noticeId) =>
-						chat.notifySession(writerId, message, noticeId),
-				});
-			} catch (err) {
-				reconcileFailures++;
-				lastReconcileError = err instanceof Error ? err.message : String(err);
-				console.error(
-					`[workbench-ui] drainPremiseQueue failed (#${reconcileFailures}):`,
-					err,
-				);
-			}
-		})();
+		void runReconcileTick(bb, chat, reconcileStats);
 	}, RECONCILE_INTERVAL_MS);
 
 	const superStop = server.stop.bind(server);
