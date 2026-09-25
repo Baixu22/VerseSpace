@@ -192,6 +192,31 @@ test("real policy: docs/handoff is uploadable, docs/ root is not", () => {
 	);
 });
 
+test("real policy: E2E artifacts under a nested package are local-only", () => {
+	// 2026-09-25: the first real Chromium run wrote apps/workbench-ui/test-results/,
+	// and the gate reported 7 useful-not-uploaded violations. The rule existed but
+	// its globs were root-anchored (`test-results/**`), so a nested package never
+	// matched. E2E 现场 is process-evidence (ADR-0020) and is never uploaded.
+	const real = loadPolicy({
+		policyPath: join(HERE, "policy.json"),
+		inventoryPath: join(HERE, "legacy-local-docs.json"),
+	});
+	const compiled = compilePolicy(real);
+
+	for (const path of [
+		"apps/workbench-ui/test-results/.last-run.json",
+		"apps/workbench-ui/test-results/case/trace.zip",
+		"apps/workbench-ui/test-results/case/test-failed-1.png",
+		"apps/workbench-ui/test-results/case/error-context.md",
+		"apps/workbench-ui/playwright-report/index.html",
+		"test-results/at-the-root.json",
+	]) {
+		const verdict = classifyPath(compiled, path);
+		assert.equal(verdict.class, "process-evidence", path);
+		assert.equal(real.classes[verdict.class].upload, false, path);
+	}
+});
+
 test("real policy: the frozen inventory may only shrink", () => {
 	// Guards the doctrine rather than the code: an entry that an explicit rule
 	// now covers is dead weight, and the list growing is how "有用未传" would

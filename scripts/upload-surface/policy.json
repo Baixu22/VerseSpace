@@ -94,9 +94,16 @@
 			"why": "运行日志与临时输出"
 		},
 		{
-			"globs": ["playwright-report/**", "test-results/**", "test-results-*/**"],
+			"globs": [
+				"playwright-report/**",
+				"**/playwright-report/**",
+				"test-results/**",
+				"**/test-results/**",
+				"test-results-*/**",
+				"**/test-results-*/**"
+			],
 			"class": "process-evidence",
-			"why": "Playwright 报告与 trace/video"
+			"why": "Playwright 报告与 trace/video。**/ 变体是必须的：E2E 跑在 apps/workbench-ui 下，根锚定的 glob 匹配不到嵌套包——2026-09-25 第一次真跑 Chromium 时门禁报出 7 条 useful-not-uploaded，就是这条漏的"
 		},
 		{
 			"globs": [
