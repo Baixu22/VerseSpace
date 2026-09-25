@@ -1,5 +1,21 @@
 # Workbench UI E2E
 
+## Test categories (TF-0258 / F-07)
+
+Three surfaces, three reports — never merged into one "UI green":
+
+| Category | Where | What a green run proves |
+| --- | --- | --- |
+| Route contract | `packages/workbench/src/ui/*.test.ts`, `scheduler/dispatch-guard.test.ts` | the HTTP endpoint behaves — **not** that the dashboard reaches it |
+| Browser E2E | this directory (`bun run test:e2e`) | a real Chromium drives the real Vite UI against the real backend |
+| Real-provider E2E | `packages/workbench` `bun run test:live` | a real model/provider completes a turn |
+
+A route-contract green is **not** product evidence: `/api/sync`, `/api/dispatch`,
+`/api/agent/run` and `/api/review` are CLI-equivalent endpoints the SPA never
+calls (`packages/workbench/src/ui/workspace-routes.ts:1-6`, TF-0244 deprecated).
+The provider option count in `dropdown.spec.ts` is derived from
+`../src/chat/providers.ts` (TF-0255) so it cannot drift from the panel again.
+
 These tests use the real browser, Vite frontend, and Workbench HTTP service. They do not mock API routes or inject store state, and they do not send model requests or change provider settings.
 
 Start the backend from the repository root:

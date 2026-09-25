@@ -7,6 +7,12 @@ import { commitOnBranch, makeCommittedRepo } from "../test/git-project";
 import { createUiServer } from "../ui/server";
 import { type DispatchResult, dispatchGoal } from "./dispatch";
 
+/**
+ * TF-0258 (F-07): `/api/dispatch` is a CLI-equivalent endpoint the dashboard
+ * never calls (workspace-routes.ts:1-6). This helper is a ROUTE CONTRACT path —
+ * it proves the endpoint, not a product surface; see the category note at the
+ * top of ui/server.test.ts. Do not count it as "the panel can dispatch".
+ */
 async function dispatchHttp(
 	bb: Blackboard,
 	goalId: string,

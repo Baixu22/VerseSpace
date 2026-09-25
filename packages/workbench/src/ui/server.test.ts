@@ -1,3 +1,19 @@
+/**
+ * HTTP contract tests for the dashboard server — the API, not the browser.
+ *
+ * Category (TF-0258 / F-07): these are ROUTE CONTRACT tests. A green run here
+ * says the endpoint behaves; it does NOT say the dashboard can reach it, and it
+ * must not be merged with the other two surfaces into a single "UI green":
+ *
+ *   1. route contract     — this file + scheduler/dispatch-guard.test.ts
+ *   2. browser E2E        — apps/workbench-ui/e2e (real Chromium + real Vite)
+ *   3. real-provider E2E  — packages/workbench `bun run test:live`
+ *
+ * `/api/sync`, `/api/dispatch`, `/api/agent/run` and `/api/review` are
+ * CLI-equivalent endpoints the SPA never calls (workspace-routes.ts:1-6;
+ * TF-0244 is deprecated), so their coverage here is contract-only by
+ * construction — never product evidence.
+ */
 import { describe, expect, test } from "bun:test";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -44,7 +60,7 @@ describe("resolveUiAssets", () => {
 	});
 });
 
-describe("ui server", () => {
+describe("ui server HTTP contract", () => {
 	test("serves a disk ui dir with SPA fallback and applies sync via POST", async () => {
 		const ws: TempWorkbench = await makeTempWorkbench();
 		const uiDir = await mkdtemp(join(tmpdir(), "workbench-spa-"));
