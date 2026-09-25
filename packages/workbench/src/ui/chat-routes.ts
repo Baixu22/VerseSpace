@@ -2,35 +2,11 @@ import type { Blackboard } from "../blackboard";
 
 import { restoreObservationSchema } from "../chat/restore-timing";
 import { collectRestoreView } from "../chat/restore-view";
+import { resumeNotePatchSchema } from "../chat/thread-resume";
 import type { ChatThreads, RunEvent } from "../chat/threads";
 
 import { evidenceResponse } from "./evidence-route";
-
-/**
- * TF-0256 (F-04): parse a JSON request body that must be an object. Before
- * this, create/switch/resume-note-consume/resume-card-shown used
- * `request.json().catch(() => ({}))` — a malformed body, an array or a bare
- * `null` all collapsed to `{}` and the route then executed its default action
- * (creating an untitled thread, writing an incomplete switch observation).
- * A malformed or non-object body is a client error, not a default: return 400
- * and let the caller short-circuit so no event is written and no state moves.
- * `fork`/`resume-action` already validate a required field and `restore` uses
- * safeParse, so they are out of scope and keep their own shapes.
- */
-async function jsonObjectBody(
-	request: Request,
-): Promise<Record<string, unknown> | Response> {
-	let parsed: unknown;
-	try {
-		parsed = await request.json();
-	} catch {
-		return Response.json({ error: "请求体不是合法 JSON" }, { status: 400 });
-	}
-	if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-		return Response.json({ error: "请求体必须是 JSON 对象" }, { status: 400 });
-	}
-	return parsed as Record<string, unknown>;
-}
+import { jsonObjectBody } from "./json-body";
 
 export async function chatRoute(
 	bb: Blackboard,
@@ -136,9 +112,13 @@ export async function chatRoute(
 			return Response.json({ ok: true });
 		}
 		if (sub === "restore" && request.method === "POST") {
-			const body = restoreObservationSchema.safeParse(
-				await request.json().catch(() => ({})),
-			);
+			// TF-0261 sweep: a malformed body used to collapse to `{}`, which the
+			// all-optional observation schema accepts — the route then appended a
+			// `thread.restored` event that observed nothing. Reject the body
+			// before the schema so a bad request cannot fabricate that fact.
+			const raw = await jsonObjectBody(request);
+			if (raw instanceof Response) return raw;
+			const body = restoreObservationSchema.safeParse(raw);
 			if (!body.success) {
 				return Response.json({ error: "恢复观测字段无效" }, { status: 400 });
 			}
@@ -198,14 +178,17 @@ export async function chatRoute(
 		}
 		if (sub === "resume-note" && request.method === "PATCH") {
 			// TF-0097：用户编辑/确认恢复笔记
-			const body = (await request.json().catch(() => ({}))) as {
-				beats?: {
-					kind: "doing" | "decided" | "shifted" | "next";
-					text: string;
-				}[];
-				confirmed?: boolean;
-			};
-			const result = await chat.setResumeNote(threadId, body);
+			// TF-0261 sweep: this body was an unchecked cast, so `{"beats":"evil"}`
+			// (or any other shape) was persisted verbatim into the thread meta by
+			// setResumeNote — the same "arbitrary payload becomes a durable fact"
+			// defect the feedback route had. Validate before it reaches the store.
+			const raw = await jsonObjectBody(request);
+			if (raw instanceof Response) return raw;
+			const parsed = resumeNotePatchSchema.safeParse(raw);
+			if (!parsed.success) {
+				return Response.json({ error: "恢复笔记字段无效" }, { status: 400 });
+			}
+			const result = await chat.setResumeNote(threadId, parsed.data);
 			if (!result) {
 				return Response.json(
 					{ ok: false, reason: "该线程没有恢复笔记" },

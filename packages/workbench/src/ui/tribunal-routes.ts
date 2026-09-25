@@ -1,5 +1,7 @@
 import type { Blackboard } from "../blackboard";
 
+import { jsonObjectBody } from "./json-body";
+
 /**
  * The tribunal queue in the chat surface (TF-0242).
  *
@@ -61,7 +63,11 @@ export async function tribunalRoute(
 	}
 
 	// shelve: optional minutes; the API clamps to [MIN, MAX] itself.
-	const body = (await request.json().catch(() => ({}))) as { minutes?: number };
+	// TF-0261 sweep: `.catch(() => ({}))` made a malformed body indistinguishable
+	// from the `{}` the UI sends for "shelve with defaults", so a truncated
+	// request shelved the item and answered 200. Reject the body first.
+	const body = await jsonObjectBody(request);
+	if (body instanceof Response) return body;
 	const item = await bb.tribunal.shelve(
 		id,
 		typeof body.minutes === "number" ? body.minutes : undefined,

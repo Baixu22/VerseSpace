@@ -1,7 +1,33 @@
+import { z } from "zod";
 import { clearNotices } from "./notice-queue";
 import type { RestoreObservation } from "./restore-timing";
 import { buildResumeNote, type ResumeBeat, type ResumeNote } from "./resume";
 import type { ThreadContext } from "./thread-context";
+
+/**
+ * TF-0261 (sweep, 2026-09-25): the wire shape of a resume-note patch.
+ *
+ * `setResumeNote` assigns `patch.beats` straight into the durable thread meta,
+ * so the value that reaches it has to be the value the UI is allowed to send.
+ * The route used to cast the request body with no check — `{"beats":"evil"}`
+ * landed in `resumeNote.beats`, which the card then renders. Unknown keys are
+ * stripped (the same tolerant-object policy the other write routes use); the
+ * keys that exist must have the right type.
+ */
+export const resumeNotePatchSchema = z.object({
+	beats: z
+		.array(
+			z.object({
+				kind: z.enum(["doing", "decided", "shifted", "next"]),
+				text: z.string(),
+				refs: z.array(z.string()).optional(),
+			}),
+		)
+		.optional(),
+	confirmed: z.boolean().optional(),
+});
+
+export type ResumeNotePatch = z.infer<typeof resumeNotePatchSchema>;
 
 export async function leave(
 	context: ThreadContext,

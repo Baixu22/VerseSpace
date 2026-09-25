@@ -128,6 +128,49 @@ test("非法裁决项标识返回 400", async () => {
 	}
 });
 
+// TF-0261 sweep: `.catch(() => ({}))` made a truncated body indistinguishable
+// from the `{}` the UI sends for "shelve with defaults" — the item was shelved
+// and the route answered 200.
+test("POST /api/tribunal/:id/shelve 对损坏 body 报 400，且不改状态", async () => {
+	const ws = await makeTempWorkbench();
+	const item = await seedBlocked(ws.bb, "ws-c");
+	const server = await createUiServer(ws.bb, 0);
+	const headers = {
+		"x-workbench-token": server.authToken,
+		"content-type": "application/json",
+	};
+	const base = `http://127.0.0.1:${server.port}/api/tribunal`;
+	try {
+		for (const body of ["{", "not json", "[]", "null", "42"]) {
+			const bad = await fetch(`${base}/${item.id}/shelve`, {
+				method: "POST",
+				headers,
+				body,
+			});
+			expect(bad.status).toBe(400);
+		}
+		// the item is still pending and no shelve event was written
+		const listed = (await (await fetch(base, { headers })).json()) as {
+			items: TribunalItem[];
+		};
+		expect(listed.items.map((i) => i.id)).toContain(item.id);
+		expect(await ws.bb.events.query({ type: "tribunal_shelved" })).toHaveLength(
+			0,
+		);
+
+		// the legitimately-empty object the UI sends still shelves
+		const ok = await fetch(`${base}/${item.id}/shelve`, {
+			method: "POST",
+			headers,
+			body: JSON.stringify({}),
+		});
+		expect(ok.status).toBe(200);
+	} finally {
+		await server.stop();
+		await ws.cleanup();
+	}
+});
+
 test("GET /api/tribunal 把无法读取的队列文件一并上报，不当作空队列", async () => {
 	const ws = await makeTempWorkbench();
 	await writeFile(
