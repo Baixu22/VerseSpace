@@ -49,7 +49,15 @@ export async function loadEmbeddedFiles(): Promise<Record<string, string>> {
 				isAbsolute(path) ? path : resolve(import.meta.dir, path),
 			]),
 		);
-	} catch {
+	} catch (error) {
+		// A missing placeholder manifest is the normal source-mode case (the
+		// generated module is only present after build:ui). But an import that
+		// throws for any *other* reason is a corrupt embedded bundle, not an
+		// absence — say so on stderr instead of silently degrading to {} and
+		// letting the fallback page pass as a healthy 200 (TF-0257 / F-05).
+		if ((error as { code?: string }).code !== "ERR_MODULE_NOT_FOUND") {
+			console.error("[workbench-ui] embedded assets failed to load:", error);
+		}
 		return {};
 	}
 }
@@ -92,6 +100,14 @@ export async function readUiAsset(
 	if (assets.kind === "embedded" && assets.embeddedFiles) {
 		const embedded = assets.embeddedFiles[key];
 		if (!embedded) {
+			return null;
+		}
+		// A manifest entry whose target is gone is a corrupt build, not a hit:
+		// streaming it would send an empty 200. Miss instead so the caller
+		// surfaces the fallback identity (TF-0257 / F-05).
+		try {
+			await stat(embedded);
+		} catch {
 			return null;
 		}
 		return assetResponse(Bun.file(embedded).stream(), embedded);
