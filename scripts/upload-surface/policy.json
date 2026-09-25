@@ -1,0 +1,235 @@
+{
+	"$comment": "接力交接的上传面定性。判据与不变量见 docs/decisions/0020-relay-handoff-upload-surface.md。规则按 FIRST-MATCH-WINS 求值：越具体的规则越靠前，defaultClass 是兜底且会被报为 unclassified（沉默不是决定）。",
+	"version": 1,
+	"defaultClass": "unclassified",
+	"sizeLimitBytes": 10485760,
+	"sizeExceptions": [],
+	"classes": {
+		"outcome": {
+			"upload": true,
+			"reproducible": true,
+			"reason": "结果性产物：本轮结论的载体（源码、测试、配置、ADR、交接记录、门禁自身）。换机克隆后可直接复算或复核。"
+		},
+		"curated-evidence": {
+			"upload": true,
+			"reproducible": true,
+			"reason": "精选可复算证据：体量小、且被 docs 或 task-forest 节点 evidence 引用的输入/快照。原始现场不在此列。"
+		},
+		"process-evidence": {
+			"upload": false,
+			"reproducible": false,
+			"reason": "过程证据：原始日志、探针 dump、E2E 现场、会话草稿、按日期的过程报告。换机不可复算，且体积/噪声大。"
+		},
+		"machine-state": {
+			"upload": false,
+			"reproducible": false,
+			"reason": "机器状态与构建产物：依赖、dist、黑板、森林、worktree、导出物、密钥。属于本机，且可由命令重建。"
+		},
+		"unclassified": {
+			"upload": false,
+			"reproducible": false,
+			"reason": "策略未覆盖：既不上传也不算已定性。门禁会把它报成违规，直到有人显式归类。"
+		}
+	},
+	"rules": [
+		{
+			"globs": ["**/node_modules/**"],
+			"class": "machine-state",
+			"why": "依赖树，由 bun install 重建"
+		},
+		{
+			"globs": ["**/.agent-workbench/**"],
+			"class": "machine-state",
+			"why": "task-forest：维护者的个人编排脚手架，非工程交付物（2026-09-24 出仓）"
+		},
+		{
+			"globs": ["**/dist/**", "dist-ssr/**", "**/.vite/**"],
+			"class": "machine-state",
+			"why": "构建产物，由 bun run build 重建"
+		},
+		{
+			"globs": [".workbench/**", "**/.workbench/**"],
+			"class": "machine-state",
+			"why": "workbench 运行时状态（黑板/检查点/事件/锁）"
+		},
+		{
+			"globs": ["worktrees/**", ".claude/worktrees/**"],
+			"class": "machine-state",
+			"why": "dispatch 产生的链接工作树"
+		},
+		{
+			"globs": [".claude/skills/**", ".agents/skills/**", "agent/skills/**"],
+			"class": "machine-state",
+			"why": "第三方 vendored skills，由 skills-lock.json 重装"
+		},
+		{
+			"globs": [
+				".agent-kernel/**",
+				".workbuddy/**",
+				".workbuddy-ai/**",
+				".zcode/**",
+				".context-rot/**",
+				".tf-tmp/**",
+				".direnv/**",
+				".context/**",
+				".local-data/**",
+				".local-docs/**"
+			],
+			"class": "machine-state",
+			"why": "agent/工具本机状态与临时区"
+		},
+		{
+			"globs": ["**/.evidence-sites/**", "**/.live-logs/**"],
+			"class": "machine-state",
+			"why": "live-model E2E 现场（黑板 + 临时 git 仓库 + transcript）"
+		},
+		{
+			"globs": [
+				"logs/**",
+				"**/*.log",
+				"*.bun-build",
+				"autoresearch-results.tsv"
+			],
+			"class": "process-evidence",
+			"why": "运行日志与临时输出"
+		},
+		{
+			"globs": ["playwright-report/**", "test-results/**", "test-results-*/**"],
+			"class": "process-evidence",
+			"why": "Playwright 报告与 trace/video"
+		},
+		{
+			"globs": [
+				".env",
+				".env.*",
+				"*.local",
+				"*.local.*",
+				".DS_Store",
+				"*.suo",
+				"*.ntvs*",
+				"*.njsproj",
+				"*.sln",
+				"*.sw?"
+			],
+			"class": "machine-state",
+			"why": "密钥与本机/编辑器私有文件，永不进入上传面"
+		},
+		{
+			"globs": [".agent-contexts/**", "**/.agent-contexts/**"],
+			"class": "process-evidence",
+			"why": "每轮会话的证据与草稿；只有被引用的精选材料才提升为 curated-evidence（TF-0220）"
+		},
+		{
+			"globs": [".husky/_/**"],
+			"class": "machine-state",
+			"why": "husky 内部运行时，由 husky 安装生成"
+		},
+		{
+			"globs": [".husky/pre-commit"],
+			"class": "outcome",
+			"why": "提交门禁本体，属于工程交付物"
+		},
+		{
+			"globs": [".husky/**"],
+			"class": "machine-state",
+			"why": "husky 目录的其余部分为生成物"
+		},
+		{
+			"globs": [".vscode/extensions.json", ".vscode/settings.json"],
+			"class": "outcome",
+			"why": "团队共享的编辑器配置（.gitignore 显式白名单）"
+		},
+		{
+			"globs": [".vscode/**"],
+			"class": "machine-state",
+			"why": "个人编辑器状态"
+		},
+		{
+			"globs": [
+				"docs/perf/*-trace-workspace-*.json",
+				"docs/perf/*-trace-session-*.json",
+				"docs/perf/*-trace-streaming-*.json",
+				"docs/perf/*-trace-confirm*.json",
+				"docs/perf/*-trace.json",
+				"docs/perf/goal*-style-*.json",
+				"docs/perf/iter*-after-switch.png"
+			],
+			"class": "process-evidence",
+			"why": "原始 chrome-devtools trace（单份约 250MB），聚合摘要才入库"
+		},
+		{
+			"globs": ["docs/*-evidence-*.json", "docs/*.json"],
+			"class": "process-evidence",
+			"why": "按日期的证据 dump；复核后的读数写进 docs 报告与节点 evidence"
+		},
+		{
+			"globs": ["docs/handoff/**"],
+			"class": "outcome",
+			"why": "接力交接记录的唯一入库位：换机后据此复算本轮结论。整目录白名单，杜绝逐文件漂移"
+		},
+		{
+			"globs": ["docs/decisions/**"],
+			"class": "outcome",
+			"why": "ADR 集，项目权威决定，追加式"
+		},
+		{
+			"globs": ["docs/user/**"],
+			"class": "outcome",
+			"why": "退役 Helmor 指南，作为记录保留"
+		},
+		{
+			"globs": ["docs/fable-brief/**"],
+			"class": "outcome",
+			"why": "被 ADR-0010 / ADR-0016 与 docs/user/README.md 引用"
+		},
+		{
+			"globs": ["docs/reicon-icons.md", "docs/fit-ledger.md"],
+			"class": "outcome",
+			"why": "分别被 AGENTS.md 与 packages/workbench/README.md 引用"
+		},
+		{
+			"globs": ["docs/phase4-human-usage-window-*.md"],
+			"class": "outcome",
+			"why": "ADR-0019 称为 durable 且可重跑：出仓会让唯一真人门不可复现"
+		},
+		{
+			"globs": ["docs/engineering-defect-localization-and-qa-plan-*.md"],
+			"class": "outcome",
+			"why": "本轮整改的验收规划，是分支执行依据"
+		},
+		{
+			"globs": ["docs/perf/*-trace-summary.json", "docs/perf/*.md"],
+			"class": "curated-evidence",
+			"why": "聚合后的 trace 摘要与性能分析（体量小、可复算）"
+		},
+		{
+			"globs": ["packages/**", "apps/**", "scripts/**"],
+			"class": "outcome",
+			"why": "三个包的源码、测试与构建脚本"
+		},
+		{
+			"globs": [
+				".claude/hooks/**",
+				".claude/settings.json",
+				".claude/launch.json"
+			],
+			"class": "outcome",
+			"why": "footprint/seal 钩子与 Claude Code 集成配置（CLAUDE.md 记录的集成面）"
+		},
+		{
+			"globs": [".claude/**"],
+			"class": "machine-state",
+			"why": ".claude 目录的其余部分为本机会话状态"
+		},
+		{
+			"globs": [".github/**", ".cursor/**"],
+			"class": "outcome",
+			"why": "PR 模板、Issue 模板与 MCP 注册"
+		},
+		{
+			"globs": ["*"],
+			"class": "outcome",
+			"why": "仓库根文件（README/AGENTS/LICENSE/配置/锁文件）"
+		}
+	]
+}

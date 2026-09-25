@@ -25,3 +25,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0017](./0017-second-observable-provider-integration.md) | 第二个可观测 provider 接入形态 = 直接监督外部 CLI + 主包内轻量协议适配，不复活 sidecar、不 import SDK；取代 ADR-0013 决策 3；首个落地 = codex；交互协议只接权限请求进账本 | 已接受 | TF-0246（阶段 TF-0245，目标 TF-0232） |
 | [0018](./0018-single-ci-channel-jihulab.md) | CI 单一通道 = JihuLab（极狐）；删除 GitHub Actions 车道与 `release-workbench.yml`、不再使用 gitlab.com；取代 ADR-0015 中「保留 release-workbench.yml」一句 | 已接受 | TF-0232（落地过程中） |
 | [0019](./0019-phase4-and-release-acceptance-as-external-gates.md) | 阶段 4（人工使用窗口）与发行验收转为常设外部门、不作为本轮交付；发行以「编译版本 + GitHub Release + 社区面」为准；据 TF-0232 验收的第二条路收口 | 已接受 | TF-0232（据此收口） |
+| [0020](./0020-relay-handoff-upload-surface.md) | 接力交接的上传面定性 = 只上传结果性产物且换机可复现；四类别 + 双向门禁 + `docs/handoff/` 目录白名单；收紧 TF-0220「原始数据本地留，精选读数入库」 | 已接受 | 待建（本轮 proposal） |

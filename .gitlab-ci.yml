@@ -115,6 +115,12 @@ stages: [verify, release]
     - docs/**
     - packages/workbench/**
     - packages/context-rot/**
+  upload_surface:
+    - .gitlab-ci.yml
+    - package.json
+    - .gitignore
+    - scripts/**
+    - docs/**
 
 pipeline-heartbeat:
   stage: verify
@@ -201,6 +207,27 @@ doctor:
     - changes: !reference [.paths, doctor]
   script:
     - bun packages/workbench/src/index.ts doctor
+
+# Upload-surface gate (ADR-0020). Runs the classifier's own tests, then the
+# gate over this tree. The gate is bidirectional on purpose: it fails both when
+# something that must ship is excluded (`useful-not-uploaded` — the 2026-09-25
+# handoff report) and when something that must stay local has reached history
+# (`useless-uploaded`). A docs-only push is enough to run it, because a doc is
+# exactly what goes missing.
+#
+# It is a light job: pure Node, no browser, no test runner child processes —
+# `node --test` would spawn one process per file, and this job deliberately runs
+# the test file directly so it works on hosts that deny `spawn`.
+upload-surface:
+  extends: .bun-setup
+  stage: verify
+  timeout: 10m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - changes: !reference [.paths, upload_surface]
+  script:
+    - node scripts/upload-surface/classify.test.mjs
+    - node scripts/check-upload-surface.mjs
 
 # Release lane (2026-09-21; instance switched to JihuLab 2026-09-22).
 # The GitHub Actions release workflow was deleted under ADR-0018, so this is the

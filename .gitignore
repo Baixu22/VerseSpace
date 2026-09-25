@@ -160,6 +160,13 @@ packages/workbench/.evidence-sites/
 # docs/ holds the project's own record, but most of it is point-in-time working
 # artifact. Only these stay in history:
 #   decisions/  the ADR set — the authority
+#   handoff/    one record per relay round: what changed, the evidence readings,
+#     the repro commands, and what was deliberately NOT done. It is the only
+#     artifact that lets the next operator continue the round on another
+#     machine, so it ships — whitelisted BY DIRECTORY on purpose. The old
+#     per-file whitelist is what let the 2026-09-25 handoff report sit ignored
+#     and uncommitted while the round it described looked finished (ADR-0020,
+#     "有用未传"). A directory cannot drift file by file.
 #   user/       retired Helmor guide (bannered as a record)
 #   fable-brief/  linked from ADR-0010, ADR-0016 and docs/user/README.md
 #   perf/       phase1-trace-summary.json is deliberately whitelisted above
@@ -169,8 +176,11 @@ packages/workbench/.evidence-sites/
 #     remaining human gate; ADR-0019 calls it durable and re-runnable, so
 #     untracking it would make that gate unreproducible from the repo (P4).
 # Everything else (dated reports, evidence dumps, closeout logs) stays local.
+# After adding a doc, run `bun run check:upload-surface`: it fails on anything
+# that is neither uploaded nor explicitly accepted as local-only (ADR-0020).
 /docs/*
 !/docs/decisions/
+!/docs/handoff/
 !/docs/user/
 !/docs/fable-brief/
 !/docs/perf/

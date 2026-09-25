@@ -225,6 +225,18 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
 - **Append-only where it matters.** Decisions and events are never rewritten — corrections are
   new entries that supersede. Preserve this when adding anything to `blackboard/`.
 - **`--json` on every command.** Machine-readable output is part of the contract, not an extra.
+- **The upload surface is classified, not remembered** ([ADR-0020](docs/decisions/0020-relay-handoff-upload-surface.md)).
+  Only **outcome artifacts reproducible on another machine** are uploaded: source, tests, ADRs,
+  and the per-round handoff records under `docs/handoff/`. Raw logs, probe dumps, E2E sites,
+  session scratch, the task-forest, build output and secrets stay local. `bun run check:upload-surface`
+  is a **bidirectional** gate — it fails both when something that must ship is excluded
+  (`useful-not-uploaded`) and when something that must stay local has reached history
+  (`useless-uploaded`), and reports anything the policy has not classified as a violation, so
+  silence is never a decision. A **new doc at `docs/` root fails the gate** until it is either
+  written to `docs/handoff/` or explicitly accepted as local-only — that is deliberate; the old
+  per-file whitelist is exactly how the 2026-09-25 handoff report went uncommitted while the round
+  it described looked finished. The gate exits **2** when it cannot measure (for example where the
+  sandbox denies `node` a child process) — never treat exit 2 as a pass.
 - **`.workbench/workbench.yaml` options are enforced, not decorative** (P0-2). `protection.readonlyAreas`
   refuses writes into a declared area through the seal point, independent of `seal.mode`;
   `thresholds.checkpointTimeout` is the verifier's default when a checkpoint declares none;
