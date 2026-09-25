@@ -259,4 +259,62 @@ setTimeout(() => { process.stdout.write("tick\n"); process.exit(3); }, 150);
 			await proc.kill();
 		}
 	});
+
+	// TF-0269 (OPEN-4)：terminate() 被拒以前完全消失，而紧接着的 verdict 仍然写
+	// judged_silent —— 「我们按判定把它结束了」，而子进程可能还在跑。
+	test("[TF-0269] terminate 失败会点名，verdict 仍是 judged_silent", async () => {
+		const clock = fakeClock();
+		const verdicts: LivenessVerdict[] = [];
+		const originalError = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		const watch = watchLiveness({
+			tickMs: 5,
+			stallMs: 40,
+			unresponsiveMs: 60,
+			now: clock.now,
+			terminate: () => Promise.reject(new Error("kill 失败")),
+			onVerdict: (v) => verdicts.push(v),
+		});
+		try {
+			clock.advance(80);
+			await sleep(30); // 让 reject 的 catch 处理器跑到
+			expect(verdicts.map((v) => v.kind)).toEqual(["judged_silent"]);
+			expect(errors.join("\n")).toContain("terminate 失败");
+		} finally {
+			console.error = originalError;
+			watch.stop();
+		}
+	});
+
+	test("[TF-0269] terminate 同步抛出时同样被点名，不会逃出定时器回调", async () => {
+		const clock = fakeClock();
+		const verdicts: LivenessVerdict[] = [];
+		const originalError = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		const watch = watchLiveness({
+			tickMs: 5,
+			stallMs: 40,
+			unresponsiveMs: 60,
+			now: clock.now,
+			terminate: () => {
+				throw new Error("同步炸了");
+			},
+			onVerdict: (v) => verdicts.push(v),
+		});
+		try {
+			clock.advance(80);
+			await sleep(30);
+			expect(verdicts.map((v) => v.kind)).toEqual(["judged_silent"]);
+			expect(errors.join("\n")).toContain("同步抛出");
+		} finally {
+			console.error = originalError;
+			watch.stop();
+		}
+	});
 });

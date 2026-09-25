@@ -11,6 +11,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { GitRunner } from "../git";
 import type { Checkpoint } from "../types/checkpoint";
 import {
 	applyRollback,
@@ -257,5 +258,40 @@ describe("captureContextRollback", () => {
 		const plan = await planRollback(cp, "context", { store });
 		await applyRollback(plan, cp, { store });
 		expect(store.data["k:1"]).toBe("v1");
+	});
+});
+
+// TF-0269 (OPEN-1)：`git status` 失败时 stdout 是空的，旧代码于是把快照记成
+// paths: []——一个「看起来工作区是干净的」恢复点，回退时什么都恢复不了。
+// 注入 runner 之后这一分支在本机（禁止子进程）也能先红后绿。
+describe("captureCodeRollback 的失败身份（TF-0269）", () => {
+	test("git status 失败时抛错，不产出「工作区干净」的假快照", async () => {
+		const calls: string[] = [];
+		const fakeGit: GitRunner = async (args) => {
+			calls.push(args.join(" "));
+			if (args[0] === "rev-parse") {
+				return { ok: true, code: 0, stdout: "abc123\n", stderr: "" };
+			}
+			return {
+				ok: false,
+				code: 128,
+				stdout: "",
+				stderr: "fatal: 工作区不可读",
+			};
+		};
+		await expect(captureCodeRollback("D:/repo/wt", fakeGit)).rejects.toThrow(
+			/无法读取工作区状态/,
+		);
+		expect(calls).toEqual(["rev-parse HEAD", "status --porcelain"]);
+	});
+
+	test("状态可读时照常产出快照（不误伤正常路径）", async () => {
+		const fakeGit: GitRunner = async (args) =>
+			args[0] === "rev-parse"
+				? { ok: true, code: 0, stdout: "abc123\n", stderr: "" }
+				: { ok: true, code: 0, stdout: " M src/a.ts\n", stderr: "" };
+		const snap = await captureCodeRollback("D:/repo/wt", fakeGit);
+		expect(snap.commit).toBe("abc123");
+		expect(snap.paths).toEqual(["src/a.ts"]);
 	});
 });

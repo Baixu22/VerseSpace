@@ -13,7 +13,7 @@
  */
 
 import { join } from "node:path";
-import { git } from "../git";
+import { type GitRunner, git } from "../git";
 import { hashFile } from "../hash";
 import {
 	type Checkpoint,
@@ -64,8 +64,9 @@ export interface RollbackPlan {
  */
 export async function captureCodeRollback(
 	worktreePath: string,
+	runGit: GitRunner = git,
 ): Promise<NonNullable<Rollback["code"]>> {
-	const head = await git(["rev-parse", "HEAD"], worktreePath);
+	const head = await runGit(["rev-parse", "HEAD"], worktreePath);
 	if (!head.ok) {
 		// 工作区不可读（如 worktree 还没被 dispatch 建立）时必须抛错：
 		// 空 commit 会绕过调用方的 catch，最后被 checkpoint schema 以裸
@@ -76,7 +77,16 @@ export async function captureCodeRollback(
 		);
 	}
 	const commit = head.stdout.trim();
-	const status = await git(["status", "--porcelain"], worktreePath);
+	const status = await runGit(["status", "--porcelain"], worktreePath);
+	if (!status.ok) {
+		// TF-0269 (OPEN-1)：上面那条 rev-parse 已经确立了「不可读就抛错」的约定，
+		// 这里必须一致。git status 失败时 stdout 是空的，旧代码于是把快照记成
+		// paths: []——一个「看起来工作区是干净的」恢复点，回退时什么都恢复不了。
+		// 没有快照就明确拒绝，不假装回退。
+		throw new Error(
+			`无法读取工作区状态（${worktreePath}）：${status.stderr.trim() || "git status 失败"}`,
+		);
+	}
 	const paths: string[] = [];
 	const hashes: Record<string, string> = {};
 	for (const line of status.stdout.split("\n")) {

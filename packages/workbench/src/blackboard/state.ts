@@ -52,11 +52,23 @@ export function stateApi(paths: WorkbenchPaths) {
 		const entries = await Promise.all(
 			names
 				.filter((name) => name.endsWith(".yaml"))
-				.map((name) =>
-					readYamlFile(join(paths.queue, name), queueEntrySchema).catch(
-						() => null,
-					),
-				),
+				.map(async (name) => {
+					try {
+						return await readYamlFile(
+							join(paths.queue, name),
+							queueEntrySchema,
+						);
+					} catch (error) {
+						// TF-0269 (OPEN-6)：一条读不出来的队列条目以前让队列无声地少一项。
+						// 两个后果都不该由「没看见」承担：那个目标从此不会被派发，
+						// 而 enqueue 的 seq 是拿这份列表的长度算的——顺序也跟着变。
+						console.error(
+							`[state] 队列条目 ${name} 无法读取（已从队列中省略，该目标不会被派发）:`,
+							error,
+						);
+						return null;
+					}
+				}),
 		);
 		return entries
 			.filter((entry): entry is QueueEntry => entry !== null)

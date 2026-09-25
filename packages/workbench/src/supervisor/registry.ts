@@ -62,7 +62,18 @@ export async function reapOrphans(registryDir: string): Promise<number> {
 	let names: string[] = [];
 	try {
 		names = await readdir(registryDir);
-	} catch {
+	} catch (error) {
+		// TF-0269 (OPEN-2)：只有「注册表还不存在」才等于「没有孤儿」。其余失败
+		// （ENOTDIR / EACCES / EBUSY）以前返回同一个 0，于是一个连看都没看成的
+		// supervisor 会报告「没有孤儿」，把前任留下的 agent 继续留在机器上。
+		// 仍然不抛（启动路径不该因为一次权限抖动而中止），但不再无声。
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+			return 0;
+		}
+		console.error(
+			`[supervisor] 无法读取 PID 注册表 ${registryDir}，本次孤儿回收未执行:`,
+			error,
+		);
 		return 0;
 	}
 	let reaped = 0;
@@ -80,8 +91,14 @@ export async function reapOrphans(registryDir: string): Promise<number> {
 				await killTree(record.pid);
 				reaped += 1;
 			}
-		} catch {
-			// unparseable record: just clean it up
+		} catch (error) {
+			// TF-0269 (OPEN-3)：记录读不懂，所以按清理处理——但「我们不知道这是
+			// 谁」不能跟着记录一起消失。一条不可解析的 PID 记录意味着一个再也
+			// 收养不回来的进程，静默删掉它等于把它记成「这里本来什么都没有」。
+			console.error(
+				`[supervisor] PID 记录 ${name} 无法解析，已清理（该进程不会再被收养回收）:`,
+				error,
+			);
 		}
 		await rm(file, { force: true });
 	}

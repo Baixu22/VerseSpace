@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -237,6 +238,63 @@ describe("crash-loop breaker", () => {
 			// a clean exit does not count toward the breaker
 			expect(crashLoopTripped(registryDir, "healthy")).toBe(false);
 		} finally {
+			await cleanup();
+		}
+	});
+});
+
+// TF-0269 (OPEN-2 / OPEN-3)：孤儿回收的两处静默。两条都只用文件系统，
+// 不需要子进程，因此在本机沙箱里也能先红后绿。
+describe("孤儿回收的失败可见性（TF-0269）", () => {
+	function spyErrors(): { errors: string[]; restore(): void } {
+		const original = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		return { errors, restore: () => (console.error = original) };
+	}
+
+	test("注册表还不存在时静默返回 0（那真的是「没有孤儿」）", async () => {
+		const { dir, cleanup } = await makeDir("workbench-reap-missing");
+		const spy = spyErrors();
+		try {
+			expect(await reapOrphans(join(dir, "proc"))).toBe(0);
+			expect(spy.errors).toEqual([]);
+		} finally {
+			spy.restore();
+			await cleanup();
+		}
+	});
+
+	test("注册表读不成（路径是个文件）时点名，而不是报「没有孤儿」", async () => {
+		const { dir, cleanup } = await makeDir("workbench-reap-notdir");
+		const spy = spyErrors();
+		try {
+			const asFile = join(dir, "proc");
+			await writeFile(asFile, "not a directory\n", "utf8");
+			expect(await reapOrphans(asFile)).toBe(0);
+			expect(spy.errors.join("\n")).toContain("无法读取 PID 注册表");
+		} finally {
+			spy.restore();
+			await cleanup();
+		}
+	});
+
+	test("不可解析的 PID 记录被清理，但清理原因留痕", async () => {
+		const { dir, cleanup } = await makeDir("workbench-reap-bad-record");
+		const spy = spyErrors();
+		try {
+			const registryDir = join(dir, "proc");
+			await mkdir(registryDir, { recursive: true });
+			const bad = join(registryDir, "deadbeef-123.json");
+			await writeFile(bad, "{ not json", "utf8");
+			expect(await reapOrphans(registryDir)).toBe(0);
+			expect(spy.errors.join("\n")).toContain("deadbeef-123.json");
+			// 清理照旧（行为不变），只是不再无声
+			expect(existsSync(bad)).toBe(false);
+		} finally {
+			spy.restore();
 			await cleanup();
 		}
 	});

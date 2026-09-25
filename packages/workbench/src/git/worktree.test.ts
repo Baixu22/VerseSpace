@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { makeCommittedRepo } from "../test/git-project";
-import { createWorktree } from "./index";
+import { createWorktree, type GitRunner } from "./index";
 import {
 	listWorktrees,
 	parseWorktreeList,
@@ -124,6 +124,41 @@ describe("移除 worktree", () => {
 			expect(existsSync(join(projectDir, "README.md"))).toBe(true);
 		} finally {
 			await cleanup();
+		}
+	});
+
+	// TF-0269 (OPEN-7)：prune 的结果以前被整个丢弃——全仓唯一一处不检查 git()
+	// 返回值的生产调用点。注入 runner 之后这一分支在本机（禁止子进程）也能验证。
+	test("[TF-0269] prune 失败会点名，而移除本身仍报 ok", async () => {
+		const originalError = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		try {
+			const calls: string[] = [];
+			const fakeGit: GitRunner = async (args) => {
+				calls.push(args.join(" "));
+				if (args[1] === "prune") {
+					return {
+						ok: false,
+						code: 128,
+						stdout: "",
+						stderr: "fatal: prune 失败",
+					};
+				}
+				return { ok: true, code: 0, stdout: "", stderr: "" };
+			};
+			const result = await removeWorktree("D:/repo", "D:/repo/wt-a", {
+				runGit: fakeGit,
+			});
+			// checkout 确实没了，所以移除成功——但陈旧的 git 管理条目必须说出来
+			expect(result.ok).toBe(true);
+			expect(calls[0]?.startsWith("worktree remove")).toBe(true);
+			expect(calls[1]).toBe("worktree prune");
+			expect(errors.join("\n")).toContain("worktree prune 失败");
+		} finally {
+			console.error = originalError;
 		}
 	});
 });

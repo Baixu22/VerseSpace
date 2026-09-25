@@ -119,7 +119,26 @@ export function watchLiveness(options: LivenessOptions): LivenessWatch {
 					// The caller wired a kill: do it, then name the outcome
 					// `judged_silent` so the exit that follows reads as a deliberate
 					// termination rather than a bare report-only `unresponsive`.
-					void Promise.resolve(options.terminate()).catch(() => {});
+					//
+					// TF-0269 (OPEN-4): a rejected — or synchronously throwing —
+					// `terminate()` used to disappear entirely, while the verdict below
+					// still read `judged_silent`: "we deliberately ended it", with the
+					// child possibly still running. The verdict stands (the decision
+					// WAS made, and the caller's exit cleanup still runs when the child
+					// really goes); the failure is named instead of dropped.
+					try {
+						void Promise.resolve(options.terminate()).catch((error) => {
+							console.error(
+								"[supervisor] liveness terminate 失败，子进程可能仍在运行:",
+								error,
+							);
+						});
+					} catch (error) {
+						console.error(
+							"[supervisor] liveness terminate 同步抛出，子进程可能仍在运行:",
+							error,
+						);
+					}
 					finish({ kind: "judged_silent", silentMs, lastEventAt });
 				} else {
 					finish({ kind: "unresponsive", silentMs, lastEventAt });

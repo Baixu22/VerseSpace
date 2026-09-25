@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { openBlackboard } from "../blackboard";
 import { makeTempWorkbench } from "../test/fixtures";
@@ -46,6 +47,31 @@ describe("state blackboard API", () => {
 			expect(await bb.state.queue.dequeue("g-1")).toEqual(["g-2"]);
 			expect(await bb.state.queue.dequeue("g-404")).toEqual(["g-2"]);
 		} finally {
+			await cleanup();
+		}
+	});
+
+	// TF-0269 (OPEN-6)：读不出来的条目以前让队列无声少一项——那个目标从此不会被
+	// 派发，而 enqueue 的 seq 是拿这份列表的长度算的。
+	test("[TF-0269] queue: an unreadable entry is omitted AND named, not silently dropped", async () => {
+		const { bb, cleanup } = await makeTempWorkbench();
+		const originalError = console.error;
+		const errors: string[] = [];
+		console.error = (...args: unknown[]) => {
+			errors.push(args.map((a) => String(a)).join(" "));
+		};
+		try {
+			await bb.state.queue.enqueue("g-1");
+			await writeFile(
+				join(bb.paths.queue, "g-broken.yaml"),
+				"goalId: [unclosed\n",
+				"utf8",
+			);
+			// 省略仍然发生（降级可以），但必须看得见（静默不行）
+			expect(await bb.state.queue.get()).toEqual(["g-1"]);
+			expect(errors.join("\n")).toContain("g-broken.yaml");
+		} finally {
+			console.error = originalError;
 			await cleanup();
 		}
 	});

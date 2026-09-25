@@ -15,7 +15,7 @@
  */
 
 import { resolve } from "node:path";
-import { git } from "./index";
+import { type GitRunner, git } from "./index";
 import { normalizeBranchName } from "./refname";
 
 export interface WorktreeEntry {
@@ -128,8 +128,9 @@ export function samePath(projectRoot: string, a: string, b: string): boolean {
 export async function removeWorktree(
 	projectRoot: string,
 	worktreePath: string,
-	options: { force?: boolean } = {},
+	options: { force?: boolean; runGit?: GitRunner } = {},
 ): Promise<{ ok: boolean; path: string; reason?: string }> {
+	const runGit = options.runGit ?? git;
 	const path = resolve(projectRoot, worktreePath);
 	if (samePath(projectRoot, path, projectRoot)) {
 		return {
@@ -140,8 +141,17 @@ export async function removeWorktree(
 	}
 	const args = ["worktree", "remove", path];
 	if (options.force) args.push("--force");
-	const result = await git(args, projectRoot);
-	await git(["worktree", "prune"], projectRoot);
+	const result = await runGit(args, projectRoot);
+	// TF-0269 (OPEN-7)：prune 的结果以前被整个丢弃——全仓唯一一处不检查 git()
+	// 返回值的生产调用点。移除本身成功时仍然报 ok（checkout 确实没了），但
+	// 「git 的管理条目没清掉」必须说出来：留着陈旧 worktree 记录会让后续
+	// `worktree add` 在同一个路径上失败，而那时已经没人记得是这一步没做干净。
+	const pruned = await runGit(["worktree", "prune"], projectRoot);
+	if (result.ok && !pruned.ok) {
+		console.error(
+			`[git] worktree prune 失败（${path}）：${pruned.stderr.trim() || `退出码 ${pruned.code ?? "未知"}`}`,
+		);
+	}
 	if (!result.ok) {
 		return {
 			ok: false,

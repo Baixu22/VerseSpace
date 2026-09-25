@@ -13,6 +13,21 @@ export interface GitResult {
 }
 
 /**
+ * The shape of `git()` as a value, so a caller can accept an injected runner.
+ *
+ * TF-0269: this exists for the same reason ADR-0020 made `classify.mjs` a pure
+ * function — a host that forbids child processes (this repo's agent sandbox is
+ * one) cannot verify any branch that needs a real `git`. A caller that only
+ * *interprets* git's answer takes the runner as a parameter and defaults to the
+ * real one, so the interpretation is testable everywhere the code runs.
+ */
+export type GitRunner = (
+	args: string[],
+	cwd: string,
+	env?: NodeJS.ProcessEnv,
+) => Promise<GitResult>;
+
+/**
  * Run git with captured output; never throws.
  *
  * `env` replaces the child environment when provided. Agent hosts often inject
