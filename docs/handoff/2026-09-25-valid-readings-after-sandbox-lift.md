@@ -93,7 +93,12 @@ RED 的两条失败还各自留下了截图与 trace（`test-results/`，gitigno
 默认关闭。这是**明确允许清单**，不是静默 skip——TF-0252 的成功指标原文就是
 「skipped=0 或有明确允许清单」。
 
-## 3. 门禁自己抓到的第一个真问题：嵌套包的 E2E 现场
+## 3. 门禁自己抓到的三个真问题
+
+三个都是同一个形状：**工具链的「已知目录/状态」清单是手写的，新东西出现时它是静默的。**
+Playwright 第一次真跑，一次性照出了三个。
+
+### 3.1 上传面的 glob 写窄了（嵌套包的 E2E 现场）
 
 Playwright 第一次真跑完，`check:upload-surface` **立刻报红**：7 条 `useful-not-uploaded` ——
 `apps/workbench-ui/test-results/` 下的截图、`trace.zip`、`error-context.md`、`.last-run.json`。
@@ -113,6 +118,38 @@ Playwright 第一次真跑完，`check:upload-surface` **立刻报红**：7 条 
 `docs/handoff/**` 一度编译成 `^docs/handoff$`，只匹配目录本身、不匹配目录里的文件
 （`2026-09-25-upload-surface-round.md` §4.1 记过）。**同一个形状第二次出现**，
 而且两次都是"门禁自己抓到的"——这正是它存在的理由。
+
+### 3.2 biome 去格式化 Playwright 的产物
+
+`bun run lint` 一直是 exit 0（620 文件）。Playwright 真跑之后它变成 **exit 1**：
+biome 去检查 `apps/workbench-ui/test-results/.last-run.json`，要求 tab 缩进。
+
+`test-results/` 与 `playwright-report/` 是生成的机器状态（ADR-0020 的 machine-state，
+`.gitignore` 里本来就有），但 biome 的 `useIgnoreFile` 是 `false`——它靠的是
+`biome.json` 里那张**手写的 `!!` 排除表**，而表里没有它们。
+
+- 修法：补 `!!**/test-results`、`!!**/playwright-report`
+- 读数：lint 回到 **exit 0**（620 文件）
+
+### 3.3 森林提案 apply 之后，落库门禁的第 4 条会误报
+
+修完上面两条、apply 了记录它们的森林提案之后，`check-forest-landing` 多出一条：
+
+```
+"1 个 done 节点晚于 HEAD 提交：TF-0268"
+```
+
+原因：**apply 提案会更新节点的 `updated_at`，而森林是 untracked 的——apply 永远不产生提交。**
+于是"森林记账晚于最后一次提交"被第 4 条读成了"done 节点晚于 HEAD"。
+提交了 biome 修复（`0542b91`）之后 HEAD 时间变晚，这条立刻消失，只剩真实漂移。
+
+这不是漂移，是**判据用错了量**：第 4 条只比时间戳，分不清
+「森林声称在最后一次提交之后完成了工作」（真问题）与「森林记账晚于最后一次提交」（正常）。
+已记为 deviation，并指出它和 `TFD-0dab4149f2` 的建议是同一件事的两个面——
+**用「提交是否可达默认分支」取代「时间戳先后」**。
+
+> **给下一个操作者的实操提示**：刚 apply 过提案就看到第 4 条报红时，先提交（或先确认
+> 没有别的未提交改动）再读它；不要把它当成森林在撒谎。
 
 ## 4. TF-0255 还差什么
 
@@ -141,7 +178,8 @@ Playwright 第一次真跑完，`check:upload-surface` **立刻报红**：7 条 
 见 §6 的提案：
 
 - **TF-0252**：追加本轮完整门禁读数；并写明 `TFD-b1b366c832`（"三套件在本机不可测量"）的
-  前提**已被实测推翻**——按仓库"修正是新条目"的约定，这里记录取代，不重写旧记录。
+  前提**已被实测推翻**——按仓库"修法是新条目"的约定，这里记录取代，不重写旧记录。
+  另追加 §3 三个工具链发现与一条 deviation（落库门禁第 4 条在提案 apply 后的误报，见 §3.3）。
 - **TF-0255**：追加第 3 条的 RED/GREEN 与"还差 2 项"；保持 `in_progress`。
 - **TF-0269**：追加一条"权限放开后理由变化"的说明（OPEN-5/OPEN-8 的阻塞从
   "不能创建子进程"变成"需要一个真实会话"），保持 `in_progress`。
