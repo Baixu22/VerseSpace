@@ -23,6 +23,8 @@
 			"!!**/.workbuddy-ai",
 			"!!**/worktrees",
 			"!!**/coverage",
+			"!!**/test-results",
+			"!!**/playwright-report",
 			"!**/.local-data",
 			"!packages/workbench/src/ui/assets.generated.js"
 		]
