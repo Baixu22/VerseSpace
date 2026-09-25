@@ -321,6 +321,27 @@ NO_PROXY="127.0.0.1,localhost,::1" bun test
 Probing a proxy needs a real target — `curl http://127.0.0.1:<port>` returning `000` does **not**
 mean the proxy is down. Use `curl -x http://127.0.0.1:<port> https://example.com`.
 
+### The agent harness sandbox denies child processes
+
+An agent running under the DSH file sandbox (`workspace-write`) cannot create child processes:
+`EPERM: operation not permitted, uv_spawn 'git'` from
+`packages/workbench/src/git/index.ts:41`, and Playwright's Chromium launch fails the same way
+(`uv_spawn chrome-headless-shell.exe`). Measured 2026-09-25:
+
+- `test:workbench` reports ~135 failures that are **not** regressions — of 168 inline failure
+  blocks, 147 carry an explicit spawn denial (git, worktree, supervisor, verifier and chat-lane
+  suites are all affected).
+- `test:workbench-ui` cannot load its config at all: Vite's `windowsSafeRealPathSync` shells out
+  via `exec` (`spawn EPERM`), so **zero** tests run.
+- `test:context-rot` fails its git-backed cases for the same reason.
+- `scripts/win/check-git-filesystem.ps1` cannot run (it invokes `git.exe`): its `exit 1` means
+  "the probe could not run", **not** "the host is corrupt". The readings it did produce
+  (`winError 145`, `keepExists: true`, `tsbxLoaded: false`) are the healthy signal.
+
+This is a **different cause** from the injected-proxy caveat above — do not attribute one to the
+other. Run these suites in a shell without the harness sandbox; `typecheck` and `lint` are
+unaffected.
+
 ### Test teardown under real-time scanning
 
 Windows real-time scanning holds handles on a freshly written git repository (`.git` is written
