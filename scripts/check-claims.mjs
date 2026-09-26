@@ -85,14 +85,20 @@ for (const path of instrumentPaths) {
 	}
 }
 
-// What changed between each reading's commit and HEAD. Per reading, because a
-// path that moved *before* a reading was taken must not invalidate it.
+// What changed since each reading's commit. Per reading, because a path that
+// moved *before* a reading was taken must not invalidate it.
+//
+// Compared against the WORKING TREE, not against HEAD: `git diff <sha>..HEAD`
+// only sees commits, so an uncommitted edit to the code a claim is about would
+// leave the reading "valid" — and an uncommitted edit is the state a developer is
+// in most of the time. (Measured 2026-09-26: the first version of this gate stayed
+// green while packages/workbench/src/index.ts had a stray line appended.)
 const changedSince = [];
 if (measured) {
 	const shas = [...new Set(readings.map((r) => r.subject_sha).filter(Boolean))];
 	for (const sha of shas) {
 		try {
-			const out = execFileSync("git", ["diff", "--name-only", `${sha}..HEAD`], {
+			const out = execFileSync("git", ["diff", "--name-only", sha], {
 				cwd: root,
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
@@ -100,7 +106,7 @@ if (measured) {
 			changedSince.push(...out.split("\n").filter(Boolean));
 		} catch (error) {
 			measured = false;
-			problems.push(`git diff ${sha}..HEAD 失败（无法测量）：${error.message}`);
+			problems.push(`git diff ${sha} 失败（无法测量）：${error.message}`);
 		}
 	}
 }
