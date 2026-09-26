@@ -133,9 +133,15 @@ try {
 	// 3. Did the write land, and did the seal say anything?
 	verdict.contentAfter = await readFile(join(ws.projectDir, TARGET), "utf8");
 	verdict.writeLanded = verdict.contentAfter !== verdict.contentBefore;
-	verdict.sealEventsAfterCodex = (
-		await ws.bb.events.query({ type: SEAL_EVENT })
-	).length;
+	const codexSealEvents = await ws.bb.events.query({ type: SEAL_EVENT });
+	verdict.sealEventsAfterCodex = codexSealEvents.length;
+	// 条数只说明「被咨询」，内容才说明「判成了 block 还是 pass」——这两者本轮
+	// 一度分不开，所以直接打到 stderr，别再靠推断。
+	console.error(
+		`[probe] seal 判定：${JSON.stringify(
+			codexSealEvents.map((event) => event.decision ?? event),
+		)}`,
+	);
 
 	// 4. Control: the very function the Claude Code hook calls, on the same claim.
 	const outcome = await decideSeal(ws.bb, {
