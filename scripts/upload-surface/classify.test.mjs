@@ -21,6 +21,7 @@ import {
 	compilePolicy,
 	evaluate,
 	globToRegExp,
+	isAcceptedLocalReference,
 } from "./classify.mjs";
 import { loadPolicy } from "./policy-loader.mjs";
 
@@ -230,4 +231,66 @@ test("real policy: the frozen inventory may only shrink", () => {
 		inventoryRule.globs.length <= 74,
 		`清单增长到 ${inventoryRule.globs.length} 条`,
 	);
+});
+
+test("accepted reference: only an exact (referrer, local) pair counts", () => {
+	const accepted = [
+		{
+			referrer: "docs/handoff/2026-09-25-upload-surface-round.md",
+			localPaths: ["docs/positioning-v5.md"],
+		},
+	];
+	assert.ok(
+		isAcceptedLocalReference(
+			accepted,
+			"docs/positioning-v5.md",
+			"docs/handoff/2026-09-25-upload-surface-round.md",
+		),
+	);
+	// A different referrer must NOT inherit the decision: that is exactly how a
+	// brand-new dead pointer would slip through if this matched by glob.
+	assert.ok(
+		!isAcceptedLocalReference(
+			accepted,
+			"docs/positioning-v5.md",
+			"docs/handoff/2026-10-01-next-round.md",
+		),
+	);
+	assert.ok(
+		!isAcceptedLocalReference(
+			accepted,
+			"docs/positioning-v6.md",
+			"docs/handoff/2026-09-25-upload-surface-round.md",
+		),
+	);
+	assert.ok(!isAcceptedLocalReference(undefined, "docs/a.md", "docs/b.md"));
+});
+
+test("real policy: the adjudicated references are recorded and still local-only", () => {
+	// 2026-09-26 closeout: ADR-0020 §复核 said "adjudicate the 6, then add
+	// --strict-references". The adjudication is a decision, so it lives in the
+	// policy rather than in a rewritten dated record.
+	const real = loadPolicy({
+		policyPath: join(HERE, "policy.json"),
+		inventoryPath: join(HERE, "legacy-local-docs.json"),
+	});
+	const accepted = real.acceptedLocalReferences ?? [];
+	assert.equal(accepted.length, 1);
+	assert.equal(
+		accepted[0].referrer,
+		"docs/handoff/2026-09-25-upload-surface-round.md",
+	);
+	assert.equal(accepted[0].localPaths.length, 6);
+	assert.ok(accepted[0].why.length > 20, "例外必须写明理由");
+	// Every accepted local doc must actually be local-only under the real policy.
+	// Otherwise the entry is stale and the gate is excusing a reference to a file
+	// that ships.
+	const compiled = compilePolicy(real);
+	for (const local of accepted[0].localPaths) {
+		assert.equal(
+			real.classes[classifyPath(compiled, local).class].upload,
+			false,
+			local,
+		);
+	}
 });

@@ -28,3 +28,5 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0020](./0020-relay-handoff-upload-surface.md) | 接力交接的上传面定性 = 只上传结果性产物且换机可复现；四类别 + 双向门禁 + `docs/handoff/` 目录白名单；收紧 TF-0220「原始数据本地留，精选读数入库」 | 已接受 | 待建（本轮 proposal） |
 | [0021](./0021-retire-all-ci-channels.md) | 退役全部 CI 通道：删 `.gitlab-ci.yml` 与极狐快照脚本、停本机 runner；门禁改由本机命令给出、发行改走本机；**取代 ADR-0018** | 已接受 | 本轮（2026-09-26） |
 | [0022](./0022-claim-status-semantics.md) | 声明状态语义：`done` 必须指向读数（直接/覆盖两级，覆盖须写明「间接」）；无读数覆盖 → `review_needed`；交付物不存在 → `deprecated`；仪器退役的读数只能当观测；读数 stale ≠ 节点未完成 | 已接受 | TF-0278（阶段 TF-0277） |
+
+- [0023](./0023-research-prototype-closeout.md)：按工程研究原型收尾，固定声明、Codex 实验通道与历史观测边界（2026-09-26）。

@@ -30,7 +30,17 @@ describe("collectState", () => {
 		try {
 			const goal = await ws.bb.goals.add({ title: "面板测试" });
 			const state = await collectState(ws.bb);
-			expect(state.version).toBe("0.4.0");
+			// The version is a moving target: pinning the literal here turned a
+			// routine 0.4.1 bump into a red suite (measured 2026-09-26). Assert
+			// against the manifest on disk — what a user actually sees — instead.
+			const manifest = JSON.parse(
+				await readFile(
+					join(import.meta.dir, "..", "..", "package.json"),
+					"utf8",
+				),
+			) as { version: string };
+			expect(state.version).toBe(manifest.version);
+			expect(state.version).toMatch(/^\d+\.\d+\.\d+/);
 			expect(state.goals.map((g) => (g as { id: string }).id)).toEqual([
 				goal.id,
 			]);

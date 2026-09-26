@@ -168,7 +168,7 @@ const status = !measured
 
 if (asJson) {
 	process.stdout.write(
-		`${JSON.stringify({ status, claims: claims.length, readings: readings.length, ...result, problems, notes }, null, 2)}\n`,
+		`${JSON.stringify({ status, claims: claims.length, readings: readings.length, ...result, problems: [...result.problems, ...problems], notes }, null, 2)}\n`,
 	);
 } else {
 	console.log(

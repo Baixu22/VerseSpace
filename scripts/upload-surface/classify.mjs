@@ -240,3 +240,24 @@ export function summarize(violations) {
 	}
 	return groups;
 }
+
+/**
+ * Has a maintainer recorded a decision for this exact (referrer → local doc) pair?
+ *
+ * `referenced-but-local` is a signal rather than an automatic violation because
+ * the remedy is a judgment call (ADR-0020 §5). Once the call is made it has to
+ * live somewhere machine-readable — otherwise `--strict-references` can never go
+ * green, and the only way to silence it is to rewrite the referring document,
+ * which is precisely what a dated handoff record must not have done to it.
+ *
+ * Matching is exact on BOTH sides on purpose. A glob here would let a brand-new
+ * dead pointer inherit an old decision; an exact pair forces every new one to
+ * show up as a reviewable `policy.json` diff.
+ */
+export function isAcceptedLocalReference(accepted, localPath, referrer) {
+	return (accepted ?? []).some(
+		(entry) =>
+			entry?.referrer === referrer &&
+			(entry.localPaths ?? []).includes(localPath),
+	);
+}

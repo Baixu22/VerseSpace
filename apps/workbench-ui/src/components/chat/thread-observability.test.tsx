@@ -84,3 +84,18 @@ describe("ThreadObservability（TF-0191）", () => {
 		);
 	});
 });
+
+it("codex stays visibly experimental even when a footprint was captured", () => {
+	mount(
+		thread({
+			lastRun: {
+				provider: "codex",
+				readObservability: "footprint",
+				at: "2026-09-26T00:00:00.000Z",
+			},
+		}),
+	);
+	expect(screen.getByTestId("thread-codex-experimental")).toHaveTextContent(
+		"写保护未验证",
+	);
+});

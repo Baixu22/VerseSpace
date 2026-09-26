@@ -4,6 +4,20 @@
 	"defaultClass": "unclassified",
 	"sizeLimitBytes": 10485760,
 	"sizeExceptions": [],
+	"acceptedLocalReferences": [
+		{
+			"referrer": "docs/handoff/2026-09-25-upload-surface-round.md",
+			"localPaths": [
+				"docs/live-model-evidence-2026-09-07.json",
+				"docs/positioning-v5.md",
+				"docs/report-2026-09-05-claude-fork-inheritance.md",
+				"docs/report-2026-09-07-live-model.md",
+				"docs/tf0136-l3-cut-verdict.md",
+				"docs/tf0136-verdict.md"
+			],
+			"why": "2026-09-26 收尾裁决：这 6 份材料维持本机。理由按 ADR-0020 判据逐条成立——live-model-evidence 是原始 dump（换机不可复算）、positioning-v5 是调研原稿、其余按日期报告与裁决已被 docs/handoff/2026-09-26-research-closeout.md 接管。这里保留的是 2026-09-25 那份交接记录 §5 的「6 条待裁决」表格本身：该表记录的就是这次裁决，读者在同一张表里被告知这些材料留本机，所以它不是换机会跟空的指针。别处的引用已逐条改掉；新增条目必须在评审 diff 里可见并说明理由。"
+		}
+	],
 	"classes": {
 		"outcome": {
 			"upload": true,

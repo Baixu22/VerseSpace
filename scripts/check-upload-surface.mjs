@@ -54,6 +54,7 @@ import {
 	classifyPath,
 	compilePolicy,
 	evaluate,
+	isAcceptedLocalReference,
 } from "./upload-surface/classify.mjs";
 import { loadPolicy } from "./upload-surface/policy-loader.mjs";
 
@@ -125,7 +126,12 @@ try {
 	);
 }
 
-const report = { status: "cannot-measure", violations: [], referenceNotes: [] };
+const report = {
+	status: "cannot-measure",
+	violations: [],
+	referenceNotes: [],
+	acceptedReferences: [],
+};
 
 if (measured) {
 	const policy = loadPolicy({
@@ -193,6 +199,9 @@ if (measured) {
 	const localDocs = ignored.filter((path) => path.startsWith("docs/"));
 	if (localDocs.length > 0) {
 		const compiled = compilePolicy(policy);
+		const accepted = policy.acceptedLocalReferences ?? [];
+		// Every referrer, not just the first. Recording only the first would let an
+		// accepted referrer mask an unaccepted one pointing at the same local doc.
 		const referenced = new Map();
 		for (const path of uploaded) {
 			if (!path.endsWith(".md")) {
@@ -209,23 +218,42 @@ if (measured) {
 				continue;
 			}
 			for (const local of localDocs) {
-				if (text.includes(local) && !referenced.has(local)) {
-					referenced.set(local, path);
+				if (!text.includes(local)) {
+					continue;
 				}
+				if (!referenced.has(local)) {
+					referenced.set(local, new Set());
+				}
+				referenced.get(local).add(path);
 			}
 		}
-		for (const [local, referrer] of referenced) {
+		for (const [local, referrers] of referenced) {
+			const isAccepted = (referrer) =>
+				isAcceptedLocalReference(accepted, local, referrer);
+			const pending = [...referrers].filter(
+				(referrer) => !isAccepted(referrer),
+			);
+			const decided = [...referrers].filter(isAccepted);
 			const entry = {
 				code: "referenced-but-local",
 				side: "local-only",
 				path: local,
 				class: classifyPath(compiled, local).class,
-				detail: `被已入库文件 ${referrer} 引用，但本身不在上传面内；换机读者会跟到空指针`,
+				referrers: [...referrers],
+				detail: pending.length
+					? `被已入库文件 ${pending.join(", ")} 引用，但本身不在上传面内；换机读者会跟到空指针`
+					: `被 ${decided.join(", ")} 引用；该引用已在 policy.acceptedLocalReferences 里记为已裁决`,
 			};
-			if (STRICT_REFERENCES) {
-				report.violations.push(entry);
+			if (pending.length > 0) {
+				if (STRICT_REFERENCES) {
+					report.violations.push(entry);
+				} else {
+					report.referenceNotes.push(entry);
+				}
 			} else {
-				report.referenceNotes.push(entry);
+				// Reported either way: an accepted reference is a decision on the
+				// record, not something the gate should quietly swallow.
+				report.acceptedReferences.push(entry);
 			}
 		}
 		report.status = report.violations.length > 0 ? "violations" : "clean";
@@ -285,6 +313,18 @@ if (AS_JSON) {
 		}
 		if (referenceNotes.length > SHOW) {
 			console.log(`    … 其余 ${referenceNotes.length - SHOW} 条见 --json`);
+		}
+	}
+	const acceptedReferences = report.acceptedReferences ?? [];
+	if (acceptedReferences.length > 0) {
+		console.log(
+			`  已裁决（referenced-but-local）${acceptedReferences.length} 条 — 引用已在 policy.acceptedLocalReferences 里逐条记录，不再阻塞门禁`,
+		);
+		for (const entry of acceptedReferences.slice(0, SHOW)) {
+			console.log(`    · ${entry.path} ← ${entry.detail}`);
+		}
+		if (acceptedReferences.length > SHOW) {
+			console.log(`    … 其余 ${acceptedReferences.length - SHOW} 条见 --json`);
 		}
 	}
 }

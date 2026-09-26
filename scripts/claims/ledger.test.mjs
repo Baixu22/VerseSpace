@@ -28,6 +28,7 @@ const reading = {
 	instrument_sha256: "scripts/a.mjs:aaa",
 	subject_sha: "deadbeef",
 	reading: { sites: 140 },
+	instrument_exit: 0,
 };
 const hashes = { "scripts/a.mjs": "aaa" };
 
@@ -122,11 +123,11 @@ test("contradicted: a reading claims an exit code the instrument did not produce
 });
 
 test("L3 (retired instrument) is an observation, never evidence", () => {
-	const l3 = { ...claim, class: "L3" };
+	const l3 = { ...claim, class: "L3", retired_reason: "实验定义已被取代" };
 	const rows = evaluateClaims({
 		claims: [l3],
 		readings: [reading],
-		instrumentHashes: hashes,
+		instrumentHashes: {},
 		changedSinceBySha: {},
 	});
 	assert.equal(rows.rows[0].status, CLAIM_STATUS.observation);
@@ -152,4 +153,64 @@ test("glob: ** spans zero or more segments, * stays inside one", () => {
 	assert.equal(matchesGlob("evidence/**", "evidence/readings/a.json"), true);
 	assert.equal(matchesGlob("scripts/*.mjs", "scripts/a.mjs"), true);
 	assert.equal(matchesGlob("scripts/*.mjs", "scripts/sub/a.mjs"), false);
+});
+
+test("a failed suite, mistyped values and missing execution cannot certify success", () => {
+	const suite = {
+		...claim,
+		reading_shape: { pass: "number", fail: "number" },
+		expected: { fail: 0 },
+		minimum: { pass: 1 },
+	};
+	for (const [values, exit] of [
+		[{ pass: 0, fail: 1 }, 1],
+		[{ pass: "12", fail: 0 }, 0],
+		[{ pass: 0, fail: 0 }, 0],
+		[{ pass: 12, fail: 0 }, null],
+		[{ pass: Number.NaN, fail: 0 }, 0],
+	]) {
+		assert.notEqual(
+			evaluateClaim(
+				suite,
+				{ ...reading, reading: values, instrument_exit: exit },
+				hashes,
+				[],
+			).status,
+			CLAIM_STATUS.valid,
+		);
+	}
+	assert.equal(
+		evaluateClaim(
+			suite,
+			{ ...reading, reading: { pass: 12, fail: 0 }, instrument_exit: 0 },
+			hashes,
+			[],
+		).status,
+		CLAIM_STATUS.valid,
+	);
+});
+
+test("a reading without a subject revision is not current evidence", () => {
+	assert.equal(
+		evaluateClaim(claim, { ...reading, subject_sha: undefined }, hashes, [])
+			.status,
+		CLAIM_STATUS.badShape,
+	);
+});
+
+test("registered workbench evidence includes the scanner it imports", async () => {
+	const { readFile } = await import("node:fs/promises");
+	const { claims } = JSON.parse(
+		await readFile(
+			new URL("../../evidence/claims.json", import.meta.url),
+			"utf8",
+		),
+	);
+	const suite = claims.find((c) => c.id === "claim-workbench-suite");
+	assert.ok(
+		suite.subject_paths.some((g) =>
+			matchesGlob(g, "packages/context-rot/src/scan.ts"),
+		),
+	);
+	assert.ok(suite.subject_paths.includes("bun.lock"));
 });

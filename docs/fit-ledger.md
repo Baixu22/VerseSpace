@@ -79,7 +79,7 @@
 
 ### 判决四：L3：证据不足
 
-继续延后 L3 复评：TF-0099 / TF-0100 / TF-0101 已于 2026-09-09 废止（docs/tf0136-l3-cut-verdict.md），本判据只记录自然使用是否曾达门槛；工程开发照常推进。
+继续延后 L3 复评：TF-0099 / TF-0100 / TF-0101 已于 2026-09-09 废止（docs/handoff/2026-09-26-research-closeout.md（历史资料处置；不代表旧读数重新验证）），本判据只记录自然使用是否曾达门槛；工程开发照常推进。
 
 | 来源 | 实测 | 判据 |
 | --- | --- | --- |
@@ -141,7 +141,7 @@
 | TF-0125 fork 继承事实拆分：transcript / agent context / premise | 部件 | done | `partial` | 落定过三种继承事实的分叉数 | 47 | 实测 47，来源 events[thread.inheritance_observed] |
 | TF-0138 ADR：前提守护架构与产品边界 | 决策/实验/修复 | done | `unknown`（结构性） | 架构边界是否被后续评审引用 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/decisions/0010-premise-custody.md（已接受） |
 | TF-0139 会话观测埋点：switch / restored / 恢复事实消费 | 部件 | done | `partial` | 会话观测埋点合计（切换 + 恢复 + 笔记消费 + 恢复动作） | 179 | 实测 179，来源 stats.lifecycle.* |
-| TF-0140 Claude 上下文继承三问实验（10 分钟，成败皆 done） | 决策/实验/修复 | done | `unknown`（结构性） | 实验结论是否改变了下游决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/report-2026-09-05-claude-fork-inheritance.md；已定形 TF-0131 并修订 ADR-0010 §5 |
+| TF-0140 Claude 上下文继承三问实验（10 分钟，成败皆 done） | 决策/实验/修复 | done | `unknown`（结构性） | 实验结论是否改变了下游决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/handoff/2026-09-26-research-closeout.md（历史资料处置；不代表旧读数重新验证）；已定形 TF-0131 并修订 ADR-0010 §5 |
 | TF-0142 通知通道语义与测试 | 部件 | done | `unknown`（证据缺口） | 被显式标成不可观测的通道数（HTTP 无工具通道） | 0 | insufficient-history：stats.noticeOutcomes.agent.unknownBy.unobservable 无样本；处置：fixture 通道语义测试验证 unknownBy.unobservable 计数路径活着；不在 live 现场造样本 |
 | TF-0143 足迹追加写路径预算与基准 | 部件 | done | `partial` | 有足迹的线程数（写路径预算的分母） | 72 | 实测 72，来源 stats.threads.withFootprints |
 | TF-0144 提交闸门：已实现的前提守护代码落库并对齐森林状态 | 决策/实验/修复 | done | `unknown`（结构性） | 提交闸门是否真的挡住了『代码领先森林』 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：git log（TF-0144 之后的落库批次） |
@@ -160,9 +160,10 @@
 | TF-0133 通知预算：每轮一束 + 家族折叠 | 部件 | done | `partial` | 实际交付的通知束数（预算与折叠正确性另由契约测试验证） | 65 | 实测 65，来源 events[premise_notice_delivered]；不以 queued 充当 delivered |
 | TF-0134 封印观测与降级模式 | 部件 | done | `partial` | 封印决策次数（护城河 C 的分母） | 27 | 实测 27，来源 stats.seal.decisions |
 | TF-0135 阶段 D：fit 门与范围仲裁 | 里程碑 | done | `unknown` | 里程碑本身不是部件，fit 由其子节点上卷 | 无样本 | 里程碑不单独计 fit，避免把子节点的 unknown 重复计一次 |
-| TF-0136 两周真实使用门与 L3 证据门 | 决策/实验/修复 | done | `unknown`（结构性） | 四项判决是否改变了下游决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/tf0136-verdict.md；scripts/fit-ledger/verdicts.ts（四项判据；L3 延后） |
+| TF-0136 两周真实使用门与 L3 证据门 | 决策/实验/修复 | done | `unknown`（结构性） | 四项判决是否改变了下游决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/handoff/2026-09-26-research-closeout.md（历史资料处置；不代表旧读数重新验证）；scripts/fit-ledger/verdicts.ts（四项判据；L3 延后） |
 | TF-0137 fit 账本与砍留决策 | 决策/实验/修复 | done | `unknown`（结构性） | 账本是否被引用于一次真实砍留决策 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/fit-ledger.md；判决归 TF-0136，账本只提供行与来源 |
 | TF-0141 日用起点 t0 登记与两周观察窗口 | 部件 | done | `partial` | t0 是否已登记：真实线程数（判据的一半，另一半是注册写者） | 97 | 实测 97，来源 stats.threads.total × sessions/* |
 | TF-0154 地标认可反馈：L1 验收的事件通道 | 部件 | done | `unknown`（证据缺口） | L1 认可率：已认可地标 / 全部当前地标，按写者隔离并取最新复核；≥0.8 为 aligned | 0.3333333333333333 | 来源 live-model 不是自然使用：实测 0.3333333333333333 只反映脚本或模型运行安排的复核手势，不构成用户认可，fit 停在 unknown；来源 stats.landmarkReviews.current.endorsedShare（完整集合；reviewedCoverage 单列）；处置：依赖 issue #12 的 J3 条件②（真实使用者参与复核）；不靠多跑脚本拉读数（TF-0167 §F5 已否决受控实验路线） |
-| TF-0155 真实模型执行闭环与无空会话阻塞验证 | 决策/实验/修复 | done | `unknown`（结构性） | 真实模型执行、复读恢复与持久分叉验证是否可复跑 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/report-2026-09-07-live-model.md；docs/live-model-evidence-2026-09-07.json |
+| TF-0155 真实模型执行闭环与无空会话阻塞验证 | 决策/实验/修复 | done | `unknown`（结构性） | 真实模型执行、复读恢复与持久分叉验证是否可复跑 | 无样本 | 决策/实验/修复类：无 stats 或事件可引，按纪律 2 停在 unknown；复核指路：docs/handoff/2026-09-26-research-closeout.md（历史资料处置；不代表旧读数重新验证） |
 
+2026-09-26 引用订正：旧现场数字保持历史观测身份；本机专用来源的换机入口改为研究收尾记录，未重取旧实验或推断用户收益。

@@ -4,16 +4,25 @@
 	"claims": [
 		{
 			"id": "claim-catch-sites",
-			"statement": "packages/workbench/src 的非测试代码里有 141 个 catch 站点，分布在 61 个文件",
+			"statement": "非测试 catch 站点与文件数由清点仪器生成；数字见对应读数",
 			"instrument": ["scripts/audit/catch-sites.mjs"],
-			"subject_paths": ["packages/workbench/src/**"],
+			"subject_paths": [
+				"packages/workbench/src/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
 			"reading_shape": {
 				"files": "number",
 				"sites": "number"
 			},
 			"class": "L1",
 			"reproduce": "node scripts/audit/catch-sites.mjs --json",
-			"docs": ["docs/handoff/2026-09-25-catch-after-continue-audit.md"]
+			"docs": ["docs/handoff/2026-09-25-catch-after-continue-audit.md"],
+			"minimum": {
+				"sites": 1,
+				"files": 1
+			}
 		},
 		{
 			"id": "claim-claims-gate",
@@ -22,49 +31,94 @@
 				"scripts/claims/ledger.mjs",
 				"scripts/claims/ledger.test.mjs"
 			],
-			"subject_paths": ["scripts/claims/**"],
+			"subject_paths": [
+				"scripts/claims/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
 			"reading_shape": {
 				"pass": "number",
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "node scripts/claims/ledger.test.mjs"
+			"reproduce": "node scripts/claims/ledger.test.mjs",
+			"expected": {
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 1
+			}
 		},
 		{
 			"id": "claim-workbench-suite",
 			"statement": "workbench 套件全绿（0 fail）",
 			"instrument": ["package.json", "packages/workbench/package.json"],
-			"subject_paths": ["packages/workbench/**"],
+			"subject_paths": [
+				"packages/workbench/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json",
+				"packages/context-rot/**"
+			],
 			"reading_shape": {
 				"pass": "number",
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun run test:workbench"
+			"reproduce": "bun run test:workbench",
+			"expected": {
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 1
+			}
 		},
 		{
 			"id": "claim-ui-suite",
 			"statement": "dashboard 套件全绿（0 fail）",
 			"instrument": ["package.json", "apps/workbench-ui/package.json"],
-			"subject_paths": ["apps/workbench-ui/**"],
+			"subject_paths": [
+				"apps/workbench-ui/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
 			"reading_shape": {
 				"pass": "number",
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun run test:workbench-ui"
+			"reproduce": "bun run test:workbench-ui",
+			"expected": {
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 1
+			}
 		},
 		{
 			"id": "claim-context-rot-suite",
 			"statement": "context-rot 套件全绿（0 fail）",
 			"instrument": ["package.json", "packages/context-rot/package.json"],
-			"subject_paths": ["packages/context-rot/**"],
+			"subject_paths": [
+				"packages/context-rot/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
 			"reading_shape": {
 				"pass": "number",
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun run test:context-rot"
+			"reproduce": "bun run test:context-rot",
+			"expected": {
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 1
+			}
 		},
 		{
 			"id": "claim-doctor-clean",
@@ -76,29 +130,47 @@
 				"packages/context-rot/src/file-index.ts",
 				"packages/context-rot/src/verify.ts"
 			],
-			"subject_paths": ["AGENTS.md", "CLAUDE.md", "docs/**"],
+			"subject_paths": [
+				"AGENTS.md",
+				"CLAUDE.md",
+				"docs/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json",
+				"packages/workbench/src/**",
+				"packages/context-rot/src/**",
+				".gitignore"
+			],
 			"reading_shape": {
 				"exit": "number",
 				"stale": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun packages/workbench/src/index.ts doctor"
+			"reproduce": "bun packages/workbench/src/index.ts doctor",
+			"expected": {
+				"exit": 0,
+				"stale": 0
+			}
 		},
 		{
 			"id": "claim-upload-surface-clean",
-			"statement": "上传面门禁 exit 0：双向无违规",
+			"statement": "上传面与引用检查均无违规（含 strict-references）",
 			"instrument": [
 				"scripts/check-upload-surface.mjs",
 				"scripts/upload-surface/policy.json",
 				"scripts/upload-surface/classify.mjs"
 			],
-			"subject_paths": [".gitignore", "docs/**", "scripts/**", "evidence/**"],
+			"subject_paths": ["**"],
 			"reading_shape": {
 				"exit": "number",
 				"violations": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun run check:upload-surface"
+			"reproduce": "node scripts/check-upload-surface.mjs --strict-references",
+			"expected": {
+				"exit": 0,
+				"violations": 0
+			}
 		},
 		{
 			"id": "claim-browser-e2e",
@@ -107,14 +179,28 @@
 				"scripts/win/e2e-browser.ps1",
 				"apps/workbench-ui/playwright.config.ts"
 			],
-			"subject_paths": ["apps/workbench-ui/**", "packages/workbench/src/**"],
+			"subject_paths": [
+				"apps/workbench-ui/**",
+				"packages/workbench/src/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json",
+				"packages/context-rot/**"
+			],
 			"reading_shape": {
 				"passed": "number",
 				"failed": "number",
 				"skipped": "number"
 			},
 			"class": "L1",
-			"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1"
+			"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1",
+			"expected": {
+				"failed": 0,
+				"skipped": 0
+			},
+			"minimum": {
+				"passed": 1
+			}
 		},
 		{
 			"id": "claim-lint",
@@ -125,14 +211,21 @@
 				"**/*.tsx",
 				"**/*.mjs",
 				"**/*.json",
-				"**/*.css"
+				"**/*.css",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
 			],
 			"reading_shape": {
 				"exit": "number",
 				"errors": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun run lint"
+			"reproduce": "bun run lint",
+			"expected": {
+				"exit": 0,
+				"errors": 0
+			}
 		},
 		{
 			"id": "claim-typecheck",
@@ -141,17 +234,23 @@
 			"subject_paths": [
 				"packages/workbench/**",
 				"packages/context-rot/**",
-				"apps/workbench-ui/**"
+				"apps/workbench-ui/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
 			],
 			"reading_shape": {
 				"exit": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun run typecheck"
+			"reproduce": "bun run typecheck",
+			"expected": {
+				"exit": 0
+			}
 		},
 		{
 			"id": "claim-codex-write-unsealed",
-			"statement": "真实 codex 车道在 stale premise 上的写入不受封印保护：写入落盘、0 次 seal.decided；对照（同一个 decideSeal）对同一条前提 block",
+			"statement": "历史观测（2026-09-26，ff6ac4ab）：当时的 Codex 写入落盘、seal 未介入；不代表当前版本",
 			"instrument": [
 				"packages/workbench/scripts/verify/codex-write-seal.ts",
 				"scripts/verify/codex-gateway.toml"
@@ -159,7 +258,10 @@
 			"subject_paths": [
 				"packages/workbench/src/chat/**",
 				"packages/workbench/src/runtime/seal.ts",
-				".claude/settings.json"
+				".claude/settings.json",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
 			],
 			"reading_shape": {
 				"staleClaims": "number",
@@ -167,9 +269,62 @@
 				"sealEventsAfterCodex": "number",
 				"controlDecision": "string"
 			},
-			"class": "L2",
+			"class": "L3",
 			"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --json",
-			"docs": ["docs/handoff/2026-09-26-codex-write-unsealed.md"]
+			"docs": ["docs/handoff/2026-09-26-codex-write-unsealed.md"],
+			"retired_reason": "原实验定义在审批接线与 own-stale 对照加入后已退役，原始读数只解释旧版本；见 ADR-0023。",
+			"expected": {
+				"staleClaims": 1,
+				"writeLanded": true,
+				"sealEventsAfterCodex": 0,
+				"controlDecision": "block"
+			}
+		},
+		{
+			"id": "claim-premise-contract",
+			"statement": "合成前提检测的 11 个既定场景均满足契约；不代表真实用户精度",
+			"instrument": ["packages/workbench/scripts/benchmark-premises.ts"],
+			"subject_paths": [
+				"packages/workbench/**",
+				"packages/context-rot/**",
+				"bun.lock",
+				"package.json",
+				"evidence/claims.json"
+			],
+			"reading_shape": {
+				"passed": "number",
+				"total": "number"
+			},
+			"expected": {
+				"passed": 11,
+				"total": 11
+			},
+			"class": "L1",
+			"reproduce": "bun packages/workbench/scripts/benchmark-premises.ts --json"
+		},
+		{
+			"id": "claim-built-shapes",
+			"statement": "当前源码的本机二进制与 JS 构建形态均通过隔离冒烟",
+			"instrument": [
+				"packages/workbench/scripts/build.ts",
+				"packages/workbench/scripts/check-built.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/**",
+				"packages/context-rot/**",
+				"apps/workbench-ui/**",
+				"bun.lock",
+				"package.json",
+				"evidence/claims.json"
+			],
+			"reading_shape": {
+				"exit": "number"
+			},
+			"expected": {
+				"exit": 0
+			},
+			"class": "L1",
+			"reproduce": "cd packages/workbench && bun run build && bun run test:build"
 		}
 	]
 }

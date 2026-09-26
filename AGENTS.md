@@ -117,7 +117,7 @@ subcommand lives in `src/commands/` and supports `--json` / `--quiet`.
 | `scheduler/` | Dispatch, dispatch guards/recovery, merge guard, branch-in-use, WIP, notifications, tick. |
 | `verifier/` | Runs a checkpoint's declared verification strategy and classifies the result (`passed` / `failed` / `needs_human` / `timeout` / `skipped`). |
 | `supervisor/` | Process supervision: spawn, liveness watch, crash-loop detection, orphan reaping. |
-| `chat/` | Chat lanes — two supervised-CLI lanes (`claude` and `codex`, both with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. The `codex` lane supervises `codex app-server` over JSON-RPC-on-stdio (`codex-app-server/`): permission requests are auto-accepted and do not call seal (`decideSeal` runs only from `workbench premises seal`); read footprints come from `commandActions[].path`, not from the approval params. User-input requests are auto-declined so a turn cannot wedge — see [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md). Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Claude and Codex fixtures under `chat/fixtures/streams/` have consumers (`claude-fixtures.test.ts`, `codex-fixtures.test.ts`); the Cursor / Kimi / OpenCode samples are retained protocol samples, **not** adapters, and live outside `src/` under `packages/workbench/fixtures/streams/` so they cannot be mistaken for test fixtures. |
+| `chat/` | Chat lanes — two supervised-CLI lanes (`claude` and `codex`, both with tool footprints) plus three HTTP lanes (`openai-chat`, `openai-responses`, `anthropic`, not observable), streaming, render state, threads, branch engagement, stats. The `claude` lane spawns the read-only ledger MCP server into the CLI (`claude-mcp.ts` → `--mcp-config`), so the model can query premises/footprints/resume_cards/tribunal/notices mid-turn; `WORKBENCH_CLAUDE_MCP=off` opts out. The `codex` lane supervises `codex app-server` over JSON-RPC-on-stdio (`codex-app-server/`): attributable write approvals consult seal before the default accept reply; this is experimental and does not guarantee write protection (ADR-0023); read footprints come from `commandActions[].path`, not from the approval params. User-input requests are auto-declined so a turn cannot wedge — see [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md). Premise notices folded into a turn are also recorded as `notice` parts on that user message. The Claude and Codex fixtures under `chat/fixtures/streams/` have consumers (`claude-fixtures.test.ts`, `codex-fixtures.test.ts`); the Cursor / Kimi / OpenCode samples are retained protocol samples, **not** adapters, and live outside `src/` under `packages/workbench/fixtures/streams/` so they cannot be mistaken for test fixtures. |
 | `agents/` | Spawns agent sessions, captures their tool footprints, records per-session usage. |
 | `interactions/` | The user-feedback side: interest/context derivation, landmark projection, review queue, review stats (DOI). |
 | `tribunal/` | The human-decision queue: kinds, escalation, rationalization, queue store/stats, envelopes. |
@@ -209,14 +209,14 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
   `thresholds.checkpointTimeout` is the verifier's default when a checkpoint declares none;
   `thresholds.idleNotification` raises one notification per silent window while a workspot is
   active; `protection.gitHook` and `config.project` are asserted by `doctor`.
-- **The seal is a hook-only interception point.** `decideSeal` runs from exactly one place —
-  the Claude Code **PreToolUse** hook (`workbench premises seal`, wired in `.claude/settings.json`).
-  `runtime/apply.ts` reconciles premises and emits notices but never seals. So a writer that does
-  **not** pass through that hook is never blocked on a stale premise: **git, a bare editor, and the
-  `codex` lane all write without sealing** (the codex half is [ADR-0017](docs/decisions/0017-second-observable-provider-integration.md);
-  the general rule is stated here). `protection.readonlyAreas` has the same reach — it is enforced
-  *at* the seal point, so it too only covers hook-routed writes. Do not describe the seal as a
-  ledger-wide write guard; it guards the Claude Code lane.
+- **The seal is not a repository-wide write guard.** Claude Code reaches it through
+  the PreToolUse hook (`workbench premises seal`); only matcher-routed tools are
+  intercepted. Codex also consults it for attributable write approvals, but missing
+  read footprints, absent approvals, unknown targets and fail-open errors leave
+  writes unprotected. Treat Codex as experimental, including readonly-area
+  protection. Git and bare editors bypass both interception points. See
+  [ADR-0023](docs/decisions/0023-research-prototype-closeout.md).
+
 - **Linting**: Biome, tab indent. `lint-staged` enforces on pre-commit.
 - **Testing**: `bun test` for `packages/workbench` and `packages/context-rot`; Vitest + jsdom
   for `apps/workbench-ui`. Tests are co-located with source.

@@ -4,7 +4,7 @@
 > 1. 从下方分隔线开始整段复制给 Fable 5.1,无需附加任何文件。
 > 2. 预算只够一次调用时:提示词已分级(必答 Q0/Q1/Q2/Q6 → 第二优先 → 第三优先),模型按 D1 交付规则处理未答题,不会静默跳过;追问轮可直接引用题号续问。
 > 3. 分发前两个动作:①复查外部事实"Claude Code /branch /fork --fork-session 已上线、issue #32631(fork+merge-back+树导航全规格)仍开"(核实于 2026-09-02,快变领域);②把工作区 1267 行在途改动提交、修掉 server.test.ts:518 的 respawn 红测试(当前 3/3 稳定失败,600ms 固定等待 vs Windows 慢 FS)。
-> 4. 原始材料存于 docs/fable-brief/01、02、03、04 + docs/positioning-v5/v6.md + docs/decisions/0006..0009,供你核对,不随提示词发送。
+> 4. 原始材料存于 docs/fable-brief/01、02、03、04 + docs/decisions/0010-premise-custody.md（当前边界；定位原稿仅本机保存） + docs/decisions/0006..0009,供你核对,不随提示词发送。
 
 ---
 
@@ -103,7 +103,7 @@ T1 产品身份断裂(README vs 定位文档)。T2 DOI 无人消费(带 p 值背
 
 ### 3.10 材料出处(供引用,不随本提示词发送)
 
-docs/positioning-v5.md、v6.md;docs/decisions/0006..0009;docs/fable-brief/01–04(完整审计)。外部:anthropics/claude-code issues #32631、#69712;stravu/crystal→Nimbalyst;CoAgent arXiv:2606.15376;ConE arXiv:2101.06542;CALM(Hellerstein & Alvaro 2020);Mylyn(Kersten & Murphy);METR 2025 RCT。
+docs/decisions/0010-premise-custody.md（定位原稿为本机历史材料）;docs/decisions/0006..0009;docs/fable-brief/01–04(完整审计)。外部:anthropics/claude-code issues #32631、#69712;stravu/crystal→Nimbalyst;CoAgent arXiv:2606.15376;ConE arXiv:2101.06542;CALM(Hellerstein & Alvaro 2020);Mylyn(Kersten & Murphy);METR 2025 RCT。
 
 ---
 

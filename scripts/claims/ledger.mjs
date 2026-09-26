@@ -49,6 +49,50 @@ export function instrumentKey(claim, instrumentHashes) {
 	return hashOf(claim, instrumentHashes);
 }
 
+/** Shared by the gate and recorder: freshness cannot rescue a false reading. */
+export function readingProblem(claim, reading) {
+	const bad = (detail) => ({ status: CLAIM_STATUS.badShape, detail });
+	const contradicted = (detail) => ({
+		status: CLAIM_STATUS.contradicted,
+		detail,
+	});
+	if (typeof reading.subject_sha !== "string" || !reading.subject_sha.trim())
+		return bad("缺 subject_sha");
+	if (claim.class === "L3" && !claim.retired_reason?.trim())
+		return bad("历史观测必须说明仪器或实验定义为何退役");
+	const values = reading.reading;
+	if (!values || typeof values !== "object" || Array.isArray(values))
+		return bad("reading 必须是对象");
+	for (const [key, type] of Object.entries(claim.reading_shape ?? {})) {
+		if (
+			!Object.hasOwn(values, key) ||
+			typeof values[key] !== type ||
+			(type === "number" && !Number.isFinite(values[key]))
+		)
+			return bad(`${key} 必须为 ${type}`);
+	}
+	if (!Number.isInteger(reading.instrument_exit))
+		return bad("缺实际 instrument_exit");
+	if (reading.instrument_exit !== 0 && claim.expects_nonzero_exit !== true)
+		return contradicted(`仪器实际 exit=${reading.instrument_exit}`);
+	if (
+		typeof values.exit === "number" &&
+		values.exit !== reading.instrument_exit
+	)
+		return contradicted(
+			`读数 exit 与仪器实际 exit=${reading.instrument_exit} 不一致`,
+		);
+	for (const [key, expected] of Object.entries(claim.expected ?? {})) {
+		if (values[key] !== expected)
+			return contradicted(`${key} 不满足声明的值 ${JSON.stringify(expected)}`);
+	}
+	for (const [key, minimum] of Object.entries(claim.minimum ?? {})) {
+		if (!Number.isFinite(values[key]) || values[key] < minimum)
+			return contradicted(`${key} 必须 >= ${minimum}`);
+	}
+	return null;
+}
+
 /**
  * Evaluate one claim.
  *
@@ -60,44 +104,22 @@ export function instrumentKey(claim, instrumentHashes) {
 export function evaluateClaim(claim, reading, instrumentHashes, changedSince) {
 	if (!reading) return { id: claim.id, status: CLAIM_STATUS.missingReading };
 
-	const currentInstrument = hashOf(claim, instrumentHashes);
-	if (currentInstrument === null) {
-		return { id: claim.id, status: CLAIM_STATUS.missingInstrument };
-	}
-
-	// Shape first: a reading that does not carry the numbers the claim is about
-	// cannot support it, however fresh it is.
-	const shape = claim.reading_shape ?? {};
-	for (const key of Object.keys(shape)) {
-		if (!(key in (reading.reading ?? {}))) {
-			return {
-				id: claim.id,
-				status: CLAIM_STATUS.badShape,
-				detail: `缺 ${key}`,
-			};
-		}
-	}
-
-	if (reading.instrument_sha256 !== currentInstrument) {
-		return { id: claim.id, status: CLAIM_STATUS.staleInstrument };
-	}
-
-	// A reading whose own exit code contradicts what it recorded is a false
-	// reading, and freshness does not fix it. `instrument_exit` is measured by the
-	// recorder (`--run`); `exit` is what the claim says the instrument returns.
-	// Measured 2026-09-26: a hand-typed `exit: 0` was recorded while `bun run lint`
-	// had actually exited 1 — the recorder accepted whatever it was told.
-	if (
-		typeof reading.reading?.exit === "number" &&
-		typeof reading.instrument_exit === "number" &&
-		reading.reading.exit !== reading.instrument_exit
-	) {
+	const problem = readingProblem(claim, reading);
+	if (problem) return { id: claim.id, ...problem };
+	// A retired experiment stays attributable to its recorded revision; it never
+	// certifies the current tree, even if its old instrument no longer exists.
+	if (claim.class === "L3") {
 		return {
 			id: claim.id,
-			status: CLAIM_STATUS.contradicted,
-			detail: `读数记 exit=${reading.reading.exit}，仪器实际 exit=${reading.instrument_exit}`,
+			status: CLAIM_STATUS.observation,
+			detail: claim.retired_reason,
 		};
 	}
+	const currentInstrument = hashOf(claim, instrumentHashes);
+	if (currentInstrument === null)
+		return { id: claim.id, status: CLAIM_STATUS.missingInstrument };
+	if (reading.instrument_sha256 !== currentInstrument)
+		return { id: claim.id, status: CLAIM_STATUS.staleInstrument };
 
 	// `subject_paths` is what makes this precise: a docs-only commit must not
 	// invalidate a test reading, and a one-line change inside the tested package
@@ -114,12 +136,6 @@ export function evaluateClaim(claim, reading, instrumentHashes, changedSince) {
 		};
 	}
 
-	if (claim.class === "L3") {
-		// Single observation: the instrument is gone, so this can never be
-		// re-taken. It is recorded honestly as an observation and never counts as
-		// evidence for a `done`.
-		return { id: claim.id, status: CLAIM_STATUS.observation };
-	}
 	return { id: claim.id, status: CLAIM_STATUS.valid };
 }
 

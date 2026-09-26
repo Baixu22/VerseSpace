@@ -4,6 +4,8 @@
 
 状态保存在项目内的 `.workbench/`（YAML + JSONL），不依赖数据库或指定编辑器。CLI 与本地面板读取同一份账本；agent 通过 MCP 与 stdin 获取通知，人通过恢复卡查看变化，需要人工判断的事项进入裁决队列。足迹覆盖有限，沉默不代表前提全部有效。
 
+本仓库当前按面向个人开发者的**工程研究原型**收尾：能力、可复跑证据和限制见[研究收尾记录](docs/handoff/2026-09-26-research-closeout.md)。效率收益与跨平台运行仍未得到本轮验证。
+
 ## 开始使用
 
 从 [VerseSpace Releases](https://github.com/Baixu22/VerseSpace/releases) 下载对应平台的 `workbench-*` 单文件可执行程序，放入 PATH 并命名为 `workbench`（Windows 为 `workbench.exe`）。二进制内含运行时与面板，无需另装 Bun。

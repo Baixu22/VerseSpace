@@ -26,14 +26,10 @@ const USER_INPUT_METHODS = new Set([
 ]);
 
 /**
- * ADR-0017 interaction policy. Permission requests are auto-accepted.
- * This does not consult seal. `decideSeal` runs only from
- * `workbench premises seal` (the Claude Code PreToolUse hook). A codex
- * write is not blocked here when a premise is stale. Read footprints that
- * do land come later from `commandActions[].path` (`codex-footprint.ts`);
- * approval params are not parsed — no retained fixture documents their
- * shape. User-input requests are auto-declined so the turn cannot wedge.
- * Anything else is still answered so the server is not left waiting.
+ * Default reply policy. session.ts consults sealApproval for attributable write
+ * approvals before using this default. It is experimental: missing approvals,
+ * unobserved reads and unattributable targets are not protected (ADR-0023).
+ * User-input requests are declined so a turn cannot wedge.
  */
 export function decideServerRequest(method: string): ServerRequestDecision {
 	if (APPROVAL_METHODS.has(method)) {

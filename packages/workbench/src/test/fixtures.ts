@@ -31,10 +31,13 @@ export async function makeTempWorkbench(): Promise<TempWorkbench> {
 					return;
 				} catch (error) {
 					const code = (error as NodeJS.ErrnoException).code;
-					if (attempt >= 4 || (code !== "EBUSY" && code !== "ENOTEMPTY")) {
+					if (
+						attempt >= (process.platform === "win32" ? 80 : 4) ||
+						(code !== "EBUSY" && code !== "ENOTEMPTY")
+					) {
 						throw error;
 					}
-					await new Promise((resolve) => setTimeout(resolve, 150));
+					await new Promise((resolve) => setTimeout(resolve, 250));
 				}
 			}
 		},

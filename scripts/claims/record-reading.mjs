@@ -22,7 +22,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { instrumentKey } from "./ledger.mjs";
+import { instrumentKey, readingProblem } from "./ledger.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -76,6 +76,10 @@ const rawPath =
 	argValue("--raw") ?? join(REPO, "evidence", "raw", `${claimId}.txt`);
 const command = argValue("--reproduce") ?? claim.reproduce ?? null;
 let instrumentExit = null;
+if (!process.argv.includes("--run")) {
+	console.error("记录当前证据必须使用 --run；不能用手填退出码代替执行");
+	process.exit(2);
+}
 if (process.argv.includes("--run")) {
 	if (!command) {
 		console.error(`声明 ${claimId} 没有 reproduce 命令，无法 --run`);
@@ -89,6 +93,10 @@ if (process.argv.includes("--run")) {
 		maxBuffer: 64 * 1024 * 1024,
 	});
 	writeFileSync(rawPath, `${result.stdout ?? ""}${result.stderr ?? ""}`);
+	if (result.error || result.status === null) {
+		console.error(`仪器未完成：${result.error?.message ?? result.signal}`);
+		process.exit(2);
+	}
 	instrumentExit = result.status;
 	console.log(`  已跑仪器：${command} → exit ${instrumentExit}`);
 }
@@ -138,6 +146,11 @@ const reading = {
 	class: claim.class === "L1" ? "curated-evidence" : "process-evidence",
 };
 
+const problem = readingProblem(claim, reading);
+if (problem) {
+	console.error(`拒绝记录：${problem.detail}`);
+	process.exit(2);
+}
 mkdirSync(join(REPO, "evidence", "readings"), { recursive: true });
 const out = join(REPO, "evidence", "readings", `${claimId}.json`);
 // Tab-indented on purpose: `bun run lint` (biome) checks these files, so writing
