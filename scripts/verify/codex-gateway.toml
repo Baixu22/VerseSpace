@@ -18,6 +18,11 @@ model = "glm-5.3-flash"
 model_provider = "wb_verify"
 model_reasoning_effort = "high"
 sandbox_mode = "danger-full-access"
+# TF-0263 option A 的前提：codex 必须**询问审批**，否则写根本不经过 approval 请求，
+# 封印就没有拦截点（实测 2026-09-26：不询问时写入直接落盘，seal 一次都没被咨询）。
+# sandbox 必须同时允许写入，否则「封印挡住了」与「codex 沙箱挡住了」无法区分；
+# 判据只能靠对照——同样的配置下，前提新鲜时写入应当成功。
+approval_policy = "on-request"  # "untrusted" 在 codex 0.158 已废弃（实测报错）
 
 # Windows: 不设 [windows] sandbox 时 codex 会退回 read-only（实测 2026-09-26）。
 # 验证写侧必须让 codex 真的能写——否则无法区分「seal 挡住」与「codex 挡住」。

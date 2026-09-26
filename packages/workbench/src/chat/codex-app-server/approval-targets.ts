@@ -1,0 +1,111 @@
+/**
+ * Which paths does a codex approval request touch? (TF-0263 option A.)
+ *
+ * ADR-0017 recorded that approval params were not parsed "because no retained
+ * fixture documents their shape". That left the codex write side outside the seal
+ * entirely. To bring it in we have to read the params, so this module is
+ * deliberately **pure and conservative**: it looks for path-bearing fields at a
+ * bounded depth and for write redirections inside a command string, and it says
+ * `unknown` rather than guessing when it finds nothing.
+ *
+ * `unknown` is not a pass. The caller must not pretend an unattributable approval
+ * was guarded — see `answerServerRequest` in session.ts.
+ */
+
+const APPROVAL_METHODS = new Set([
+	"item/commandExecution/requestApproval",
+	"item/fileChange/requestApproval",
+	"item/fileRead/requestApproval",
+]);
+
+/** Field names that carry a path, anywhere in the params object. */
+const PATH_FIELDS = new Set([
+	"path",
+	"file",
+	"filepath",
+	"file_path",
+	"target",
+	"targetpath",
+	"target_path",
+	"abspath",
+	"abs_path",
+	"cwd",
+]);
+
+/** A write redirection or a write verb inside a shell command. */
+const WRITE_COMMAND =
+	/(?:^|[^>])>>?\s*("[^"]+"|'[^']+'|[^\s|;&<>]+)|\btee\s+(?:-a\s+)?("[^"]+"|'[^']+'|[^\s|;&<>]+)/i;
+
+export type ApprovalKind = "write" | "read" | "unknown";
+
+export interface ApprovalTargets {
+	/** False when the method is not an approval request at all. */
+	isApproval: boolean;
+	kind: ApprovalKind;
+	/** Repo-relative or absolute paths the request appears to touch. */
+	paths: string[];
+}
+
+function isApprovalMethod(method: string): boolean {
+	return APPROVAL_METHODS.has(method);
+}
+
+function collectPaths(value: unknown, out: Set<string>, depth: number): void {
+	if (depth > 4 || value === null || typeof value !== "object") return;
+	if (Array.isArray(value)) {
+		for (const entry of value) collectPaths(entry, out, depth + 1);
+		return;
+	}
+	for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+		if (
+			PATH_FIELDS.has(key.toLowerCase()) &&
+			typeof entry === "string" &&
+			entry
+		) {
+			out.add(entry);
+			continue;
+		}
+		collectPaths(entry, out, depth + 1);
+	}
+}
+
+function writeTargetsFromCommand(command: string): string[] {
+	const found: string[] = [];
+	for (const match of command.matchAll(new RegExp(WRITE_COMMAND, "gi"))) {
+		const raw = match[1] ?? match[2];
+		if (!raw) continue;
+		const cleaned = raw.replace(/^["']|["']$/g, "");
+		// Skip obvious non-paths (e.g. `> /dev/null`).
+		if (!cleaned || cleaned.startsWith("&")) continue;
+		found.push(cleaned);
+	}
+	return found;
+}
+
+export function approvalTargets(
+	method: string,
+	params: unknown,
+): ApprovalTargets {
+	if (!isApprovalMethod(method)) {
+		return { isApproval: false, kind: "unknown", paths: [] };
+	}
+	const paths = new Set<string>();
+	collectPaths(params, paths, 0);
+	const record = (params ?? {}) as Record<string, unknown>;
+	const command = typeof record.command === "string" ? record.command : "";
+	const fromCommand = writeTargetsFromCommand(command);
+	for (const path of fromCommand) paths.add(path);
+
+	if (method === "item/fileRead/requestApproval") {
+		return { isApproval: true, kind: "read", paths: [...paths] };
+	}
+	if (method === "item/fileChange/requestApproval") {
+		return { isApproval: true, kind: "write", paths: [...paths] };
+	}
+	// commandExecution: only a write if the command actually redirects somewhere.
+	return {
+		isApproval: true,
+		kind: fromCommand.length > 0 ? "write" : "unknown",
+		paths: [...paths],
+	};
+}

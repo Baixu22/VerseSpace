@@ -1,5 +1,6 @@
 import type { ProcHandle } from "../../supervisor";
 import { spawnSupervised } from "../../supervisor";
+import { type ApprovalTargets, approvalTargets } from "./approval-targets";
 import {
 	asRecord,
 	CLIENT_INFO,
@@ -50,6 +51,15 @@ export interface CodexAppServerOptions {
 	/** Raw stderr line (diagnostics only). */
 	onStderr?: (line: string) => void;
 	commandLine?: string;
+	/**
+	 * The seal point for codex's write side (TF-0263 option A). Called for an
+	 * approval request whose target paths could be attributed; returning
+	 * `{ blocked: true }` turns the approval into a decline. Absent = ADR-0017's
+	 * old behaviour (auto-accept), which is what a caller without a ledger wants.
+	 */
+	sealApproval?: (
+		target: ApprovalTargets,
+	) => Promise<{ blocked: boolean; reason?: string }>;
 }
 
 export function createCodexAppServer(
@@ -164,9 +174,21 @@ export function createCodexAppServer(
 			}
 			return;
 		}
-		// Server-initiated request (has id AND method) — answer per ADR-0017.
+		// Server-initiated request (has id AND method) — answer per ADR-0017, with
+		// the seal consulted for write approvals (TF-0263 option A). Consulting the
+		// seal is a ledger read, so this is async; the server must never be left
+		// waiting, hence the catch still answers with the policy default.
 		if (message.id !== undefined && message.method) {
-			answerServerRequest(message.id, message.method);
+			const id = message.id;
+			const method = message.method;
+			void answerServerRequest(id, method, message.params).catch(
+				(error: unknown) => {
+					options.onStderr?.(
+						`[codex] 审批应答失败，按默认放行：${(error as Error).message}`,
+					);
+					write({ id, result: { decision: "accept" } });
+				},
+			);
 			return;
 		}
 		// Notification (method, no id) — normalize and forward to the router.
@@ -184,14 +206,50 @@ export function createCodexAppServer(
 		}
 	}
 
-	function answerServerRequest(id: number | string, method: string): void {
+	async function answerServerRequest(
+		id: number | string,
+		method: string,
+		params: unknown,
+	): Promise<void> {
 		const decision = decideServerRequest(method);
 		if (decision.kind === "approval") {
+			// TF-0263 option A: the codex write side now goes through the seal.
+			// ADR-0017 used to auto-accept here, which left a write onto a stale
+			// premise unblocked (measured 2026-09-26: the write landed with zero
+			// `seal.decided` events).
+			//
+			// Only *attributable* requests can be sealed. A write whose target we
+			// cannot read out of the params is NOT silently treated as guarded — it
+			// is reported as unattributable, because silence is never a decision.
+			const target = approvalTargets(method, params);
+			if (
+				options.sealApproval &&
+				target.kind === "write" &&
+				target.paths.length > 0
+			) {
+				try {
+					const sealed = await options.sealApproval(target);
+					if (sealed.blocked) {
+						// The decision itself is already in events.jsonl: decideSeal
+						// records every verdict, including this one.
+						write({ id, result: { decision: "decline" } });
+						return;
+					}
+				} catch (error) {
+					// A seal that cannot decide must not wedge the turn. Fail open,
+					// and say so out loud.
+					options.onStderr?.(
+						`[codex] 封印判定失败，按放行处理：${(error as Error).message}`,
+					);
+				}
+			} else if (options.sealApproval && target.kind === "write") {
+				options.onStderr?.(
+					"[codex] 写审批无法归因到路径，未咨询封印（记录为不可归因）",
+				);
+			}
 			// Only the reply is wired here. The read/write claim that reaches the
 			// ledger is the `commandExecution` item's structured
-			// `commandActions[].path` (see codex-footprint.ts); this request's own
-			// params are NOT parsed, because no retained fixture documents their
-			// shape. ADR-0017 records that boundary.
+			// `commandActions[].path` (see codex-footprint.ts).
 			write({ id, result: { decision: decision.decision } });
 		} else if (decision.kind === "userInput") {
 			// Decline shape per MCP elicitation / codex requestUserInput.

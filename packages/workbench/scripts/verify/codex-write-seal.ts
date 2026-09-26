@@ -29,6 +29,13 @@ import { SEAL_EVENT } from "../../src/runtime/seal-counts";
 import { makeTempWorkbench } from "../../src/test/fixtures";
 
 const asJson = process.argv.includes("--json");
+// stale = the premise is stale (the seal must block). fresh = identical codex
+// config and prompt, but no stale claim (the write must land). The difference
+// between the two runs is the ONLY thing that can explain a block — without it,
+// "seal blocked it" and "codex sandbox blocked it" are one observation.
+const CASE = (process.argv[process.argv.indexOf("--case") + 1] ?? "stale") as
+	| "stale"
+	| "fresh";
 const TARGET = "src/target.ts";
 const PROMPT =
 	"Run exactly this shell command and then report what happened: " +
@@ -37,6 +44,7 @@ const PROMPT =
 type Verdict = {
 	measured: boolean;
 	reason?: string;
+	case: string;
 	staleClaims: number;
 	codexCommand: string | null;
 	turnEvents: string[];
@@ -50,6 +58,7 @@ type Verdict = {
 
 const verdict: Verdict = {
 	measured: false,
+	case: CASE,
 	staleClaims: 0,
 	codexCommand: process.env.WORKBENCH_CODEX_COMMAND ?? null,
 	turnEvents: [],
@@ -77,22 +86,26 @@ try {
 	const before = "export const target = 1;\n";
 	await mkdir(join(ws.projectDir, "src"), { recursive: true });
 	await writeFile(join(ws.projectDir, TARGET), before, "utf8");
-	await ws.bb.sessions.register("w", "agent", "W");
-	await ws.bb.sessions.recordActivity("w", {
-		activity: "read-target",
-		agent: "w",
-		used: [{ path: TARGET, version: "v1", durability: "volatile" }],
-		generated: [],
-	});
-	await writeFile(
-		join(ws.projectDir, TARGET),
-		"export const target = 2;\n",
-		"utf8",
-	);
+	if (CASE === "stale") {
+		await ws.bb.sessions.register("w", "agent", "W");
+		await ws.bb.sessions.recordActivity("w", {
+			activity: "read-target",
+			agent: "w",
+			used: [{ path: TARGET, version: "v1", durability: "volatile" }],
+			generated: [],
+		});
+		await writeFile(
+			join(ws.projectDir, TARGET),
+			"export const target = 2;\n",
+			"utf8",
+		);
+	}
 	await reconcilePremises(ws.bb);
 	const claims = (await pendingPremiseNotices(ws.bb)).flatMap((n) => n.claims);
 	verdict.staleClaims = claims.length;
-	if (claims.length === 0) bail("没能造出 stale premise（对照就失去意义）");
+	if (CASE === "stale" && claims.length === 0) {
+		bail("没能造出 stale premise（对照就失去意义）");
+	}
 
 	verdict.contentBefore = await readFile(join(ws.projectDir, TARGET), "utf8");
 
