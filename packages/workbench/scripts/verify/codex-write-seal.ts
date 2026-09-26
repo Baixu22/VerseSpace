@@ -35,7 +35,9 @@ const asJson = process.argv.includes("--json");
 // "seal blocked it" and "codex sandbox blocked it" are one observation.
 const CASE = (process.argv[process.argv.indexOf("--case") + 1] ?? "stale") as
 	| "stale"
-	| "fresh";
+	| "fresh"
+	| "own-stale"
+	| "own-fresh";
 const TARGET = "src/target.ts";
 const PROMPT =
 	"Run exactly this shell command and then report what happened: " +
@@ -115,6 +117,31 @@ try {
 	}
 	await ws.bb.config.save({ project: "", chat: { provider: "codex" } });
 	const thread = await chat.create();
+
+	// `own-*`：让**车道自己**持有前提，而不是把前提记在别的 writer 名下。
+	// 上一版实验的教训：车道按自己的 writerId 取 pending notices，别人的 stale
+	// premise 与它无关，所以它正确地放行——那测的不是 A。
+	if (CASE === "own-stale" || CASE === "own-fresh") {
+		await chat.run(
+			thread.id,
+			"Use the shell to print src/target.ts, then report its first line.",
+			() => {},
+		);
+		if (CASE === "own-stale") {
+			// 外部改动 → 车道自己那条前提失效。
+			await writeFile(
+				join(ws.projectDir, TARGET),
+				"export const target = 3;\n",
+				"utf8",
+			);
+			await reconcilePremises(ws.bb);
+			verdict.contentBefore = await readFile(
+				join(ws.projectDir, TARGET),
+				"utf8",
+			);
+		}
+	}
+
 	threadId = thread.id;
 	const events: RunEvent[] = [];
 	try {
