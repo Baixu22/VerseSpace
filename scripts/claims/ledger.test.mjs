@@ -45,9 +45,27 @@ test("a docs-only commit does NOT invalidate a reading about src/", () => {
 		claims: [claim],
 		readings: [reading],
 		instrumentHashes: hashes,
-		changedSince: ["docs/handoff/x.md", "README.md", "AGENTS.md"],
+		changedSinceBySha: {
+			deadbeef: ["docs/handoff/x.md", "README.md", "AGENTS.md"],
+		},
 	});
 	assert.equal(rows.status, "clean");
+});
+
+test("per-reading scoping: an older reading's changes do not invalidate a newer one", () => {
+	// The first version merged every reading's changed-paths into one list and
+	// applied it to every claim — so a reading taken today was marked stale by a
+	// change that happened before it was taken.
+	const rows = evaluateClaims({
+		claims: [claim],
+		readings: [{ ...reading, subject_sha: "newersha" }],
+		instrumentHashes: hashes,
+		changedSinceBySha: {
+			oldersha: ["packages/workbench/src/index.ts"],
+			newersha: [],
+		},
+	});
+	assert.equal(rows.rows[0].status, CLAIM_STATUS.valid);
 });
 
 test("stale-subject: a change inside the covered paths invalidates it", () => {
@@ -68,7 +86,7 @@ test("missing-reading: a claim with no deposited reading is a problem", () => {
 		claims: [claim],
 		readings: [],
 		instrumentHashes: hashes,
-		changedSince: [],
+		changedSinceBySha: {},
 	});
 	assert.equal(rows.rows[0].status, CLAIM_STATUS.missingReading);
 	assert.equal(rows.status, "drift");
@@ -96,7 +114,7 @@ test("L3 (retired instrument) is an observation, never evidence", () => {
 		claims: [l3],
 		readings: [reading],
 		instrumentHashes: hashes,
-		changedSince: [],
+		changedSinceBySha: {},
 	});
 	assert.equal(rows.rows[0].status, CLAIM_STATUS.observation);
 	// clean verdict, but it is not counted as valid evidence either

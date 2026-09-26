@@ -136,22 +136,29 @@ export function matchesGlob(glob, path) {
 	return new RegExp(`^${out}$`).test(path);
 }
 
-/** Evaluate every registered claim. Returns the rows plus a verdict. */
+/**
+ * Evaluate every registered claim. Returns the rows plus a verdict.
+ *
+ * `changedSinceBySha` maps a commit to the paths that changed since it, and each
+ * claim is judged against **its own reading's commit**. Passing one merged list
+ * for all claims over-invalidates: a reading taken today would be marked stale by
+ * a change that happened before it was taken. (Measured 2026-09-26 — the first
+ * version did exactly that.)
+ */
 export function evaluateClaims({
 	claims,
 	readings,
 	instrumentHashes,
-	changedSince,
+	changedSinceBySha,
 }) {
 	const byId = new Map((readings ?? []).map((r) => [r.claim_id, r]));
-	const rows = (claims ?? []).map((claim) =>
-		evaluateClaim(
-			claim,
-			byId.get(claim.id),
-			instrumentHashes ?? {},
-			changedSince ?? [],
-		),
-	);
+	const rows = (claims ?? []).map((claim) => {
+		const reading = byId.get(claim.id);
+		const changed = reading?.subject_sha
+			? (changedSinceBySha?.[reading.subject_sha] ?? [])
+			: [];
+		return evaluateClaim(claim, reading, instrumentHashes ?? {}, changed);
+	});
 	const problems = rows.filter((row) => !isClean(row.status));
 	return {
 		rows,

@@ -85,15 +85,24 @@ for (const path of instrumentPaths) {
 	}
 }
 
-// What changed since each reading's commit. Per reading, because a path that
-// moved *before* a reading was taken must not invalidate it.
+// What changed since each reading's commit, keyed by that commit. Per reading,
+// because a path that moved *before* a reading was taken must not invalidate it —
+// a single merged list marks a fresh reading stale on the strength of changes
+// that predate it (measured 2026-09-26).
 //
 // Compared against the WORKING TREE, not against HEAD: `git diff <sha>..HEAD`
 // only sees commits, so an uncommitted edit to the code a claim is about would
 // leave the reading "valid" — and an uncommitted edit is the state a developer is
-// in most of the time. (Measured 2026-09-26: the first version of this gate stayed
-// green while packages/workbench/src/index.ts had a stray line appended.)
-const changedSince = [];
+// in most of the time. (The first version of this gate stayed green while
+// packages/workbench/src/index.ts had a stray line appended.)
+//
+// A reading is a record ABOUT the tree, not an input to it, so record paths are
+// filtered out: otherwise committing a reading would invalidate the claim it
+// records — `claim-upload-surface-clean`'s subject legitimately covers
+// `evidence/**`. Changes to `evidence/claims.json` still count: it *is* an input.
+const RECORD_PATHS = ["evidence/readings/**", "evidence/raw/**"];
+
+const changedSinceBySha = {};
 if (measured) {
 	const shas = [...new Set(readings.map((r) => r.subject_sha).filter(Boolean))];
 	for (const sha of shas) {
@@ -103,7 +112,12 @@ if (measured) {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
 			});
-			changedSince.push(...out.split("\n").filter(Boolean));
+			changedSinceBySha[sha] = out
+				.split("\n")
+				.filter(Boolean)
+				.filter(
+					(path) => !RECORD_PATHS.some((glob) => matchesGlob(glob, path)),
+				);
 		} catch (error) {
 			measured = false;
 			problems.push(`git diff ${sha} 失败（无法测量）：${error.message}`);
@@ -111,25 +125,12 @@ if (measured) {
 	}
 }
 
-// A reading is a record ABOUT the tree, not an input to it. Without this filter,
-// committing a reading would invalidate the very claim it records — and
-// `claim-upload-surface-clean`'s subject legitimately covers `evidence/**`, so the
-// gate would be permanently red. Changes to `evidence/claims.json` still count:
-// that file *is* an input.
-const RECORD_PATHS = ["evidence/readings/**", "evidence/raw/**"];
-
 const result = measured
 	? evaluateClaims({
 			claims,
 			readings,
 			instrumentHashes,
-			changedSince: [
-				...new Set(
-					changedSince.filter(
-						(path) => !RECORD_PATHS.some((glob) => matchesGlob(glob, path)),
-					),
-				),
-			],
+			changedSinceBySha,
 		})
 	: {
 			rows: [],
