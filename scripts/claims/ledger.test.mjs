@@ -155,6 +155,16 @@ test("glob: ** spans zero or more segments, * stays inside one", () => {
 	assert.equal(matchesGlob("scripts/*.mjs", "scripts/sub/a.mjs"), false);
 });
 
+test("glob: a bare ** covers the whole repo, not just the top level", () => {
+	// Measured 2026-09-26: `claim-upload-surface-clean` declares
+	// `subject_paths: ["**"]` and stayed `valid` while two docs changed, because
+	// `**` compiled to `^[^/]*[^/]*$` — top-level files only. A claim that reads
+	// repo-wide but covers one level is worse than no claim at all.
+	assert.equal(matchesGlob("**", "README.md"), true);
+	assert.equal(matchesGlob("**", "docs/handoff/x.md"), true);
+	assert.equal(matchesGlob("**", "packages/workbench/src/a.ts"), true);
+});
+
 test("a failed suite, mistyped values and missing execution cannot certify success", () => {
 	const suite = {
 		...claim,

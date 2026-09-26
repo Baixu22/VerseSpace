@@ -148,6 +148,13 @@ export function evaluateClaim(claim, reading, instrumentHashes, changedSince) {
  * file once already.)
  */
 export function matchesGlob(glob, path) {
+	// A bare `**` means "any path at all". The loop below only recognises the
+	// `**/` and `/**` forms, so `**` on its own compiled to `^[^/]*[^/]*$` —
+	// which matches top-level files only. Measured 2026-09-26:
+	// `claim-upload-surface-clean` declares `subject_paths: ["**"]` and stayed
+	// `valid` while two docs changed. A claim that reads repo-wide but covers
+	// one directory level is worse than no claim at all.
+	if (glob === "**") return true;
 	let out = "";
 	for (let i = 0; i < glob.length; i++) {
 		if (glob.startsWith("**/", i)) {
