@@ -108,6 +108,19 @@ test("bad-shape: a reading that lacks the numbers the claim is about", () => {
 	assert.match(row.detail, /sites/);
 });
 
+test("contradicted: a reading claims an exit code the instrument did not produce", () => {
+	// Measured 2026-09-26: `claim-lint` was recorded as exit 0 while `bun run lint`
+	// had actually exited 1. Freshness does not fix a false reading.
+	const row = evaluateClaim(
+		claim,
+		{ ...reading, reading: { sites: 140, exit: 0 }, instrument_exit: 1 },
+		hashes,
+		[],
+	);
+	assert.equal(row.status, CLAIM_STATUS.contradicted);
+	assert.match(row.detail, /exit=1/);
+});
+
 test("L3 (retired instrument) is an observation, never evidence", () => {
 	const l3 = { ...claim, class: "L3" };
 	const rows = evaluateClaims({

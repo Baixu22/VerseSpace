@@ -20,6 +20,7 @@ export const CLAIM_STATUS = {
 	staleInstrument: "stale-instrument",
 	staleSubject: "stale-subject",
 	badShape: "bad-shape",
+	contradicted: "contradicted",
 	observation: "observation",
 };
 
@@ -79,6 +80,23 @@ export function evaluateClaim(claim, reading, instrumentHashes, changedSince) {
 
 	if (reading.instrument_sha256 !== currentInstrument) {
 		return { id: claim.id, status: CLAIM_STATUS.staleInstrument };
+	}
+
+	// A reading whose own exit code contradicts what it recorded is a false
+	// reading, and freshness does not fix it. `instrument_exit` is measured by the
+	// recorder (`--run`); `exit` is what the claim says the instrument returns.
+	// Measured 2026-09-26: a hand-typed `exit: 0` was recorded while `bun run lint`
+	// had actually exited 1 — the recorder accepted whatever it was told.
+	if (
+		typeof reading.reading?.exit === "number" &&
+		typeof reading.instrument_exit === "number" &&
+		reading.reading.exit !== reading.instrument_exit
+	) {
+		return {
+			id: claim.id,
+			status: CLAIM_STATUS.contradicted,
+			detail: `读数记 exit=${reading.reading.exit}，仪器实际 exit=${reading.instrument_exit}`,
+		};
 	}
 
 	// `subject_paths` is what makes this precise: a docs-only commit must not

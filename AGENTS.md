@@ -414,6 +414,14 @@ excluded from collection.
   `.agent-workbench/task-forest/graph/edges.json` +
   `.agent-workbench/task-forest/config.json` +
   `.agent-workbench/task-forest/events/events.jsonl`; exports are derived and rebuildable.
+  **`done` means "there is a reading", not "someone said so"** ([ADR-0022](docs/decisions/0022-claim-status-semantics.md)):
+  a node's evidence must point at a registered reading in `evidence/` — either a *direct* one
+  (the instrument exercises the deliverable) or a *covering* one (the reading's `subject_paths`
+  covers it, and the evidence says 间接 out loud). No reading → `review_needed`; deliverable gone
+  → `deprecated`. A stale reading means **re-take it**, not that the node regressed. The claim
+  ledger and its gate are `evidence/claims.json` + `bun run check:claims` (0 consistent · 1 drift ·
+  2 cannot measure — exit 2 is never a pass); the classifier that assigned the historical nodes is
+  `scripts/audit/node-evidence.mjs`.
   The authoritative `validate` / `check-landing` CLI lives **outside this repo**
   (`C:\Users\27933\.workbuddy\skills\task-forest\scripts\task_forest.py`), so
   `node scripts/check-forest-landing.mjs` re-implements the landing half in-repo and against

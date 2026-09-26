@@ -16,7 +16,7 @@
  * The raw output belongs in evidence/raw/ (gitignored): ADR-0020 keeps raw
  * process evidence local, and only its digest travels.
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -67,7 +67,44 @@ const subjectSha =
 		encoding: "utf8",
 	}).trim();
 
-const rawPath = argValue("--raw");
+// `--run` makes the recorder execute the instrument itself. Without it the exit
+// code is whatever the caller typed — measured 2026-09-26: a hand-typed
+// `exit: 0` was recorded for `claim-lint` while `bun run lint` had exited 1. The
+// gate now flags that contradiction (`instrument_exit` vs `reading.exit`), and the
+// recorder refuses to write it in the first place.
+const rawPath =
+	argValue("--raw") ?? join(REPO, "evidence", "raw", `${claimId}.txt`);
+const command = argValue("--reproduce") ?? claim.reproduce ?? null;
+let instrumentExit = null;
+if (process.argv.includes("--run")) {
+	if (!command) {
+		console.error(`声明 ${claimId} 没有 reproduce 命令，无法 --run`);
+		process.exit(2);
+	}
+	mkdirSync(dirname(rawPath), { recursive: true });
+	const result = spawnSync(command, {
+		cwd: REPO,
+		shell: true,
+		encoding: "utf8",
+		maxBuffer: 64 * 1024 * 1024,
+	});
+	writeFileSync(rawPath, `${result.stdout ?? ""}${result.stderr ?? ""}`);
+	instrumentExit = result.status;
+	console.log(`  已跑仪器：${command} → exit ${instrumentExit}`);
+}
+
+const readingValue = JSON.parse(readingRaw);
+if (
+	instrumentExit !== null &&
+	typeof readingValue.exit === "number" &&
+	readingValue.exit !== instrumentExit
+) {
+	console.error(
+		`拒绝记录：--reading 说 exit=${readingValue.exit}，仪器实际 exit=${instrumentExit}`,
+	);
+	process.exit(2);
+}
+
 const reading = {
 	claim_id: claimId,
 	instrument_sha256: instrumentKey(claim, hashes),
@@ -76,12 +113,12 @@ const reading = {
 		? JSON.parse(argValue("--environment"))
 		: {},
 	measured_at: new Date().toISOString(),
-	reading: JSON.parse(readingRaw),
-	raw_digest:
-		rawPath && existsSync(rawPath)
-			? `sha256:${sha256(readFileSync(rawPath, "utf8"))}`
-			: null,
-	reproduce: argValue("--reproduce") ?? claim.reproduce ?? null,
+	reading: readingValue,
+	instrument_exit: instrumentExit,
+	raw_digest: existsSync(rawPath)
+		? `sha256:${sha256(readFileSync(rawPath, "utf8"))}`
+		: null,
+	reproduce: command,
 	class: claim.class === "L1" ? "curated-evidence" : "process-evidence",
 };
 

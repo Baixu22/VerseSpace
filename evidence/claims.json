@@ -7,7 +7,10 @@
 			"statement": "packages/workbench/src 的非测试代码里有 141 个 catch 站点，分布在 61 个文件",
 			"instrument": ["scripts/audit/catch-sites.mjs"],
 			"subject_paths": ["packages/workbench/src/**"],
-			"reading_shape": { "files": "number", "sites": "number" },
+			"reading_shape": {
+				"files": "number",
+				"sites": "number"
+			},
 			"class": "L1",
 			"reproduce": "node scripts/audit/catch-sites.mjs --json",
 			"docs": ["docs/handoff/2026-09-25-catch-after-continue-audit.md"]
@@ -20,7 +23,10 @@
 				"scripts/claims/ledger.test.mjs"
 			],
 			"subject_paths": ["scripts/claims/**"],
-			"reading_shape": { "pass": "number", "fail": "number" },
+			"reading_shape": {
+				"pass": "number",
+				"fail": "number"
+			},
 			"class": "L1",
 			"reproduce": "node scripts/claims/ledger.test.mjs"
 		},
@@ -29,7 +35,10 @@
 			"statement": "workbench 套件全绿（0 fail）",
 			"instrument": ["package.json", "packages/workbench/package.json"],
 			"subject_paths": ["packages/workbench/**"],
-			"reading_shape": { "pass": "number", "fail": "number" },
+			"reading_shape": {
+				"pass": "number",
+				"fail": "number"
+			},
 			"class": "L1",
 			"reproduce": "bun run test:workbench"
 		},
@@ -38,7 +47,10 @@
 			"statement": "dashboard 套件全绿（0 fail）",
 			"instrument": ["package.json", "apps/workbench-ui/package.json"],
 			"subject_paths": ["apps/workbench-ui/**"],
-			"reading_shape": { "pass": "number", "fail": "number" },
+			"reading_shape": {
+				"pass": "number",
+				"fail": "number"
+			},
 			"class": "L1",
 			"reproduce": "bun run test:workbench-ui"
 		},
@@ -47,7 +59,10 @@
 			"statement": "context-rot 套件全绿（0 fail）",
 			"instrument": ["package.json", "packages/context-rot/package.json"],
 			"subject_paths": ["packages/context-rot/**"],
-			"reading_shape": { "pass": "number", "fail": "number" },
+			"reading_shape": {
+				"pass": "number",
+				"fail": "number"
+			},
 			"class": "L1",
 			"reproduce": "bun run test:context-rot"
 		},
@@ -62,7 +77,10 @@
 				"packages/context-rot/src/verify.ts"
 			],
 			"subject_paths": ["AGENTS.md", "CLAUDE.md", "docs/**"],
-			"reading_shape": { "exit": "number", "stale": "number" },
+			"reading_shape": {
+				"exit": "number",
+				"stale": "number"
+			},
 			"class": "L1",
 			"reproduce": "bun packages/workbench/src/index.ts doctor"
 		},
@@ -75,7 +93,10 @@
 				"scripts/upload-surface/classify.mjs"
 			],
 			"subject_paths": [".gitignore", "docs/**", "scripts/**", "evidence/**"],
-			"reading_shape": { "exit": "number", "violations": "number" },
+			"reading_shape": {
+				"exit": "number",
+				"violations": "number"
+			},
 			"class": "L1",
 			"reproduce": "bun run check:upload-surface"
 		},
@@ -94,6 +115,39 @@
 			},
 			"class": "L1",
 			"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1"
+		},
+		{
+			"id": "claim-lint",
+			"statement": "biome lint 全仓 exit 0（0 error）",
+			"instrument": ["package.json", "biome.json"],
+			"subject_paths": [
+				"**/*.ts",
+				"**/*.tsx",
+				"**/*.mjs",
+				"**/*.json",
+				"**/*.css"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"errors": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun run lint"
+		},
+		{
+			"id": "claim-typecheck",
+			"statement": "三个包的 tsc --noEmit 全过（exit 0）",
+			"instrument": ["package.json"],
+			"subject_paths": [
+				"packages/workbench/**",
+				"packages/context-rot/**",
+				"apps/workbench-ui/**"
+			],
+			"reading_shape": {
+				"exit": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun run typecheck"
 		}
 	]
 }
