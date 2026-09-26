@@ -10,7 +10,7 @@
 
 - 森林 271 个节点里，47 个 `done` 的 `evidence` 为空（全是 TF-0001…TF-0116 的 MVP 骨架期）；
 - 它们的交付物大多**仍在**（`packages/workbench/src/scheduler`、`src/automaton`、`src/types` …），
-  而且被 workbench 套件覆盖（该套件有有效读数 1004 pass / 0 fail）；
+  而且被 workbench 套件覆盖（该套件有有效读数 1004 pass / 0 fail；2026-09-26 收尾重取为 1014 pass / 0 fail）；
 - 但**套件绿不等于这个节点的原始验收被复算过**——它只证明「交付物存在且被测」。
 - 另一类更糟：`done` 的**仪器已经不存在了**（例如 TF-0103「修复 ci.yml 的 15 处 tab 缩进」，
   而 `.gitlab-ci.yml` 已随 ADR-0021 删除）。

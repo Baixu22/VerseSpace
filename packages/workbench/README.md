@@ -28,7 +28,7 @@ bun run release:tag:workbench
 bun run release:tag:workbench --push
 ```
 
-**本仓库不配置 CI**（[ADR-0021](../../docs/decisions/0021-retire-all-ci-channels.md)）：极狐的 verify 与 release 两个 stage 都已随 `.gitlab-ci.yml` 删除。发版就在本机构建与上传——`cd packages/workbench && bun run build:all`，再跑 `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`（0.4.0 就是这么发的）。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。注意 `scripts/tag-workbench-release.mjs` 里仍有一段向 `jihulab` 推同树快照 tag 的遗留逻辑（它的唯一用途是让极狐的 release rules 匹配），下一次真发版时一并清理或写明保留理由。
+**本仓库不配置 CI**（[ADR-0021](../../docs/decisions/0021-retire-all-ci-channels.md)）：极狐的 verify 与 release 两个 stage 都已随 `.gitlab-ci.yml` 删除。发版分三步且顺序不能换：先推 tag（`bun run release:tag:workbench --push`，发布脚本带 `--verify-tag`），再构建，最后上传——`cd packages/workbench && bun run build:all`，再跑 `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`（0.4.0 就是这么发的）。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。向 `jihulab` 推同树快照 tag 的那段遗留逻辑已于 2026-09-26 删除（[ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)）；如果本机还配着 `jihulab` remote，仓库里已没有任何东西在用它。
 
 ## 5 分钟上手
 

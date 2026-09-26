@@ -82,7 +82,7 @@
 | [scripts/check-upload-surface.mjs](../../scripts/check-upload-surface.mjs) | 新增：门禁 CLI，含 `--lists` / `--json` / `--strict-references` / `--emit-inventory` |
 | [.gitignore:183](../../.gitignore#L183) | 新增 `!/docs/handoff/`（目录级白名单）+ 说明注释 |
 | [package.json:22-23](../../package.json#L22-L23) | 新增 `check:upload-surface` / `test:upload-surface` |
-| [.gitlab-ci.yml:221-230](../../.gitlab-ci.yml#L221-L230) | 新增 `upload-surface` job（verify 阶段，含 `docs/**` 路径过滤） |
+| .gitlab-ci.yml:221-230（该文件已按 ADR-0021 删除，链接不再可跟） | 新增 `upload-surface` job（verify 阶段，含 `docs/**` 路径过滤） |
 | `docs/handoff/README.md` | 新增：交接记录的口径与模板 |
 | `docs/handoff/qa-stage-ab-remediation-2026-09-25.md` | **移动**：上一轮交接报告从 `docs/` 移入入库位（内容未改） |
 | `docs/engineering-defect-localization-and-qa-plan-2026-09-24.md` | **纳入上传面**：上一轮任务书早已在 `.gitignore` 白名单里，但从未提交 |

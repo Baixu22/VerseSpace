@@ -1,9 +1,11 @@
 // Publish a Workbench release from a dist/ directory that already holds the
 // four cross-compiled binaries plus NOTICE / LICENSE / LICENSE-APACHE.
 //
-// Used by the JihuLab `release-publish` job (the GitHub Actions release lane
-// has no runner while the account's Actions quota is exhausted) and runnable
-// by hand after `cd packages/workbench && bun run build:all`.
+// Run by hand — there is no CI any more (ADR-0018 deleted GitHub Actions and
+// ADR-0021 retired the JihuLab lane). Build first, and tag before publishing:
+//   cd packages/workbench && bun run build:all
+//   bun run release:tag:workbench --push        # this script passes --verify-tag
+//   node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 //
 // It creates the GitHub Release for the `workbench-v<version>` tag, with the
 // matching CHANGELOG section as notes plus a platform-coverage note: the
@@ -76,19 +78,29 @@ const changelog = fs.readFileSync(
 	path.join(root, "packages/workbench/CHANGELOG.md"),
 	"utf8",
 );
+// The heading may carry a suffix after the version — the closeout wrote
+// `## 0.4.1 — 2026-09-26（本地研究原型，尚未公开发行）`, and the old
+// `startsWith(`${version}\n`)` silently missed it, so the Release notes fell back
+// to the placeholder. Measured 2026-09-26 against the real CHANGELOG:
+// 0.4.1 → NO MATCH, 0.4.0 → MATCH (its heading happens to be bare).
+// Match the version as a whole token, then drop the entire heading line so a
+// ` — <date>` suffix cannot leak into the notes.
+const heading = new RegExp(
+	`^${version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=\\s|$)`,
+);
 const section = changelog
 	.split(/^## /m)
 	.map((chunk) => chunk.trim())
-	.find((chunk) => chunk.startsWith(`${version}\n`));
+	.find((chunk) => heading.test(chunk.split("\n", 1)[0]));
 const body = section
-	? section.slice(version.length).trim()
+	? section.split("\n").slice(1).join("\n").trim()
 	: `（CHANGELOG 中没有 ${version} 段落）`;
 
 const notes = `${body}
 
 ---
 
-**平台覆盖说明。** 四个二进制由一台 Windows 主机用 Bun 交叉编译（\`bun run build:all\`，与 \`.gitlab-ci.yml\` 的 \`release-build\` 是同一条命令）。
+**平台覆盖说明。** 四个二进制由一台 Windows 主机用 Bun 交叉编译（\`bun run build:all\`，本机手工执行——CI 已全部退役）。
 只有 windows-x64 在构建前跑过完整测试；linux-x64、macos-arm64、macos-x64 只做了构建，没有在对应平台上执行过。
 校验和见 \`SHA256SUMS\`。
 `;

@@ -3,6 +3,8 @@
 > **双标签口径：工程门通过（仅限本地可执行范围）/ 产品证据不足。**
 > 分支 `qa-stage-ab-remediation`（无斜杠），6 个 commit，**未 push、未打 tag、未发布**。
 > 本报告不含任何用工程测试冒充真实浏览器、真实 provider 或真人数据的结论。
+>
+> **2026-09-26 引用订正**：本报告从 `docs/` 移入 `docs/handoff/`（入库位）时，正文里的 `../packages/`、`../apps/` 相对链接没有跟着改深度，24 条全部指向不存在的 `docs/packages/…`。现统一改为 `../../`，目标均已存在；正文其余内容一字未动。上传面门禁只检查「指向本机专用文档」，测不到这类断链——这是它的已知盲区，见 ADR-0023。
 
 ---
 
@@ -42,49 +44,49 @@ server.ts 的断点补完；lint 格式修掉。接管前的完整证据留存�
 ## 2. 本轮改了什么（按节点，file:line）
 
 ### TF-0256（F-04）— commit `13adf58`
-- [chat-routes.ts:20-33](../packages/workbench/src/ui/chat-routes.ts#L20-L33) 新增 `jsonObjectBody`：非法 JSON 或非对象 → 400。
-- 收窄到四条路由：create [:45-49](../packages/workbench/src/ui/chat-routes.ts#L45-L49)、
-  switch [:129-137](../packages/workbench/src/ui/chat-routes.ts#L129-L137)、
-  resume-note/consume [:152-163](../packages/workbench/src/ui/chat-routes.ts#L152-L163)、
-  resume-card/shown [:169-179](../packages/workbench/src/ui/chat-routes.ts#L169-L179)。
+- [chat-routes.ts:20-33](../../packages/workbench/src/ui/chat-routes.ts#L20-L33) 新增 `jsonObjectBody`：非法 JSON 或非对象 → 400。
+- 收窄到四条路由：create [:45-49](../../packages/workbench/src/ui/chat-routes.ts#L45-L49)、
+  switch [:129-137](../../packages/workbench/src/ui/chat-routes.ts#L129-L137)、
+  resume-note/consume [:152-163](../../packages/workbench/src/ui/chat-routes.ts#L152-L163)、
+  resume-card/shown [:169-179](../../packages/workbench/src/ui/chat-routes.ts#L169-L179)。
 - `fork`/`resume-action` 有必填校验、`restore` 用 `safeParse`，**按规划不动**。
 - 未知字段的明确行为是「忽略」而非 400（zod 风格的宽松对象）；这是有意的，但未单独断言。
 
 ### TF-0257（F-05）— commit `3276440`
-- [assets.ts:52-62](../packages/workbench/src/ui/assets.ts#L52-L62) 只有非 `ERR_MODULE_NOT_FOUND` 才报错（缺占位 manifest 是源码态正常情况）。
-- [assets.ts:105-112](../packages/workbench/src/ui/assets.ts#L105-L112) manifest 指向的文件消失 → miss，不再流空的 200。
-- [server.ts:105-113](../packages/workbench/src/ui/server.ts#L105-L113) fallback 改 **503** + `x-workbench-ui-assets: missing`。
+- [assets.ts:52-62](../../packages/workbench/src/ui/assets.ts#L52-L62) 只有非 `ERR_MODULE_NOT_FOUND` 才报错（缺占位 manifest 是源码态正常情况）。
+- [assets.ts:105-112](../../packages/workbench/src/ui/assets.ts#L105-L112) manifest 指向的文件消失 → miss，不再流空的 200。
+- [server.ts:105-113](../../packages/workbench/src/ui/server.ts#L105-L113) fallback 改 **503** + `x-workbench-ui-assets: missing`。
   （该片段与 TF-0260 同在 server.ts，按 commit 归到 `de1bbf9`。）
 
 ### TF-0258（F-07）— commit `85b47c7`
-- [server.test.ts:1-17](../packages/workbench/src/ui/server.test.ts#L1-L17) 加分类头：这是 route contract，不是产品面；
+- [server.test.ts:1-17](../../packages/workbench/src/ui/server.test.ts#L1-L17) 加分类头：这是 route contract，不是产品面；
   `describe` 改名 `ui server HTTP contract`。
-- [dispatch-guard.test.ts:10-18](../packages/workbench/src/scheduler/dispatch-guard.test.ts#L10-L18) 给 `dispatchHttp` 加契约说明。
-- [e2e/README.md:3-19](../apps/workbench-ui/e2e/README.md#L3-L19) 写明三类报告各自证明什么。**不改运行时行为。**
+- [dispatch-guard.test.ts:10-18](../../packages/workbench/src/scheduler/dispatch-guard.test.ts#L10-L18) 给 `dispatchHttp` 加契约说明。
+- [e2e/README.md:3-19](../../apps/workbench-ui/e2e/README.md#L3-L19) 写明三类报告各自证明什么。**不改运行时行为。**
 
 ### TF-0260（F-06）— commit `de1bbf9`
-- 新增 [reconcile-loop.ts](../packages/workbench/src/ui/reconcile-loop.ts)：`configLoadFailures` / `lastConfigError` 独立身份、
+- 新增 [reconcile-loop.ts](../../packages/workbench/src/ui/reconcile-loop.ts)：`configLoadFailures` / `lastConfigError` 独立身份、
   「错误文本变化才写一条 `config_load_failed`」、按显式 `DEFAULT_NOTICE_TOKEN_BUDGET=300` 继续 drain（**fail-open 且留证**）。
-- [server.ts:131-138](../packages/workbench/src/ui/server.ts#L131-L138) 定时器改为 `runReconcileTick`；
-  [:24-36](../packages/workbench/src/ui/server.ts#L24-L36) 允许测试注入 tick 间隔；
-  [:78-82](../packages/workbench/src/ui/server.ts#L78-L82) `/api/state` 暴露两个新字段。
-- [state.ts:42-56](../packages/workbench/src/ui/state.ts#L42-L56) 新增 `settle`：config / doctor 读取失败变成数据
-  （[:125-134](../packages/workbench/src/ui/state.ts#L125-L134) `configError` / `doctor.error`），
+- [server.ts:131-138](../../packages/workbench/src/ui/server.ts#L131-L138) 定时器改为 `runReconcileTick`；
+  [:24-36](../../packages/workbench/src/ui/server.ts#L24-L36) 允许测试注入 tick 间隔；
+  [:78-82](../../packages/workbench/src/ui/server.ts#L78-L82) `/api/state` 暴露两个新字段。
+- [state.ts:42-56](../../packages/workbench/src/ui/state.ts#L42-L56) 新增 `settle`：config / doctor 读取失败变成数据
+  （[:125-134](../../packages/workbench/src/ui/state.ts#L125-L134) `configError` / `doctor.error`），
   而不是让整个 `/api/state` 500。
-- [reconcile-loop.ts:86-97](../packages/workbench/src/ui/reconcile-loop.ts#L86-L97) `config_load_failed` 事件写入失败不再让 tick reject
+- [reconcile-loop.ts:86-97](../../packages/workbench/src/ui/reconcile-loop.ts#L86-L97) `config_load_failed` 事件写入失败不再让 tick reject
   （这是 RED 阶段暴露出来的真实缺口）。
 
 ### TF-0261 — commit `0bff98f`（部分）
-- [workspace-routes.ts:20-26](../packages/workbench/src/ui/workspace-routes.ts#L20-L26) 新增 `feedbackSchema`；
-  [:92-107](../packages/workbench/src/ui/workspace-routes.ts#L92-L107) 校验后再写事件。
+- [workspace-routes.ts:20-26](../../packages/workbench/src/ui/workspace-routes.ts#L20-L26) 新增 `feedbackSchema`；
+  [:92-107](../../packages/workbench/src/ui/workspace-routes.ts#L92-L107) 校验后再写事件。
   之前是 `payload: body` 原样落库 —— **任意 payload 直接写审计事实**。
 
 ### TF-0255（F-01）— commit `1fde1f7`（部分）
-- 新增 [providers.ts](../apps/workbench-ui/src/chat/providers.ts)：provider 表成为组件与 e2e 的单一来源，
+- 新增 [providers.ts](../../apps/workbench-ui/src/chat/providers.ts)：provider 表成为组件与 e2e 的单一来源，
   并带编译期守卫（新增 provider 而面板未提供 → 类型错误）。
-- [settings-fields.tsx:4](../apps/workbench-ui/src/components/chat/settings-fields.tsx#L4) 改为引用共享表。
-- [dropdown.spec.ts:2](../apps/workbench-ui/e2e/dropdown.spec.ts#L2)、
-  [:35](../apps/workbench-ui/e2e/dropdown.spec.ts#L35) 断言改为 `toHaveCount(PROVIDERS.length)`，不再写死 4（也不写死 5）。
+- [settings-fields.tsx:4](../../apps/workbench-ui/src/components/chat/settings-fields.tsx#L4) 改为引用共享表。
+- [dropdown.spec.ts:2](../../apps/workbench-ui/e2e/dropdown.spec.ts#L2)、
+  [:35](../../apps/workbench-ui/e2e/dropdown.spec.ts#L35) 断言改为 `toHaveCount(PROVIDERS.length)`，不再写死 4（也不写死 5）。
 
 ---
 

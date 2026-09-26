@@ -46,7 +46,7 @@ Workbench 是本地优先的前提账本：`.workbench/` 保存 YAML/JSONL 状�
 
 - 生产 provider 列表已有 Claude、Codex、三个 HTTP provider：[settings-fields.tsx:4](../apps/workbench-ui/src/components/chat/settings-fields.tsx#L4)。
 - 浏览器测试仍固定断言选项数为 4：[dropdown.spec.ts:32](../apps/workbench-ui/e2e/dropdown.spec.ts#L32)。
-- CI 的 UI job 只运行 Vitest 和 `build:ui`，没有 `test:e2e`：[.gitlab-ci.yml:168](../.gitlab-ci.yml#L168)。
+- CI 的 UI job 只运行 Vitest 和 `build:ui`，没有 `test:e2e`：.gitlab-ci.yml:168（该文件已按 ADR-0021 删除，链接不再可跟）。
 - 规划和草稿恢复测试在缺少预置会话时主动 `test.skip`：[ui.spec.ts:76](../apps/workbench-ui/e2e/ui.spec.ts#L76)、[ui.spec.ts:161](../apps/workbench-ui/e2e/ui.spec.ts#L161)。
 
 **影响**

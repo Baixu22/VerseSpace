@@ -1,7 +1,7 @@
 # ADR-0020：接力交接的上传面定性（只上传结果性产物，且换机可复现）
 
 - 状态：已接受（2026-09-25，用户指示「给开发内容定性，也就是只有结果性产物才上传，并且能够在别的用户机器上复现的内容，避免出现上传无用和有用未传的情况」）
-- 森林节点：待建（本轮以 proposal 提交，见 `.agent-workbench/task-forest/proposals/`）
+- 森林节点：TF-0268「接力交接的上传面定性」（status=done；2026-09-26 核对。原记为「待建（本轮以 proposal 提交）」）。
 - 相关：[ADR-0018](0018-single-ci-channel-jihulab.md)（CI 单一通道）、[ADR-0019](0019-phase4-and-release-acceptance-as-external-gates.md)（外部门）
 - 落地：`scripts/upload-surface/policy.json`、`scripts/check-upload-surface.mjs`、`docs/handoff/README.md`
 
@@ -71,10 +71,10 @@
 - **`unclassified` 会带来一次性摩擦。** 每次新增一个未被规则覆盖的路径，门禁都会红一次，直到有人显式归类。这是有意的：那正是「有用未传」发生的地方。
 - **冻结清单是 74 条人工接受的例外。** 它记录的是历史决定，不是「这些文件不重要」。清单里哪些其实是结论性产物、应该提升到 `docs/handoff/`，需要逐条裁决（见本轮报告 §5）。
 - **体量上限 10 MiB 是防线不是目标。** 当前上传面最大文件 192 KB；上限设在这里是为了让 83 MB 级的误入立刻变红。
-- **`referenced-but-local` 目前有 6 条待裁决**，默认不阻塞门禁。在全部裁决完之前，不得把它读作「引用关系已核对」。
+- **`referenced-but-local` 目前有 6 条待裁决**，默认不阻塞门禁。在全部裁决完之前，不得把它读作「引用关系已核对」。**2026-09-26 已裁决**：六份材料维持本机；唯一剩下的引用方是 2026-09-25 那份交接记录 §5 的待裁决表格本身，作为具名例外写进 `policy.acceptedLocalReferences`，`--strict-references` 现 exit 0（见 ADR-0023「上传面引用裁决」）。
 
 ## 复核
 
 - **触发重估**：上传面出现新的顶层目录；或 `docs/` 的组织方式改变（例如引入 `docs/local-only/`）；或冻结清单连续两轮只增不减。
-- **收紧路径**：把 6 条 `referenced-but-local` 逐条裁决完，然后给 CI 的门禁 job 加 `--strict-references`。
+- **收紧路径**：把 6 条 `referenced-but-local` 逐条裁决完，然后给 CI 的门禁 job 加 `--strict-references`。**2026-09-26：六条已逐条裁决，`--strict-references` 已 exit 0；「CI 的门禁 job」这一半随 ADR-0021 退役，改由本机命令执行。**
 - **放宽路径**：若某类文件确实需要上传而不符合本 ADR 的判据，新增规则并在本 ADR 追加一段说明理由——不要改 `defaultClass`。

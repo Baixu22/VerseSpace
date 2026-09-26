@@ -22,11 +22,10 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0014](./0014-legacy-retirement-gate.md) | 存量退役闸门核查 = 四项耦合清零（已满足）；删除支线外围 apps/marketing 与 apps/registry；三块存量暂保留为行为参考 | 已接受 | TF-0218 / TF-0219（阶段 TF-0213） |
 | [0015](./0015-legacy-retirement-execution.md) | 执行存量退役：流夹具迁入主线、清理构建与发布引用、删除三块旧实现 | 已接受 | TF-0225 / TF-0226（归属 TF-0219） |
 | [0016](./0016-retirement-closeout.md) | 退役收口：修复干净安装的字体依赖、增加 UI 构建门禁、更新归属与首页、纠正任务依赖 | 已接受 | TF-0225 / TF-0226（上级 TF-0176） |
-| [0017](./0017-second-observable-provider-integration.md) | 第二个可观测 provider 接入形态 = 直接监督外部 CLI + 主包内轻量协议适配，不复活 sidecar、不 import SDK；取代 ADR-0013 决策 3；首个落地 = codex；交互协议只接权限请求进账本 | 已接受 | TF-0246（阶段 TF-0245，目标 TF-0232） |
-| [0018](./0018-single-ci-channel-jihulab.md) | CI 单一通道 = JihuLab（极狐）；删除 GitHub Actions 车道与 `release-workbench.yml`、不再使用 gitlab.com；取代 ADR-0015 中「保留 release-workbench.yml」一句 | **已被 ADR-0021 取代**（极狐通道一并退役） | TF-0232（落地过程中） |
+| [0017](./0017-second-observable-provider-integration.md) | 第二个可观测 provider 接入形态 = 直接监督外部 CLI + 主包内轻量协议适配，不复活 sidecar、不 import SDK；取代 ADR-0013 决策 3；首个落地 = codex；交互协议只接权限请求进账本 | 已接受（写侧「seal 不在这条车道上」一句由 ADR-0023 取代） | TF-0246（阶段 TF-0245，目标 TF-0232） |
+| [0018](./0018-single-ci-channel-jihulab.md) | CI 单一通道 = JihuLab（极狐）；删除 GitHub Actions 车道与 `release-workbench.yml`、不再使用 gitlab.com；取代 ADR-0015 中「保留 release-workbench.yml」一句 | **已被 ADR-0021 取代**（极狐通道一并退役） | TF-0232（已 done） |
 | [0019](./0019-phase4-and-release-acceptance-as-external-gates.md) | 阶段 4（人工使用窗口）与发行验收转为常设外部门、不作为本轮交付；发行以「编译版本 + GitHub Release + 社区面」为准；据 TF-0232 验收的第二条路收口 | 已接受 | TF-0232（据此收口） |
-| [0020](./0020-relay-handoff-upload-surface.md) | 接力交接的上传面定性 = 只上传结果性产物且换机可复现；四类别 + 双向门禁 + `docs/handoff/` 目录白名单；收紧 TF-0220「原始数据本地留，精选读数入库」 | 已接受 | 待建（本轮 proposal） |
+| [0020](./0020-relay-handoff-upload-surface.md) | 接力交接的上传面定性 = 只上传结果性产物且换机可复现；四类别 + 双向门禁 + `docs/handoff/` 目录白名单；收紧 TF-0220「原始数据本地留，精选读数入库」 | 已接受 | TF-0268（done） |
 | [0021](./0021-retire-all-ci-channels.md) | 退役全部 CI 通道：删 `.gitlab-ci.yml` 与极狐快照脚本、停本机 runner；门禁改由本机命令给出、发行改走本机；**取代 ADR-0018** | 已接受 | 本轮（2026-09-26） |
 | [0022](./0022-claim-status-semantics.md) | 声明状态语义：`done` 必须指向读数（直接/覆盖两级，覆盖须写明「间接」）；无读数覆盖 → `review_needed`；交付物不存在 → `deprecated`；仪器退役的读数只能当观测；读数 stale ≠ 节点未完成 | 已接受 | TF-0278（阶段 TF-0277） |
-
-- [0023](./0023-research-prototype-closeout.md)：按工程研究原型收尾，固定声明、Codex 实验通道与历史观测边界（2026-09-26）。
+| [0023](./0023-research-prototype-closeout.md) | 按工程研究原型收尾：固定核心声明、Codex 实验通道边界、上传面引用裁决；冻结功能扩展；**取代 ADR-0017 关于 Codex 审批不咨询封印的现行描述** | 已接受 | 本轮（2026-09-26） |

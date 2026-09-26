@@ -1,17 +1,20 @@
-// Emit the `workbench-v<version>` tag that `.gitlab-ci.yml`'s release stage
-// listens for.
+// Emit and push the `workbench-v<version>` tag on `origin` (GitHub) — the first
+// half of a release.
 //
-// CI runs on **JihuLab** (`jihulab.com`) only — the GitHub Actions workflows
-// were deleted under ADR-0018. JihuLab holds orphan snapshots of this repo, so
-// the tag goes to two places: the real tag to `origin` (GitHub) and a
-// same-tree snapshot tag to `jihulab`. Read the Workbench package version,
-// independent of the private monorepo root version. The old `v*` tag and
-// publish scripts were retired under ADR-0015.
+// There is no CI any more: GitHub Actions was deleted under ADR-0018 and the
+// JihuLab lane was retired under ADR-0021. Nothing listens for this tag and no
+// pipeline runs; publishing is a separate, hand-run step:
+//   cd packages/workbench && bun run build:all
+//   node scripts/publish-workbench-release.mjs --tag workbench-v<version>
+// Read the Workbench package version, independent of the private monorepo root
+// version. The old `v*` tag and publish scripts were retired under ADR-0015.
+//
+// The tag must be on `origin` BEFORE publishing: `publish-workbench-release.mjs`
+// passes `--verify-tag` to `gh release create`.
 //
 // Safety: this is dry-run by default. It prints the tag it would push and exits
-// 0. Pass `--push` to actually create and push it — a pushed tag starts a real
-// release build and creates a public GitHub Release, so it never happens by
-// accident.
+// 0. Pass `--push` to actually create and push it — a pushed tag is a real
+// public release step, so it never happens by accident.
 //
 // Usage:
 //   bun scripts/tag-workbench-release.mjs              # show the plan
@@ -19,7 +22,7 @@
 //   bun scripts/tag-workbench-release.mjs --version 0.3.1 --push
 //   bun scripts/tag-workbench-release.mjs --allow-dirty --push
 
-import { execFileSync, execSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -43,7 +46,7 @@ if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
 if (flagged && flagged !== manifest.version) {
 	console.error(
 		`--version ${flagged} 与 packages/workbench/package.json 的 ${manifest.version} 不一致；` +
-			"请先用 changeset version 改包版本，不要只改 tag。",
+			"请先手改 packages/workbench/package.json 的 version 与 CHANGELOG（.changeset/ 已随 ADR-0015 删除），不要只改 tag。",
 	);
 	process.exit(1);
 }
@@ -52,8 +55,8 @@ const tag = `workbench-v${version}`;
 console.log(`包：${manifest.name}@${version}`);
 console.log(`tag：${tag}`);
 console.log(
-	"触发：.gitlab-ci.yml release 阶段（JihuLab 本机 runner 交叉编译 4 平台二进制，release-publish 手动挂到 GitHub Release）；" +
-		"GitHub Actions 车道已随 ADR-0018 退役。",
+	"触发：无——CI 已全部退役（ADR-0018 删 GitHub Actions，ADR-0021 退役极狐通道）。" +
+		"这个 tag 只是发布的第一步；构建与挂 Release 由本机命令完成。",
 );
 
 const dirty = execSync("git status --porcelain", { encoding: "utf8" }).trim();
@@ -95,7 +98,7 @@ if (!push) {
 		`\n[dry-run] 本地 tag 存在：${exists}；远端 tag 存在：${remoteExists}`,
 	);
 	console.log(
-		"[dry-run] 会推两处：origin 推真实 tag；jihulab 推同树快照 tag（CI 镜像只有孤儿快照）。",
+		"[dry-run] 只推一处：origin 推真实 tag（极狐同树快照已随 ADR-0021 退役）。",
 	);
 	console.log(`[dry-run] 未做任何写操作。要真正发布请运行：`);
 	console.log(
@@ -104,44 +107,15 @@ if (!push) {
 	process.exit(0);
 }
 
-const remotes = execSync("git remote", { encoding: "utf8" }).split(/\s+/);
-if (!remotes.includes("jihulab")) {
-	console.error(
-		"\n找不到 `jihulab` remote——CI 镜像推不出去，release 车道不会跑。" +
-			"先按 AGENTS.md §CI remotes 配好 remote（git@jihulab.com:Baixu22/VerseSpace.git）。",
-	);
-	process.exit(1);
-}
-
 if (remoteExists === true) {
 	console.error(`\n远端已存在 tag ${tag}；换版本号再发，不要重打同一个 tag。`);
 	process.exit(1);
 }
 if (!exists) execSync(`git tag ${tag}`, { stdio: "inherit" });
 execSync(`git push origin ${tag}`, { stdio: "inherit" });
-// JihuLab runs the release lane; GitHub only hosts the Release object. The CI
-// mirror holds orphan snapshots (the local .git carries ~2 GB of forest
-// history), so pushing this tag as-is would try to upload that whole history.
-// Push the SAME TREE as a parent-less commit under the same tag NAME instead —
-// the release rules only match `$CI_COMMIT_TAG`, and the tree is what gets
-// built. The mirror's tag therefore names a different SHA than origin's; that
-// is the point of the mirror, not a divergence to fix.
-const tree = execFileSync("git", ["rev-parse", `${tag}^{tree}`], {
-	encoding: "utf8",
-}).trim();
-const snapshot = execFileSync(
-	"git",
-	[
-		"commit-tree",
-		tree,
-		"-m",
-		`snapshot: ${tag} - jihulab CI mirror (no history)`,
-	],
-	{ encoding: "utf8" },
-).trim();
-execSync(`git push -f jihulab ${snapshot}:refs/tags/${tag}`, {
-	stdio: "inherit",
-});
+console.log(`New tag: ${tag}（origin）`);
 console.log(
-	`New tag: ${tag}（origin: 真实提交；jihulab: 同树快照 ${snapshot.slice(0, 7)}）`,
+	"\n下一步（本机执行，没有 CI 会接手）：\n" +
+		"  cd packages/workbench && bun run build:all\n" +
+		`  node scripts/publish-workbench-release.mjs --tag ${tag}\n`,
 );

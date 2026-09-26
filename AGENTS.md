@@ -242,17 +242,23 @@ surfaces            CLI --json  |  MCP read-only tools  |  dashboard HTTP routes
 - **Chat rendering**: `@assistant-ui/react` + `streamdown`.
 - **Releases**: the workbench package's public shape is the **single-file binary**
   (`workbench-v*` tag → four-platform build → GitHub Release). The npm shape is not published
-  yet. Use `bun run release:tag:workbench`; pushing the tag is a real publish action, so confirm
-  the version and `packages/workbench/CHANGELOG.md` first. The root `CHANGELOG.md` is not this product's history. **the .changeset/ directory no longer exists** — bump the version and
-  write the changelog entry by hand. **There is no CI release lane any more**
-  ([ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)): build and publish from this machine —
-  `cd packages/workbench && bun run build:all`, then
-  `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`, which attaches the four
-  binaries plus `SHA256SUMS` and the legal files to the GitHub Release and states in the notes that
-  only windows-x64 ran the test suite. **Known leftover:** `scripts/tag-workbench-release.mjs`
-  still force-pushes a same-tree snapshot tag to the retired `jihulab` remote; that push only ever
-  existed so the mirror's release rules would match, so it is dead weight — clean it up (or state
-  why it stays) the next time a release is actually cut.
+  yet. **There is no CI release lane any more**
+  ([ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)), so a release is three hand-run steps
+  **in this order** — the tag has to be on `origin` first, because the publisher passes
+  `--verify-tag` to `gh release create`:
+  1. Confirm the version and `packages/workbench/CHANGELOG.md`. The heading must start with the
+     version token; a ` — <date>` suffix is fine (the publisher matches on the token). The root
+     `CHANGELOG.md` is not this product's history. **the .changeset/ directory no longer exists** —
+     bump the version and write the changelog entry by hand.
+  2. `bun run release:tag:workbench --push` — dry-run by default, and `--push` is a real publish
+     action.
+  3. `cd packages/workbench && bun run build:all`, then
+     `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`, which attaches the four
+     binaries plus `SHA256SUMS` and the legal files to the GitHub Release and states in the notes that
+     only windows-x64 ran the test suite.
+  The retired `jihulab` snapshot push was removed from `scripts/tag-workbench-release.mjs` on
+  2026-09-26 ([ADR-0023](docs/decisions/0023-research-prototype-closeout.md)); if a `jihulab` remote
+  is still configured on this machine, nothing in this repo uses it any more.
 - **Licensing**: `@baixu22/workbench` is `MIT AND Apache-2.0`. `scripts/build.ts` copies
   `NOTICE` / `LICENSE` / `LICENSE-APACHE` into `dist/`, the package `files` field keeps them in
   the tarball, and the release lane (`scripts/publish-workbench-release.mjs`) attaches them to the

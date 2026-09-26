@@ -69,3 +69,5 @@ node scripts/audit/node-evidence.mjs    # 期望：covered 38 / file 5 / local 2
 bun run check:claims                    # 期望 10/10 valid · exit 0
 node scripts/claims/ledger.test.mjs     # 期望 10 pass / 0 fail
 ```
+
+> **2026-09-26 收尾更正：账本已从本文记录的 10 条声明长到 13 条**（12 valid + 1 条 L3 历史观测）。现在 `bun run check:claims` 的期望是 **13 条声明 · 13 条读数 · 一致 · exit 0**，`node scripts/claims/ledger.test.mjs` 是 **14 pass / 0 fail**。上面代码块里的「期望」保留为当时的读数，不再照抄。复核以 `evidence/readings/` 与 [收尾记录](2026-09-26-research-closeout.md) 为准。

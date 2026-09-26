@@ -93,3 +93,5 @@ node scripts/check-claims.mjs              # 期望 exit 1，3 条 stale-subject
 git checkout -- packages/workbench/src/index.ts
 node scripts/check-claims.mjs              # 期望 exit 0
 ```
+
+> **2026-09-26 收尾更正：命令不变，期望值已漂移。** 本文 §2 的表和上面这几行「期望」是当时的读数；收尾后账本从 8 条长到 **13 条**（12 valid + 1 条 L3 历史观测），账本自测 **14 pass / 0 fail**，catch 站点 **143 / 61 文件**，workbench 套件 **1014 pass / 0 fail**，dashboard **68 pass**，doctor **117 条断言**（本文写的 113 是当时的计数口径）。复核以 `evidence/readings/` 与 [收尾记录](2026-09-26-research-closeout.md) 为准。
