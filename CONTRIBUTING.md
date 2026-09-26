@@ -51,16 +51,24 @@ cd apps/workbench-ui && bunx vitest run src/App.test.tsx
 
 ## CI
 
-**CI 只有一条通道：JihuLab（jihulab.com，极狐）。** GitHub 承载仓库、PR 与 Release，但**不**承载 CI——`.github/workflows/` 已按 [ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md) 删除，所以 **PR 上不会出现 GitHub 状态检查**，绿灯要去 <https://jihulab.com/Baixu22/VerseSpace/-/pipelines> 看。
+**本仓库不配置任何 CI**（2026-09-26，[ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)）。GitHub Actions 早已按 [ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md) 删除；取代它的极狐（JihuLab）通道也已退役——`.gitlab-ci.yml` 与 `scripts/win/jihulab-snapshot.sh` 已删除，本机 runner 停用。
 
-推一个分支：
+推分支就是普通 push：
 
 ```bash
-git push origin <branch>                                   # GitHub，更新 PR
-"C:\Program Files\Git\bin\bash.exe" scripts/win/jihulab-snapshot.sh [ref]   # JihuLab，跑流水线
+git push origin <branch>   # GitHub，更新 PR；PR 上不会出现任何状态检查
 ```
 
-第二条是脚本而不是普通 push，是有意的：本地 `.git` 背着约 2 GB 的 `events.jsonl` 历史，直推会把整份上传；脚本用 `git commit-tree` 造一个**孤儿单提交快照**推到扁平 ref（`main` 与 `feat/*` 在 JihuLab 受保护，拒绝强推）。runner 是本机前台进程，机器必须开机、runner 必须在跑，否则 pipeline 会停在 pending 且没有任何 job。
+**门禁靠本机手跑**——命令与当年流水线里的一致，缺的是「有人一定会跑」：
+
+```bash
+bun run lint && bun run typecheck
+bun run test:workbench && bun run test:workbench-ui && bun run test:context-rot
+bun packages/workbench/src/index.ts doctor
+bun run check:upload-surface
+```
+
+交接报告因此成为**唯一的持久验证记录**：写清哪些读数是真跑出来的、哪些没有（[ADR-0020](docs/decisions/0020-relay-handoff-upload-surface.md)）。
 
 ## 代码组织
 
