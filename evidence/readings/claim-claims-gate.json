@@ -1,19 +1,18 @@
 {
 	"claim_id": "claim-claims-gate",
 	"instrument_sha256": "scripts/claims/ledger.mjs:8f52ecc45c5bdb5fafa5ded87a397230b088c7d9035d46e8d0601c1b097b8096\nscripts/claims/ledger.test.mjs:e331a577998e9164f75e2e513835a99148494f29e7b6d63a777d295a1bd2f3c4",
-	"subject_sha": "ca19c771b9c392cf8f33b367d0a39ffd90abc31e",
+	"subject_sha": "0a0e713b2b1625e900ad16980f69a47d5fcecd12",
 	"environment": {
 		"os": "windows",
-		"bun": "1.3.14",
-		"no_proxy": "127.0.0.1,localhost,::1"
+		"bun": "1.3.14"
 	},
-	"measured_at": "2026-09-26T08:09:26.014Z",
+	"measured_at": "2026-09-26T09:12:39.323Z",
 	"reading": {
 		"pass": 11,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:ecfaabfc12689a1b70660395bc2afe11d0f7b8d79644e36ef0a4ca5b0dbfd290",
+	"raw_digest": "sha256:a4bf3cf14de54e8f68bd986029249551613aaa4c5819408c5275a4b907b9f292",
 	"reproduce": "node scripts/claims/ledger.test.mjs",
 	"class": "curated-evidence"
 }

@@ -140,7 +140,10 @@ const reading = {
 
 mkdirSync(join(REPO, "evidence", "readings"), { recursive: true });
 const out = join(REPO, "evidence", "readings", `${claimId}.json`);
-writeFileSync(out, `${JSON.stringify(reading, null, 2)}\n`);
+// Tab-indented on purpose: `bun run lint` (biome) checks these files, so writing
+// them in any other style makes the recorder invalidate its own lint reading every
+// time — measured 2026-09-26, three times in a row.
+writeFileSync(out, `${JSON.stringify(reading, null, "\t")}\n`);
 console.log(`已记录读数：${out}`);
 console.log(
 	`  instrument ${reading.instrument_sha256.slice(0, 24)}… · subject ${subjectSha.slice(0, 12)}`,
