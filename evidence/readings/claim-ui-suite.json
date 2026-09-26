@@ -1,19 +1,19 @@
 {
-  "claim_id": "claim-ui-suite",
-  "instrument_sha256": "apps/workbench-ui/package.json:6b33d47311d53d60d2d8d459ea7d1fbf5d94493c224334c18663fcd27d847a4b\npackage.json:547dcf82df3952bc07ca6572bfe8c566a5b81ca85449bdfdc7d1b54cdfa0c3e1",
-  "subject_sha": "f114f20f4318c29781d3e4f0451b871b2920e02a",
-  "environment": {
-    "os": "windows",
-    "bun": "1.3.14",
-    "node": "24.15.0",
-    "no_proxy": "127.0.0.1,localhost,::1"
-  },
-  "measured_at": "2026-09-26T04:58:58.026Z",
-  "reading": {
-    "pass": 67,
-    "fail": 0
-  },
-  "raw_digest": "sha256:0eb6d724c6af433cc8c31dffe0be49473163df926ec4f369a29e5623b9359789",
-  "reproduce": "bun run test:workbench-ui",
-  "class": "curated-evidence"
+	"claim_id": "claim-ui-suite",
+	"instrument_sha256": "apps/workbench-ui/package.json:6b33d47311d53d60d2d8d459ea7d1fbf5d94493c224334c18663fcd27d847a4b\npackage.json:547dcf82df3952bc07ca6572bfe8c566a5b81ca85449bdfdc7d1b54cdfa0c3e1",
+	"subject_sha": "f114f20f4318c29781d3e4f0451b871b2920e02a",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "24.15.0",
+		"no_proxy": "127.0.0.1,localhost,::1"
+	},
+	"measured_at": "2026-09-26T04:58:58.026Z",
+	"reading": {
+		"pass": 67,
+		"fail": 0
+	},
+	"raw_digest": "sha256:0eb6d724c6af433cc8c31dffe0be49473163df926ec4f369a29e5623b9359789",
+	"reproduce": "bun run test:workbench-ui",
+	"class": "curated-evidence"
 }
