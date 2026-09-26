@@ -1,17 +1,17 @@
 {
-  "claim_id": "claim-claims-gate",
-  "instrument_sha256": "scripts/claims/ledger.mjs:2c6c2215500f7f8f1e28b7658a01cd4a608d7afa11bb58e9b715898858f85076\nscripts/claims/ledger.test.mjs:9858b35bf16a4d83cf84d7fae75fa09be8e47f3e9ceb064d2edfc534aedc10e8",
-  "subject_sha": "c2b3b95e9120258743dbb35cab0f2d5e73561ee5",
-  "environment": {
-    "os": "windows",
-    "node": "24.15.0"
-  },
-  "measured_at": "2026-09-26T05:03:43.172Z",
-  "reading": {
-    "pass": 10,
-    "fail": 0
-  },
-  "raw_digest": "sha256:9253b212f828c93ec212bdd280c7c549b015df771837da05c72f5ce62e800d3d",
-  "reproduce": "node scripts/claims/ledger.test.mjs",
-  "class": "curated-evidence"
+	"claim_id": "claim-claims-gate",
+	"instrument_sha256": "scripts/claims/ledger.mjs:2c6c2215500f7f8f1e28b7658a01cd4a608d7afa11bb58e9b715898858f85076\nscripts/claims/ledger.test.mjs:9858b35bf16a4d83cf84d7fae75fa09be8e47f3e9ceb064d2edfc534aedc10e8",
+	"subject_sha": "c2b3b95e9120258743dbb35cab0f2d5e73561ee5",
+	"environment": {
+		"os": "windows",
+		"node": "24.15.0"
+	},
+	"measured_at": "2026-09-26T05:03:43.172Z",
+	"reading": {
+		"pass": 10,
+		"fail": 0
+	},
+	"raw_digest": "sha256:9253b212f828c93ec212bdd280c7c549b015df771837da05c72f5ce62e800d3d",
+	"reproduce": "node scripts/claims/ledger.test.mjs",
+	"class": "curated-evidence"
 }
