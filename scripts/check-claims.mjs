@@ -23,7 +23,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { evaluateClaims } from "./claims/ledger.mjs";
+import { evaluateClaims, matchesGlob } from "./claims/ledger.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -111,12 +111,25 @@ if (measured) {
 	}
 }
 
+// A reading is a record ABOUT the tree, not an input to it. Without this filter,
+// committing a reading would invalidate the very claim it records — and
+// `claim-upload-surface-clean`'s subject legitimately covers `evidence/**`, so the
+// gate would be permanently red. Changes to `evidence/claims.json` still count:
+// that file *is* an input.
+const RECORD_PATHS = ["evidence/readings/**", "evidence/raw/**"];
+
 const result = measured
 	? evaluateClaims({
 			claims,
 			readings,
 			instrumentHashes,
-			changedSince: [...new Set(changedSince)],
+			changedSince: [
+				...new Set(
+					changedSince.filter(
+						(path) => !RECORD_PATHS.some((glob) => matchesGlob(glob, path)),
+					),
+				),
+			],
 		})
 	: {
 			rows: [],
