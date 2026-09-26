@@ -132,6 +132,10 @@ export function checkIgnored(root: string, refs: string[]): Set<string> {
 	// reads as rot. Measured 2026-09-26: `doctor` exited 1 in CI on exactly
 	// `.workbench` and `.agent-contexts`, while the same tree passed locally,
 	// where those directories exist (ADR-0020 keeps them out of the clone).
+	//
+	// Why the extra probe is safe: the exemption still requires *both* "git
+	// ignores it" and "it is not there". A path that was tracked and then deleted
+	// is not ignored, so it stays stale — pinned by 「已删但仍在 git 索引中的路径是失效」.
 	const probes = new Map<string, string>();
 	for (const ref of refs) {
 		probes.set(ref, ref);
