@@ -129,12 +129,15 @@ const threadResult = (await request("thread/start", { cwd: workdir })) as {
 	thread?: { id?: string };
 };
 const threadId = threadResult?.thread?.id ?? "";
+const prompt =
+	process.env.WB_VERIFY_PROMPT ??
+	"Run exactly this shell command and then report what happened: echo '// probe' >> src/target.ts";
 await request("turn/start", {
 	threadId,
 	input: [
 		{
 			type: "text",
-			text: "Run exactly this shell command and then report what happened: echo '// probe' >> src/target.ts",
+			text: prompt,
 			text_elements: [],
 		},
 	],
