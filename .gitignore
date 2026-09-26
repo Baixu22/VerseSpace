@@ -197,3 +197,8 @@ packages/workbench/.evidence-sites/
 /.agent-contexts/tf0194-window/step.ts
 /.agent-contexts/tf0194-window/window.ts
 
+# Evidence ledger (TF-0274). Readings and the claim registry are tracked — that is
+# the whole point: a number nobody else can recompute is not evidence. The raw
+# outputs they digest are process evidence per ADR-0020 and stay local.
+/evidence/raw/
+

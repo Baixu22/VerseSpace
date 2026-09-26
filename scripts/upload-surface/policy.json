@@ -33,6 +33,21 @@
 	},
 	"rules": [
 		{
+			"globs": ["evidence/raw/**"],
+			"class": "process-evidence",
+			"why": "证据账本的原始输出（测试日志、探针 dump）：本机留，只有哈希与精选读数入库（TF-0274 / ADR-0020）"
+		},
+		{
+			"globs": ["evidence/readings/**"],
+			"class": "curated-evidence",
+			"why": "读数：体量小、被 docs 与森林节点引用，换机可复算（TF-0274）"
+		},
+		{
+			"globs": ["evidence/claims.json"],
+			"class": "outcome",
+			"why": "声明注册表：它是「我们声称什么」的单一权威，属于源码级交付物"
+		},
+		{
 			"globs": ["**/node_modules/**"],
 			"class": "machine-state",
 			"why": "依赖树，由 bun install 重建"

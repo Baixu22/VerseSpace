@@ -1,0 +1,99 @@
+{
+	"$comment": "声明注册表（TF-0274）。每条声明必须点名仓库内的仪器（instrument）、它覆盖的路径（subject_paths）、以及读数必须携带的数字形状（reading_shape）。读数在 evidence/readings/<id>.json；原始输出在 evidence/raw/（gitignored，ADR-0020 的 process-evidence）。门禁：node scripts/check-claims.mjs。失效规则：仪器内容变了、或 subject_paths 里有任何改动晚于读数的提交，读数立刻 stale。",
+	"version": 1,
+	"claims": [
+		{
+			"id": "claim-catch-sites",
+			"statement": "packages/workbench/src 的非测试代码里有 141 个 catch 站点，分布在 61 个文件",
+			"instrument": ["scripts/audit/catch-sites.mjs"],
+			"subject_paths": ["packages/workbench/src/**"],
+			"reading_shape": { "files": "number", "sites": "number" },
+			"class": "L1",
+			"reproduce": "node scripts/audit/catch-sites.mjs --json",
+			"docs": ["docs/handoff/2026-09-25-catch-after-continue-audit.md"]
+		},
+		{
+			"id": "claim-claims-gate",
+			"statement": "证据账本的纯函数评估器测试全绿（含失效规则的反例）",
+			"instrument": [
+				"scripts/claims/ledger.mjs",
+				"scripts/claims/ledger.test.mjs"
+			],
+			"subject_paths": ["scripts/claims/**"],
+			"reading_shape": { "pass": "number", "fail": "number" },
+			"class": "L1",
+			"reproduce": "node scripts/claims/ledger.test.mjs"
+		},
+		{
+			"id": "claim-workbench-suite",
+			"statement": "workbench 套件全绿（0 fail）",
+			"instrument": ["package.json", "packages/workbench/package.json"],
+			"subject_paths": ["packages/workbench/**"],
+			"reading_shape": { "pass": "number", "fail": "number" },
+			"class": "L1",
+			"reproduce": "bun run test:workbench"
+		},
+		{
+			"id": "claim-ui-suite",
+			"statement": "dashboard 套件全绿（0 fail）",
+			"instrument": ["package.json", "apps/workbench-ui/package.json"],
+			"subject_paths": ["apps/workbench-ui/**"],
+			"reading_shape": { "pass": "number", "fail": "number" },
+			"class": "L1",
+			"reproduce": "bun run test:workbench-ui"
+		},
+		{
+			"id": "claim-context-rot-suite",
+			"statement": "context-rot 套件全绿（0 fail）",
+			"instrument": ["package.json", "packages/context-rot/package.json"],
+			"subject_paths": ["packages/context-rot/**"],
+			"reading_shape": { "pass": "number", "fail": "number" },
+			"class": "L1",
+			"reproduce": "bun run test:context-rot"
+		},
+		{
+			"id": "claim-doctor-clean",
+			"statement": "doctor 在本机 exit 0：指令文件没有失效引用，黑板一致",
+			"instrument": [
+				"packages/workbench/src/commands/doctor.ts",
+				"packages/workbench/src/rot/scan.ts",
+				"packages/context-rot/src/scan.ts",
+				"packages/context-rot/src/file-index.ts",
+				"packages/context-rot/src/verify.ts"
+			],
+			"subject_paths": ["AGENTS.md", "CLAUDE.md", "docs/**"],
+			"reading_shape": { "exit": "number", "stale": "number" },
+			"class": "L1",
+			"reproduce": "bun packages/workbench/src/index.ts doctor"
+		},
+		{
+			"id": "claim-upload-surface-clean",
+			"statement": "上传面门禁 exit 0：双向无违规",
+			"instrument": [
+				"scripts/check-upload-surface.mjs",
+				"scripts/upload-surface/policy.json",
+				"scripts/upload-surface/classify.mjs"
+			],
+			"subject_paths": [".gitignore", "docs/**", "scripts/**", "evidence/**"],
+			"reading_shape": { "exit": "number", "violations": "number" },
+			"class": "L1",
+			"reproduce": "bun run check:upload-surface"
+		},
+		{
+			"id": "claim-browser-e2e",
+			"statement": "真实浏览器 suite 全过、0 skip（隔离工作区 + 真 Vite + 真后端）",
+			"instrument": [
+				"scripts/win/e2e-browser.ps1",
+				"apps/workbench-ui/playwright.config.ts"
+			],
+			"subject_paths": ["apps/workbench-ui/**", "packages/workbench/src/**"],
+			"reading_shape": {
+				"passed": "number",
+				"failed": "number",
+				"skipped": "number"
+			},
+			"class": "L1",
+			"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1"
+		}
+	]
+}
