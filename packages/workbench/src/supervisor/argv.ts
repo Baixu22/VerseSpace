@@ -60,7 +60,14 @@ async function resolveWindowsExecutable(
 	command: string,
 ): Promise<string | null> {
 	if (/^[a-zA-Z]:[\\/]/.test(command) || command.startsWith("\\\\")) {
-		return command; // absolute — use as-is
+		// Absolute — use as-is, but only if it is actually there. Without this
+		// check a stale configured command surfaces as a raw
+		// `ENOENT: uv_spawn 'C:/…/codex.exe'`, which names the path but not the
+		// fact that the path is gone — and the caller's own "命令未找到" message
+		// never gets a chance to fire. Measured 2026-09-26: the Codex desktop app
+		// rotates its runtime directory, so a hardcoded `WORKBENCH_CODEX_COMMAND`
+		// went stale mid-session and produced exactly that confusing error.
+		return (await fileExists(command)) ? command : null;
 	}
 	const dirs = [
 		process.cwd(),

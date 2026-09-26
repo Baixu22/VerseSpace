@@ -110,3 +110,47 @@ bun run check:claims                                              # claim-codex-
   Claude Code 车道上有效」必须写在用户看得见的地方，而不是只写在 AGENTS.md 里。
 
 在你定之前，本轮不下结论、不动车道。
+
+---
+
+## 8. 更正：我先前把「复现不了」归错因了（2026-09-26 同日）
+
+第一次运行成功后，后续几次全部失败于：
+
+```
+ENOENT: no such file or directory, uv_spawn 'C:/Users/.../bin/d23520d1e41bfb24/codex.exe'
+```
+
+我当时**断言**这是 `packages/workbench/src/supervisor/argv.ts:120` 的缺陷——它故意把绝对路径的
+反斜杠换成前向斜杠（注释称 bun 的 uv_spawn 会弄坏反斜杠路径），而我判断 uv_spawn 不接受
+`C:/...` 形式。
+
+**这个判断是错的，而且我当时没有做对照。** 补做的矩阵探针（2 个 exe × 文件斜杠 × cwd 斜杠 ×
+环境，共 16 组）给出：
+
+| exe | 结果 |
+| --- | --- |
+| `C:\Windows\System32\where.exe` | **8/8 全过**——含文件前向斜杠的 4 组 |
+| `…\bin\d23520d1e41bfb24\codex.exe` | **8/8 全失败**——含最普通的「反斜杠 + 继承环境」 |
+
+前向斜杠显然不是变量。真正的原因是：**那个目录已经不存在了**——Codex 桌面应用当天 17:09
+轮换了运行时目录（`bin/` 下新出现 `0ddb895c950eaeba` 与 `faa963e871dd422c`），
+**我写死在验证配方里的路径中途失效了**。
+
+改用稳定位置（`~/.codex/plugins/.plugin-appserver/codex.exe`）后实验**可复现**，
+读数已恢复（`claim-codex-write-unsealed` valid，exit 0）。**结论本身不变**——
+它本来就是同一次实验得到的。
+
+### 真正的缺陷（已修）
+
+探针暴露的是另一个问题：`resolveWindowsExecutable` 对**绝对路径不做存在性检查**（原第 62-64 行
+「absolute — use as-is」），于是一个失效的配置以裸 `uv_spawn ENOENT` 冒出来——错误信息里
+有路径、却没有「这个路径没了」这句话，而调用方自己的「命令未找到」根本轮不到出场。
+
+修法：绝对路径也走 `fileExists`，不存在则返回 `null`（走「命令未找到」）。
+回归测试在 `packages/workbench/src/supervisor/argv.test.ts`，**先红后绿**：
+撤掉修复时 `expect(received).toBeNull()` 失败（收到的是原样路径），恢复后 2 pass / 0 fail。
+
+**教训**（与本轮主题同构）：我给出的「缺陷归因」也是一条声明，它同样需要对照。
+一个 16 组的探针就把它推翻了——**没有对照的归因，和没有读数的 done 是同一种东西。**
+
