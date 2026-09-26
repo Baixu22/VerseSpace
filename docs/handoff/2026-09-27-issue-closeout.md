@@ -218,10 +218,15 @@ fresh-orphan 快照（`snapshot: VerseSpace @ 0366f13 - jihulab CI mirror (no hi
 1. **把 `qa-stage-ab-remediation` 并入 `main`**（或本机 fast-forward）。这是让两个落库门禁转绿的
    唯一动作，也是本轮 10 个代码文件从「分支上完成」变成「已落库」的唯一路径。本轮没做：
    合并是维护者动作，用户只批准了本地 commit。
-2. **#31（唯一的真功能缺口）**：需要一次真实 codex 会话。资源清单：`WB_CODEX_BIN` 指向 codex 可执行文件
-   + 可用凭据。探针 `packages/workbench/scripts/verify/codex-approval-capture.ts` 已写好未运行。
-   11 个 codex 夹具里**仍然 0 个写动作**（本轮复核：`fileChange|applyPatch|createFile|"edit"|"write"` 零命中），
-   所以写这半条通道仍无门禁证明。ADR-0023 已把它记为实验通道，边界写死。
+2. **#31（唯一的真功能缺口）**：本记录写完之后，**真实 codex 采集已经跑通**——本机其实装了 codex
+   （`CODEX_CLI_PATH` → `codex-cli 0.158.0-alpha.2.1`），原来「缺资源」那条不成立。结论因此比
+   本记录初稿更锐利：真实写回合**不产生** `fileChange` / `applyPatch` / `fileRead` item，
+   `commandActions[].type` 是 `unknown` 且**没有 `path`**，5 次真实写审批的
+   `approvalTargets().kind` 全是 `unknown`（不是 `write`）——所以写这半条通道对本次抓取的
+   模型 / profile / 回合是**结构性缺席**，不是「还没采」。第 12 个流夹具 +
+   `codex-write-capture.test.ts` 把这些读数逐条钉住；codex 以后若开始发写 item，门禁会失败并
+   提示重做结论。详见 [codex 写侧采集记录](2026-09-27-codex-write-capture.md) 与 ADR-0017 的
+   2026-09-27 补记。
 3. **#33（发布决策）**：版本 0.4.1 与 CHANGELOG 已就绪，打包路径已修并 dry-run 验证。
    真发版按 AGENTS.md「Releases」三步走（tag 先到 origin → `build:all` → publish）。
    平台覆盖声明（只有 windows-x64 跑过完整测试）必须保留。

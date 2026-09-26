@@ -6,6 +6,8 @@ import { replayCodexFixture } from "../test/codex-fixture-replay";
 // 夹具于 2026-09-21 随存量退役轮从 `src-tauri/tests/fixtures/streams/codex/`
 // 迁入本包（ADR-0015）；本测试是第二个可观测 provider 的协议门禁（TF-0248），
 // 钉住 codex app-server 归一化流 → 规范 render 决策 + 足迹的翻译层。
+// 第 12 个（`write-turn-0.158.jsonl`）是 2026-09-27 的真实 0.158 写回合抓取，
+// 写侧读数由 `codex-write-capture.test.ts` 单独钉住。
 const FIXTURE_DIR = join(import.meta.dir, "fixtures/streams/codex");
 
 describe("Codex stream fixtures (TF-0248)", () => {
@@ -13,7 +15,7 @@ describe("Codex stream fixtures (TF-0248)", () => {
 		const names = (await readdir(FIXTURE_DIR))
 			.filter((name) => name.endsWith(".jsonl"))
 			.sort();
-		expect(names).toHaveLength(11);
+		expect(names).toHaveLength(12);
 		const snapshots = [];
 		for (const name of names) {
 			const lines = (await readFile(join(FIXTURE_DIR, name), "utf8"))

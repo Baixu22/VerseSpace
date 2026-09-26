@@ -1,0 +1,192 @@
+{
+	"$comment": "真实 codex 0.158.0-alpha.2.1 的写回合里 5 次 item/commandExecution/requestApproval 原样抓取（read-only 沙箱 + on-request 审批；原始 dump 见 docs/handoff/2026-09-27-codex-write-capture.md）。5 次全部 kind=command，commandActions 全部 [{type:'unknown',command:'apply_patch …'}]——没有 path 字段；唯一出现写目标 src/target.ts 的地方是散文 reason。按现有 approvals 夹具的口径，本机绝对路径原样保留。",
+	"requests": [
+		{
+			"method": "item/commandExecution/requestApproval",
+			"id": 0,
+			"params": {
+				"kind": "command",
+				"threadId": "01a0deb7-5fc2-7b80-9dc2-c8f09b5eb124",
+				"turnId": "01a0deb7-5ff0-7161-bba6-decda1e0da97",
+				"itemId": "call_563216262c4c49e79b56bc5a",
+				"startedAtMs": 1790442973548,
+				"environmentId": "local",
+				"reason": "Do you want to allow apply_patch to modify src/target.ts in the read-only workspace?",
+				"command": "\"D:\\\\software\\\\PowerShell\\\\pwsh-dir\\\\pwsh.exe\" -Command 'apply_patch *** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'",
+				"cwd": "C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-raw",
+				"commandActions": [
+					{
+						"type": "unknown",
+						"command": "apply_patch *** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch"
+					}
+				],
+				"proposedExecpolicyAmendment": [
+					"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+					"-Command",
+					"apply_patch *** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch"
+				],
+				"availableDecisions": [
+					"accept",
+					{
+						"acceptWithExecpolicyAmendment": {
+							"execpolicy_amendment": [
+								"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+								"-Command",
+								"apply_patch *** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch"
+							]
+						}
+					},
+					"cancel"
+				]
+			}
+		},
+		{
+			"method": "item/commandExecution/requestApproval",
+			"id": 1,
+			"params": {
+				"kind": "command",
+				"threadId": "01a0deb7-5fc2-7b80-9dc2-c8f09b5eb124",
+				"turnId": "01a0deb7-5ff0-7161-bba6-decda1e0da97",
+				"itemId": "call_57c1dda692cd491f891ce166",
+				"startedAtMs": 1790442983601,
+				"environmentId": "local",
+				"reason": "Do you want to allow apply_patch to modify src/target.ts in the read-only workspace?",
+				"command": "\"D:\\\\software\\\\PowerShell\\\\pwsh-dir\\\\pwsh.exe\" -Command \"apply_patch '*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'\"",
+				"cwd": "C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-raw",
+				"commandActions": [
+					{
+						"type": "unknown",
+						"command": "apply_patch '*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'"
+					}
+				],
+				"proposedExecpolicyAmendment": ["apply_patch"],
+				"availableDecisions": [
+					"accept",
+					{
+						"acceptWithExecpolicyAmendment": {
+							"execpolicy_amendment": ["apply_patch"]
+						}
+					},
+					"cancel"
+				]
+			}
+		},
+		{
+			"method": "item/commandExecution/requestApproval",
+			"id": 2,
+			"params": {
+				"kind": "command",
+				"threadId": "01a0deb7-5fc2-7b80-9dc2-c8f09b5eb124",
+				"turnId": "01a0deb7-5ff0-7161-bba6-decda1e0da97",
+				"itemId": "call_618c5b0991e1483ca2f24796",
+				"startedAtMs": 1790443004636,
+				"environmentId": "local",
+				"reason": "Do you want to allow apply_patch to modify src/target.ts in the read-only workspace?",
+				"command": "\"D:\\\\software\\\\PowerShell\\\\pwsh-dir\\\\pwsh.exe\" -Command \"apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@\"",
+				"cwd": "C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-raw",
+				"commandActions": [
+					{
+						"type": "unknown",
+						"command": "apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@"
+					}
+				],
+				"proposedExecpolicyAmendment": [
+					"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+					"-Command",
+					"apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@"
+				],
+				"availableDecisions": [
+					"accept",
+					{
+						"acceptWithExecpolicyAmendment": {
+							"execpolicy_amendment": [
+								"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+								"-Command",
+								"apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@"
+							]
+						}
+					},
+					"cancel"
+				]
+			}
+		},
+		{
+			"method": "item/commandExecution/requestApproval",
+			"id": 3,
+			"params": {
+				"kind": "command",
+				"threadId": "01a0deb7-5fc2-7b80-9dc2-c8f09b5eb124",
+				"turnId": "01a0deb7-5ff0-7161-bba6-decda1e0da97",
+				"itemId": "call_384f491761844225a73c01ad",
+				"startedAtMs": 1790443013347,
+				"environmentId": "local",
+				"reason": "Do you want to allow apply_patch to modify src/target.ts in the read-only workspace?",
+				"command": "\"D:\\\\software\\\\PowerShell\\\\pwsh-dir\\\\pwsh.exe\" -Command \"apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'@\"",
+				"cwd": "C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-raw",
+				"commandActions": [
+					{
+						"type": "unknown",
+						"command": "apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'@"
+					}
+				],
+				"proposedExecpolicyAmendment": [
+					"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+					"-Command",
+					"apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'@"
+				],
+				"availableDecisions": [
+					"accept",
+					{
+						"acceptWithExecpolicyAmendment": {
+							"execpolicy_amendment": [
+								"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+								"-Command",
+								"apply_patch @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch'@"
+							]
+						}
+					},
+					"cancel"
+				]
+			}
+		},
+		{
+			"method": "item/commandExecution/requestApproval",
+			"id": 4,
+			"params": {
+				"kind": "command",
+				"threadId": "01a0deb7-5fc2-7b80-9dc2-c8f09b5eb124",
+				"turnId": "01a0deb7-5ff0-7161-bba6-decda1e0da97",
+				"itemId": "call_e28d9ec702434784aacacc74",
+				"startedAtMs": 1790443051810,
+				"environmentId": "local",
+				"reason": "Do you want to allow apply_patch's underlying command to modify src/target.ts in the read-only workspace?",
+				"command": "\"D:\\\\software\\\\PowerShell\\\\pwsh-dir\\\\pwsh.exe\" -Command '$patch = @'\"'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@\n& 'C:\\\\Users\\\\27933\\\\.codex\\\\plugins\\\\.plugin-appserver\\\\codex.exe' --codex-run-as-apply-patch \"'$patch'",
+				"cwd": "C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-raw",
+				"commandActions": [
+					{
+						"type": "unknown",
+						"command": "$patch = @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@\n& 'C:\\Users\\27933\\.codex\\plugins\\.plugin-appserver\\codex.exe' --codex-run-as-apply-patch $patch"
+					}
+				],
+				"proposedExecpolicyAmendment": [
+					"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+					"-Command",
+					"$patch = @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@\n& 'C:\\Users\\27933\\.codex\\plugins\\.plugin-appserver\\codex.exe' --codex-run-as-apply-patch $patch"
+				],
+				"availableDecisions": [
+					"accept",
+					{
+						"acceptWithExecpolicyAmendment": {
+							"execpolicy_amendment": [
+								"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+								"-Command",
+								"$patch = @'\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n-export const target = 1;\n+export const target = 2;\n*** End Patch\n'@\n& 'C:\\Users\\27933\\.codex\\plugins\\.plugin-appserver\\codex.exe' --codex-run-as-apply-patch $patch"
+							]
+						}
+					},
+					"cancel"
+				]
+			}
+		}
+	]
+}
