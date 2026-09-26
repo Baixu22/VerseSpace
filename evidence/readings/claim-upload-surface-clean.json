@@ -1,12 +1,12 @@
 {
 	"claim_id": "claim-upload-surface-clean",
 	"instrument_sha256": "scripts/check-upload-surface.mjs:41f99f6f5dc547abb9626cc9af6c4debab1c1c8f29d1f1e6ba3b822c3b3c9c69\nscripts/upload-surface/classify.mjs:5898fa77be66ddc8d21609ec5996bb91207e1d24833d73eebe8d1265bef0ab7b\nscripts/upload-surface/policy.json:674616f64c619a4cc5dd1a3ab9842b0e3b032c50c49dc79ab75e8c9ff389813b",
-	"subject_sha": "0a0e713b2b1625e900ad16980f69a47d5fcecd12",
+	"subject_sha": "61759e0d039063fb826e2a5335e9383b6a2869db",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14"
 	},
-	"measured_at": "2026-09-26T09:12:48.439Z",
+	"measured_at": "2026-09-26T09:16:07.184Z",
 	"reading": {
 		"exit": 0,
 		"violations": 0
