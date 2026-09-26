@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-lint",
 	"instrument_sha256": "biome.json:224258a98ab2eebcee727cdd78fce2cd8f1905ea9907bc93033995ee198a0719\npackage.json:547dcf82df3952bc07ca6572bfe8c566a5b81ca85449bdfdc7d1b54cdfa0c3e1",
-	"subject_sha": "4914df053458ceced5700c6bb004793e5a4169c3",
+	"subject_sha": "b53396b31a457b2fe8e9da7b57953fa273738c2d",
 	"environment": {
 		"os": "win32",
 		"bun": "1.3.14",
 		"shell": "pwsh"
 	},
-	"measured_at": "2026-09-26T15:27:03.458Z",
+	"measured_at": "2026-09-26T15:32:32.915Z",
 	"reading": {
 		"exit": 0,
 		"errors": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:fe1bdd7e3f65911033d9565fd4710da5c146d5fe4b6374592678c7c7be12f74d",
+	"raw_digest": "sha256:bc3da22975b2a8ad3c920cd1fabf050b30d3cc5b700a774c501e530125125aa0",
 	"reproduce": "bun run lint",
 	"class": "curated-evidence"
 }
