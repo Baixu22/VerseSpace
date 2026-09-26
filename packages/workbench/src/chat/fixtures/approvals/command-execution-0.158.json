@@ -1,0 +1,38 @@
+{
+	"$comment": "真实 codex 0.158.0-alpha.2 的 item/commandExecution/requestApproval params，2026-09-26 由 packages/workbench/scripts/verify/codex-approval-capture.ts 原样抓取（read-only 沙箱 + on-request 审批逼出来的）。ADR-0017 说「没有保留任何夹具记录 approval params 的形状」——这就是那份缺失的夹具。注意 availableDecisions 里没有 decline：阻断必须回 cancel。",
+	"method": "item/commandExecution/requestApproval",
+	"params": {
+		"kind": "command",
+		"threadId": "01a0dd4a-18b1-7243-a534-de5ceb1741ea",
+		"turnId": "01a0dd4a-1970-7830-bfc2-492f87326177",
+		"itemId": "call_78b39bb6569d480f879276d4",
+		"startedAtMs": 1790419023887,
+		"environmentId": "local",
+		"reason": "Do you want to allow this command to append to src/target.ts in the workspace?",
+		"command": "\"D:\\\\software\\\\PowerShell\\\\pwsh-dir\\\\pwsh.exe\" -NoProfile -Command \"echo '// probe' >> src/target.ts\"",
+		"cwd": "C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-capture",
+		"commandActions": [
+			{ "type": "unknown", "command": "echo '// probe' >> src/target.ts" }
+		],
+		"proposedExecpolicyAmendment": [
+			"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+			"-NoProfile",
+			"-Command",
+			"echo '// probe' >> src/target.ts"
+		],
+		"availableDecisions": [
+			"accept",
+			{
+				"acceptWithExecpolicyAmendment": {
+					"execpolicy_amendment": [
+						"D:\\software\\PowerShell\\pwsh-dir\\pwsh.exe",
+						"-NoProfile",
+						"-Command",
+						"echo '// probe' >> src/target.ts"
+					]
+				}
+			},
+			"cancel"
+		]
+	}
+}

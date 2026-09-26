@@ -232,7 +232,12 @@ export function createCodexAppServer(
 					if (sealed.blocked) {
 						// The decision itself is already in events.jsonl: decideSeal
 						// records every verdict, including this one.
-						write({ id, result: { decision: "decline" } });
+						//
+						// `cancel`, not `decline`: the real 0.158 params carry
+						// `availableDecisions: ["accept", {acceptWithExecpolicyAmendment},
+						// "cancel"]` — there is no "decline" to send (fixture:
+						// src/chat/fixtures/approvals/command-execution-0.158.json).
+						write({ id, result: { decision: "cancel" } });
 						return;
 					}
 				} catch (error) {
