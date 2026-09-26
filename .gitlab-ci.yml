@@ -107,6 +107,13 @@ stages: [verify, release]
     - scripts/**
     - apps/workbench-ui/**
     - packages/workbench/src/**
+  # Observed 2026-09-26 on this mirror: a snapshot push that only touched
+  # `packages/context-rot/**` produced just `pipeline-heartbeat` + `biome` —
+  # this job, `typecheck` and `doctor` were never created, although their
+  # `changes` lists all name `packages/context-rot/**`. A push that touched
+  # `.gitlab-ci.yml` (named by every list) did create all nine jobs. Cause not
+  # established yet: it may be how `changes` behaves for the parent-less
+  # snapshot commits this mirror force-pushes, rather than the filters.
   context_rot:
     - .gitlab-ci.yml
     - package.json
