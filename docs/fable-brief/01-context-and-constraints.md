@@ -28,6 +28,12 @@
 | **会话树** | TF-0093 追溯式分叉(零仪式一次 POST;`meta.forkOf` 血统;`ForkDeclaration` 类型强制显式继承声明,字面量 `true` 编译期锁死);TF-0092 信号驱动直接晋升(B=3ms≪K,不建提议 UI);TF-0097 恢复笔记(离开时刻纯函数起草 3–5 拍:doing/decided/shifted/next + `leaveSignature`,返回时 `resumeDelta` 报"你不在时多了 N 条",UI 折叠条,确认不阻塞) | **合并回主线(merge-back):零代码零设计**;树形导航 UI(现为平铺+↳徽标+hover 血统);恢复笔记是启发式拼接(最后一条用户消息/分叉计数/最后 assistant 的 tool-call/建议首条),**不含"为什么放弃另一条"**;分叉线程 `freshAgentSession`——**与兄弟分支、与代码工位零耦合**(兄弟改了仓库,本分支毫不知情) | Claude Code 已上线 `/branch`、`/fork`、`--fork-session`(2026-09-02 核实),fork 本身不再是空白;空白收窄为 merge-back、树导航、血统/前提感知恢复(issue #32631 全规格仍开) |
 | **并发** | R1 写者登记(thread 即 agent 写者;人肉编辑与外部 commit 也被 watcher 捕获);R2 读集失效(premises/delivery,三区判定);merge-guard TF-0079(`git merge-tree --write-tree` 零误报预测 + ConE 式写集重叠账本,30 分钟窗口、稀有作者过滤阈值 1);WIP TF-0083(L=λ×W 从事件日志推导,样本<3 时明说 `insufficient-history` 退回物理上限;CONWIP 全局令牌;`--force` 只留给人);接口注册表 contentHash 漂移 + version CAS(不匹配抛 `BlackboardConflictError`);ADR-0009 实测 B_goal=3ms/C_goal=12ms → 提议区间恒空 → 不建"要不要做X"UI,廉价可逆替代 | 对话层读集失效(R2′:恢复会话时 diff 读集,注入"你的 37 个前提有 4 个为假"——v5 §11.2 设计,未实现);写前触碰范围声明(`view.yaml` 停在 v4/v5 的"明确不做"清单;写集声明位置已留在 checkpoint 类型上但未接线);promote 的 commit/重复测试失败两个信号"由足迹侧喂入,本层只定义形状"——未接线;chat 层通知无队列/限速(tribunal 队列只管 workspot 写者) | CoAgent 实验支持建议式(1.4×)优于排他锁(1.04×)与乐观重试(0.93×)【文献引用】;ConE 生产验证便宜信号(26000 PR→3% 通知→70% 有用)【文献引用】 |
 
+> **2026-09-27 补记（issue #36，承接 2026-09-26 收尾轮）**：§3「并发」行「未建」列里
+> 「promote 的 commit/重复测试失败两个信号『由足迹侧喂入，本层只定义形状』——未接线」
+> 已作废：这两个变体全库无生产者，已从 `PromotionSignal` 删除，并加了编译期形状钉
+> （`packages/workbench/src/chat/promote.ts` / `promote.test.ts`）。上方历史表述保留原样，
+> 本补记即取代关系。
+
 ## 4. 决策约束红线(全部有出处,违反即方案否决)
 
 | # | 约束 | 出处 |

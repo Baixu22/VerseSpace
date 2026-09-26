@@ -22,6 +22,22 @@
  * bearing. Pass `--strict-references` to promote it to a violation once that
  * decision has been made for every remaining case.
  *
+ * A sixth signal IS mechanical and therefore a violation, always on:
+ *
+ *   broken-relative-link a shipped Markdown doc's relative link resolves to a
+ *                        path that does not exist on disk
+ *
+ * `referenced-but-local` is a substring probe, so it only sees a target spelled
+ * as a repo-relative path. It missed two real classes of dead pointer (issue
+ * #37): `../positioning-v5.md`-style relative spelling, and a whole file's worth
+ * of links left at the wrong depth after the doc moved into `docs/handoff/` —
+ * 24 links pointing at non-existent `docs/packages/…`, with the gate still
+ * reporting 0 violations. `scripts/upload-surface/links.mjs` resolves every
+ * relative link in every UPLOADED `.md` file against the directory of the
+ * referring file and reports the ones whose target is neither a file nor a
+ * directory. Local-only / ignored docs are deliberately not checked: a cloner
+ * never sees them, and the gate's subject is what a cloner receives.
+ *
  * Exit codes: 0 clean · 1 violations · 2 cannot measure. A gate that cannot
  * measure must never report clean — the same rule as
  * `scripts/check-forest-landing.mjs`.
@@ -56,7 +72,9 @@ import {
 	evaluate,
 	isAcceptedLocalReference,
 } from "./upload-surface/classify.mjs";
+import { checkRelativeLinks } from "./upload-surface/links.mjs";
 import { loadPolicy } from "./upload-surface/policy-loader.mjs";
+import { emitReport } from "./upload-surface/report.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "..");
@@ -259,74 +277,30 @@ if (measured) {
 		report.status = report.violations.length > 0 ? "violations" : "clean";
 		report.counts.violations = report.violations.length;
 	}
+
+	// broken-relative-link: a shipped Markdown doc whose relative link resolves
+	// to nothing on disk. Unlike `referenced-but-local` this is mechanical — the
+	// target either exists or it does not — so it is a violation in the normal
+	// run, not a note behind a flag. Only uploaded `.md` files are read: a dead
+	// link inside a doc that stays on this machine is not a defect of the upload
+	// surface, because a cloner never sees that doc.
+	const links = checkRelativeLinks({ root: ROOT, files: uploaded });
+	report.relativeLinks = {
+		checked: links.checked.length,
+		broken: links.broken,
+	};
+	report.violations.push(...links.broken);
+	report.status = report.violations.length > 0 ? "violations" : "clean";
+	report.counts.violations = report.violations.length;
 }
 
-const GROUPS = [
-	["useful-not-uploaded", "有用未传", "应上传却被 .gitignore 排除"],
-	["useless-uploaded", "无用已传", "应留本机却进入上传面"],
-	["unclassified", "未定性", "策略未覆盖，需显式归类"],
-	["oversize-uploaded", "超限已传", "单文件超过体量上限"],
-	["referenced-but-local", "被引用却未传", "已入库文档指向本机文档"],
-];
-
-if (AS_JSON) {
-	process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-} else {
-	const status = !measured
-		? "无法测量"
-		: report.status === "clean"
-			? "上传面已定性，双向无违规"
-			: "有违规";
-	console.log(`[upload-surface] ${status}`);
-	if (report.counts) {
-		console.log(
-			`  上传面 ${report.counts.uploaded} 个文件 · 本机遗留 ${report.counts.ignored} 个 · 违规 ${report.counts.violations} 条`,
-		);
-	}
-	for (const note of notes) {
-		console.log(`  备注：${note}`);
-	}
-	for (const problem of problems) {
-		console.log(`  ${problem}`);
-	}
-	for (const [code, label, hint] of GROUPS) {
-		const hits = report.violations.filter((item) => item.code === code);
-		if (hits.length === 0) {
-			continue;
-		}
-		console.log(`  ${label}（${code}）${hits.length} 条 — ${hint}`);
-		for (const hit of hits.slice(0, SHOW)) {
-			console.log(`    · ${hit.path}`);
-		}
-		if (hits.length > SHOW) {
-			console.log(`    … 其余 ${hits.length - SHOW} 条见 --json`);
-		}
-	}
-	const referenceNotes = report.referenceNotes ?? [];
-	if (referenceNotes.length > 0) {
-		console.log(
-			`  待裁决（referenced-but-local）${referenceNotes.length} 条 — 已入库文档指向本机文档；` +
-				"需人工决定「提升目标」还是「改掉引用」，加 --strict-references 可将其视为违规",
-		);
-		for (const note of referenceNotes.slice(0, SHOW)) {
-			console.log(`    · ${note.path} ← ${note.detail}`);
-		}
-		if (referenceNotes.length > SHOW) {
-			console.log(`    … 其余 ${referenceNotes.length - SHOW} 条见 --json`);
-		}
-	}
-	const acceptedReferences = report.acceptedReferences ?? [];
-	if (acceptedReferences.length > 0) {
-		console.log(
-			`  已裁决（referenced-but-local）${acceptedReferences.length} 条 — 引用已在 policy.acceptedLocalReferences 里逐条记录，不再阻塞门禁`,
-		);
-		for (const entry of acceptedReferences.slice(0, SHOW)) {
-			console.log(`    · ${entry.path} ← ${entry.detail}`);
-		}
-		if (acceptedReferences.length > SHOW) {
-			console.log(`    … 其余 ${acceptedReferences.length - SHOW} 条见 --json`);
-		}
-	}
-}
+emitReport({
+	report,
+	asJson: AS_JSON,
+	measured,
+	notes,
+	problems,
+	show: SHOW,
+});
 
 process.exit(!measured ? 2 : report.violations.length > 0 ? 1 : 0);

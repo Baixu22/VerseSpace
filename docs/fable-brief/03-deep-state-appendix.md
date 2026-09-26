@@ -42,6 +42,9 @@
 
 - **机器层零未接线**:runtime/tribunal/scheduler/verifier/automaton/rot/doctor/contextgen/agents/supervisor/blackboard 每个都有 CLI 命令、runtime 周期或 UI 端点到达。
 - **唯二"形状已定义、无生产者"**:promote 的 `repeated-test-failure` 与 `commit` 两个晋升信号("由足迹侧喂入,本层只定义形状")。
+
+> 2026-09-26 补记(issue #36):该缺口已按"删除"收口——这两个变体已从 `PromotionSignal` 移除,声明只保留库内真有生产者的三种形状(`turns-crossed` / `next-day-resume` / `second-fork`),与真实边界一致(ADR-0023)。上文为当日历史叙述,不改写。
+
 - **DOI 层是零下游消费者的纯库**:`computeDoi`/`projectLandmarks` 在 interactions/ 目录之外**无任何 import**——无 CLI 命令、无 server 路由、无 GUI 组件。事件在记(机器侧自动记),但没有任何东西读。
 - **人类交互信号不存在**:types.ts 原话"人类侧:未来由前端交互层(v6)直接上报";GUI 零上报;watcher 把人肉文件编辑记为 origin:"human" 的 edit 事件(最接近的替代)。
 - **TF-0118 刻意边界**:metrics.ts 拒绝把 chat 线程当车道("a thread is not a lane——metering it here would mix non-lane keys")。chat 的用量/足迹在记,但不进车道体系。
@@ -97,6 +100,9 @@
 2. **DOI 无人消费**:L1 是带 p 值背书的一层,却是全系统唯一"建好没接电"的部件。
 3. **chat 与 world 的鸿沟**:TF-0118 刻意隔离 vs 三支柱合流点(H1/R2′/merge-back)全部要跨界。
 4. **promote 信号缺口**:commit/重复测试失败两个信号无生产者——而 commit 恰恰是"任务变得正经"的最强执行信号。
+
+> 2026-09-26 补记(issue #36):缺口已按"删除"收口,不是"接线"——两个变体从 `PromotionSignal` 移除,声明只保留三种有生产者的形状(ADR-0023)。第 4 条的张力记录保持原样。
+
 5. **通知不对称**:workspot 写者有 ISA-18.2 全套队列纪律,chat 层通知无队列无限速;fork 扇出会放大写者数。
 6. **封印悖论**:全系统"永不阻断"(R4),但 seal.ts 是被祝圣的例外——例外边界的哲学从未被文档化。
 7. **客户端态易失**:drafts/parked(停放快照,TF-0096 的载体)只在浏览器内存里——"清场是一半效果"的那一半没落盘。

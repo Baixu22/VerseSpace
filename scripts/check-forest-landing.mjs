@@ -22,7 +22,17 @@
  *   3. no unmerged branch carries CODE that is not on the default branch
  *      (a branch holding only `.agent-workbench/` or `docs/` bookkeeping is
  *      reported as a note — it cannot be a landing gap for code);
- *   4. no `done` node is newer than the HEAD commit.
+ *   4. a `done` node's evidence, when it names a real commit, must be reachable
+ *      from the default branch (`git merge-base --is-ancestor`).
+ *
+ * Rule 4 used to compare `updated_at` against the HEAD commit's time. That was
+ * wrong in both directions: the forest is untracked, so applying any proposal
+ * updates `updated_at` without producing a commit — every apply read as drift
+ * (`TFD-6b47ba440e`) — while code that existed only on an unmerged branch read
+ * as landed (`TFD-0dab4149f2`). Timestamps are gone; reachability is measured.
+ * Nodes whose evidence names no commit, and commits reachable from no branch
+ * (the JihuLab mirror's fresh-orphan snapshots), are reported as notes, not
+ * drift — otherwise the gate cries wolf on the two states it cannot judge.
  *
  * Exit codes: 0 clean · 1 drift · 2 cannot measure. A gate that cannot measure
  * must never report clean — same rule as `scripts/suite-total.ts`.
@@ -45,6 +55,20 @@ const NODES = join(
 
 function git(args) {
 	return execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
+}
+
+/** Exit code of a git command; never throws (non-zero when it did not run). */
+function gitExit(args) {
+	try {
+		execFileSync("git", args, {
+			cwd: REPO,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		});
+		return 0;
+	} catch (error) {
+		return typeof error?.status === "number" ? error.status : 1;
+	}
 }
 
 const problems = [];
@@ -103,22 +127,63 @@ try {
 		}
 	}
 
-	const headMs = Date.parse(git(["log", "-1", "--format=%cI"]));
 	const nodes = JSON.parse(readFileSync(NODES, "utf8"));
-	const late = [];
+	// Rule 4: reachability, not recency. A `done` node is not "late" because the
+	// forest recorded it after the last commit — the forest is untracked, so
+	// applying a proposal updates `updated_at` and produces no commit at all.
+	const commitTokens = (node) => {
+		const text = (node?.evidence ?? [])
+			.map((item) => (typeof item === "string" ? item : JSON.stringify(item)))
+			.join("\n");
+		return [...new Set(text.match(/\b[0-9a-f]{7,40}\b/g) ?? [])].filter(
+			(token) => gitExit(["cat-file", "-e", `${token}^{commit}`]) === 0,
+		);
+	};
+	const orphans = [];
+	const unattributed = [];
 	for (const [id, node] of Object.entries(nodes)) {
-		if (node?.status !== "done" || !node.updated_at) {
+		if (node?.status !== "done") {
 			continue;
 		}
-		const at = Date.parse(node.updated_at);
-		if (Number.isFinite(at) && Number.isFinite(headMs) && at > headMs) {
-			late.push(id);
+		const tokens = commitTokens(node);
+		if (tokens.length === 0) {
+			unattributed.push(id);
+			continue;
+		}
+		for (const token of tokens) {
+			if (
+				gitExit(["merge-base", "--is-ancestor", token, defaultBranch]) === 0
+			) {
+				continue;
+			}
+			const branches = git(["branch", "--all", "--contains", token])
+				.split("\n")
+				.map((line) => line.replace(/^[*+]\s*/, "").trim())
+				.filter(Boolean)
+				.filter(
+					(name) =>
+						name !== defaultBranch && name !== `origin/${defaultBranch}`,
+				);
+			if (branches.length > 0) {
+				problems.push(
+					`done 节点 ${id} 的证据提交 ${token} 只出现在未合并分支 ${branches.join("、")} 上`,
+				);
+			} else {
+				orphans.push(`${id}:${token}`);
+			}
 		}
 	}
-	if (late.length > 0) {
-		problems.push(
-			`${late.length} 个 done 节点晚于 HEAD 提交：${late.slice(0, 8).join(", ")}` +
-				`${late.length > 8 ? " …" : ""}`,
+	if (orphans.length > 0) {
+		notes.push(
+			`${orphans.length} 个 done 节点的证据提交不属于任何分支（孤立提交，` +
+				`极狐镜像的 fresh-orphan 快照即此类；只报读数不判漂移）：` +
+				`${orphans.slice(0, 5).join(", ")}${orphans.length > 5 ? " …" : ""}`,
+		);
+	}
+	if (unattributed.length > 0) {
+		notes.push(
+			`${unattributed.length} 个 done 节点的证据里没有可解析成真实提交的 token` +
+				"（无法归因，不判漂移——这是旧时间戳判据的假阳性来源 TFD-6b47ba440e）",
 		);
 	}
 } catch (error) {
