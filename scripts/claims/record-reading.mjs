@@ -105,6 +105,22 @@ if (
 	process.exit(2);
 }
 
+// An instrument that did not finish cleanly cannot produce evidence. Measured
+// 2026-09-26: the codex write-side instrument exited 2 ("cannot measure") and the
+// recorder happily wrote a reading that claimed success — the same class of hole
+// as the hand-typed exit code above. A claim may opt in via `expects_nonzero_exit`
+// when a non-zero exit IS the asserted outcome.
+if (
+	instrumentExit !== null &&
+	instrumentExit !== 0 &&
+	claim.expects_nonzero_exit !== true
+) {
+	console.error(
+		`拒绝记录：仪器 exit=${instrumentExit}（没有测出来），不能当作证据。声明若确实断言非零退出，设 expects_nonzero_exit: true。`,
+	);
+	process.exit(2);
+}
+
 const reading = {
 	claim_id: claimId,
 	instrument_sha256: instrumentKey(claim, hashes),
