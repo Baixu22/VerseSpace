@@ -1,13 +1,13 @@
 {
 	"claim_id": "claim-typecheck",
-	"instrument_sha256": "package.json:547dcf82df3952bc07ca6572bfe8c566a5b81ca85449bdfdc7d1b54cdfa0c3e1",
-	"subject_sha": "4914df053458ceced5700c6bb004793e5a4169c3",
+	"instrument_sha256": "package.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857",
+	"subject_sha": "665010965526b3c776ed477501932dc41d1b54b4",
 	"environment": {
 		"os": "win32",
 		"bun": "1.3.14",
 		"shell": "pwsh"
 	},
-	"measured_at": "2026-09-26T15:27:12.077Z",
+	"measured_at": "2026-09-26T16:58:10.648Z",
 	"reading": {
 		"exit": 0
 	},
