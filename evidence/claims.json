@@ -148,6 +148,28 @@
 			},
 			"class": "L1",
 			"reproduce": "bun run typecheck"
+		},
+		{
+			"id": "claim-codex-write-unsealed",
+			"statement": "真实 codex 车道在 stale premise 上的写入不受封印保护：写入落盘、0 次 seal.decided；对照（同一个 decideSeal）对同一条前提 block",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-write-seal.ts",
+				"scripts/verify/codex-gateway.toml"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/seal.ts",
+				".claude/settings.json"
+			],
+			"reading_shape": {
+				"staleClaims": "number",
+				"writeLanded": "boolean",
+				"sealEventsAfterCodex": "number",
+				"controlDecision": "string"
+			},
+			"class": "L2",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --json",
+			"docs": ["docs/handoff/2026-09-26-codex-write-unsealed.md"]
 		}
 	]
 }

@@ -1,0 +1,22 @@
+{
+	"claim_id": "claim-codex-write-unsealed",
+	"instrument_sha256": "packages/workbench/scripts/verify/codex-write-seal.ts:b79b24a2dee8107a4ff6a31338f150521e4c6cd05b8d26e2b5893a3d8e6947dc\nscripts/verify/codex-gateway.toml:f0277a509c9556d3543b72989ca6c3b05faaf6f1dd66c2ac34b0b94c79f8017b",
+	"subject_sha": "2a3bc031df9c17cf8bb7f66d69b597561b347bc5",
+	"environment": {
+		"os": "windows",
+		"codex": "0.158.0-alpha.2",
+		"model": "glm-5.3-flash",
+		"provider": "wb_verify"
+	},
+	"measured_at": "2026-09-26T09:08:16.170Z",
+	"reading": {
+		"staleClaims": 1,
+		"writeLanded": true,
+		"sealEventsAfterCodex": 0,
+		"controlDecision": "block"
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:ddc69e83bd2a27dc28db2a39f91f19929bde9afcb93d60b9350f6c67ce38eb68",
+	"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --json",
+	"class": "process-evidence"
+}

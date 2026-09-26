@@ -102,6 +102,27 @@ for (const path of instrumentPaths) {
 // `evidence/**`. Changes to `evidence/claims.json` still count: it *is* an input.
 const RECORD_PATHS = ["evidence/readings/**", "evidence/raw/**"];
 
+// New files that are not staged yet are invisible to `git diff <sha>` — and a new
+// doc is exactly what can add a dead citation for `doctor`. Measured 2026-09-26: a
+// fresh handoff report under docs/ did not mark `claim-doctor-clean` stale until it
+// was staged. Untracked paths are "changed since every commit", so they apply to
+// every reading.
+let untracked = [];
+if (measured) {
+	try {
+		untracked = execFileSync(
+			"git",
+			["ls-files", "--others", "--exclude-standard"],
+			{ cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+		)
+			.split("\n")
+			.filter(Boolean);
+	} catch (error) {
+		measured = false;
+		problems.push(`git ls-files --others 失败（无法测量）：${error.message}`);
+	}
+}
+
 const changedSinceBySha = {};
 if (measured) {
 	const shas = [...new Set(readings.map((r) => r.subject_sha).filter(Boolean))];
@@ -112,8 +133,7 @@ if (measured) {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
 			});
-			changedSinceBySha[sha] = out
-				.split("\n")
+			changedSinceBySha[sha] = [...out.split("\n"), ...untracked]
 				.filter(Boolean)
 				.filter(
 					(path) => !RECORD_PATHS.some((glob) => matchesGlob(glob, path)),
