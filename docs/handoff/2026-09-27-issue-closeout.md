@@ -152,21 +152,21 @@ node 与 bun 因此可以创建子进程。AGENTS.md 记的「agent 沙箱拒绝
 | `bun run test:workbench-ui` | **68 pass / 0 fail**，18 文件，14.31 s | **0** |
 | `bun run test:context-rot` | **69 pass / 0 fail**，6 文件，2.77 s | **0** |
 | `bun packages/workbench/src/index.ts doctor` | 117 条架构断言 / **0 失效**；blackboard 一切正常 | **0** |
-| `node scripts/check-upload-surface.mjs --strict-references` | 上传面 812 文件 · 违规 0 · 已裁决引用 6 · **相对链接 299 条 / 断链 0** | **0** |
+| `node scripts/check-upload-surface.mjs --strict-references` | 上传面已定性，双向无违规：违规 0 · 已裁决引用 6 · **相对链接 0 断链**（文件/链接计数随仓内文件数变化，写本记录时是 813 文件 / 302 条；**判据是 exit 0 与违规 0，不是这两个数**） | **0** |
 | `bun run test:upload-surface` | classify **15 pass** + links **15 pass**，0 fail | **0** |
 | `pwsh -NoProfile -File scripts/win/e2e-browser.ps1` | **14 passed / 0 skipped / 0 failed**，38.8 s | **0** |
 | `cd packages/workbench && bun run build && bun run test:build` | 原生与 JS 两种形态冒烟全过（`initialized/doctor/stats/headlessUi/bundledUi` 全 true） | **0** |
 | `bun packages/workbench/scripts/benchmark-premises.ts --json` | **11 / 11** 场景通过（合成负载契约，**不代表真实用户精度**） | **0** |
-| `node scripts/check-forest-landing.mjs` | **有漂移（预期，见下）**：HEAD 领先 `main` 1 个提交；分支 `qa-stage-ab-remediation` 有 10 个代码文件未并入 `main`；另 1 条孤立提交、187 条无法归因（只报读数） | **1** |
+| `node scripts/check-forest-landing.mjs` | **有漂移（预期，见下）**：HEAD 领先 `main`，且分支 `qa-stage-ab-remediation` 有代码文件未并入 `main`；另 1 条孤立提交、187 条无法归因（只报读数） | **1** |
 | `node scripts/check-claims.mjs` | 13 条声明全部一致（重取读数后） | **0** |
 | 外部 CLI `validate` | 校验通过；偏差账本 50 条 · 未结 0 | **0** |
-| 外部 CLI `check-landing` | **有漂移（预期，与上一条同因）**：HEAD 领先 `main` 1 个提交 + 10 个代码文件未并入 `main`；1 条孤立提交读数（TF-0255 的 `ad53345`） | **1** |
+| 外部 CLI `check-landing` | **有漂移（预期，与上一条同因）**：同样报 HEAD 领先 `main` + 代码文件未并入 `main`；1 条孤立提交读数（TF-0255 的 `ad53345`） | **1** |
 
 ### 两个落库门禁为什么是红的（这是**正确**读数，不是回归）
 
-本轮的提交 `6650109`（外加读数重取提交 `4da1254`）落在 `qa-stage-ab-remediation` 上，
-`main` 仍在 `d0706b3`。两个落库门禁
-因此都报「HEAD 领先默认分支 + 分支有代码未并入」——这正是 `TFD-0dab4149f2` 记的那一类缺口，
+本轮的全部提交（`6650109` 加三个读数/文档提交 `4da1254` / `b5ddedf` / `d315052`）都落在
+`qa-stage-ab-remediation` 上，`main` 仍在 `d0706b3`。两个落库门禁因此都报
+「HEAD 领先默认分支 + 分支有代码未并入」——这正是 `TFD-0dab4149f2` 记的那一类缺口，
 也是本轮 #38 把判据从时间戳改成可达性之后**第一次真的抓到它**：
 
 - **旧判据抓不到**：时间戳规则问「有没有 done 节点比 HEAD 新」。本轮提交是最新的东西，
@@ -177,9 +177,9 @@ node 与 bun 因此可以创建子进程。AGENTS.md 记的「agent 沙箱拒绝
 `qa-stage-ab-remediation` 并入 `main`（或本机 fast-forward `main`）——**本轮没有做**，
 因为用户批准的是「本地 commit，不 push」，而合并到权威分支是维护者的动作。
 
-相应地：**`TFD-460861548d` 记的「4 个 done 节点只在分支上」在 `d0706b3` 时已闭合，
-但本轮的 10 个代码文件又处在了同一形态**。按 ADR-0022 的口径，本轮成果应读作
-**「分支上完成」而不是「已落库」**。
+相应地：**`TFD-460861548d` 记的「done 节点只在分支上」在 `d0706b3` 时已闭合，但本轮改动的
+源码文件又处在了同一形态**（具体数量随本分支后续提交变化；判据是「未并入 `main` 的文件数 > 0」，
+不是一个固定数字）。按 ADR-0022 的口径，本轮成果应读作**「分支上完成」而不是「已落库」**。
 
 **本机仍然拿不到的读数**（不假装拿到）：
 
