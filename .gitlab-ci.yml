@@ -237,6 +237,16 @@ context-rot-test:
 # claim was aspirational. The scanner's URL/scp false positives are fixed and
 # the ambiguous doc refs are now fully qualified, so the tree is green — and
 # `interface_drift` is an error, so a stale premise actually fails this job.
+#
+# 2026-09-26: this job is the reason a clean-clone-only defect was found at all.
+# It failed on the first full pipeline while the same tree passed locally: the
+# instruction files cite `.workbench/` and `.agent-contexts/`, which ADR-0020
+# keeps out of the upload surface, and `git check-ignore` cannot match a
+# directory-only pattern (`/.workbench/`) against a path it cannot stat — so a
+# legitimately-absent local directory read as a dead citation. Fixed in
+# context-rot's `checkIgnored` (probe the trailing-slash form too). The lesson
+# is worth keeping: a gate that only ever runs where the local state exists
+# cannot see this class of failure.
 doctor:
   extends: .bun-setup
   stage: verify
