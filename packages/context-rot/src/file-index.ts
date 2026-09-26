@@ -125,19 +125,35 @@ export function buildFileIndex(root: string): FileIndex {
 /** NUL-delimited paths preserve spaces and non-ASCII names in git output. */
 export function checkIgnored(root: string, refs: string[]): Set<string> {
 	if (refs.length === 0 || !existsSync(join(root, ".git"))) return new Set();
+	// A directory-only ignore pattern (`/.workbench/`) cannot match a bare path
+	// whose directory is absent: git will not guess that a path it cannot stat is
+	// a directory. Probe the trailing-slash form too and map the answer back —
+	// otherwise a gitignored directory that a clean clone legitimately lacks
+	// reads as rot. Measured 2026-09-26: `doctor` exited 1 in CI on exactly
+	// `.workbench` and `.agent-contexts`, while the same tree passed locally,
+	// where those directories exist (ADR-0020 keeps them out of the clone).
+	const probes = new Map<string, string>();
+	for (const ref of refs) {
+		probes.set(ref, ref);
+		probes.set(`${ref.replace(/\/+$/, "")}/`, ref);
+	}
 	try {
-		return new Set(
-			execFileSync("git", ["check-ignore", "-z", "--stdin"], {
-				cwd: root,
-				input: `${refs.join("\0")}\0`,
-				encoding: "utf8",
-				windowsHide: true,
-				stdio: ["pipe", "pipe", "ignore"],
-				maxBuffer: 16 * 1024 * 1024,
-			})
-				.split("\0")
-				.filter(Boolean),
-		);
+		const printed = execFileSync("git", ["check-ignore", "-z", "--stdin"], {
+			cwd: root,
+			input: `${[...probes.keys()].join("\0")}\0`,
+			encoding: "utf8",
+			windowsHide: true,
+			stdio: ["pipe", "pipe", "ignore"],
+			maxBuffer: 16 * 1024 * 1024,
+		})
+			.split("\0")
+			.filter(Boolean);
+		const ignored = new Set<string>();
+		for (const probe of printed) {
+			const original = probes.get(probe);
+			if (original) ignored.add(original);
+		}
+		return ignored;
 	} catch {
 		// Exit 1 means none ignored. Other failures do not exempt any citation.
 		return new Set();

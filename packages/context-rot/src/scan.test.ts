@@ -69,6 +69,25 @@ test("已删但仍在 git 索引中的路径是失效，忽略的中文产物单
 	expect(result.generated).toBe(1);
 });
 
+test("被忽略的目录在克隆里不存在时算生成物，不算失效（目录专用模式）", async () => {
+	const root = await fixture({
+		"AGENTS.md": "本机状态在 `.workbench/`，另有 `src/gone.ts`",
+		".gitignore": "/.workbench/\n",
+		"src/keep.ts": "export {};",
+	});
+	execFileSync("git", ["init", "-q"], { cwd: root, windowsHide: true });
+	execFileSync("git", ["add", "AGENTS.md", ".gitignore", "src/keep.ts"], {
+		cwd: root,
+		windowsHide: true,
+	});
+	const result = await scanRepo(root);
+	// 目录专用的忽略模式（尾斜杠）匹配不上 stat 不到的裸目录名——git 不肯猜一个
+	// 它看不到的路径是不是目录。不补这一刀，干净克隆里被忽略的目录会读成失效。
+	// 2026-09-26 CI 实测：doctor 恰好在这两条上 exit 1，而本机因为目录存在是绿的。
+	expect(result.stale.map((ref) => ref.text)).toEqual(["src/gone.ts"]);
+	expect(result.generated).toBe(1);
+});
+
 test("单文件 Node 产物能验证符号，不依赖 Bun 全局对象", async () => {
 	const root = await fixture({
 		"AGENTS.md": "use `LiveComponent`, `packageManager` and `DeadSymbol`",
