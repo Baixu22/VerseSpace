@@ -311,8 +311,11 @@ describe("Codex write-turn capture (issue #31)", () => {
 			// 写目标只出现在散文 reason 里，不在任何机器可读字段里。
 			expect(String(request.params.reason)).toContain("src/target.ts");
 
-			// `approvalTargets` 因此判成 unknown（而不是 write）：
-			// paths 里只有 PATH_FIELDS 抓到的 cwd，没有写目标。
+			// `approvalTargets` 因此判成 unknown（而不是 write）：paths 为空——
+			// 写目标只出现在散文 reason 里，任何机器可读字段都没有。（`cwd`
+			// 曾在 PATH_FIELDS 里，2026-09-27 移除：它是命令的运行目录，不是
+			// 写目标；见 approval-targets.test.ts 的同名用例与
+			// docs/handoff/2026-09-27-claim-hygiene-round.md。）
 			const target = approvalTargets(request.method, request.params);
 			expect(target.isApproval).toBe(true);
 			expect(target.kind).toBe("unknown");
