@@ -7,6 +7,7 @@ import {
 	hoursSinceLastMessage,
 	NEXT_DAY_RESUME_HOURS,
 	PROMOTION_TURNS,
+	type PromotionSignal,
 	promotionPatch,
 	UNNAMED_TITLE,
 } from "./promote";
@@ -24,6 +25,60 @@ function msg(
 		at: at ?? new Date().toISOString(),
 	};
 }
+
+// ---- 形状钉死（issue #36）---------------------------------------------------
+// `PromotionSignal` 只允许这三个变体。加回任何无生产者的形状（例如曾经声明的
+// repeated-test-failure / commit），下面的 `SignalKindsArePinned` 就在
+// `bun run typecheck` 处编译失败——类型不再承诺系统产不出的信号。
+type Equal<A, B> =
+	(<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+		? true
+		: false;
+type Expect<T extends true> = T;
+type SignalKindsArePinned = Expect<
+	Equal<
+		PromotionSignal["kind"],
+		"turns-crossed" | "next-day-resume" | "second-fork"
+	>
+>;
+
+describe("信号形状（声明与真实边界一致，issue #36）", () => {
+	test("PromotionSignal 的 kind 恰为三种（编译期钉死）", () => {
+		// 引用一次编译期断言，避免它被当作未使用的类型声明。
+		const pinned: SignalKindsArePinned = true;
+		expect(pinned).toBe(true);
+	});
+
+	test("富输入产出的信号恰为三种（≥8 轮 + ≥20h + 传入 second-fork）", () => {
+		const now = new Date("2026-09-02T12:00:00Z");
+		const stale = "2026-08-31T12:00:00Z";
+		const messages: StoredMessage[] = [];
+		for (let i = 0; i < PROMOTION_TURNS; i += 1) {
+			messages.push(
+				msg("user", `u${i}`, stale),
+				msg("assistant", `a${i}`, stale),
+			);
+		}
+
+		const signals = collectSignals(messages, {
+			now,
+			extraSignals: [{ kind: "second-fork", atMessageId: "m-abc" }],
+		});
+
+		// 只按 kind 看，集合恰好是三种——多一种即失败。
+		expect(signals.map((s) => s.kind).sort()).toEqual([
+			"next-day-resume",
+			"second-fork",
+			"turns-crossed",
+		]);
+		// 逐条钉死形状（不只是 kind 字符串）。
+		expect(signals).toEqual([
+			{ kind: "turns-crossed", turns: PROMOTION_TURNS },
+			{ kind: "next-day-resume", awayHours: 48 },
+			{ kind: "second-fork", atMessageId: "m-abc" },
+		]);
+	});
+});
 
 describe("evaluatePromotion", () => {
 	test("未命名 + 信号命中 → 直接晋升（不提议，ADR-0009）", () => {

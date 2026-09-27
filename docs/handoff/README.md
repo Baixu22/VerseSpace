@@ -32,6 +32,9 @@ bun run test:upload-surface
 ```
 
 门禁会对**双向**报错：该传没传（`useful-not-uploaded`）、不该传却传了（`useless-uploaded`）、
-没人做过定性（`unclassified`）、单文件超限（`oversize-uploaded`）。
+没人做过定性（`unclassified`）、单文件超限（`oversize-uploaded`），并逐条解析上传面 `.md` 的
+**相对链接**（`broken-relative-link`：目标按引用文件所在目录解析后既不是文件也不是目录即违规，
+2026-09-26 起可测，见 [断链检查记录](2026-09-26-upload-surface-links.md)）。另有
+`referenced-but-local` 是**待裁决信号**而非违规，只有加 `--strict-references` 才升级为违规。
 若本机禁止 node 创建子进程，门禁报 exit 2「无法测量」——按脚本头部说明用 `--lists <dir>` 喂入清单，
 **不要**把 exit 2 读成通过。

@@ -19,7 +19,7 @@
 
 ## CI
 
-**GitHub 上没有状态检查**（[ADR-0018](docs/decisions/0018-single-ci-channel-jihulab.md)：CI 只剩 JihuLab）。请贴 JihuLab 流水线链接或 runner 日志读数，否则这个 PR 等于没跑过 CI。
+**GitHub 上没有状态检查**（[ADR-0018](../docs/decisions/0018-single-ci-channel-jihulab.md)：CI 只剩 JihuLab）。请贴 JihuLab 流水线链接或 runner 日志读数，否则这个 PR 等于没跑过 CI。
 
 - JihuLab 流水线：
 

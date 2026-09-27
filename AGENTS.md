@@ -433,6 +433,18 @@ excluded from collection.
   `node scripts/check-forest-landing.mjs` re-implements the landing half in-repo and against
   the **default branch** rather than HEAD (exit 0 clean · 1 drift · 2 cannot measure) — HEAD-only
   comparison is what let the 2026-09-23 stage-3 gap read as landed (`TFD-0dab4149f2`).
+  **Division of labour (2026-09-27, issues #38/#39):** the in-repo script is this repo's
+  **authoritative landing gate** — run it by hand; it needs nothing outside the checkout. The
+  external CLI's `check-landing` no longer compares `updated_at` against HEAD: it reports branch
+  topology (HEAD ahead of the default branch, unmerged branches carrying code) plus per-node
+  `git merge-base --is-ancestor` reachability for any commit a node's evidence names. Nodes whose
+  evidence names no commit are **unattributed, not drift** — that was the old rule's false
+  positive (`TFD-6b47ba440e`); a commit reachable from *no* branch is an **orphan** (the JihuLab
+  mirror's fresh-orphan snapshots look exactly like this) and is a reading, not a drift. Every
+  deviation now carries an effective `status` (`open` · `resolved` · `superseded` · `accepted`),
+  written by `python task_forest.py deviation-status <id> --status …`; `validate` and
+  `deviations` print the unresolved count, and a **missing** `status` counts as unresolved, so
+  "how many deviations are still open" has an answer.
   It degrades to "cannot measure" (exit 2) when the forest is absent, by design, so a fresh clone
   without the forest is a supported state. **Historical caveat:** the forest was tracked through
   2026-09-24 (111 commits), so ~2 GB of old `events.jsonl` blobs still live in pushed history;

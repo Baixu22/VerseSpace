@@ -68,3 +68,65 @@ codex 的 `app-server` 会发出六类交互协议。逐项按「它如何服务
 
 - 触发重估：出现第三个 provider 且其协议无法用「spawnSupervised + 纯翻译适配」表达（例如只提供 HTTP-only 的可观测通道）；或本决策的硬约束之一（不 import SDK / 单文件二进制）被要求放宽。
 - 不因「codex 也有 steer/模型目录」而回填与账本无关的交互面：新增交互协议前，须先回答它如何服务前提账本。
+
+## 补记（2026-09-27）：写侧证据已取得，边界由「尚无证据」收窄为「结构性缺席」
+
+> 本节是**追加记录**，不改写上文任何句子。它收窄的是 §「本轮实现边界」里那句
+> 「**写侧尚无证据**：`WRITE_ACTIONS`（edit / write / applyPatch / createFile）与
+> `fileChange` / `fileRead` item 类型都没有夹具覆盖……因此『写目标照常落账』目前是
+> 未验证的设计意图」，以及同一节末尾的复核条件「拿到一个包含 approval 请求或写动作的
+> 真实 codex 会话后，补夹具门禁，并把本节收窄为已证事实」。
+
+**已测量（真实运行，2026-09-27）**：codex `0.158.0-alpha.2.1`，隔离 `CODEX_HOME`
+（`.agent-contexts/codex-verify`，profile：模型 `glm-5.3-flash`、provider `wb_verify`
+→ `http://127.0.0.1:3065/v1`、`wire_api = responses`、`sandbox_mode = "read-only"`、
+`approval_policy = "on-request"`），提示词要求模型用 `apply_patch` 把
+`src/target.ts` 的 `export const target = 1;` 改成 `2`。同 recipe 下的对照：
+`sandbox_mode = "danger-full-access"` 时**0 个 server→client 请求**（权限全开没有审批可抓），
+`read-only` 时才逼出审批请求。
+
+> 读数来源分层：模型调用由该轮 Lead 在 2026-09-27 执行（本节作者**未**重跑），
+> 本节作者做的是复核磁盘产物（`.agent-contexts/codex-raw-dump.jsonl` 等）、
+> 跑新增门禁测试、以及读代码路径。哪些是真实运行、哪些是代码读数，
+> 见交接记录
+> [`docs/handoff/2026-09-27-codex-write-capture.md`](../handoff/2026-09-27-codex-write-capture.md) §0。
+
+- **写确实发生了**：回合末尾的读回命令输出 `export const target = 2;`；成功那次
+  `apply_patch` 自报 `exitCode 0` / `Success. Updated the following files: M src/target.ts`。
+- **整条流里没有任何原生写 item**：item 类型普查 = `agentMessage` 16 / `commandExecution` 22 /
+  `reasoning` 16 / `userMessage` 2；`fileChange`、`applyPatch`、`fileRead` **各 0**。
+- **审批不可归因**：5 次 `item/commandExecution/requestApproval` 全部 `kind: "command"`，
+  `commandActions` 全部 `[{ "type": "unknown", "command": "apply_patch …" }]`——**没有 `path` 字段**。
+  写目标 `src/target.ts` 只出现在散文 `reason` 里。
+- **`commandActions` 侧也没有写类型**：22 个 action 中 8 个 `read`（都带结构化 `path`）、
+  14 个 `unknown`（都不带）；`WRITE_ACTIONS` 一次都没出现。
+- **模型把 `apply_patch` 当 shell 命令用**（`pwsh.exe -Command 'apply_patch …'`；
+  成功那次是 `$patch = @'…'@` + `codex.exe --codex-run-as-apply-patch`），
+  所以写不会变成原生写 item。
+
+**收窄后的结论**：在这条车道上，写侧夹具门禁不是**尚未收集**，而是对本次抓取的
+模型 / profile / 回合**结构性缺席**——真实写回合不产生 `fileChange` / `applyPatch` /
+`fileRead` item，`codex-footprint.ts` 的 `WRITE_ACTIONS` 分支没有输入，
+`codex-router.ts` 落账的只有读足迹。上文「未建模的 item 类型会以 `undecided` 被
+`codex-turn.ts` 报警」仍然成立，并且**这一次也没有被触发**（这 6 类未建模形状是
+`item/commandExecution/outputDelta` 等通知，不是 item 类型）。
+
+**顺带测到的边界（同一次抓取）**：`approvalTargets` 对这 5 个真实写审批全部返回
+`kind: "unknown"`（不是 `"write"`），因此 `session.ts` 的封印闸门
+（`kind === "write" && paths.length > 0`）与「写审批无法归因到路径」提示分支
+（同样要求 `kind === "write"`）**都不执行**——真实 `apply_patch` 写审批走的是默认
+`accept`，且不打印任何诊断。结论与上文「seal 不在这条车道上」一致，但原因更具体：
+不是「不解析 params」，而是**解析了却判不出写**。
+
+**夹具与门禁**（本次新增）：
+`packages/workbench/src/chat/fixtures/streams/codex/write-turn-0.158.jsonl`（第 12 个流夹具，
+含读回证据与零写 item）、`packages/workbench/src/chat/fixtures/approvals/apply-patch-0.158.json`
+（5 次真实写审批 params 原样）、`packages/workbench/src/chat/codex-write-capture.test.ts`
+（逐条钉住上述读数）。若 codex 开始发 `fileChange` / `applyPatch` / `fileRead` item
+或写类型 `commandAction`，该测试会失败，本节结论必须重做。
+
+**不作泛化**：以上是**一个模型、一个 profile、一个回合**的观测。ADR-0023
+「对某个命令的负面观测不能泛化到整个 CLI 版本」同样适用——这**不**证明 codex 在
+别的模型、别的 `sandbox_mode` / `approval_policy`，或原生 `apply_patch` 工具可用时
+也不发写 item。完整读数、recipe 与诚实边界见
+[`docs/handoff/2026-09-27-codex-write-capture.md`](../handoff/2026-09-27-codex-write-capture.md)。

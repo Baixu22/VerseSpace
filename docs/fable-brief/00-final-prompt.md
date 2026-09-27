@@ -47,6 +47,8 @@
 
 **机器层接线状态:零未接线**。runtime/tribunal(ISA-18.2 裁决队列:五道定性门+5/15/30/50 目标分布+NEWS2 三红[auth/force-push/secret]直升 critical;无推送通道,pull-only)/scheduler/verifier/automaton(三个纯函数状态机)/doctor/contextgen/agents(crash 熔断+车道困境检测)/supervisor(树杀/pid 注册表/stdin 门控)全部有命令、周期或端点到达。唯二"形状已定义无生产者":promote 的 `repeated-test-failure` 与 `commit` 两个晋升信号("由足迹侧喂入,本层只定义形状")。**WIP**:`L=λ×W` 从事件日志实测推导(完成样本<3 时明说 `insufficient-history` 退回物理上限;CONWIP 全局令牌;`--force` 只留给人,自动调度器无权)。
 
+> 2026-09-26 补记(issue #36):promote 的这两个"形状已定义无生产者"变体已从 `PromotionSignal` 删除——声明只保留库内真有生产者的三种形状(`turns-crossed` / `next-day-resume` / `second-fork`),与真实边界一致(ADR-0023)。本节以下 §3.2 表"未建"列与 T4 里的同一提法均以此补记为准;原文保持原样。
+
 **GUI 现状**(web,嵌入二进制):每条消息 hover"分叉"(零仪式)、备选只读面板(无选择界面)、恢复笔记条、决策账本(无分歧不渲染)、停放条、建议条、plan 批准卡、线程侧栏平铺+分叉血统徽标(无树视图)。**没有**:DOI 任何 UI;promote 端点从未被 GUI 调用;**drafts/parked 是浏览器内存态不落盘**;CLI 没有任何 tree/fork/thread 命令(chat 完全活在 HTTP 层)。
 
 ### 3.2 三支柱现状矩阵

@@ -388,3 +388,227 @@ python C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py valid
 ```
 
 **合并本分支前请把本轮读作「工程门通过（本地可执行范围）」，而不是「产品已验收」。**
+
+---
+
+## 10. 2026-09-26 复核：issue #40 与四模块覆盖
+
+本节是**追加复核**，不改动 §0–§9 的任何字句（本仓的记录是 append-only）。目的是回答 issue #40：
+`git/`、`scheduler/`、`agents/`、`supervisor/` 这四类路径「未逐条审计」这句话，在 2026-09-26 的树上
+是否还成立。
+
+### 10.1 复核命令
+
+```bash
+# 1) 当前树的机械清点（先写文件再读，避免 PowerShell 重定向原生命令时的编码错误）
+cmd /c "node scripts\audit\catch-sites.mjs --json > .agent-contexts\catch-sites.json"
+node scripts/audit/catch-sites.mjs
+
+# 2) 把 §3 落地那个 commit 的源码树取出，用同一份脚本重扫一遍（复核「140」是不是可复现的读数）
+git archive --format=tar -o .agent-contexts/doc-tree.tar 843793d packages/workbench/src
+tar -xf .agent-contexts/doc-tree.tar -C .agent-contexts/doc-tree
+cp scripts/audit/catch-sites.mjs .agent-contexts/doc-tree/scripts/audit/
+node .agent-contexts/doc-tree/scripts/audit/catch-sites.mjs --json > .agent-contexts/catch-sites-843793d.json
+
+# 3) 站点→行 映射、漂移、以及「147 那个旧读数是什么规则」
+node .agent-contexts/mapping.mjs        # 四模块站点 vs §3.1–§3.4 行
+node .agent-contexts/reconcile.mjs      # 140 → 143 的逐文件对账
+node .agent-contexts/rule-147.mjs       # 147 = 同一正则「不过滤注释行」时的读数
+node .agent-contexts/file-drift.mjs     # 生产 .ts 文件集合的漂移
+node .agent-contexts/qa-rows.mjs        # §5 那 12 行里属于四模块的有几行（0）
+```
+
+### 10.2 清点读数（实跑）
+
+| 树 | 站点 | 文件 | 仅注释提到 | 命令 |
+| --- | --- | --- | --- | --- |
+| HEAD（`d0706b3`，分支 `qa-stage-ab-remediation`） | **143** | 61 | **7** | `node scripts/audit/catch-sites.mjs` |
+| `843793d`（本表 §3 落地的那次 commit） | **140** | 61 | 5 | 同一脚本，跑在 `git archive 843793d` 取出的树上 |
+
+**§3 的「140」是逐文件可复现的，不是另一套规则。** 把 `.agent-contexts/forest-status/site-counts.txt`
+（§3 当时那份 machine-state dump，本机残留）与 `843793d` 的机械扫描逐文件比对：
+**61/61 个文件的 file→lines 完全一致，0 处不符**。所以 140 vs 143 这 3 个站点的差额，
+**不是清点规则差异，而是 §3 落笔之后代码又长了 3 个站点**（见下表）——这一点与 issue #40 所依据的
+「规则不同」印象相反，写在这里以免下一轮再被同一个数字绊住。
+
+| 差额来源 | `843793d` | HEAD | 变化 |
+| --- | --- | --- | --- |
+| `chat/codex-app-server/session.ts` | 4（87,149,235,245） | 6（97,159,184,243,298,308） | **+2** |
+| `supervisor/liveness.ts` | 1（122） | 2（130,136） | **+1** |
+| 合计 | 140 | 143 | **+3** |
+
+文件数仍是 61（没有文件从「0 站点」变成「有站点」）；仅 2 个文件站数增加，另有 **6 个文件站数不变、
+行号整体位移**（`agents/runner.ts`、`blackboard/state.ts`、`chat/claude-session.ts`、`chat/codex-session.ts`、
+`runtime/rollback.ts`、`supervisor/registry.ts`）。生产 `.ts` 文件集合本身只多了 1 个
+（`chat/codex-app-server/approval-targets.ts`，265 → 266）——四模块的文件集合完全没变。
+
+**旧读数 147 的正确解释**（§3 之前的 `.agent-contexts/forest-status/catch-inventory.txt`）：
+它是**同一个正则 `\bcatch\s*(\(|\{)/`、但把文档注释行也计为站点**时的读数，
+且取自比 §3 早 3 个 commit 的树（`0bff98f`，即 deviation 建立时的树）。
+
+| 树 | `catch (` 计注释行 | 同规则不计注释行 | `catch-inventory.txt` |
+| --- | --- | --- | --- |
+| `0bff98f`（deviation 建立时） | **147**（61/61 文件与 dump 一致） | 143 | 147 ✅ 精确吻合 |
+| `1424f03^` / `843793d`（§3 落地时） | 145 | **140** | — |
+| HEAD | 150 | **143** | — |
+
+即：147 与 140 的差**不是「两种扫描规则」**，而是「同一规则下、是否把注释行算进去」× 「两棵不同的树」。
+`scripts/audit/catch-sites.mjs` 的注释（第 10–13 行）已经采用了 §3 的口径（注释行单列）。
+
+### 10.3 四模块 站点 → 行 映射（当前树）
+
+§3.1–§3.4 共 **29 行**四列结论；当前树四模块共 **30 个站点**。
+
+| 模块 | §3 行数 | HEAD 站点 | 精确命中 | 行号漂移（同一站点，行号变了） | **无对应行** |
+| --- | --- | --- | --- | --- | --- |
+| `git/` | 3 | 3 | **3**（probe.ts:79,104,121） | 0 | **0** |
+| `scheduler/` | 7 | 7 | **7**（goal.ts:32；perform.ts:110,168,201,235；rollback.ts:39,51） | 0 | **0** |
+| `agents/` | 11 | 11 | **6**（capture.ts:27,42；session.ts:53；view.ts:26,51,56） | **5**（runner.ts 全部 5 行） | **0**（5 行漂移全部有对应旧行） |
+| `supervisor/` | 8 | 9 | **5**（argv.ts:54；registry.ts:26,48,51,65） | **3**（liveness.ts、registry.ts×2） | **1**（`liveness.ts:136`，新增站点） |
+| 合计 | 29 | **30** | 21 | 8 | **1** |
+
+逐站点明细（当前树 file:line → 覆盖状态）：
+
+| 当前 file:line | 覆盖 |
+| --- | --- |
+| `git/host-filesystem/probe.ts:79` / `:104` / `:121` | §3.1 行 1/2/3，精确 |
+| `scheduler/dispatch/goal.ts:32` | §3.2 行 1，精确 |
+| `scheduler/dispatch/perform.ts:110` / `:168` / `:201` / `:235` | §3.2 行 2/3/4/5，精确 |
+| `scheduler/dispatch/rollback.ts:39` / `:51` | §3.2 行 6/7，精确 |
+| `agents/capture.ts:27` / `:42` | §3.3 行 1/2，精确 |
+| `agents/session.ts:53` | §3.3 行 8，精确 |
+| `agents/view.ts:26` / `:51` / `:56` | §3.3 行 9/10/11，精确 |
+| `agents/runner.ts:112` | §3.3 行 3（旧 `:84`），**漂移** |
+| `agents/runner.ts:49` | §3.3 行 4（旧 `:143`），**漂移 + 行为已变** |
+| `agents/runner.ts:199` | §3.3 行 5（旧 `:173`），**漂移** |
+| `agents/runner.ts:227` | §3.3 行 6（旧 `:201`），**漂移** |
+| `agents/runner.ts:249` | §3.3 行 7（旧 `:223`），**漂移** |
+| `supervisor/argv.ts:54` | §3.4 行 1，精确 |
+| `supervisor/registry.ts:26` / `:48` / `:51` / `:65` | §3.4 行 3/4/5/6，精确 |
+| `supervisor/liveness.ts:130` | §3.4 行 2（旧 `:122`），**漂移 + 行为已变** |
+| `supervisor/registry.ts:94` | §3.4 行 7（旧 `:83`），**漂移 + 行为已变** |
+| `supervisor/registry.ts:131` | §3.4 行 8（旧 `:114`），**漂移** |
+| `supervisor/liveness.ts:136` | **无对应行（新增站点）** |
+
+**结论**：§3 对四模块并非「没做」，而是**做全了、且做在正确的树上**；今天看到的差异是
+**§3 落笔之后 `TF-0269` 对 §5 那 8 条未修项的修复**造成的行号位移与一处新分支，
+不是覆盖缺失。8 处漂移中有 3 处（`agents/runner.ts:49`、`supervisor/liveness.ts:130`、
+`supervisor/registry.ts:94`）不只是行号变了，**结论也从「静默」变成了「点名」**——
+正是 §5 OPEN-4 / OPEN-5 / OPEN-2 / OPEN-3 被修掉的结果。
+
+### 10.4 漂移清单
+
+| 旧引用（§3 写的） | 现状 | 漂移类型 | 促成漂移的改动 |
+| --- | --- | --- | --- |
+| `agents/runner.ts:84` | 同站点在 `agents/runner.ts:112` | 行号位移（结论不变） | 新增 `appendAgentLogLine` 函数（+28 行） |
+| `agents/runner.ts:143` | 同站点在 `agents/runner.ts:49`，且已抽出为函数 | **行号位移 + 结论改变**（P6「完全静默」→ P3） | OPEN-5 修复 |
+| `agents/runner.ts:173` | 同站点在 `agents/runner.ts:199` | 行号位移（结论不变） | 同上 |
+| `agents/runner.ts:201` | 同站点在 `agents/runner.ts:227` | 行号位移（结论不变） | 同上 |
+| `agents/runner.ts:223` | 同站点在 `agents/runner.ts:249` | 行号位移（结论不变） | 同上 |
+| `supervisor/liveness.ts:122` | 拆成两个站点：`:130`（异步 reject）与 `:136`（同步抛出） | **行号位移 + 结论改变**（P6 → P3）+ **多出一个站点** | OPEN-4 修复（新增 `try/catch`） |
+| `supervisor/registry.ts:83` | 同站点在 `supervisor/registry.ts:94` | **行号位移 + 结论改变**（静默删除 → P3） | OPEN-3 修复 |
+| `supervisor/registry.ts:114` | 同站点在 `supervisor/registry.ts:131` | 行号位移（结论不变） | OPEN-2 修复的注释块（+23 行） |
+
+**注**：issue #40 的转述写「`supervisor/registry.ts` 现在 6 个站点而文档只列了 5 个」——
+**这句话是错的**：§3.4 对 `registry.ts` 列了 **6 行**（`:26/:48/:51/:65/:83/:114`），
+`registry.ts` 当前也是 **6 个站点**，站数没变，变的是其中 2 行的行号。
+`supervisor/` 模块总数从 8 变 9，唯一的增量是 `liveness.ts:136`。
+
+**`git()` 调用点维度**（§3.1 的第二半）需要一次精度更正。§3.1 写「11 个生产调用点逐条核过，
+10 个检查 `ok`/`code`；唯一不检查的是 `git/worktree.ts:144`」。在 `843793d` 上按
+「调用点后 12 行内是否出现 `.ok`/`.code`」机械判定，`git/index.ts` 之外的 11 个调用点里**有 2 个**
+不检查：`git/merge-tree.ts:24` **和** `runtime/rollback.ts:79`。
+
+- `runtime/rollback.ts:79`（`git status --porcelain`）并不是被 §3 漏掉的 —— 它已作为 §3.7 的
+  ※ 行单独记录，并列为 §5 OPEN-1。所以 §3.1 的「唯一」与本表 §3.7 自相矛盾；**矛盾在 §3 内部，
+  不在覆盖面上**，本节只记录、不改写 §3.1（append-only）。
+- `git/merge-tree.ts:24`（能力探针）**不是缺陷**：它读的是 git 回显的 usage 文本
+  （`stdout+stderr` 里有没有 `--write-tree`），退出码在那条路径上没有语义（同 §3.7 的 P8 判据）。
+  它是 §3.1 唯一真正没提到的「不检查」点，而它不需要检查。
+
+OPEN-7 已收口：`worktree.ts:149` 现在检查 `pruned.ok`，失败时 `console.error` 点名，
+且只有在 `worktree remove` 本身成功时才报 `ok`。当前树 `git/index.ts` 之外的 11 个生产调用点是
+`merge-tree.ts:24`、`worktree.ts:71/:144/:149`、`merge-guard/overlap.ts:10`、`merge-guard/preflight.ts:29`、
+`rollback.ts:69/:80/:245`、`dispatch/branch.ts:21`、`scheduler/merge-guard.ts:83`，
+其中**只有 `merge-tree.ts:24` 不读 `ok`/`code`**（且如上，那不是缺陷）——§3.1 那句话在今天的树上
+反而比在 `843793d` 上更接近成立。
+
+### 10.5 之前没有四列结论的站点：补全
+
+口径、词汇与 §2 图例一致（P1–P10，不新增原型）。判定方式是**读当前代码**，不是照抄旧行的名字或注释。
+
+| 位置 | 失败时做什么 | 可见 | 改状态 | 可重试 | 事件 | 原型 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `agents/runner.ts:49` | `appendFile` 写 transcript 失败 → `console.error` 点明「该行不会出现在 transcript 里」，**不终止本轮**（子进程已在跑，为一次日志写失败杀掉它更糟） | 是 | 否 | 是（下一行再试，不latch） | 无 | **P3** |
+| `agents/runner.ts:112` | 熔断拒派的裁决卡投递失败 → `console.error` 点名，仍返回 `{ok:false, reason}` | 是 | 否 | 视调用方（每次拒派重投一次） | 无 | **P3** |
+| `agents/runner.ts:199` | `capture.finish()` 抛错 → 折进 `captureError`，并入 `session.error` 且 `status: failed` | 是 | 是（显式） | 是 | `agent_finished` | **P7** |
+| `agents/runner.ts:227` | 崩溃熔断卡投递失败 → `console.error` 点名（熔断状态本身已由 `agent_crashloop` 事件落账） | 是 | 否 | 视调用方 | 无（卡投递失败） | **P3** |
+| `agents/runner.ts:249` | 批处理收尾链失败 → `console.error`；`.finally` 释放租约仍然执行 | 是 | 否 | 是 | 无 | **P3** |
+| `supervisor/liveness.ts:130` | `terminate()` 返回的 Promise reject → `console.error` 点明「子进程可能仍在运行」；判定**仍是** `judged_silent`（决定确实做了，子进程真退出时调用方的退出清理照跑） | 是 | 否 | n/a（硬阈值一次性） | 无 | **P3** |
+| `supervisor/liveness.ts:136` | `terminate()` **同步抛出** → 同上点名，判定仍为 `judged_silent`。这是 OPEN-4 修复新增的第二个分支：只处理 rejected Promise 会漏掉同步抛出 | 是 | 否 | n/a | 无 | **P3** |
+| `supervisor/registry.ts:94` | PID 记录不可解析 → `console.error` 点明该进程「不会再被收养回收」，随后删除该记录 | 是 | 是（显式删除该记录） | 是 | 无 | **P3** |
+| `supervisor/registry.ts:131` | pid 注册失败 → `console.error`，并**点明**「孤儿回收将看不到它」 | 是 | 否 | 是 | 无 | **P3** |
+
+**这 9 条里有 8 条是 §3 旧行的漂移对应物，只有 `supervisor/liveness.ts:136` 是真正新增的站点。**
+即便如此，8 条中的 3 条（`agents/runner.ts:49`、`supervisor/liveness.ts:130`、
+`supervisor/registry.ts:94`）**必须按新结论读**：§3 当时写的是「完全静默」「丢弃」「静默删除」，
+现在三处都点名了。**没有任何一条仍是「损坏冒充健康」的形状** —— 四模块当前的降级都是
+「点名后继续」或「显式失败状态」，即 §2 的 P3 / P7。
+
+### 10.6 对 issue #40 的判定：**stale（对四模块而言已过时）**
+
+issue #40 引用的原话与 deviation `TFD-c76055ffad` 的 `reason` 字段逐字一致：
+
+> TF-0261 的验收第 1 条要求「每条 catch 后继续路径」都有四列结论……`git/` 的 never-throwing runner、
+> `scheduler/`、`agents/`、`supervisor/` 没有逐条审计。
+
+**判定证据（按时间线，全部可机械复核）**：
+
+| 时刻 | 事实 | 复核方式 |
+| --- | --- | --- |
+| `2026-09-25T02:04:13.903660Z` | deviation `TFD-c76055ffad` 建立，`status: open`，`reason` 即上面那段话 | `.agent-workbench/task-forest/deviations/deviations.jsonl` |
+| `2026-09-25T09:48:05+08:00`（`01:48:05Z`） | deviation 的 evidence commit `0bff98f` —— 当时唯一存在的表是 `docs/handoff/qa-stage-ab-remediation-2026-09-25.md` §5，共 **12 行**（与 deviation 的 `observed_action_or_result` 写的「四列审计表覆盖 12 条路径」一致），其中**属于这四模块的行数为 0**；§5 末尾自己写着「**未覆盖**：`git/` 的 never-throwing runner、`scheduler/`、`agents/`、`supervisor/`」 | `git log -1 0bff98f`；`node .agent-contexts/qa-rows.mjs`（实跑：12 行 / 四模块 0 行） |
+| `2026-09-25T14:19:23Z`（`22:19:23+08:00`） | commit `843793d` 落地：§3.1 `git/`（3 行）、§3.2 `scheduler/`（7 行）、§3.3 `agents/`（11 行）、§3.4 `supervisor/`（8 行）——**正好是 deviation 点名的那四个模块** | `git log -1 843793d`；读 §3.1–§3.4 |
+| 今天（HEAD `d0706b3`，`843793d` 是 HEAD 的祖先） | 上述 **29 行**在当前树上仍有 **21 行 file:line 精确命中**，另 8 行只是漂移；四模块仅 **1 个**站点没有对应行 | `node .agent-contexts/mapping.mjs` |
+
+所以：
+
+1. **该 claim 在写下的那一刻是真的**（deviation 有 §5 的「未覆盖」一句作证）；
+2. **它在 `843793d`（2026-09-25T14:19:23Z，比 deviation 晚约 12 小时 15 分钟）之后就不再成立**；
+   转述里「~20 小时」是把 UTC 时间戳 `02:04:13Z` 当成 +08:00 本地时间读的结果（按本地读是
+   `2026-09-25T02:04+08:00` = `2026-09-24T18:04Z`，才会得到 ~20 h）。正确间隔是 **12 h 15 m**。
+3. **残留缺口只有 `supervisor/liveness.ts:136` 一个站点**，本节 §10.5 已按同一口径补齐。
+   因此 issue #40 若按「还有四个模块完全没审计」来读，是 **过时的**；若按「§3 的行号需要随代码刷新」
+   来读，那是**真实但轻微**的（8 处行号漂移，本节 §10.4 给全）。
+
+**对 deviation `TFD-c76055ffad` 的建议：标 `superseded`，superseding 记录是 commit `843793d`
+（本表 §3.1–§3.4）与本节 §10。** 它的 `reason` 所描述的缺口已被那 29 行四列结论填上，
+`recommendation`（「下一轮对 git/、scheduler/、agents/、supervisor/ 做同样的四列审计」）已经执行；
+本节的增量只是把漂移刷新并补一个站点，不构成一条新的未完成项。
+（备用判定：若森林按「验收条件是否达成」而非「是否被后一条记录取代」来读，`resolved` 也说得通——
+两条路的**证据完全相同**，都是 `843793d` 的 29 行 + 本节 §10.5。本仓的 deviation 状态由 Lead 用
+`python task_forest.py deviation-status` 落账，本节不代笔。）
+
+### 10.7 本节读数：哪些是实跑，哪些只是读代码
+
+| 结论 | 性质 |
+| --- | --- |
+| HEAD 清点 143 站点 / 61 文件 / 7 注释（`node scripts/audit/catch-sites.mjs`） | **实跑** |
+| `843793d` 清点 140 / 61 / 5（`git archive` + 同一脚本） | **实跑** |
+| §3 的 140 与 machine dump 逐文件一致（61/61，0 不符） | **实跑** |
+| `147` = 同一正则计注释行、取 `0bff98f` 树（61/61 文件吻合） | **实跑** |
+| 140→143 的三个站点差额、6 个文件的位移、生产文件集合 265→266 | **实跑** |
+| 四模块 站点→行 映射、8 处漂移、1 个新站点 | **实跑**（脚本比对）+ **读代码**（判定漂移对应关系） |
+| §10.5 的 9 条四列结论 | **只是读代码**：沙箱拒绝子进程（`uv_spawn EPERM`），这四条模块的失败路径都要真子进程/真 git 才能驱动，本轮**没有**实跑任何一条 |
+| `843793d` 是 HEAD 祖先、各 commit 时间戳、§5 那 8 条 OPEN 在树上的现状 | **实跑**（`git merge-base --is-ancestor` / `git log`） |
+| `bun run lint` | **实跑**（见 §10.8） |
+
+### 10.8 本节门禁读数
+
+| 门禁 | 读数 | 有效 |
+| --- | --- | --- |
+| `bun run lint`（repo root，Biome） | **exit 0** | ✅（Markdown 不在 Biome 范围内，此读数只证明本节未破坏 lint，不证明 Markdown 本身） |
+| `bun run typecheck` / `bun test` | 未跑 | ❌（本节**没有**改任何源码或测试；跑了也不覆盖 Markdown） |
+
+**本节只写了一个文件**：`docs/handoff/2026-09-25-catch-after-continue-audit.md`。
+没有碰源码、测试、`scripts/`、`AGENTS.md`、ADR 或任务森林。

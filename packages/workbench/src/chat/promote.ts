@@ -28,15 +28,14 @@ export const NEXT_DAY_RESUME_HOURS = 20;
  *  - turns-crossed        会话跨过 N 轮
  *  - next-day-resume      隔天以上的恢复
  *  - second-fork          同一条消息上第二次分叉（含 reload）
- *  - repeated-test-failure 重复的测试失败（由足迹侧喂入，本层只定义形状）
- *  - commit               一次提交（由足迹侧喂入，本层只定义形状）
+ *
+ * 只声明库内真有生产者的形状：无生产者的信号不进这个联合，否则类型承诺了
+ * 系统永远产不出的东西（ADR-0023 的声明与边界一致要求，issue #36）。
  */
 export type PromotionSignal =
 	| { kind: "turns-crossed"; turns: number }
 	| { kind: "next-day-resume"; awayHours: number }
-	| { kind: "second-fork"; atMessageId: string }
-	| { kind: "repeated-test-failure"; count: number }
-	| { kind: "commit"; ref: string };
+	| { kind: "second-fork"; atMessageId: string };
 
 export interface PromotionInput {
 	/** 当前标题（未命名 = UNNAMED_TITLE）。 */
@@ -106,8 +105,7 @@ export function hoursSinceLastMessage(
 
 /**
  * 收集本轮边界上可从线程自身推导的信号（轮次跨越 / 隔天恢复）。
- * second-fork 由 reload/fork 路径写入 meta.forks 后经入参传入；
- * repeated-test-failure 与 commit 由足迹侧喂入，这里不推导。
+ * second-fork 由 reload/fork 路径写入 meta.forks 后经入参传入，这里不推导。
  */
 export function collectSignals(
 	messages: StoredMessage[],

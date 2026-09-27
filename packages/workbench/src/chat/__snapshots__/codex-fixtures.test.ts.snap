@@ -145,6 +145,19 @@ exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explic
     "footprints": 0,
     "name": "turn-failed.jsonl",
   },
+  {
+    "decisions": {
+      "error": 0,
+      "finalized": 12,
+      "noop": 12,
+      "streaming-delta": 34,
+      "undecided": 0,
+    },
+    "deltas": 34,
+    "events": 58,
+    "footprints": 2,
+    "name": "write-turn-0.158.jsonl",
+  },
 ]
 `;
 
@@ -1046,6 +1059,153 @@ exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explic
   },
   "footprints": [],
   "name": "turn-failed.jsonl",
+  "undecidedKeys": [],
+}
+`;
+
+exports[`Codex stream fixtures (TF-0248) every retained codex fixture has explicit decisions and matching wire projections: write-turn-0.158.jsonl 1`] = `
+{
+  "decisionDistribution": {
+    "error": 0,
+    "finalized": 12,
+    "noop": 12,
+    "streaming-delta": 34,
+    "undecided": 0,
+  },
+  "decisionPaths": {
+    "end": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/agentMessage/delta": {
+      "count": 34,
+      "decision": "streaming-delta",
+    },
+    "item/completed.agentMessage": {
+      "count": 2,
+      "decision": "finalized",
+    },
+    "item/completed.commandExecution": {
+      "count": 5,
+      "decision": "finalized",
+    },
+    "item/completed.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/completed.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.agentMessage": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "item/started.commandExecution": {
+      "count": 5,
+      "decision": "finalized",
+    },
+    "item/started.reasoning": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "item/started.userMessage": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "thread/status/changed": {
+      "count": 2,
+      "decision": "noop",
+    },
+    "turn/completed": {
+      "count": 1,
+      "decision": "noop",
+    },
+    "turn/started": {
+      "count": 1,
+      "decision": "noop",
+    },
+  },
+  "deltaCount": 34,
+  "eventCount": 58,
+  "finalMessage": {
+    "partTypes": [
+      "text",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "tool-call",
+      "text",
+    ],
+    "parts": [
+      {
+        "chars": 67,
+        "type": "text",
+      },
+      {
+        "id": "call_d8118b5360ef4f889ae99552",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_563216262c4c49e79b56bc5a",
+        "isError": true,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_618c5b0991e1483ca2f24796",
+        "isError": true,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_e28d9ec702434784aacacc74",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "id": "call_5bd787c882e1419e9e791c3c",
+        "isError": false,
+        "name": "Bash",
+        "settled": true,
+        "type": "tool-call",
+      },
+      {
+        "chars": 76,
+        "type": "text",
+      },
+    ],
+    "textChars": 143,
+  },
+  "footprints": [
+    {
+      "activity": "call_d8118b5360ef4f889ae99552",
+      "generated": [],
+      "used": [
+        "$DUMMY_REPO\\src\\target.ts",
+      ],
+    },
+    {
+      "activity": "call_5bd787c882e1419e9e791c3c",
+      "generated": [],
+      "used": [
+        "$DUMMY_REPO\\src\\target.ts",
+      ],
+    },
+  ],
+  "name": "write-turn-0.158.jsonl",
   "undecidedKeys": [],
 }
 `;
