@@ -203,3 +203,42 @@ python C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py check
 ```
 
 **读本轮时请读作「工程门通过（本机可执行范围）」，而不是「产品已验收」。**
+
+---
+
+## 6. 补记（2026-09-27 晚）：分支已并入 `main`，两个落库门禁转绿
+
+**本段是追加记录；上面 §0–§5 一字未改。** §2 表格里那行 `check-forest-landing` 的
+「有漂移（预期）：HEAD 领先 `main`」以及 §4 第 1 条「本轮没做合并」，记录的都是
+**本记录落笔时**的真实状态。之后维护者授权合并，本轮成果因此从**「分支上完成」**
+变成**「已落库」**：
+
+- 合并方式：`main` 的 tip 是 PR 合并提交 `c875588`，不是本分支的祖先，`--ff-only`
+  不成立，故用本地 merge commit（与本仓 PR 合并的形状一致）。合并提交 **`45f9aea`**；
+  **未 push**（`main` 领先 `origin/main` 4 个提交，推不推由维护者定）。
+- `node scripts/check-forest-landing.mjs` → **exit 0 · 默认分支 `main` · 无漂移**
+  （备注仍是：1 条孤立提交 `TF-0255:ad53345`、187 条无法归因——两者都只报读数、不判漂移）。
+- 外部 CLI `check-landing` → **exit 0 · 落库漂移读数 0 项 · 工作区未提交改动 0 项**。
+- `node scripts/check-claims.mjs` → **13 条一致（0 stale）· exit 0**——合并只改树的可达性、
+  不改树的内容，所以 9 条读数的 `subject_sha` 仍然有效。
+
+### 6.1 合并后重取的两条读数
+
+本补记本身是 `docs/**` 的改动，按仓库自己的失效规则会让 `claim-doctor-clean` 与
+`claim-upload-surface-clean` 立刻 stale。已按规程重取（记录器执行仪器本身）：
+
+| 声明 | 读数 | exit |
+| --- | --- | --- |
+| `claim-doctor-clean` | `exit 0` · `stale 0`（117 条架构断言 · 0 失效） | **0** |
+| `claim-upload-surface-clean` | `exit 0` · `violations 0`（822 文件 · 相对链接 326 条 / 断链 0） | **0** |
+
+重取后 `check:claims` 仍为 **13 条一致 · exit 0**。
+
+### 6.2 合并后仍然开着的（不因合并消失）
+
+1. **`TF-0255` 验收第 2 条**的两选一（重述为 `scripts/win/e2e-browser.ps1` 的本机读数 / 重取）
+   ——森林补记里已写明选项与依据。
+2. **重启一次机器**后取 Linux 冒烟读数（issue #33；本轮实测 `HypervisorPresent = False`，
+   `bcdedit` 改动尚未生效）。
+3. issue **#31**（需要一次真的发出 `fileChange` item 及其审批的真实回合）与 **#32**（真人窗口）。
+4. **推 `main`（4 个提交）**与是否发 `workbench-v0.4.1`——都是真实发布动作。
