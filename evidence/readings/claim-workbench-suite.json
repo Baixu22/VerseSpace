@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-workbench-suite",
 	"instrument_sha256": "package.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857\npackages/workbench/package.json:2b1a5de7d5fd574c914ff7513179c5a1602218020f5f190319c79982c0b8b4cf",
-	"subject_sha": "5a848056f47e17ecfb8477b4bf87354f1e1cb3c9",
+	"subject_sha": "c6fed1b1f5151b634cfda4436a6d87c65b6f45be",
 	"environment": {
 		"os": "win32",
 		"bun": "1.3.14",
 		"shell": "pwsh"
 	},
-	"measured_at": "2026-09-26T17:38:55.385Z",
+	"measured_at": "2026-09-27T06:42:22.622Z",
 	"reading": {
-		"pass": 1020,
+		"pass": 1026,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:de8ea6fcfbb0bb0896abd6b1028b09451f340b1ad6c022748741a79cc15b41b2",
+	"raw_digest": "sha256:8dab4eadd0baffdf860998b4ff0715ba58370f7735c6e6fbaf97d1d056a2b652",
 	"reproduce": "bun run test:workbench",
 	"class": "curated-evidence"
 }
