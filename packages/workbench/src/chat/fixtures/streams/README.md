@@ -24,3 +24,14 @@ on-request 审批）抓到的**写回合**，按本目录既有口径只把采�
 （未建模的 6 类由测试单独钉住）。同回合的 5 次真实写审批 params 原样放在
 `../approvals/apply-patch-0.158.json`。写侧读数、recipe 与诚实边界见
 [`docs/handoff/2026-09-27-codex-write-capture.md`](../../../../../../docs/handoff/2026-09-27-codex-write-capture.md)。
+
+## 2026-09-27 第二次：`fileChange` 夹具，以及它为什么不在 `streams/` 下
+
+同日的 6 变体重复实验否掉了上一条的「写侧结构性缺席」：变体 01/06 发出了原生
+`fileChange` item。两条的原始帧沉淀在 `../approvals/file-change-0.158.json`
+（`items` = app-server 原始 `{method, params}`，`requests` = 随后的
+`item/fileChange/requestApproval`）。它**故意不放在 `codex/` 下**：`fileChange` 在
+`codex-render-decision.ts` 的 `ITEM_DECISIONS` 里还没有决策，放进这里会打破本目录
+「每个夹具零 undecided」的门禁。关联机制、实现与边界见
+[`docs/handoff/2026-09-27-codex-filechange-seal.md`](../../../../../../docs/handoff/2026-09-27-codex-filechange-seal.md)
+与 ADR-0017 的第二次 2026-09-27 补记。

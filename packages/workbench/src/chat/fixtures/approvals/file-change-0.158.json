@@ -1,0 +1,127 @@
+{
+	"$comment": "真实 codex 0.158.0-alpha.2.1 的两条『原生写 item』回合原样抓取（2026-09-27，第二次 6 变体重复实验；原始 dump 见 .agent-contexts/codex-matrix/<label>.jsonl，本地未跟踪）。这一次写没有走 shell：codex 发出 `fileChange` item，随后发 `item/fileChange/requestApproval`。**审批 params 里完全没有任何 path 字段**——写目标只在 item 的 `changes[].path` 上，两边靠 `params.itemId` 关联。这里的 `items` 保持 app-server 的原始 `{method, params}` 形态，不是 `type`-tagged 流夹具：`fileChange` 在 codex-render-decision.ts 的 ITEM_DECISIONS 里还没有决策，放进 streams/codex/ 会打破那里的零 undecided 门禁，而那一条不在本次改动范围内。按现有 approvals 夹具的口径，本机绝对路径原样保留。",
+	"turns": [
+		{
+			"label": "06-glm53flash-readonly-create",
+			"model": "glm-5.3-flash",
+			"sandbox": "read-only",
+			"items": [
+				{
+					"method": "item/started",
+					"params": {
+						"item": {
+							"type": "fileChange",
+							"id": "call_49ea214b036846fcafa94549",
+							"changes": [
+								{
+									"path": "D:\\helmor-main\\.agent-contexts\\codex-matrix\\06-glm53flash-readonly-create-ws\\src\\notes.md",
+									"kind": { "type": "add" },
+									"diff": "hello\n"
+								}
+							],
+							"status": "inProgress"
+						},
+						"threadId": "01a0e183-47c0-7213-a060-580556356621",
+						"turnId": "01a0e183-4828-74c2-bba0-fdbf6aa4288a",
+						"startedAtMs": 1790489897289
+					}
+				},
+				{
+					"method": "item/completed",
+					"params": {
+						"item": {
+							"type": "fileChange",
+							"id": "call_49ea214b036846fcafa94549",
+							"changes": [
+								{
+									"path": "D:\\helmor-main\\.agent-contexts\\codex-matrix\\06-glm53flash-readonly-create-ws\\src\\notes.md",
+									"kind": { "type": "add" },
+									"diff": "hello\n"
+								}
+							],
+							"status": "completed"
+						},
+						"threadId": "01a0e183-47c0-7213-a060-580556356621",
+						"turnId": "01a0e183-4828-74c2-bba0-fdbf6aa4288a",
+						"completedAtMs": 1790489901375
+					}
+				}
+			],
+			"requests": [
+				{
+					"method": "item/fileChange/requestApproval",
+					"id": 0,
+					"params": {
+						"threadId": "01a0e183-47c0-7213-a060-580556356621",
+						"turnId": "01a0e183-4828-74c2-bba0-fdbf6aa4288a",
+						"itemId": "call_49ea214b036846fcafa94549",
+						"startedAtMs": 1790489897299,
+						"reason": null,
+						"grantRoot": null
+					}
+				}
+			]
+		},
+		{
+			"label": "01-glm53flash-readonly-patch",
+			"model": "glm-5.3-flash",
+			"sandbox": "read-only",
+			"items": [
+				{
+					"method": "item/started",
+					"params": {
+						"item": {
+							"type": "fileChange",
+							"id": "call_0b73f100b8c64c919f06be14",
+							"changes": [
+								{
+									"path": "D:\\helmor-main\\.agent-contexts\\codex-matrix\\01-glm53flash-readonly-patch-ws\\src\\target.ts",
+									"kind": { "type": "update", "move_path": null },
+									"diff": "@@ -1 +1 @@\n-export const target = 1;\n+export const target = 2;\n"
+								}
+							],
+							"status": "inProgress"
+						},
+						"threadId": "01a0e17c-f101-7fe0-9e22-b2a10e758139",
+						"turnId": "01a0e17c-f255-7c61-9b42-383329907b61",
+						"startedAtMs": 1790489545868
+					}
+				},
+				{
+					"method": "item/completed",
+					"params": {
+						"item": {
+							"type": "fileChange",
+							"id": "call_0b73f100b8c64c919f06be14",
+							"changes": [
+								{
+									"path": "D:\\helmor-main\\.agent-contexts\\codex-matrix\\01-glm53flash-readonly-patch-ws\\src\\target.ts",
+									"kind": { "type": "update", "move_path": null },
+									"diff": "@@ -1 +1 @@\n-export const target = 1;\n+export const target = 2;\n"
+								}
+							],
+							"status": "completed"
+						},
+						"threadId": "01a0e17c-f101-7fe0-9e22-b2a10e758139",
+						"turnId": "01a0e17c-f255-7c61-9b42-383329907b61",
+						"completedAtMs": 1790489552407
+					}
+				}
+			],
+			"requests": [
+				{
+					"method": "item/fileChange/requestApproval",
+					"id": 3,
+					"params": {
+						"threadId": "01a0e17c-f101-7fe0-9e22-b2a10e758139",
+						"turnId": "01a0e17c-f255-7c61-9b42-383329907b61",
+						"itemId": "call_0b73f100b8c64c919f06be14",
+						"startedAtMs": 1790489545880,
+						"reason": null,
+						"grantRoot": null
+					}
+				}
+			]
+		}
+	]
+}

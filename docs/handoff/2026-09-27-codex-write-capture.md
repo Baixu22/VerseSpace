@@ -273,3 +273,24 @@ node .agent-contexts/codex-raw-dump.mjs     # 逐行记录 server→client 消�
 - **没有更新 `docs/decisions/README.md`**：它的状态列记的是**决策级取代关系**，
   而本轮的 ADR-0017 补记是**测量记录**，没有取代任何决策。是否需要在那里加一句，
   留给 Lead 判断（该文件不在本轮的写入范围里）。
+
+---
+
+## 补记（2026-09-27 晚）：本记录的「结构性缺席」结论已被证伪
+
+本文（第一次抓取的记录）在开头、§6.2 与 §7 里把结论写成「写侧门禁**结构性缺席**」。
+同日晚些时候的 **6 变体重复实验**推翻了它，理由很直接：
+
+- 变体 01 是**同一个模型（glm-5.3-flash）、同一个 profile、同一条 prompt** 的重复，
+  它发出了 **2 个 `fileChange` item** 与 **1 个 `item/fileChange/requestApproval`**（`kind: write`）；
+  变体 06（新建文件 prompt）同样。
+- 因此本记录读到的「整条流里没有任何原生写 item」是**那一个回合**的忠实读数，
+  但由它推出的「所以结构性缺席」**不成立**——那是回合间方差。
+
+§6 自己写的证伪条件（「任何一次真实 codex 回合里出现 `fileChange` item，门禁会因此变红」）
+已经满足——**这就是那次变红**。本记录其余内容仍然成立、一字未改：写确实落盘、那一次抓取里
+确实没有原生写 item、5 次写审批确实不可归因、`commandActions` 侧确实没有写类型、
+`danger-full-access` 对照确实 0 个请求。被否掉的只有「一次观测 → 结构性」这一步。
+
+更正后的机制（路径在 item 的 `changes[].path` 上、靠 `itemId` 关联）与修复见
+[codex fileChange 封印关联记录](2026-09-27-codex-filechange-seal.md)。

@@ -10,6 +10,13 @@
  *
  * `unknown` is not a pass. The caller must not pretend an unattributable approval
  * was guarded — see `answerServerRequest` in session.ts.
+ *
+ * 2026-09-27 (second reading): a native `fileChange` approval is the one case
+ * where the params genuinely have no path to find — the real 0.158 params carry
+ * only `threadId` / `turnId` / `itemId` / `startedAtMs` / `reason` / `grantRoot`.
+ * The target is on the ITEM the approval names, so the caller may pass the paths
+ * it already correlated from `params.itemId` (see `file-change-paths.ts`). This
+ * stays pure: the third argument is caller-supplied, there is no module state.
  */
 
 const APPROVAL_METHODS = new Set([
@@ -85,6 +92,13 @@ function writeTargetsFromCommand(command: string): string[] {
 export function approvalTargets(
 	method: string,
 	params: unknown,
+	/**
+	 * Paths the caller already correlated from the item this approval names
+	 * (`params.itemId`). Only consulted for `item/fileChange/requestApproval`,
+	 * the one method the evidence shows carries no path of its own; the
+	 * `commandExecution` shape is unchanged (ADR-0023).
+	 */
+	itemPaths: readonly string[] = [],
 ): ApprovalTargets {
 	if (!isApprovalMethod(method)) {
 		return { isApproval: false, kind: "unknown", paths: [] };
@@ -100,6 +114,9 @@ export function approvalTargets(
 		return { isApproval: true, kind: "read", paths: [...paths] };
 	}
 	if (method === "item/fileChange/requestApproval") {
+		// Real 0.158 params carry no path (fixture: file-change-0.158.json); the
+		// correlated item paths are the only attributable target.
+		for (const path of itemPaths) if (path) paths.add(path);
 		return { isApproval: true, kind: "write", paths: [...paths] };
 	}
 	// commandExecution: only a write if the command actually redirects somewhere.

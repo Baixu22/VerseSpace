@@ -1,6 +1,7 @@
 import type { ProcHandle } from "../../supervisor";
 import { spawnSupervised } from "../../supervisor";
 import { type ApprovalTargets, approvalTargets } from "./approval-targets";
+import { FileChangePathIndex } from "./file-change-paths";
 import {
 	asRecord,
 	CLIENT_INFO,
@@ -75,6 +76,13 @@ export function createCodexAppServer(
 	let exitReason: string | null = null;
 	/** Why the caller ended it, when the caller knows (see `noteTermination`). */
 	let terminationReason: string | null = null;
+	/**
+	 * `itemId → changes[].path` for the `fileChange` items of the current turn
+	 * (TF-0263 follow-up). An approval request names the item and carries no path
+	 * of its own, so this is the only way a native write becomes attributable.
+	 * Turn-scoped and capped — see `file-change-paths.ts`.
+	 */
+	const fileChanges = new FileChangePathIndex();
 
 	const proc = spawnSupervised(options.commandLine ?? codexCommand(), {
 		label: options.label,
@@ -194,6 +202,10 @@ export function createCodexAppServer(
 		// Notification (method, no id) — normalize and forward to the router.
 		if (message.method) {
 			const event = normalizeNotification(message.method, message.params);
+			// A native write announces its target here, on the item — not on the
+			// approval that follows it. Record it before the router sees the line,
+			// so the very next approval can resolve its `params.itemId`.
+			fileChanges.note(event);
 			options.onEvent(event);
 			// Only `turn/completed` and a provider `error` end a turn. Notably
 			// NOT `thread/compacted`: compaction happens *during* a turn, so
@@ -201,6 +213,8 @@ export function createCodexAppServer(
 			// persist a partial assistant message. (The retained fixtures only
 			// carry it turn-less, which is why it read as terminal.)
 			if (message.method === "turn/completed" || message.method === "error") {
+				// The turn is over; its write items can no longer be approved.
+				fileChanges.clear();
 				settleTurn();
 			}
 		}
@@ -221,7 +235,16 @@ export function createCodexAppServer(
 			// Only *attributable* requests can be sealed. A write whose target we
 			// cannot read out of the params is NOT silently treated as guarded — it
 			// is reported as unattributable, because silence is never a decision.
-			const target = approvalTargets(method, params);
+			//
+			// A `fileChange` approval is attributable only through correlation: its
+			// params name an item and carry no path (fixture:
+			// src/chat/fixtures/approvals/file-change-0.158.json), so the paths come
+			// from the item the stream already reported under that same id.
+			const target = approvalTargets(
+				method,
+				params,
+				fileChanges.pathsFor(asRecord(params)?.itemId),
+			);
 			if (
 				options.sealApproval &&
 				target.kind === "write" &&
@@ -247,9 +270,17 @@ export function createCodexAppServer(
 						`[codex] 封印判定失败，按放行处理：${(error as Error).message}`,
 					);
 				}
-			} else if (options.sealApproval && target.kind === "write") {
+			} else if (options.sealApproval && target.kind !== "read") {
+				// An approval the seal did not decide must say so. `write` with no
+				// path is the unattributable-write case; `unknown` is a command codex
+				// itself could not classify (all 5 approvals of the real 0.158 write
+				// turn were `[{type:"unknown"}]` around a shell `apply_patch`), so it
+				// may or may not write — either way the seal was not consulted. The
+				// real 0.158 write approvals printed nothing at all before this.
 				options.onStderr?.(
-					"[codex] 写审批无法归因到路径，未咨询封印（记录为不可归因）",
+					target.kind === "write"
+						? "[codex] 写审批无法归因到路径，未咨询封印（记录为不可归因）"
+						: "[codex] 审批无法判定读/写，未咨询封印（记录为不可归因）",
 				);
 			}
 			// Only the reply is wired here. The read/write claim that reaches the
