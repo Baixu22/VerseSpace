@@ -271,3 +271,29 @@ python C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py devia
 ```
 
 **合并本分支前请把本轮读作「工程门通过（本机可执行范围）」，而不是「产品已验收」。**
+
+---
+
+## 6. 补记（2026-09-27 晚）：§4 第 2 条里「结构性缺席」的说法已被证伪
+
+本文 §4「下一步」第 2 条把 #31 的结论写成「写这半条通道对本次抓取的模型 / profile / 回合是
+**结构性缺席**」。同日晚些时候做的 **6 变体重复实验**推翻了那个词：
+
+- 变体 01（**与原来那次抓取同一个模型、同一个 profile、同一条 prompt**）发出了
+  **2 个 `fileChange` item**，并带出 **1 个 `item/fileChange/requestApproval`**（`kind: write`）；
+  变体 06（改成「新建文件」prompt）同样。
+- 所以原读数「零原生写 item」是**回合间方差**，不是结构。**用一次观测下「结构性」结论，是这次的错误。**
+
+被证伪的只有那个词与它推出来的「门禁不可能」；其余仍然成立并已沉淀：写确实落盘、那一次抓取里
+确实没有原生写 item、那 5 个 `commandExecution` 审批确实不可归因、`commandActions` 侧确实没有写类型。
+
+**真正的缺口因此被改写成一条可修的实现缺陷**：路径在 `fileChange` **item** 的 `changes[].path` 上，
+审批 params 只有 `itemId`、没有任何 path——所以按 `itemId` 关联两者即可让原生写变得可归因。
+该修复已实现（`codex-app-server/file-change-paths.ts` + `session.ts` 接线 + `approval-targets` 的可选第三参），
+并由一个假 app-server 端到端测试证明「封印闸门确实被触发、blocked 时回 `cancel`」。
+
+更正后的完整记录见 [codex fileChange 封印关联记录](2026-09-27-codex-filechange-seal.md) 与
+ADR-0017 的第二次补记。
+
+**这条补记本身或许是本记录里最该记住的一课**：`TFD-6b47ba440e` 说的是「一次读数不等于判据」，
+这次是同一个错误的另一种形态——**一个回合不等于一个结构**。

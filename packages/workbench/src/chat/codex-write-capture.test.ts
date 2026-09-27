@@ -1,9 +1,19 @@
 import { describe, expect, test } from "bun:test";
-import { readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { replayCodexFixture } from "../test/codex-fixture-replay";
+import { createCodexAppServer } from "./codex-app-server";
 import { approvalTargets } from "./codex-app-server/approval-targets";
-import { decideServerRequest } from "./codex-app-server/protocol";
+import {
+	FileChangePathIndex,
+	fileChangeItemPaths,
+	MAX_TRACKED_FILE_CHANGES,
+} from "./codex-app-server/file-change-paths";
+import {
+	decideServerRequest,
+	normalizeNotification,
+} from "./codex-app-server/protocol";
 import { extractCodexFootprint } from "./codex-footprint";
 import {
 	createCodexRenderState,
@@ -11,28 +21,39 @@ import {
 } from "./codex-render-state";
 
 /**
- * codex 写侧门禁（issue #31）。
+ * codex 写侧门禁（issue #31 / TF-0263 后续）。
  *
  * ADR-0017 §「本轮实现边界」把写侧记为「尚无证据」：11 个保留夹具只有
  * `read` / `listFiles`，`WRITE_ACTIONS`（edit / write / applyPatch / createFile）
  * 与 `fileChange` / `fileRead` item 类型都没有样本。
  *
- * 2026-09-27 用真实 codex `0.158.0-alpha.2.1` + 本地网关（模型 `glm-5.3-flash`、
- * read-only 沙箱、审批 on-request）抓到一个真实写回合：提示词要求模型用
- * `apply_patch` 把 `src/target.ts` 的 `target = 1` 改成 `2`。文件确实被改动
- * （夹具里有改动后读回的 `export const target = 2;`），但整条流里**没有**任何
- * 原生写 item，审批的 `commandActions` 也全部是 `type: "unknown"` 且没有 `path`。
+ * **2026-09-27 的第一次抓取**用真实 codex `0.158.0-alpha.2.1` + 本地网关
+ * （模型 `glm-5.3-flash`、read-only 沙箱、审批 on-request）抓到一个写回合：
+ * 提示词要求模型用 `apply_patch` 把 `src/target.ts` 的 `target = 1` 改成 `2`。
+ * 文件确实被改动，但那条流里没有任何原生写 item，审批的 `commandActions`
+ * 也全部是 `type: "unknown"` 且没有 `path`。第一个补记据此写下「结构性缺席」。
  *
- * 本文件把这个读数钉住：写侧门禁不是「夹具还没收集到」，而是在这条车道上
- * **结构性缺席**。它只覆盖一次抓取（一个模型、一个 profile、一个回合）；
- * ADR-0023「对某个命令的负面观测不能泛化到整个 CLI 版本」同样适用于此——
- * 见 docs/handoff/2026-09-27-codex-write-capture.md。
+ * **同日的 6 变体重复实验否掉了那个结论**（`01`/`06` 两条变体发出了
+ * `fileChange` item）。所以下面那批「零原生写 item」断言只对**它自己的夹具**
+ * 成立——那是**回合间的方差**，不是结构性缺席；而变体 01 与第一次抓取是
+ * **同一个模型、同一个 profile、同一个提示词**。真实写出的是原生 item，
+ * 写目标在 item 的 `changes[].path` 上，审批只带 `params.itemId`——
+ * 夹具与关联机制见 `fixtures/approvals/file-change-0.158.json` 与
+ * `codex-app-server/file-change-paths.ts`。
+ *
+ * 更正记录：ADR-0017 的第二次 2026-09-27 补记；
+ * 读数与诚实边界见 docs/handoff/2026-09-27-codex-filechange-seal.md。
  */
 const FIXTURES = join(import.meta.dir, "fixtures");
 const WRITE_TURN = join(FIXTURES, "streams/codex/write-turn-0.158.jsonl");
 const WRITE_APPROVALS = join(FIXTURES, "approvals/apply-patch-0.158.json");
+const FILE_CHANGE_TURNS = join(FIXTURES, "approvals/file-change-0.158.json");
 
-/** 原生写 item 类型：本门禁要钉住真实写回合里一个都没有。 */
+/**
+ * 原生写 item 类型。第一条抓取的夹具里一个都没有；`fileChange` 在变体
+ * 01/06 里出现了（见本文件后半的 `native fileChange` 门禁），所以这里的
+ * 「零」只对 `write-turn-0.158.jsonl` 这一个回合成立。
+ */
 const NATIVE_WRITE_ITEM_TYPES = ["fileChange", "applyPatch", "fileRead"];
 /** `codex-footprint.ts` 的 WRITE_ACTIONS：commandAction 侧的写类型。 */
 const WRITE_ACTION_TYPES = ["edit", "write", "applyPatch", "createFile"];
@@ -163,7 +184,7 @@ function distinctCommandItems(
 }
 
 describe("Codex write-turn capture (issue #31)", () => {
-	test("a real write turn carries no native write item and no write commandAction", async () => {
+	test("THIS turn's fixture (2026-09-27 capture #1) carries no native write item", async () => {
 		const lines = await readJsonl(WRITE_TURN);
 		const frames = itemFrames(lines);
 
@@ -171,9 +192,10 @@ describe("Codex write-turn capture (issue #31)", () => {
 		const replay = replayCodexFixture("write-turn-0.158", lines);
 		expect(replay.snapshot.undecidedKeys).toEqual([]);
 
-		// Only the four shapes the render table models appear. If codex starts
-		// emitting a native write item, this list grows and the finding below has
-		// to be revisited rather than silently inherited.
+		// Only the four shapes the render table models appear in THIS fixture.
+		// It is one turn's capture, not the车道's shape: variants 01/06 of the
+		// same-day repetition emitted `fileChange` items (see the native-path
+		// gate below), so a growing list here is variance, not a contradiction.
 		const itemTypes = [...new Set(frames.map(({ item }) => item.type))].sort();
 		expect(itemTypes).toEqual([
 			"agentMessage",
@@ -184,7 +206,7 @@ describe("Codex write-turn capture (issue #31)", () => {
 		for (const type of NATIVE_WRITE_ITEM_TYPES) {
 			expect(
 				frames.filter(({ item }) => item.type === type),
-				`${type} 现在出现了：写侧证据已变，ADR-0017 的收窄结论必须重做`,
+				`${type} 在这个夹具里出现了：这份夹具的读数变了，请重做`,
 			).toEqual([]);
 		}
 
@@ -298,10 +320,11 @@ describe("Codex write-turn capture (issue #31)", () => {
 				false,
 			);
 
-			// 于是 session.ts:225-229 的封印闸门（kind === "write" &&
-			// paths.length > 0）不成立，连「不可归因」的 stderr 提示
-			// （session.ts:250-254，同样要求 kind === "write"）也不会打印：
-			// 默认策略的 accept 就是实际发回给 codex 的应答。
+			// 于是 session.ts 的封印闸门（kind === "write" &&
+			// paths.length > 0）不成立，默认策略的 accept 就是实际发回给
+			// codex 的应答。诊断侧在第二次补记后改了：`kind === "unknown"`
+			// 现在会打印一条「无法判定读/写，未咨询封印」——它不再声称这是
+			// 一次写（判不出），但也不再用沉默代替记录。
 			expect(target.kind === "write" && target.paths.length > 0).toBe(false);
 			expect(decideServerRequest(request.method)).toEqual({
 				kind: "approval",
@@ -326,4 +349,280 @@ describe("Codex write-turn capture (issue #31)", () => {
 		// 后果（codex-router.ts:38-40 → codex-turn.ts:73-77）：回合仍然正常
 		// 收尾，只在回合结束时 console.warn 一次未建模类型清单。
 	});
+});
+
+/**
+ * 第二次读数（2026-09-27，6 变体重复实验）：变体 01 与 06 发出了原生
+ * `fileChange` item，所以「写侧结构性缺席」不成立。两条都沉淀在
+ * `fixtures/approvals/file-change-0.158.json`：`items` 是 app-server 的原始
+ * `{method, params}` 帧，`requests` 是随后的 `item/fileChange/requestApproval`。
+ */
+interface FileChangeTurn {
+	label: string;
+	model: string;
+	sandbox: string;
+	items: Array<{ method: string; params: Record<string, unknown> }>;
+	requests: ApprovalRequest[];
+}
+
+async function readFileChangeTurns(): Promise<FileChangeTurn[]> {
+	const raw = await readFile(FILE_CHANGE_TURNS, "utf8");
+	return (JSON.parse(raw) as { turns: FileChangeTurn[] }).turns;
+}
+
+/** A turn's item frames in the `type`-tagged shape the live session sees. */
+function normalizedItems(turn: FileChangeTurn): Record<string, unknown>[] {
+	return turn.items.map((frame) =>
+		normalizeNotification(frame.method, frame.params),
+	);
+}
+
+describe("Codex native fileChange write (2026-09-27 capture #2)", () => {
+	test("the path is on the item; the approval params have none; itemId joins them", async () => {
+		const turns = await readFileChangeTurns();
+		expect(turns.map((turn) => turn.label)).toEqual([
+			"06-glm53flash-readonly-create",
+			"01-glm53flash-readonly-patch",
+		]);
+
+		for (const turn of turns) {
+			const frames = normalizedItems(turn);
+			const fileChangeFrames = frames.filter(
+				(frame) => asRecord(frame.item).type === "fileChange",
+			);
+			// (a) at least one native write item, carrying a real path.
+			expect(
+				fileChangeFrames.length,
+				`${turn.label}: 没有 fileChange item`,
+			).toBeGreaterThanOrEqual(1);
+			const item = asRecord(fileChangeFrames[0]?.item);
+			const changes = (item.changes as Array<Record<string, unknown>>) ?? [];
+			expect(changes.length).toBeGreaterThan(0);
+			const itemPaths = changes.map((change) => String(change.path));
+			for (const path of itemPaths) {
+				expect(typeof path).toBe("string");
+				expect(path.length).toBeGreaterThan(0);
+			}
+
+			const extracted = fileChangeItemPaths(frames[0] ?? {});
+			expect(typeof item.id).toBe("string");
+			expect(extracted?.itemId).toBe(item.id as string);
+			expect(extracted?.turnId).toBe(turn.items[0]?.params.turnId as string);
+			expect(extracted?.paths).toEqual(itemPaths);
+
+			// (b) the approval names the item and carries NO path. This is the
+			// reason correlation is required rather than merely convenient.
+			const request = turn.requests[0];
+			if (!request) throw new Error(`${turn.label}: 缺审批请求`);
+			expect(request.method).toBe("item/fileChange/requestApproval");
+			expect(request.params.itemId).toBe(item.id);
+			expect(Object.keys(request.params).sort()).toEqual(
+				[
+					"grantRoot",
+					"itemId",
+					"reason",
+					"startedAtMs",
+					"threadId",
+					"turnId",
+				].sort(),
+			);
+			expect(JSON.stringify(request.params)).not.toContain("path");
+
+			// (c) WITHOUT correlation the seal gate cannot fire: kind is already
+			// `write` (method-based) but there is nothing to seal. Pre-fix behaviour.
+			const uncorrelated = approvalTargets(request.method, request.params);
+			expect(uncorrelated.kind).toBe("write");
+			expect(uncorrelated.paths).toEqual([]);
+			expect(
+				uncorrelated.kind === "write" && uncorrelated.paths.length > 0,
+			).toBe(false);
+
+			// (d) WITH correlation the same request resolves to the item's path and
+			// the gate fires — the whole point of the fix.
+			const index = new FileChangePathIndex();
+			for (const frame of frames) index.note(frame);
+			const correlated = approvalTargets(
+				request.method,
+				request.params,
+				index.pathsFor(request.params.itemId),
+			);
+			expect(correlated.kind).toBe("write");
+			expect(correlated.paths).toEqual(itemPaths);
+			expect(correlated.kind === "write" && correlated.paths.length > 0).toBe(
+				true,
+			);
+		}
+	});
+
+	test("the item→path index is pure, turn-scoped and capped", () => {
+		const frame = (turnId: string, id: string, path: string) =>
+			normalizeNotification("item/started", {
+				item: {
+					type: "fileChange",
+					id,
+					changes: [{ path }],
+					status: "inProgress",
+				},
+				threadId: "t",
+				turnId,
+			});
+
+		const index = new FileChangePathIndex();
+		index.note(frame("turn_a", "call_a", "a.ts"));
+		expect(index.pathsFor("call_a")).toEqual(["a.ts"]);
+		// A non-`fileChange` item is not a write target.
+		index.note(
+			normalizeNotification("item/started", {
+				item: { type: "agentMessage", id: "msg_1", text: "" },
+				threadId: "t",
+				turnId: "turn_a",
+			}),
+		);
+		// A `fileChange` item with no readable path is skipped too.
+		index.note(
+			normalizeNotification("item/started", {
+				item: { type: "fileChange", id: "call_bare", changes: [] },
+				threadId: "t",
+				turnId: "turn_a",
+			}),
+		);
+		expect(index.pathsFor("msg_1")).toEqual([]);
+		expect(index.pathsFor("call_bare")).toEqual([]);
+
+		// A new turn drops the previous turn's items.
+		index.note(frame("turn_b", "call_b", "b.ts"));
+		expect(index.pathsFor("call_a")).toEqual([]);
+		expect(index.pathsFor("call_b")).toEqual(["b.ts"]);
+
+		// Unknown / non-string ids resolve to nothing rather than throwing.
+		expect(index.pathsFor("missing")).toEqual([]);
+		expect(index.pathsFor(undefined)).toEqual([]);
+		expect(index.pathsFor(42)).toEqual([]);
+
+		// Bounded, oldest-first: the map cannot grow without limit.
+		for (let i = 0; i <= MAX_TRACKED_FILE_CHANGES; i++) {
+			index.note(frame("turn_b", `call_${i}`, `f${i}.ts`));
+		}
+		expect(index.size).toBe(MAX_TRACKED_FILE_CHANGES);
+		expect(index.pathsFor("call_b")).toEqual([]);
+		expect(index.pathsFor(`call_${MAX_TRACKED_FILE_CHANGES}`)).toEqual([
+			`f${MAX_TRACKED_FILE_CHANGES}.ts`,
+		]);
+
+		index.clear();
+		expect(index.size).toBe(0);
+		expect(index.pathsFor(`call_${MAX_TRACKED_FILE_CHANGES}`)).toEqual([]);
+	});
+});
+
+/**
+ * A fake app-server that reproduces capture #2's ordering: an unclassifiable
+ * command approval, then the native `fileChange` item, then ITS approval (which
+ * names the item). The replies the lane sends back are recorded to a file, so the
+ * assertions read what actually went on the wire rather than a re-derivation.
+ */
+const FAKE_FILE_CHANGE_SERVER = String.raw`
+import { createInterface } from "node:readline";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+const send = (msg) => process.stdout.write(JSON.stringify(msg) + "\n");
+const notify = (method, params) => send({ method, params });
+const threadId = "thread_fake_write";
+const turnId = "turn_fake_write";
+const itemId = "call_fake_write";
+const target = join(process.cwd(), "src", "target.ts");
+const repliesPath = join(process.cwd(), "approval-decisions.json");
+const decisions = [];
+let turnRequestId = null;
+let awaiting = 0;
+const settle = () => {
+  awaiting -= 1;
+  if (awaiting > 0) return;
+  notify("item/completed", { threadId, turnId, item: { type: "agentMessage", id: "msg_fake_1", text: "done", phase: "final_answer" } });
+  notify("turn/completed", { threadId, turn: { id: turnId, status: "completed" } });
+  send({ id: turnRequestId, result: { ok: true } });
+};
+for await (const line of createInterface({ input: process.stdin })) {
+  if (!line.trim()) continue;
+  const msg = JSON.parse(line);
+  if (msg.method === "initialize") { send({ id: msg.id, result: { ok: true } }); continue; }
+  if (msg.method === "initialized") continue;
+  if (msg.method === "thread/start") { send({ id: msg.id, result: { thread: { id: threadId } } }); continue; }
+  if (msg.method === "turn/start") {
+    turnRequestId = msg.id;
+    awaiting = 2;
+    notify("turn/started", { threadId, turn: { id: turnId } });
+    send({ id: 900, method: "item/commandExecution/requestApproval", params: {
+      kind: "command", threadId, turnId, itemId: "call_fake_cmd", startedAtMs: 1,
+      reason: "allow this command?", command: "npm test",
+      commandActions: [{ type: "unknown", command: "npm test" }],
+    }});
+    notify("item/started", { threadId, turnId, item: {
+      type: "fileChange", id: itemId,
+      changes: [{ path: target, kind: { type: "update", move_path: null }, diff: "@@ -1 +1 @@\n-1\n+2\n" }],
+      status: "inProgress",
+    }});
+    send({ id: 901, method: "item/fileChange/requestApproval", params: {
+      threadId, turnId, itemId, startedAtMs: 2, reason: null, grantRoot: null,
+    }});
+    continue;
+  }
+  if (msg.id !== undefined && msg.method === undefined) {
+    decisions.push({ id: msg.id, result: msg.result });
+    writeFileSync(repliesPath, JSON.stringify(decisions));
+    settle();
+  }
+}
+`;
+
+describe("Codex native fileChange approval reaches the seal (TF-0263 follow-up)", () => {
+	test("session correlates params.itemId to the item's path, seals, and cancels", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "codex-filechange-"));
+		await mkdir(join(dir, "proc"), { recursive: true });
+		const script = join(dir, "fake-codex-filechange.mjs");
+		await writeFile(script, FAKE_FILE_CHANGE_SERVER);
+		const sealed: Array<{ kind: string; paths: string[] }> = [];
+		const stderr: string[] = [];
+		const server = createCodexAppServer({
+			cwd: dir,
+			registryDir: join(dir, "proc"),
+			label: "chat:test-filechange",
+			commandLine: `"${process.execPath}" "${script}"`,
+			onEvent: () => {},
+			onStderr: (line) => stderr.push(line),
+			sealApproval: async (target) => {
+				sealed.push({ kind: target.kind, paths: [...target.paths] });
+				return { blocked: true };
+			},
+		});
+		try {
+			await server.initialize();
+			const threadId = await server.startThread({ cwd: dir });
+			await server.startTurn(threadId, "write src/target.ts");
+
+			// The seal was consulted exactly once, with the item's real path.
+			expect(sealed).toEqual([
+				{ kind: "write", paths: [join(dir, "src", "target.ts")] },
+			]);
+
+			const decisions = JSON.parse(
+				await readFile(join(dir, "approval-decisions.json"), "utf8"),
+			) as Array<{ id: number; result: { decision?: string } }>;
+			// A blocked native write is cancelled (0.158 has no `decline`).
+			expect(decisions.find((entry) => entry.id === 901)?.result).toEqual({
+				decision: "cancel",
+			});
+			// The unclassifiable command approval is still accepted by default —
+			// but no longer silently: it now prints the unattributable diagnostic.
+			expect(decisions.find((entry) => entry.id === 900)?.result).toEqual({
+				decision: "accept",
+			});
+			expect(
+				stderr.some((line) => line.includes("无法判定读/写，未咨询封印")),
+			).toBe(true);
+		} finally {
+			await server.shutdown().catch(() => {});
+			await rm(dir, { recursive: true, force: true });
+		}
+	}, 20_000);
 });

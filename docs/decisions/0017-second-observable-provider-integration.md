@@ -130,3 +130,89 @@ codex 的 `app-server` 会发出六类交互协议。逐项按「它如何服务
 别的模型、别的 `sandbox_mode` / `approval_policy`，或原生 `apply_patch` 工具可用时
 也不发写 item。完整读数、recipe 与诚实边界见
 [`docs/handoff/2026-09-27-codex-write-capture.md`](../handoff/2026-09-27-codex-write-capture.md)。
+
+## 补记（2026-09-27 第二次）：上一条补记的「结构性缺席」不成立
+
+> 本节仍是**追加记录**：上面两个 2026-09-27 / 2026-09-22 的小节都**不改写**。
+> 本节明确**取代**上一条补记的结论句——即「**收窄后的结论**：在这条车道上，写侧
+> 夹具门禁不是**尚未收集**，而是对本次抓取的模型 / profile / 回合**结构性缺席**——
+> 真实写回合不产生 `fileChange` / `applyPatch` / `fileRead` item」。那句话的**前提**
+> 已经由一个更宽的实验否掉，它不再是本条 ADR 对写侧的当前表述。
+> 上一条补记里的其余句子——写确实发生了、第一次抓取的那条流里没有原生写 item、
+> 那 5 个 `commandExecution` 审批不可归因、`commandActions` 侧没有写类型——都仍然
+> 成立，且仍然是那一次抓取的忠实读数。被否掉的只有「**一次观测 → 结构性**」这一步。
+
+### 否证它的读数（真实运行，2026-09-27，6 变体重复实验）
+
+同一 recipe（codex `0.158.0-alpha.2.1`、隔离 `CODEX_HOME`、本地网关
+`wb_verify`、`read-only` 沙箱、`approval_policy = "on-request"`）下重复了 6 条变体。
+原始 dump 在 `.agent-contexts/codex-matrix/<label>.jsonl`，item 类型普查在
+`.agent-contexts/codex-matrix/matrix.json`（两者均为本地未跟踪 scratch）：
+
+| 变体 | 模型 / 沙箱 / 提示词 | items | 审批 |
+| --- | --- | --- | --- |
+| 01 | glm-5.3-flash / read-only / apply_patch | `commandExecution` 6、**`fileChange` 2** | 3 × `commandExecution`(unknown) + **1 × `fileChange`(kind write)** |
+| 02 | glm-5.3 / read-only / apply_patch | `commandExecution` 12 | 3 × unknown |
+| 03 | deepseek-v4.1-flash / read-only | `commandExecution` 6 | 无（写没落地） |
+| 04 | sn-kimi-k3 / read-only | `commandExecution` 18 | 5 × unknown |
+| 05 | glm-5.3 / workspace-write | 只有 `userMessage` 2（没有可用回合） | 无 |
+| 06 | glm-5.3-flash / read-only / **新建文件** | **`fileChange` 2** | **1 × `fileChange`(kind write)** |
+
+**关键**：变体 01 与上一条补记所依据的那一次抓取是**同一个模型、同一个 profile、
+同一个提示词**，而它发出了 `fileChange` item。所以那一次的「零原生写 item」是
+**回合间的方差**，不是结构性事实。变体 05 不构成任何证据（它没有产生回合）。
+
+### 机制：写目标在 item 上，审批只带 `itemId`
+
+变体 06 的有序事件（`.agent-contexts/codex-matrix/06-glm53flash-readonly-create.jsonl`，
+已沉淀为 `packages/workbench/src/chat/fixtures/approvals/file-change-0.158.json`）：
+
+```
+item/started    id=call_49ea214b036846fcafa94549
+                item={"type":"fileChange","id":"call_49ea214b036846fcafa94549",
+                      "changes":[{"path":"…\\src\\notes.md","kind":{"type":"add"},"diff":"hello\n"}],
+                      "status":"inProgress"}
+item/fileChange/requestApproval
+                params={"threadId":…,"turnId":…,"itemId":"call_49ea214b036846fcafa94549",
+                        "startedAtMs":…,"reason":null,"grantRoot":null}   ← params 里没有任何 path
+item/completed  … same item, "status":"completed"
+```
+
+变体 01 是同一形状、`"kind":{"type":"update","move_path":null}`、目标是
+`…\\src\\target.ts`。**路径在 `fileChange` ITEM 的 `changes[].path` 上，靠
+`params.itemId` 与审批关联；审批 params 本身不含路径。** 这解释了为什么
+`approvalTargets` 对 `item/fileChange/requestApproval` 早就返回 `kind: "write"` 却
+`paths: []`：不是方法判断错了，而是 params 里根本没有可收集的东西。
+
+### 由此实现的关联（本次新增）
+
+- `codex-app-server/file-change-paths.ts`（新）：纯函数 `fileChangeItemPaths(event)`
+  从 `item/started` / `item/completed` 读出 `{ itemId, turnId, paths }`；以及
+  `FileChangePathIndex`——**按回合**、**有上限**（`MAX_TRACKED_FILE_CHANGES`）的
+  `itemId → paths` 索引。
+- `codex-app-server/session.ts`：在通知分支里记录（`fileChanges.note(event)`，在
+  router 看到该行之前），在终端帧（`turn/completed` / `error`）清空；应答审批时用
+  `fileChanges.pathsFor(params.itemId)` 作为第三个参数传给 `approvalTargets`。
+- `codex-app-server/approval-targets.ts`：新增**可选**第三参数 `itemPaths`，
+  只对 `item/fileChange/requestApproval` 生效。模块保持无状态、纯、保守；
+  `commandExecution` 的判定一字未改。
+- 效果：原生写审批的 `kind === "write" && paths.length > 0` 闸门现在真的会成立，
+  封印（`codex-session.ts` 的 `sealApproval`）被咨询；阻断时回 `cancel`。
+- 顺带（上一条补记点出的沉默）：`kind === "unknown"` 的审批此前**不打印任何诊断**。
+  现在它会打印一条「审批无法判定读/写，未咨询封印」，措辞只陈述已观测到的事实
+  （判不出），不声称那是一次写。
+
+**闸门**：`packages/workbench/src/chat/fixtures/approvals/file-change-0.158.json`
+（变体 06 + 01 的原始帧，路径在 item 上、审批无路径）、
+`packages/workbench/src/chat/codex-write-capture.test.ts`（关联前/后对照 + 用假
+app-server 端到端证明封印拿到真实路径并被阻断），以及
+`codex-app-server/approval-targets.test.ts` 的第三条参数用例。上一条补记的
+`write-turn-0.158.jsonl` 与 `apply-patch-0.158.json` 保留不动，其「零原生写 item」
+断言已按本文件范围收窄为**那一个回合**的读数。
+
+**双向不作泛化**：这次是 6 个回合、4 个模型；它证明「原生 `fileChange` 写侧**存在**」，
+**不**证明它是**唯一**的写路径，也不缩小上一条补记里那条 shell + `apply_patch` 写
+（`commandActions[].type === "unknown"`、无 `path`）的不可归因性——那条今天仍然
+不可归因、仍然只拿默认 `accept`。ADR-0023「对某个命令的负面观测不能泛化」对正反
+两个方向同样成立。完整读数、实现与诚实边界见
+[`docs/handoff/2026-09-27-codex-filechange-seal.md`](../handoff/2026-09-27-codex-filechange-seal.md)。
