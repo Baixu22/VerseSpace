@@ -17,11 +17,18 @@
 - [ ] 涉及界面时，`bun run build:ui` 通过
 - [ ] 涉及构建产物时，`cd packages/workbench && bun run test:build` 通过
 
-## CI
+## 门禁读数
 
-**GitHub 上没有状态检查**（[ADR-0018](../docs/decisions/0018-single-ci-channel-jihulab.md)：CI 只剩 JihuLab）。请贴 JihuLab 流水线链接或 runner 日志读数，否则这个 PR 等于没跑过 CI。
+**本仓库不配置任何 CI**（[ADR-0021](../docs/decisions/0021-retire-all-ci-channels.md)：GitHub Actions 与极狐 JihuLab 通道都已退役），所以 PR 上不会出现任何状态检查，也没有流水线链接可贴。门禁靠本机手跑，**贴实际读数**（命令 + exit code / pass-fail）才算跑过：
 
-- JihuLab 流水线：
+```bash
+bun run lint && bun run typecheck
+bun run test:workbench && bun run test:workbench-ui && bun run test:context-rot
+bun packages/workbench/src/index.ts doctor
+bun run check:upload-surface --strict-references
+```
+
+- 读数（命令 + exit code）：
 
 ## 检查清单
 
