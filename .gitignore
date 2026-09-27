@@ -170,6 +170,7 @@ packages/workbench/.evidence-sites/
 #   user/       retired Helmor guide (bannered as a record)
 #   fable-brief/  linked from ADR-0010, ADR-0016 and docs/user/README.md
 #   perf/       phase1-trace-summary.json is deliberately whitelisted above
+#   assets/     README / documentation illustrations (outcome, ADR-0020)
 #   reicon-icons.md  referenced by AGENTS.md
 #   fit-ledger.md    referenced by the shipped packages/workbench/README.md
 #   phase4-human-usage-window-2026-09-22.md  the operating guide for the one
@@ -184,6 +185,7 @@ packages/workbench/.evidence-sites/
 !/docs/user/
 !/docs/fable-brief/
 !/docs/perf/
+!/docs/assets/
 !/docs/reicon-icons.md
 !/docs/fit-ledger.md
 !/docs/phase4-human-usage-window-2026-09-22.md

@@ -209,6 +209,11 @@
 			"why": "ADR 集，项目权威决定，追加式"
 		},
 		{
+			"globs": ["docs/assets/**"],
+			"class": "outcome",
+			"why": "README / 文档插图：结果性文档的一部分，换机克隆后随文档一起复核（不按日期漂移，不进 raw）"
+		},
+		{
 			"globs": ["docs/user/**"],
 			"class": "outcome",
 			"why": "退役 Helmor 指南，作为记录保留"
