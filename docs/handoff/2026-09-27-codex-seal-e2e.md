@@ -89,3 +89,40 @@ bun packages/workbench/scripts/verify/codex-write-seal.ts --case own-stale --jso
 剩下的一条——**写保护是否真的生效**——现在有了前半段证据（封印被真实回合调用、拿到真实路径），
 但**最后一步（stale 前提下真的挡住）仍未实测**。所以本 issue 保持 open，理由从
 「写侧没有样本」变成了**「缺一次同时满足两个前置的真实 run」**——这是一个更窄、也更可执行的缺口。
+
+---
+
+## 补记（2026-09-27 晚）：§1B 的过读已更正；`path: ""` 已查清并修掉
+
+**本节是追加记录，上面 §0–§4 一字未改。** 上面 §1B 与 §2 把「B `own-fresh` 的
+`src/target.ts`」读成了「原生 `fileChange` 审批经 PR #43 的关联抵达 `decideSeal`」。
+**那个读法不成立**，依据是**同一次 run 自己的原始 rollout**，不是重新推理：
+
+- 原始日志：`.agent-contexts/codex-seal-ro/sessions/2026/09/27/rollout-2026-09-27T14-48-06-01a0e19e-f71b-7340-add3-7450b6405a26.jsonl`（本机未跟踪 scratch）。
+- 该 run 的全部 item（逐条 `ConvertFrom-Json` 读出）：读回合 `UserMessage` / `Reasoning` /
+  `AgentMessage` / **1 × `CommandExecution`**（`Get-Content -LiteralPath src/target.ts`）；
+  写回合 `UserMessage` / `Reasoning` / `AgentMessage` / **2 × `CommandExecution`**
+  （`... -Command "echo '// written by codex' >> src/target.ts"`）。
+- **`FileChange` item 数为 0。** 没有 item，`fileChanges.pathsFor(itemId)` 只能是 `[]`，
+  `item/fileChange/requestApproval` 那条路（`kind === "write" && paths.length > 0`）**不可能成立**。
+  所以那次封印调用只能来自 `item/commandExecution/requestApproval`，而它的目标来自
+  **命令串里的 `>>` 重定向解析**——那是 PR #43 之前就有的代码，不是本轮修复的关联。
+
+**`path: ""` 的来源（本节查清）**：真实 `commandExecution` 审批 params 带 `cwd`
+（夹具 `packages/workbench/src/chat/fixtures/approvals/command-execution-0.158.json:13`），
+而 `approval-targets.ts` 的 `PATH_FIELDS` 当时把它当成候选目标。于是同一条审批给出两个
+「路径」：`cwd`（= codex 的工作目录 = 本实验的 projectRoot）与 `src/target.ts`。
+`session.ts` 对两者各调一次 `decideSeal`，而 `normalizeTarget(projectRoot, projectRoot)`
+正是 **`""`**——这条 `{path:"",decision:"pass"}` 由此产生，与 §1B 记录的两条逐一对应。
+
+**已修（先红后绿）**：`cwd` 从 `PATH_FIELDS` 移除（它是命令的运行目录，不是写目标），
+回归用例 `packages/workbench/src/chat/codex-app-server/approval-targets.test.ts`
+「the REAL 0.158 fixture: the command's cwd is not a write target」——加回 `cwd` 时实测
+`received: ["C:\\Users\\27933\\AppData\\Local\\Temp\\wb-codex-capture", "src/target.ts"]`
+（fail），移除后 10 pass / 0 fail。
+
+**对 #31 的修正**：剩余缺口比 §4 写的更宽一点。除了「一次同时满足『会发审批』与『能建立
+失效前提』的 run」，**itemId 关联这条修复本身也还没有真实回合证据**——它目前只有假
+app-server 端到端（`codex-write-capture.test.ts`）与夹具级用例。要让结论成立，需要一次
+**真实回合里真的发出 `fileChange` item 及其审批**的 run。这正是 §1B 被误读的那一格。
+证据、命令与边界见 [claim 卫生与本轮收尾记录](2026-09-27-claim-hygiene-round.md)。

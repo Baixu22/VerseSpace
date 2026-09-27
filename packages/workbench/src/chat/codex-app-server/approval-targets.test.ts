@@ -58,6 +58,34 @@ test("the REAL 0.158 fixture: the redirect target is found and it is a write", a
 	expect(target.paths).toContain("src/target.ts");
 });
 
+test("the REAL 0.158 fixture: the command's cwd is not a write target", async () => {
+	// 2026-09-27: the real params carry `cwd` next to `command`, and PATH_FIELDS
+	// used to collect it. That made the write approval look like it touched two
+	// paths, and `session.ts` sealed the project root — which
+	// `normalizeTarget(root, root)` records as `path: ""`. The route is
+	// reproducible: the read-only codex run's write turn left exactly
+	// `[{path:"",decision:"pass"}, {path:"src/target.ts",decision:"pass"}]`
+	// (raw rollout under .agent-contexts/codex-seal-ro/, see
+	// docs/handoff/2026-09-27-claim-hygiene-round.md).
+	const raw = await readFile(
+		new URL(
+			"../fixtures/approvals/command-execution-0.158.json",
+			import.meta.url,
+		),
+		"utf8",
+	);
+	const fixture = JSON.parse(raw) as {
+		method: string;
+		params: { cwd?: string };
+	};
+	expect(typeof fixture.params.cwd).toBe("string");
+	const target = approvalTargets(fixture.method, fixture.params);
+	// One path, and it is the file the command writes to — not the directory the
+	// command runs in.
+	expect(target.paths).toEqual(["src/target.ts"]);
+	expect(target.paths).not.toContain(fixture.params.cwd);
+});
+
 test("a fileChange approval is attributable ONLY through the correlated item paths", () => {
 	// The shape codex 0.158 really sends: no path anywhere in the params.
 	const params = {

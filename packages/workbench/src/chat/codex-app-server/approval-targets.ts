@@ -25,7 +25,18 @@ const APPROVAL_METHODS = new Set([
 	"item/fileRead/requestApproval",
 ]);
 
-/** Field names that carry a path, anywhere in the params object. */
+/**
+ * Field names that carry a **file** path, anywhere in the params object.
+ *
+ * `cwd` is deliberately absent (measured 2026-09-27). It is the directory the
+ * command runs *in*, not something being written; treating it as a target made
+ * `session.ts` seal the project root itself, because
+ * `normalizeTarget(projectRoot, projectRoot)` is `""` — every real
+ * `commandExecution` approval therefore left an extra `seal.decided` event about
+ * no file at all. The real 0.158 params do carry `cwd` (fixture:
+ * `../fixtures/approvals/command-execution-0.158.json`); the write target is
+ * still attributable from the command's redirect.
+ */
 const PATH_FIELDS = new Set([
 	"path",
 	"file",
@@ -36,7 +47,6 @@ const PATH_FIELDS = new Set([
 	"target_path",
 	"abspath",
 	"abs_path",
-	"cwd",
 ]);
 
 /** A write redirection or a write verb inside a shell command. */

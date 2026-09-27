@@ -4,7 +4,7 @@ VerseSpace / Workbench 是一个本地优先、写者中立的前提账本。感
 
 ## 环境
 
-- **Bun 1.3.14**，版本固定在 `package.json` 的 `packageManager` 与 `.gitlab-ci.yml` 的 `BUN_VERSION`。两个版本绑定的行为在升级时必须重测（`fetch` 的连接池跨端口复用、HTTP 层对非法百分号编码的拒绝），见 `packages/workbench/src/ui/server.ts`。
+- **Bun 1.3.14**，版本固定在 `package.json` 的 `packageManager`（全仓唯一一处声明——`.gitlab-ci.yml` 已随 [ADR-0021](docs/decisions/0021-retire-all-ci-channels.md) 删除，不要再往别处写第二份）。两个版本绑定的行为在升级时必须重测（`fetch` 的连接池跨端口复用、HTTP 层对非法百分号编码的拒绝），见 `packages/workbench/src/ui/server.ts`。
 - Node 仅用于少数脚本（`scripts/*.mjs`、`packages/context-rot` 的 hooks）。
 - **没有 Rust 车道**：`cargo` / `clippy` / `insta` 不属于本仓库。旧 Tauri 桌面实现已退役（[ADR-0014](docs/decisions/0014-legacy-retirement-gate.md) / [ADR-0015](docs/decisions/0015-legacy-retirement-execution.md)），**不要**重新引入 Tauri、Rust 或 sidecar 进程。
 
@@ -46,7 +46,7 @@ cd apps/workbench-ui && bunx vitest run src/App.test.tsx
   NO_PROXY="127.0.0.1,localhost,::1" bun test
   ```
 - **实时扫描拖住测试收尾。** 新建的 git 仓库目录可能被句柄占住，`rm` 在断言早已通过之后仍报 `EBUSY` 十几秒。孤立的一次收尾 `EBUSY` 属环境问题。
-- **重活不要并行。** 16 GB 主机上，全套面板测试与构建同时跑会超时。CI 侧对应 `resource_group: heavy`。
+- **重活不要并行。** 16 GB 主机上，全套面板测试与构建同时跑会超时。本仓库没有 CI（见下），也就没有排队机制——重活只能自己串行；当年流水线用的 `resource_group: heavy` 已随 [ADR-0021](docs/decisions/0021-retire-all-ci-channels.md) 退役。
 - **Git 的空父目录清理缺陷**会让含斜杠的分支名、`git rm` 目录、remote-tracking ref 出现异常行为。判断依据是**行为**而不是加载了哪个模块，用 `powershell.exe -NoProfile -File scripts/win/check-git-filesystem.ps1` 实测。
 
 ## CI

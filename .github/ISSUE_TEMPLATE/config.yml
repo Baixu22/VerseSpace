@@ -5,7 +5,7 @@ contact_links:
     about: 威胁模型、已知边界与当前可用的报告渠道（仓库私有，无 GitHub 私密报告通道）
   - name: 贡献指南
     url: https://github.com/Baixu22/VerseSpace/blob/main/CONTRIBUTING.md
-    about: 环境、命令、CI 通道（JihuLab）与本机注意事项
+    about: 环境、命令与本机注意事项（本仓库不配置 CI）
   - name: 架构决策记录
     url: https://github.com/Baixu22/VerseSpace/blob/main/docs/decisions/README.md
     about: 提架构变更前先读这里
