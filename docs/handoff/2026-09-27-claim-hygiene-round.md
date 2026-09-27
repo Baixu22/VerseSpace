@@ -215,7 +215,8 @@ python C:/Users/27933/.workbuddy/skills/task-forest/scripts/task_forest.py check
 
 - 合并方式：`main` 的 tip 是 PR 合并提交 `c875588`，不是本分支的祖先，`--ff-only`
   不成立，故用本地 merge commit（与本仓 PR 合并的形状一致）。合并提交 **`45f9aea`**；
-  **未 push**（`main` 领先 `origin/main` 4 个提交，推不推由维护者定）。
+  **未 push**——判据是「`main` 领先 `origin/main` 的提交数 **> 0**」，不是一个固定数字
+  （本补记之后还会有读数提交，数会变；要读数就现取：`git rev-list --count origin/main..main`）。
 - `node scripts/check-forest-landing.mjs` → **exit 0 · 默认分支 `main` · 无漂移**
   （备注仍是：1 条孤立提交 `TF-0255:ad53345`、187 条无法归因——两者都只报读数、不判漂移）。
 - 外部 CLI `check-landing` → **exit 0 · 落库漂移读数 0 项 · 工作区未提交改动 0 项**。
