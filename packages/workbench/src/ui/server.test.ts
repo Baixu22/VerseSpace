@@ -261,20 +261,22 @@ describe("ui chat routes", () => {
 	test("reload route is reachable and resend does not duplicate the user message", async () => {
 		const ws: TempWorkbench = await makeTempWorkbench();
 		// fake claude CLI: consumes the prompt from stdin, then emits two
-		// stream-json events (assistant text + result) and exits
+		// stream-json events per input line. Responding before input races
+		// session shutdown and can leave the supervisor writing into a closed pipe.
 		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-fake-agent-"));
 		const fakeAgent = join(fakeDir, "fake-agent.ts");
 		await writeFile(
 			fakeAgent,
 			[
+				'import { createInterface } from "node:readline";',
 				"const emit = (event: Record<string, unknown>) =>",
 				"  process.stdout.write(JSON.stringify(event) + '\\n');",
-				'emit({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] }, session_id: "fake-1" });',
-				'emit({ type: "result", subtype: "success", result: "ok" });',
-				'process.stdin.setEncoding("utf8");',
-				'process.stdin.on("data", () => {});',
-				'process.stdin.on("end", () => process.exit(0));',
-				"setInterval(() => {}, 1000);",
+				'const input = createInterface({ input: process.stdin });',
+				'input.on("line", () => {',
+				'  emit({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] }, session_id: "fake-1" });',
+				'  emit({ type: "result", subtype: "success", result: "ok" });',
+				"});",
+				'input.on("close", () => process.exit(0));',
 			].join("\n"),
 			"utf8",
 		);
