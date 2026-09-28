@@ -4,7 +4,7 @@
 // There is no CI any more: GitHub Actions was deleted under ADR-0018 and the
 // JihuLab lane was retired under ADR-0021. Nothing listens for this tag and no
 // pipeline runs; publishing is a separate, hand-run step:
-//   cd packages/workbench && bun run build:all
+//   bun run --cwd packages/workbench build:all
 //   node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 // Read the Workbench package version, independent of the private monorepo root
 // version. The old `v*` tag and publish scripts were retired under ADR-0015.
@@ -116,6 +116,6 @@ execSync(`git push origin ${tag}`, { stdio: "inherit" });
 console.log(`New tag: ${tag}（origin）`);
 console.log(
 	"\n下一步（本机执行，没有 CI 会接手）：\n" +
-		"  cd packages/workbench && bun run build:all\n" +
+		"  bun run --cwd packages/workbench build:all\n" +
 		`  node scripts/publish-workbench-release.mjs --tag ${tag}\n`,
 );

@@ -1,8 +1,8 @@
 # @baixu22/workbench
 
-**Workbench 是写者中立的前提账本**：记录 agent、人和 git 读写过哪些文件，在已记录的前提失效时给出证据。agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，无法回答的问题进入裁决队列。状态保存在仓库内 `.workbench/`（YAML + JSONL），不依赖数据库或指定编辑器。
+**Workbench 是写者中立的前提账本**：记录已捕获或显式登记的 agent、人和 git 文件足迹，在已记录的前提失效时给出证据。agent 走 R2 + stdin 通知，人走 R2′ + 恢复卡，无法回答的问题进入裁决队列。状态保存在仓库内 `.workbench/`（YAML + JSONL），不依赖数据库或指定编辑器。
 
-默认直接开始线性对话；分叉、恢复和证据查看按需出现。足迹覆盖有限，沉默不代表前提全部有效。工程边界见 [ADR-0010](../../docs/decisions/0010-premise-custody.md)，真实使用数据见 [fit 账本](../../docs/fit-ledger.md)。
+默认直接开始线性对话；分叉、恢复和证据查看按需出现。足迹覆盖有限，沉默不代表前提全部有效。工程边界见 [ADR-0010](../../docs/decisions/0010-premise-custody.md)，历史观测与证据不足的判决见 [fit 账本](../../docs/fit-ledger.md)。
 
 ## 安装
 
@@ -18,7 +18,7 @@ bun install -g @baixu22/workbench
 
 ## 发行
 
-**当前对外承诺的形态是方式一的单文件二进制**（`workbench-v*` tag → 四平台构建 → 挂到 GitHub Release）。npm 形态的目标没变，但**发布本身是维护者的明确暂缓决定，不是待办**；另有一个环境障碍：本机 `~/.npmrc` 里的 npm token 已被 registry 拒绝（`/-/whoami` → 401）。
+**当前对外承诺的形态是方式一的单文件二进制**（`workbench-v*` tag → 四平台构建 → 挂到 GitHub Release）。npm 发布仍暂缓。非 Windows 实机验证与真人自然使用研究已永久关闭，四平台交叉编译产物保留；不宣称跨平台执行或生产率已验证（[ADR-0024](../../docs/decisions/0024-retire-external-validation.md)）。
 
 ```bash
 # 看这一版会打什么 tag（默认 dry-run，不做任何写操作）
@@ -28,9 +28,11 @@ bun run release:tag:workbench
 bun run release:tag:workbench --push
 ```
 
-**本仓库不配置 CI**（[ADR-0021](../../docs/decisions/0021-retire-all-ci-channels.md)）：极狐的 verify 与 release 两个 stage 都已随 `.gitlab-ci.yml` 删除。发版分三步且顺序不能换：先推 tag（`bun run release:tag:workbench --push`，发布脚本带 `--verify-tag`），再构建，最后上传——`cd packages/workbench && bun run build:all`，再跑 `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`（0.4.0 就是这么发的）。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。向 `jihulab` 推同树快照 tag 的那段遗留逻辑已于 2026-09-26 删除（[ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)）；如果本机还配着 `jihulab` remote，仓库里已没有任何东西在用它。
+**本仓库不配置 CI**（[ADR-0021](../../docs/decisions/0021-retire-all-ci-channels.md)）：极狐的 verify 与 release 两个 stage 都已随 `.gitlab-ci.yml` 删除。发版分三步且顺序不能换：先推 tag（`bun run release:tag:workbench --push`，发布脚本带 `--verify-tag`），再构建，最后上传——在仓库根目录运行 `bun run --cwd packages/workbench build:all`，再跑 `node scripts/publish-workbench-release.mjs --tag workbench-v0.4.1`（0.4.0 就是这么发的）。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。向 `jihulab` 推同树快照 tag 的那段遗留逻辑已于 2026-09-26 删除（[ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)）；如果本机还配着 `jihulab` remote，仓库里已没有任何东西在用它。
 
-## 5 分钟上手
+## 编排操作示例
+
+以下为 Bash 模板。先准备有提交的 Git 仓库及已提交的 `contracts/api.md`，把 `<goal-id>` 替换为实际返回 ID；PowerShell 请将带反斜杠续行的命令合为一行。只体验聊天时，运行 `workbench init` 后运行 `workbench ui` 即可。
 
 ```bash
 # 0. 在项目根目录初始化 .workbench/
@@ -46,7 +48,7 @@ workbench decision add "所有写走原子 rename" --rationale "防止并发写�
 workbench interface register contracts/api.md --key core/api
 
 # 4. 创建工位并派发（创建真实 git worktree + 生成上下文）
-workbench ws create ws-a --task <goal-id> --branch ws/ws-a
+workbench ws create ws-a --task <goal-id> --branch ws-a
 workbench dispatch <goal-id>            # 或 dispatch <goal-id> ws-a
 
 # 5. Agent 在工位 worktree 内开发；完成阶段落 checkpoint
@@ -75,7 +77,7 @@ workbench watch
 | `sync` | 手动跑一轮 Runtime 循环 |
 | `watch` | 后台监听，文件变化自动跑循环 |
 | `status` / `map` / `log` / `queue` | 状态概览 / DAG 文本图 / 事件流 / 执行队列 |
-| `doctor` | 全量一致性体检（错误退出码 1，可作 CI 闸门） |
+| `doctor` | 全量一致性体检（错误退出码 1，可作本地门禁） |
 | `config set <key> <value>` | 修改 `workbench.yaml` |
 | `stats` | 分叉、恢复耗时、通知结局、地标认可率与样本不足情况 |
 | `sessions list/record` | 写者记录；登记 git 或人的文件改动 |
@@ -124,7 +126,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 ├── blackboard/               # 唯一数据层（所有模块经它读写）
 │   ├── goals/*.yaml          # 目标（状态机 + 依赖 + 接口锚定）
 │   ├── decisions/*.yaml      # 架构决策（append-only）
-│   ├── interfaces/registry.yaml
+│   ├── interfaces/registry/*.yaml # 每条接口独立存储；兼容旧 registry.yaml 迁移
 │   └── state/                # 工位、执行队列、已知冲突
 ├── checkpoints/              # staging / verified / failed 三区
 └── events/events.jsonl       # 追加式事件审计日志
@@ -161,7 +163,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 }
 ```
 
-已安装单文件二进制时把 `command` 换成 `workbench`、`args` 只留 `["mcp"]`。也可用命令注册到用户级：
+已安装单文件二进制时把 `command` 换成 `workbench`、`args` 只留 `["mcp"]`。也可用命令注册；作用域按本机 Claude Code 的 `mcp add --help` 选择：
 
 ```bash
 claude mcp add workbench -- bun /abs/path/to/packages/workbench/src/index.ts mcp

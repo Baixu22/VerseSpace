@@ -454,3 +454,7 @@ excluded from collection.
   not current state. Check the date in the filename before treating one as authoritative.
 - **`.agent-contexts/`** — local session scratch and process evidence, **untracked (2026-09-24)**;
   local-only, same class as the task forest.
+
+## Validation scope retirement (2026-09-28)
+
+Under [ADR-0024](docs/decisions/0024-retire-external-validation.md), non-Windows execution tests and natural-human usage studies are permanently retired. Do not schedule them or ask for WSL/reboots/volunteers to complete them. Keep all four cross-compiled release binaries and disclose that only Windows has execution evidence. Windows browser automation and optional Codex experiments remain in scope. Retirement is not a passing reading.

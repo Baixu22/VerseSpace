@@ -12,7 +12,7 @@
   <img alt="Tested platform" src="https://img.shields.io/badge/tested-windows--x64-2ea44f" />
 </p>
 
-**Workbench 是本地优先、写者中立的前提账本。** 它记录 agent、人和 Git 读写过哪些文件，在已记录的前提失效时给出证据，帮助你恢复对话、检查分支和决定下一步。
+**Workbench 是本地优先、写者中立的前提账本。** 它记录已捕获或显式登记的 agent、人和 Git 文件足迹，在已记录的前提失效时给出证据，帮助你恢复对话、检查分支和决定下一步。
 
 状态保存在项目内的 `.workbench/`（YAML + JSONL），不依赖数据库或指定编辑器。CLI 与本地面板读取同一份账本；agent 通过 MCP 与 stdin 获取通知，人通过恢复卡查看变化，需要人工判断的事项进入裁决队列。
 
@@ -20,7 +20,7 @@
 
 ## 目录
 
-- [现状与验证边界](#现状与验证边界2026-09-27)
+- [现状与验证边界](#现状与验证边界2026-09-28)
 - [它能做什么](#它能做什么)
 - [它不保证什么](#它不保证什么)
 - [核心概念](#核心概念)
@@ -39,16 +39,16 @@
 
 ---
 
-## 现状与验证边界（2026-09-27）
+## 现状与验证边界（2026-09-28）
 
-本仓库按**工程研究原型**收尾，不是已验收的产品。两类结论必须分开读：**工程门通过（本机可执行范围）** ／ **产品证据不足**（[ADR-0023](docs/decisions/0023-research-prototype-closeout.md)）。
+本仓库按**工程研究原型**收尾，不是已验收的产品。两类结论必须分开读：**工程门读数（本机可执行范围）** ／ **产品证据不足**（[ADR-0023](docs/decisions/0023-research-prototype-closeout.md)）。
 
 | 维度 | 现状 |
 | --- | --- |
-| 工程门 | 本机手跑；`lint` / `typecheck` / 三套测试 / `doctor` / 上传面门禁的读数见[本轮交接记录](docs/handoff/2026-09-27-claim-hygiene-round.md) |
+| 工程门 | 本机手跑；本轮通过、失败与未执行项见[收尾记录](docs/handoff/2026-09-28-readme-release-closeout.md)；旧读数不自动覆盖当前改动 |
 | 可复跑证据 | [`evidence/claims.json`](evidence/claims.json) 登记 **16 条**声明，读数在 `evidence/readings/`；`bun run check:claims` 校验「仪器没变、被测代码没变」，过期即报 stale |
-| 产品证据 | **不足**：真人自然使用窗口（issue #32）、非 Windows 平台执行（本机不可达）、Codex 写保护闭环（issue #31）都还没有读数 |
-| 发行 | 最新 Release 是 [`workbench-v0.4.0`](https://github.com/Baixu22/VerseSpace/releases)；树上版本 `0.4.1`（[CHANGELOG](packages/workbench/CHANGELOG.md)）**未打 tag、未发布** |
+| 产品证据 | **不足**：真人自然使用与非 Windows 实机验证已永久关闭（[ADR-0024](docs/decisions/0024-retire-external-validation.md)），不再作为待办；相关收益与跨平台执行仍未验证。Codex 写保护闭环仍未证实 |
+| 发行 | 本轮远端 Git 核实最新版本 tag 为 `workbench-v0.4.0`，无 `workbench-v0.4.1`；树上版本 `0.4.1` 是待发布候选。当前 GitHub 认证不可用，未独立核实 Release 资产，见[收尾记录](docs/handoff/2026-09-28-readme-release-closeout.md) |
 | 平台覆盖 | 只有 **windows-x64** 跑过完整测试套件；其余三个平台目前只有交叉编译产物 |
 | CI | **没有 CI**（[ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)）：GitHub Actions 与极狐 JihuLab 通道都已退役，PR 上不会出现任何状态检查，门禁一律本机手跑 |
 
@@ -62,13 +62,13 @@
   <img src="docs/assets/readme-premise-ledger.png" alt="前提账本：三种写者写入，三种界面读出" width="72%" />
 </p>
 
-- **前提账本**：记录 agent / 人 / git 对文件的读写足迹；前提失效时给出可追溯的证据与恢复信息（读集 diff、恢复笔记、分支动静）。
+- **前提账本**：记录可观测 agent 工具的读写足迹，以及通过 `sessions record` 或 watcher 捕获的人 / Git 文件变化；前提失效时给出可追溯的证据与恢复信息（读集 diff、恢复笔记、分支动静）。
 - **三种界面**：
   - **CLI** — 每个子命令都支持 `--json` / `--quiet`，机器可读是契约的一部分；
-  - **本地面板** — `workbench ui` 起深色 Web 面板（目标 DAG、工位、checkpoint、聊天、裁决队列）；
+  - **本地面板** — `workbench ui` 启动聊天面板（线程、分叉、恢复卡、证据与裁决）；目标 DAG、工位与 checkpoint 通过 CLI 管理；
   - **MCP 只读投影** — `premises` / `footprints` / `resume_cards` / `tribunal` / `notices` 五个工具。
 - **编排原语**：目标 DAG、工位（git worktree）、三区 checkpoint、派发与 watch 循环、裁决队列。
-- **封印（seal）拦截点**：写者落入已声明的只读区域、或撞上失效前提时拦截并留痕。Claude Code 走 PreToolUse hook；Codex 车道是**实验通道**。
+- **封印（seal）拦截点**：命中拦截点时检查只读区域与失效前提，结果受 seal 配置影响并留痕。Claude Code 需安装 PreToolUse hook；Codex 车道是**实验通道**。
 - **聊天面板**：线性对话、消息处分叉、双通道恢复卡、以分支为主线（adopt / revert）、工具足迹可点击查看原始消息与事件。
 
 ---
@@ -89,7 +89,7 @@
 | --- | --- |
 | **前提（premise）** | 某个写者曾读过某文件的这件事；文件后来被别人改了，这条前提就失效 |
 | **足迹（footprint）** | agent 实际读 / 写过哪些文件的账本记录 |
-| **写者（writer）** | agent、人、git——三者在账本上同等地位，谁写的都记 |
+| **写者（writer）** | agent、人、git——共享写者模型；只有被捕获或登记的操作才进入账本 |
 | **工位（workspot）** | 绑定 git worktree 的工作位；派发时生成 `.agent-context.md` |
 | **checkpoint** | 阶段验收点，三区：`staging` / `verified` / `failed`；可声明验证策略 |
 | **裁决（tribunal）** | 系统答不了、需要人类决策的事项队列 |
@@ -166,6 +166,10 @@ stateDiagram-v2
 
 从 [VerseSpace Releases](https://github.com/Baixu22/VerseSpace/releases) 下载对应平台的 `workbench-*` 单文件可执行程序，放入 PATH 并命名为 `workbench`（Windows 为 `workbench.exe`）。二进制内含运行时与面板，无需另装 Bun。
 
+下载时同时获取 `SHA256SUMS`，用 PowerShell `Get-FileHash .\workbench-windows-x64.exe -Algorithm SHA256` 比对对应条目。非 Windows 产物仅交叉编译，未做实机验证。
+
+二进制自带 Bun 运行时，但创建工位、分支与派发需要本机 Git 和已有提交的 Git 仓库。`claude` / `codex` 聊天还需要分别安装并完成相应 CLI 的认证；HTTP 通道需要配置对应服务的端点、模型和密钥。本地优先指账本存储在本机，模型请求仍会发往配置的服务。
+
 在要管理的项目目录中运行：
 
 ```bash
@@ -175,13 +179,15 @@ workbench ui
 
 `workbench ui` 启动本地面板，默认地址为 `http://127.0.0.1:7700`（`--port` 可换端口，`--no-open` 只起服务）。`workbench --json doctor` 检查账本一致性；只有 `severity: "error"` 的检查会让它非零退出。
 
-**5 分钟编排一条目标：**
+**编排示例（Bash 语法）：**
+
+先准备并提交真实存在的 `contracts/api.md`，再把下方 `<goal-id>` 替换为 `goal add` 返回的 ID。它是操作模板，不能整段原样粘贴；PowerShell 多行续行符为反引号，可把 checkpoint 命令合成一行执行。
 
 ```bash
 workbench goal add "实现 Blackboard 数据层" --acceptance "读写往返一致"
 workbench decision add "所有写走原子 rename" --rationale "防止并发写损坏"
 workbench interface register contracts/api.md --key core/api
-workbench ws create ws-a --task <goal-id> --branch ws/ws-a
+workbench ws create ws-a --task <goal-id> --branch ws-a
 workbench dispatch <goal-id>
 workbench checkpoint create --goal <goal-id> --workspot ws-a \
   --assertion "测试全绿" --strategy test
@@ -220,7 +226,7 @@ workbench watch   # 可选：后台监听
 | `mcp` | 启动只读 MCP 服务器（stdio） |
 | `ui` | 启动本地面板 |
 
-所有命令支持 `--json`（机器可读）与 `--quiet`。
+CLI 提供全局 `--json`（机器可读）与 `--quiet`；`ui` / `watch` / `mcp` 等长驻服务仍按各自的服务或协议运行。
 
 ---
 
@@ -236,7 +242,7 @@ workbench ui --no-open  # 只启动服务，适合自动验证与无界面环境
 workbench ui --port 8080 --ui-dir ./some-dist
 ```
 
-面板覆盖：目标 DAG、工位与派发、checkpoint 三区、接口漂移、决策与事件流、doctor 体检、聊天线程、裁决队列（composer 上方可直接 resolve / shelve）。
+当前面板以聊天为主：线程、分叉、恢复卡、足迹证据和裁决队列（composer 上方可直接 resolve / shelve）。目标 DAG、工位派发、checkpoint、接口、决策和 doctor 使用 CLI；后端存在相应路由不代表面板已提供管理页面。
 
 ### 聊天通道的观测与保护边界
 
@@ -295,7 +301,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 }
 ```
 
-源码形态可把 `command` 换成 `bun`、`args` 用 `["packages/workbench/src/index.ts", "mcp"]`。也可 `claude mcp add workbench -- workbench mcp` 注册到用户级。
+源码形态可把 `command` 换成 `bun`、`args` 用 `["packages/workbench/src/index.ts", "mcp"]`。也可在项目目录运行 `claude mcp add workbench -- workbench mcp`；注册作用域请按本机 Claude Code 的 `mcp add --help` 选择。
 
 **Cursor** — Settings → MCP → Add global MCP server，或使用项目 `.cursor/mcp.json`（形状同上）。
 
@@ -323,7 +329,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 ├── blackboard/               # 唯一数据层（所有模块经它读写）
 │   ├── goals/*.yaml          # 目标（状态机 + 依赖 + 接口锚定）
 │   ├── decisions/*.yaml      # 架构决策（append-only）
-│   ├── interfaces/registry.yaml
+│   ├── interfaces/registry/*.yaml # 每条接口单独存储，旧 registry.yaml 自动迁移
 │   └── state/                # 工位、执行队列、已知冲突
 ├── checkpoints/              # staging / verified / failed 三区
 └── events/events.jsonl       # 追加式事件审计日志
@@ -340,7 +346,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 | [packages/context-rot](packages/context-rot) | 独立的指引引用检查器，也是 Workbench doctor 的扫描器 |
 | [evidence](evidence) | 声明账本（`claims.json`，16 条）与可复跑读数；原始日志按 [ADR-0020](docs/decisions/0020-relay-handoff-upload-surface.md) 留本机 |
 | [docs/handoff](docs/handoff) | 每轮交接记录：改了什么、实测读数、刻意没做什么 |
-| [docs/decisions](docs/decisions) | ADR：一条决策一个文件、只增不改（0001–0023） |
+| [docs/decisions](docs/decisions) | ADR：一条决策一个文件、只增不改（0001–0024） |
 | [docs/assets](docs/assets) | README / 文档插图 |
 
 **`packages/workbench` 主要模块**（细节见 [AGENTS.md](AGENTS.md)）：
@@ -412,15 +418,15 @@ bun run test:build
 
 ```bash
 bun run release:tag:workbench --push
-cd packages/workbench && bun run build:all
-node scripts/publish-workbench-release.mjs --tag workbench-v<version>
+bun run --cwd packages/workbench build:all
+node scripts/publish-workbench-release.mjs --tag workbench-v0.4.1
 ```
 
 1. 确认 `packages/workbench` 的 version 与 [CHANGELOG](packages/workbench/CHANGELOG.md)（**没有 `.changeset/`**——版本与变更日志手写）。
 2. `bun run release:tag:workbench --push`（默认 dry-run；`--push` 是真实发布）。
-3. `cd packages/workbench && bun run build:all`，再 `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`——挂上四平台二进制 + `SHA256SUMS` + 许可/归属文件，并在说明里写明**只有 windows-x64 跑过测试套件**。
+3. 在仓库根目录运行 `bun run --cwd packages/workbench build:all`，再 `node scripts/publish-workbench-release.mjs --tag workbench-v0.4.1`——挂上四平台二进制 + `SHA256SUMS` + 许可/归属文件，并在说明里写明**只有 windows-x64 跑过测试套件**。
 
-发行说明里**必须保留平台覆盖声明**。是否切 `0.4.1` 由维护者决定（issue #33），本节只描述确定下来的动作。npm 形态**尚未发布**，不是待办清单上的「下一步」，而是维护者明确暂缓的决定（详见 [packages/workbench/README](packages/workbench/README.md)）。
+发行说明里**必须保留平台覆盖声明**。当前准备的候选版本为 `0.4.1`；只有最终提交、Windows 验证、tag 与资产校验和对应后才算发行完成。非 Windows 实机验证及真人研究已永久关闭，四平台交叉编译产物保留；关闭不代表通过。npm 形态**尚未发布**，不是待办清单上的「下一步」，而是维护者明确暂缓的决定（详见 [packages/workbench/README](packages/workbench/README.md)）。
 
 ---
 
@@ -440,7 +446,7 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 | [AGENTS.md](AGENTS.md) | 架构总览、模块表、代码组织规则、本机环境坑 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献流程、门禁清单、Windows 注意事项 |
 | [SECURITY.md](SECURITY.md) | 安全边界与报告渠道 |
-| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0023（先读这些再提架构改动） |
+| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0024（先读这些再提架构改动） |
 | [docs/handoff/](docs/handoff/README.md) | 每轮交接：改了什么、实测读数、刻意没做什么 |
 | [evidence/claims.json](evidence/claims.json) | 16 条可复跑声明与失效规则 |
 | [packages/workbench/CHANGELOG.md](packages/workbench/CHANGELOG.md) | 发行变更（0.1.0 → 0.4.1） |

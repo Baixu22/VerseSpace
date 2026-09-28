@@ -92,3 +92,7 @@ workbench stats --json | jq '{seal: .seal, resumeCards: .lifecycle.resumeCardCir
 - 达标后，把 `workbench stats --json` 的相关读数与操作时间记进任务森林 TF-0251 的证据，
   由真人确认后再把该节点从 ready-for-human 收 done。
 - 未达标不改判据阈值、不用脚本补数：判据的价值就在于它只认自然使用。
+
+## 2026-09-28 退役补记
+
+维护者已永久关闭真人自然使用研究（[ADR-0024](decisions/0024-retire-external-validation.md)）。本指南仅作历史，不再作为后续待办或恢复入口；上文的临时安排与旧 Codex 描述不代表当前状态。未验证指标保持未验证。
