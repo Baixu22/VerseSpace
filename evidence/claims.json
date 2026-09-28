@@ -325,6 +325,84 @@
 			},
 			"class": "L1",
 			"reproduce": "cd packages/workbench && bun run build && bun run test:build"
+		},
+		{
+			"id": "claim-forest-landing",
+			"statement": "任务森林落库门禁：默认分支无代码漂移（exit 0）",
+			"instrument": ["scripts/check-forest-landing.mjs"],
+			"subject_paths": ["**"],
+			"reading_shape": {
+				"exit": "number",
+				"problems": "number"
+			},
+			"class": "L1",
+			"reproduce": "node scripts/check-forest-landing.mjs --json",
+			"expected": {
+				"exit": 0,
+				"problems": 0
+			}
+		},
+		{
+			"id": "claim-codex-write-seal-gap",
+			"statement": "own-stale 对照：Codex 写侧在前提失效时仍落盘，封印 0 次介入，而同一 decideSeal 对照判 block（写侧不在封印保护内）",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-write-seal.ts",
+				"packages/workbench/scripts/verify/codex-seal-baseline.ts",
+				"packages/workbench/src/chat/codex-footprint.ts",
+				"packages/workbench/src/runtime/seal.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/seal.ts",
+				"packages/workbench/scripts/verify/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": {
+				"staleClaims": "number",
+				"writeLanded": "boolean",
+				"sealEventsAfterCodex": "number",
+				"controlDecision": "string"
+			},
+			"class": "L1",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --case own-stale --json",
+			"expected": {
+				"staleClaims": 1,
+				"writeLanded": true,
+				"sealEventsAfterCodex": 0,
+				"controlDecision": "block"
+			},
+			"docs": ["docs/handoff/2026-09-27-codex-write-seal-gap.md"]
+		},
+		{
+			"id": "claim-upload-surface-tests",
+			"statement": "上传面分类器与链接检查的自测全绿（0 fail）",
+			"instrument": [
+				"scripts/upload-surface/classify.mjs",
+				"scripts/upload-surface/classify.test.mjs",
+				"scripts/upload-surface/links.mjs",
+				"scripts/upload-surface/links.test.mjs",
+				"scripts/upload-surface/policy.json"
+			],
+			"subject_paths": [
+				"scripts/upload-surface/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": {
+				"pass": "number",
+				"fail": "number"
+			},
+			"class": "L1",
+			"reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
+			"expected": {
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 1
+			}
 		}
 	]
 }

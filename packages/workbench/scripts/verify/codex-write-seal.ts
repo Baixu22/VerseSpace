@@ -47,7 +47,12 @@ async function measure() {
 		const readEvents: RunEvent[] = [];
 		await chat.run(
 			thread.id,
-			"Use the shell to print src/target.ts, then report its first line.",
+			// Force `cat` specifically: the codex footprint channel only parses
+			// `cat <path>` (Get-Content / type stay outside the compatibility
+			// boundary — see codex-footprint.test.ts). Under danger-full-access
+			// the model prefers Get-Content/type, the read footprint vanishes and
+			// sealBaseline cannot measure. Measured 2026-09-27.
+			"Run exactly this shell command and report the output: cat src/target.ts",
 			(e) => {
 				readEvents.push(e);
 			},

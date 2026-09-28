@@ -65,7 +65,11 @@ function catPaths(command: string): string[] {
 			!candidate.startsWith("$") &&
 			!candidate.startsWith("`")
 		) {
-			paths.push(candidate.replace(/^"|"$/g, ""));
+			// Measured 2026-09-27: a real pwsh-launched `cat src/target.ts` arrives
+			// here as `src/target.ts"'` — the shell wrapper's own quotes trail the
+			// capture. A path claim with quote tails never matches the ledger's
+			// normalized target, so the read footprint silently disappears.
+			paths.push(candidate.replace(/^["']+|["']+$/g, ""));
 		}
 	}
 	return paths;
