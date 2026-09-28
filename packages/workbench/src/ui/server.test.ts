@@ -271,7 +271,7 @@ describe("ui chat routes", () => {
 				'import { createInterface } from "node:readline";',
 				"const emit = (event: Record<string, unknown>) =>",
 				"  process.stdout.write(JSON.stringify(event) + '\\n');",
-				'const input = createInterface({ input: process.stdin });',
+				"const input = createInterface({ input: process.stdin });",
 				'input.on("line", () => {',
 				'  emit({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] }, session_id: "fake-1" });',
 				'  emit({ type: "result", subtype: "success", result: "ok" });',
