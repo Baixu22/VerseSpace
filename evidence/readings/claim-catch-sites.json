@@ -1,13 +1,13 @@
 {
 	"claim_id": "claim-catch-sites",
 	"instrument_sha256": "scripts/audit/catch-sites.mjs:c0bb86ce04a7df4355278f2ec07b0820a638a394908fcd4718314f23d530aa20",
-	"subject_sha": "deb9ef3ba040bc211ce324cc6ee507ec1e6609f4",
+	"subject_sha": "5b1047dd0ad284fc7c850efd8066636f7c5895bf",
 	"environment": {
 		"os": "win32",
 		"bun": "1.3.14",
 		"shell": "pwsh"
 	},
-	"measured_at": "2026-09-27T11:24:04.659Z",
+	"measured_at": "2026-09-28T04:48:07.754Z",
 	"reading": {
 		"files": 61,
 		"sites": 143
