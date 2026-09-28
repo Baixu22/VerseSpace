@@ -77,3 +77,15 @@ issue #32 已按维护者永久关闭要求以 not planned 关闭；issue #33 �
 ## 同轮补记：发布前 reload 夹具竞态
 
 48d9230 上记录器重跑 Workbench 实得 1027 pass / 1 fail（reload 路由 EPIPE），记录器返回 2 拒绝写入；不是通过。检查发现 server.test.ts 的假 CLI 在接收任何输入之前便输出 assistant/result，与注释及真实 CLI 的请求响应语义不符。现改用标准库 readline 按输入行发出响应，关闭输入后退出，未修改生产 supervisor。单文件 14/14 通过；最终全套由记录器再次实跑，保留失败日志在本机。
+
+## 最终结果：0.4.1 已正式发布
+
+- Release：[workbench-v0.4.1](https://github.com/Baixu22/VerseSpace/releases/tag/workbench-v0.4.1)，GitHub 回读 draft=false / prerelease=false，8 个资产齐全。
+- source HEAD = tag commit = 28f72d618ce85a93bf19ee7c46b6cb30a4a47ea7。Windows 完整测试提交 = 0b87933fe03c（完整值见 claim-workbench-suite 读数）；其后到 tag 三个包的 diff 为空，仅补登记证据。
+- 最终 Workbench 1028 pass / 0 fail（147.83s），浏览器 14 pass / 0 fail / 0 skip（34.1s）；lint/typecheck/doctor/上传面/11 项 premise benchmark/四平台构建/两构建形态检查均 exit 0。check:claims 在发布前 exit 0：15 valid + 1 历史 observation。
+- 已先推 main、再推 tag、再从该 tag 所指干净源码重建并上传。GitHub 返回的全部 8 个资产 SHA256 与本地待上传文件一致；上文四二进制 SHA256 保持相同。
+- 发布后经 gh release download 下载 Windows exe 与 SHA256SUMS，下载二进制 SHA256 为 cab4fd36940dd2f214aa50ae378a992abaa476d5721d79c342f94c1cb0c99c31，与下载的校验和条目一致。
+- 使用下载路径（不是 workspace dist）执行 test:build --native：exit 0，native 的 initialized / doctor / stats / headlessUi / bundledUi 全 true；同次 JS 形态也全 true。这是下载资产在独立临时仓库中的初始化、doctor、UI/HTTP 冒烟。
+- 非 Windows 二进制只核对构建及 SHA256，不做实机执行；真人窗口永久关闭。Codex 真实读取实验 exit 2 仍属无法测量，不改写成通过。
+
+发布后的本记录与证据补记会单独提交到 main，不移动既有 tag，也不替换已验证资产。
