@@ -69,3 +69,7 @@ issue #32 已按维护者永久关闭要求以 not planned 关闭；issue #33 �
 ## 同轮补记：提交上的可复跑证据
 
 50085d3 上通过记录器 --run 重取 Workbench（1028 pass / 0 fail，147.41s）、typecheck、lint、doctor、上传面、11/11 premise benchmark 和四平台 build:all + Windows native/JS 两形态检查，仪器均 exit 0。UI 68 项、context-rot 69 项及浏览器 14 项为本轮另行实际执行，原登记读数的被测路径未变化。最后的声明和落库状态以 check:claims / check-forest-landing 输出为准。
+
+## 同轮补记：正式发行授权
+
+维护者已明确确认「现在发布 0.4.1」。CHANGELOG 版本日期更新为 2026-09-28，移除尚未公开发行标签。按最终提交重取失效读数后，推 main/tag、重新构建并上传；实际发布 URL、tag 提交和 SHA256 由后续发布记录确认，本段只记录授权。
