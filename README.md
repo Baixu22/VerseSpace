@@ -46,7 +46,7 @@
 | 维度 | 现状 |
 | --- | --- |
 | 工程门 | 本机手跑；`lint` / `typecheck` / 三套测试 / `doctor` / 上传面门禁的读数见[本轮交接记录](docs/handoff/2026-09-27-claim-hygiene-round.md) |
-| 可复跑证据 | [`evidence/claims.json`](evidence/claims.json) 登记 **13 条**声明，读数在 `evidence/readings/`；`bun run check:claims` 校验「仪器没变、被测代码没变」，过期即报 stale |
+| 可复跑证据 | [`evidence/claims.json`](evidence/claims.json) 登记 **16 条**声明，读数在 `evidence/readings/`；`bun run check:claims` 校验「仪器没变、被测代码没变」，过期即报 stale |
 | 产品证据 | **不足**：真人自然使用窗口（issue #32）、非 Windows 平台执行（本机不可达）、Codex 写保护闭环（issue #31）都还没有读数 |
 | 发行 | 最新 Release 是 [`workbench-v0.4.0`](https://github.com/Baixu22/VerseSpace/releases)；树上版本 `0.4.1`（[CHANGELOG](packages/workbench/CHANGELOG.md)）**未打 tag、未发布** |
 | 平台覆盖 | 只有 **windows-x64** 跑过完整测试套件；其余三个平台目前只有交叉编译产物 |
@@ -338,7 +338,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 | [packages/workbench](packages/workbench) | CLI、前提账本、调度、聊天车道与本地 HTTP 服务（`@baixu22/workbench`，v0.4.1） |
 | [apps/workbench-ui](apps/workbench-ui) | React 19 + Vite + Tailwind v4 本地面板，构建后嵌入 Workbench |
 | [packages/context-rot](packages/context-rot) | 独立的指引引用检查器，也是 Workbench doctor 的扫描器 |
-| [evidence](evidence) | 声明账本（`claims.json`，13 条）与可复跑读数；原始日志按 [ADR-0020](docs/decisions/0020-relay-handoff-upload-surface.md) 留本机 |
+| [evidence](evidence) | 声明账本（`claims.json`，16 条）与可复跑读数；原始日志按 [ADR-0020](docs/decisions/0020-relay-handoff-upload-surface.md) 留本机 |
 | [docs/handoff](docs/handoff) | 每轮交接记录：改了什么、实测读数、刻意没做什么 |
 | [docs/decisions](docs/decisions) | ADR：一条决策一个文件、只增不改（0001–0023） |
 | [docs/assets](docs/assets) | README / 文档插图 |
@@ -442,7 +442,7 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 | [SECURITY.md](SECURITY.md) | 安全边界与报告渠道 |
 | [docs/decisions/](docs/decisions/README.md) | ADR 0001–0023（先读这些再提架构改动） |
 | [docs/handoff/](docs/handoff/README.md) | 每轮交接：改了什么、实测读数、刻意没做什么 |
-| [evidence/claims.json](evidence/claims.json) | 13 条可复跑声明与失效规则 |
+| [evidence/claims.json](evidence/claims.json) | 16 条可复跑声明与失效规则 |
 | [packages/workbench/CHANGELOG.md](packages/workbench/CHANGELOG.md) | 发行变更（0.1.0 → 0.4.1） |
 | [docs/user/](docs/user/README.md) | **旧 Helmor 用户指南，已退役，仅作记录** |
 
