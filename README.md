@@ -48,7 +48,7 @@
 | 工程门 | 本机手跑；本轮通过、失败与未执行项见[收尾记录](docs/handoff/2026-09-28-readme-release-closeout.md)；旧读数不自动覆盖当前改动 |
 | 可复跑证据 | [`evidence/claims.json`](evidence/claims.json) 登记 **16 条**声明，读数在 `evidence/readings/`；`bun run check:claims` 校验「仪器没变、被测代码没变」，过期即报 stale |
 | 产品证据 | **不足**：真人自然使用与非 Windows 实机验证已永久关闭（[ADR-0024](docs/decisions/0024-retire-external-validation.md)），不再作为待办；相关收益与跨平台执行仍未验证。Codex 写保护闭环仍未证实 |
-| 发行 | 本轮远端 Git 核实最新版本 tag 为 `workbench-v0.4.0`，无 `workbench-v0.4.1`；树上版本 `0.4.1` 是待发布候选。当前 GitHub 认证不可用，未独立核实 Release 资产，见[收尾记录](docs/handoff/2026-09-28-readme-release-closeout.md) |
+| 发行 | 本轮 GitHub 与远端 Git 核实最新 Release 为 `workbench-v0.4.0`，无 `workbench-v0.4.1`；树上版本 `0.4.1` 是待发布候选，本地构建与验证见[收尾记录](docs/handoff/2026-09-28-readme-release-closeout.md) |
 | 平台覆盖 | 只有 **windows-x64** 跑过完整测试套件；其余三个平台目前只有交叉编译产物 |
 | CI | **没有 CI**（[ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)）：GitHub Actions 与极狐 JihuLab 通道都已退役，PR 上不会出现任何状态检查，门禁一律本机手跑 |
 

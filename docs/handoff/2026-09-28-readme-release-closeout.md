@@ -59,3 +59,13 @@ cab4fd36940dd2f214aa50ae378a992abaa476d5721d79c342f94c1cb0c99c31  workbench-wind
 完成发布仍需要 GitHub 身份可用、最终干净提交及相应有效读数。发布脚本从仓库根运行，按先 tag 到 origin、再 build:all、再 publish 的现行顺序执行；本轮构建是发布前准备。正式发布必须重建对应 tag 的资产并确认校验和，不能拿旧资产冒充新提交。不得把尚未发布记为 TF-0266 done。
 
 声明账本的旧读数会因本轮文件变化报 stale；必须在最终提交上通过记录器真实执行后刷新。未刷新前 check:claims 不算通过。
+
+## 同轮补记：认证恢复与远端范围关闭
+
+初始认证失败是执行入口遗漏 APPDATA/LOCALAPPDATA 导致 gh 无法找到已有配置。补齐标准 Windows 环境后 gh auth status exit 0，原账号登录有效；未修改凭据。gh release list 实测最新 Release 为 workbench-v0.4.0（2026-09-22），与 tag 核查相符。上文「身份不可用」这一阻塞已解除。
+
+issue #32 已按维护者永久关闭要求以 not planned 关闭；issue #33 追加范围决定，移除非 Windows 冒烟待办，保留发行核对。真实 Codex 实验使用的独立 WB_VERIFY_LLM_KEY 仍缺失，不能从 GitHub 登录推导模型服务可用。
+
+## 同轮补记：提交上的可复跑证据
+
+50085d3 上通过记录器 --run 重取 Workbench（1028 pass / 0 fail，147.41s）、typecheck、lint、doctor、上传面、11/11 premise benchmark 和四平台 build:all + Windows native/JS 两形态检查，仪器均 exit 0。UI 68 项、context-rot 69 项及浏览器 14 项为本轮另行实际执行，原登记读数的被测路径未变化。最后的声明和落库状态以 check:claims / check-forest-landing 输出为准。
