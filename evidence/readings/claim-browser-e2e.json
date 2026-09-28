@@ -1,20 +1,19 @@
 {
 	"claim_id": "claim-browser-e2e",
 	"instrument_sha256": "apps/workbench-ui/playwright.config.ts:01636f750de315852c3c675b693b0da1cc4bea5fc70d9da470a551bb7ee48148\nscripts/win/e2e-browser.ps1:8ab4dcde2cb118a50db6299c17257c36f77a813033e010e6a0003636d83e91f0",
-	"subject_sha": "5b1047dd0ad284fc7c850efd8066636f7c5895bf",
+	"subject_sha": "0b87933fe03cdb8206c81e0d09180f0e88c27369",
 	"environment": {
-		"os": "win32",
-		"bun": "1.3.14",
-		"shell": "pwsh"
+		"os": "windows-x64",
+		"bun": "1.3.14"
 	},
-	"measured_at": "2026-09-28T04:51:23.565Z",
+	"measured_at": "2026-09-28T11:13:59.288Z",
 	"reading": {
 		"passed": 14,
 		"failed": 0,
 		"skipped": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:03e4c2d2406dad2b38ad9a79ba2869f139f220ef736f3859e4bc12eae410cad5",
-	"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1",
+	"raw_digest": "sha256:750b11e3b743f0cb6762273324d8bdc30ab79ebd8d0bb863c6b42ef53081a804",
+	"reproduce": "powershell.exe -NoProfile -File scripts/win/e2e-browser.ps1 -ApiPort 17800 -UiPort 15188",
 	"class": "curated-evidence"
 }
