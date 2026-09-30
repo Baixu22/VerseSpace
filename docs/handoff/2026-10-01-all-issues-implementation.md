@@ -79,3 +79,28 @@ UI 18 files / 68 passed；context-rot 69 pass / 0 fail；doctor 118 条断言、
 根工作区原有 README、两张图像、上传政策和调研文档独立保留。验收副本为干净源码候选，任务森林不复制；因此森林落地门禁在该副本按约定 exit 2（不能测量），不伪装通过。两类非绿项（原生 Codex 实验、个人森林落地）与代码测试/构建结果分别报告。
 
 干净副本还发现两个交付问题：森林门禁把 detached HEAD 的 `(no branch)` 当作分支 ref，已用 Git `for-each-ref` 列出真实 refs 并用真实 detached 临时仓库回归；无森林时仍按约定 exit 2。上传链接测试发现 17 条本机存在、克隆后缺失的引用。修复所需的既有短板调查和探针附件补入候选；8 份仅本机保留的历史文档改引用其最后已发布版本 `799f89c` 的永久链接（逐个 git cat-file 验证存在，提交可从 origin/main 到达）。只修复 ADR 的引用 URL，保留原决定和叙述，没有把旧文档重新上传或改写历史结论。
+
+## 验收收口
+
+最终代码候选 `657675f`（包含实现、生成的 UI 清单、14 场景声明、历史引用修复与独立验收发现的问题）。源码套件在同一源码/依赖输入上经注册器实际运行；后续只改根门禁配置和文档，未把旧结果手工换签。每条当前 reading 的 subject_sha、instrument_sha256、执行命令、真实 exit 与 raw_digest 都保留在 evidence/readings 中。
+
+| 本轮真实门禁 | 结果 |
+| --- | --- |
+| workbench | exit 0，1093 pass / 0 fail，176 files，34 snapshots，4829 断言；干净候选最终轮 160.95 秒 |
+| UI | exit 0，18 files / 68 passed |
+| context-rot | exit 0，69 pass / 0 fail |
+| Chromium | exit 0，14 passed / 0 failed / 0 skipped；隔离后端和 Vite |
+| lint / typecheck / doctor | exit 0；lint 实际处理 685 文件，doctor 118 条有效架构断言 |
+| upload-surface tests | exit 0，30 pass / 0 fail；干净副本不依赖本机未上传文档 |
+| strict upload-surface | exit 0，违规 0、断链 0 |
+| claims evaluator tests | exit 0，15 pass / 0 fail |
+| detached landing regression | exit 0，1 pass / 0 fail |
+| premise benchmark | exit 0，14/14 合成契约；同尺寸盲区明确保留 |
+| build + test:build | exit 0；Windows 原生与 Bun JS 各自的 init、doctor、stats、headless UI、内嵌 UI 检查均通过 |
+| check:claims | **exit 1：13 valid、1 历史 observation、2 stale**（forest-landing / codex-write-seal-gap） |
+
+干净工作树发现 Biome 的 `!!**/worktrees` 会命中检出路径的父目录，导致 lint 实际处理 0 文件。已将排除收窄到仓库根 worktrees，并按既有上传政策排除 evidence/raw；实际 lint 处理文件后通过，不使用“零文件=通过”。Vite 的既有大 chunk 提示与浏览器 NO_COLOR/FORCE_COLOR 提示保留，不掩盖为测试失败或修改门槛。
+
+本地 Windows 原生二进制 SHA256：`33a5f40988ac4f185671e12958703e33b80d1720e81f8aacaffce208c3867fe1`；JS 形态：`dc8552a2c3becfa2fc262884aaf93a899c119061c17c2f2fe40d041c7419b15b`。这是本次本地构建，不是新版本 Release；未改版本或 tag，没有上传二进制，也未运行非 Windows 产物。
+
+11 个叶子项 #45–#48、#50–#56 的最小实现/测量范围已具备本地结果；#31 仍不满足真实原生保护验收。#57 的源码与证据已形成可审阅候选，但主线落地和发行状态应按实际 PR/Release 继续判断；#49 总表因此不能宣称全部完成。根工作区未提交的用户 README、资产、上传政策和其余调研材料保留。
