@@ -3,7 +3,7 @@
 - 状态：已接受（2026-09-15）；2026-09-16 按生产入口订正。
 - 收敛：ADR-0005 的「后续逐个评估」与「写操作端点未来需逐个设闸」。
 - 森林节点：TF-0174，归属 TF-0138；已通过任务森林 CLI 完成正式复核，状态 done。
-- 相关：ADR-0005、ADR-0010、[收尾扫描](../closeout-scan-2026-09-15.md)、[本次复核](../issue-9-closeout.md)。
+- 相关：ADR-0005、ADR-0010、[收尾扫描](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/closeout-scan-2026-09-15.md)、[本次复核](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/issue-9-closeout.md)。
 
 ## 决策
 
@@ -82,4 +82,4 @@
 
 新增写端点时，登记 HTTP 方法、领域入口、副作用、并发约束和 CLI 关系，再核对上述四条判据。不要复用已经证伪的「存在接口即已完成」「有事件即可撤销」描述。
 
-`server.test.ts`、聊天路由测试和 `apps/workbench-ui/src/chat/delete-confirm.test.ts` 验证相关行为。真实批处理验证另见 [issue #11](../issue-11-closeout.md)，不能由路由准入记录替代。
+`server.test.ts`、聊天路由测试和 `apps/workbench-ui/src/chat/delete-confirm.test.ts` 验证相关行为。真实批处理验证另见 [issue #11](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/issue-11-closeout.md)，不能由路由准入记录替代。

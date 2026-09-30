@@ -6,7 +6,7 @@
 - 取代：ADR-0011 中「共享主题继续单一来源」一句；ADR-0011 的其余结论（保留存量、按实际引用抽取、删除前重新核查引用）继续有效
 - 补充：ADR-0003 的冻结约束（本 ADR 未解除冻结，只把退役前置条件写成可核查的四项）
 - 编号说明：不占用 ADR-0012。**ADR-0012 已被 `TF-0174`（GUI 写操作端点准入）使用**，本 ADR 顺延为 0013；退役闸门另立 ADR-0014（尚未撰写）
-- 相关：[吸收分析报告](../helmor-absorption-deep-exploration-2026-09-17.md)、ADR-0010、ADR-0011
+- 相关：[吸收分析报告](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/helmor-absorption-deep-exploration-2026-09-17.md)、ADR-0010、ADR-0011
 
 ## 背景与用词
 

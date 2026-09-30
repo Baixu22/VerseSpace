@@ -77,3 +77,5 @@ UI 18 files / 68 passed；context-rot 69 pass / 0 fail；doctor 118 条断言、
 第二组轨迹确认模型实际用 shell 调用本机 apply_patch 包装器，而不是原生 fileChange。fresh 在包装器/PowerShell 引号失败后升级 shell 执行才写成；stale 因 CLI 只读沙箱拒写而停止。**不能把 CLI 沙箱拒写归因于 Workbench 封印**，也不能把 fresh 落盘写成原生写足迹通过。已停止重复调用，不无上限抽样。#31 仍缺真实、可归因的 native 审批对照；其历史 L1 “stale 仍落盘”声明也没有在这两组中复现，旧读数保持 stale，不篡改成绿灯。
 
 根工作区原有 README、两张图像、上传政策和调研文档独立保留。验收副本为干净源码候选，任务森林不复制；因此森林落地门禁在该副本按约定 exit 2（不能测量），不伪装通过。两类非绿项（原生 Codex 实验、个人森林落地）与代码测试/构建结果分别报告。
+
+干净副本还发现两个交付问题：森林门禁把 detached HEAD 的 `(no branch)` 当作分支 ref，已用 Git `for-each-ref` 列出真实 refs 并用真实 detached 临时仓库回归；无森林时仍按约定 exit 2。上传链接测试发现 17 条本机存在、克隆后缺失的引用。修复所需的既有短板调查和探针附件补入候选；8 份仅本机保留的历史文档改引用其最后已发布版本 `799f89c` 的永久链接（逐个 git cat-file 验证存在，提交可从 origin/main 到达）。只修复 ADR 的引用 URL，保留原决定和叙述，没有把旧文档重新上传或改写历史结论。

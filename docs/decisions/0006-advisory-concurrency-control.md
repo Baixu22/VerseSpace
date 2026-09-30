@@ -2,7 +2,7 @@
 
 - 状态：由 [ADR-0010](./0010-premise-custody.md) 收敛；下文保留历史提案
 - 日期：2026-08-29，**2026-08-30 依第二轮调研重写**
-- 相关：[`positioning-v5.md`](../positioning-v5.md) §6 · ADR-0007（单调优先）
+- 相关：[`positioning-v5.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/positioning-v5.md) §6 · ADR-0007（单调优先）
 
 现行决策：建议式通知与显式封印点保留，通道采用持久队列 + stdin。
 下文的跨会话 socket、通用 saga 与全局可串行化承诺不再是实施要求，具体边界以 ADR-0010 为准。

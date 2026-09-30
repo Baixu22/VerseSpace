@@ -2,7 +2,7 @@
 
 - 状态：由 [ADR-0010](./0010-premise-custody.md) 收敛；下文保留历史提案
 - 日期：2026-08-30
-- 相关：[`positioning-v5.md`](../positioning-v5.md) §5 · ADR-0006（建议式并发控制）
+- 相关：[`positioning-v5.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/positioning-v5.md) §5 · ADR-0006（建议式并发控制）
 
 现行决策：保留单调优先作为设计判据；操作表不是自动判定器，不建操作注册表或通用 saga。
 已有 code / context 快照回退与封印点的范围以 ADR-0010 为准。
