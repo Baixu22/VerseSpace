@@ -188,7 +188,7 @@ test("merge-guard 预测：与本线程写集重叠才成行", async () => {
 	}
 });
 
-test("R3：有 verified checkpoint 必并列失效前提数（k=0 也并列），且不出现「未经 Verifier」", async () => {
+test("R3：旧检查记录没有完整绑定时显示历史通过与当前未知", async () => {
 	const ws = await makeTempWorkbench();
 	try {
 		await ws.bb.checkpoints.save(
@@ -215,8 +215,9 @@ test("R3：有 verified checkpoint 必并列失效前提数（k=0 也并列）�
 		});
 		const verifier = summary.lines.find((line) => line.kind === "verifier");
 		expect(verifier).toBeDefined();
-		expect(verifier!.text).toContain("Verifier 已验证（checkpoint cp-1）");
-		expect(verifier!.text).toContain("分支自身 0 个前提已失效");
+		expect(verifier!.text).toContain("checkpoint cp-1");
+		expect(verifier!.text).toContain("历史检查通过，当前有效性未知");
+		expect(verifier!.text).toContain("当前读取前提覆盖未知");
 		expect(verifier!.text).not.toContain("未经 Verifier");
 		expect(verifier!.refs).toContain("cp-1");
 	} finally {
@@ -251,7 +252,7 @@ test("R3：checkpoint 存在但无验证结论 → 引用 id 但不用「未经 
 		const verifier = summary.lines.find((line) => line.kind === "verifier");
 		expect(verifier).toBeDefined();
 		expect(verifier!.text).toContain("checkpoint cp-draft");
-		expect(verifier!.text).toContain("分支自身 1 个前提已失效");
+		expect(verifier!.text).toContain("历史检测记录 1 条");
 		expect(verifier!.text).not.toContain("未经 Verifier");
 		// 失效前提的溯源进 verifier 行
 		expect(verifier!.refs).toContain("e-stale");
@@ -286,7 +287,7 @@ test("R3：无 checkpoint 才允许「未经 Verifier」，且失效前提单独
 		expect(verifier!.refs).toContain("fp-1");
 		const premises = summary.lines.find((line) => line.kind === "premises");
 		expect(premises).toBeDefined();
-		expect(premises!.text).toBe("分支自身 1 个前提已失效");
+		expect(premises!.text).toBe("当前读取前提覆盖未知；历史检测记录 1 条");
 		expect(premises!.refs).toEqual(["e-stale"]);
 	} finally {
 		await ws.cleanup();

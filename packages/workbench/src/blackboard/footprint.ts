@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
 	mkdir,
 	readdir,
@@ -103,7 +104,7 @@ async function spoolRead(
 	const content = await readFile(absPath, "utf8");
 	await mkdir(spoolDir, { recursive: true });
 	const safeName = normalizedPath.replace(/[^A-Za-z0-9._-]/g, "_").slice(-80);
-	const name = `${Date.now().toString(36)}-${safeName}`;
+	const name = `${Date.now().toString(36)}-${randomUUID()}-${safeName}`;
 	await writeFile(join(spoolDir, name), content, "utf8");
 	// keep only the newest SPOOL_KEEP spool files
 	const names = (await readdir(spoolDir)).sort();

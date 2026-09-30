@@ -1,3 +1,4 @@
+import { reconcileArtifacts } from "../artifacts/status";
 import { evaluate } from "../automaton/evaluator";
 import type { Blackboard } from "../blackboard";
 import { parseDurationSeconds } from "../duration";
@@ -159,6 +160,7 @@ async function runOnceLocked(bb: Blackboard): Promise<RunOnceResult> {
 	// Deferrals that lapsed while the runtime was not running reopen here,
 	// under the single-writer run lock — a shelve is never a dismissal.
 	await bb.tribunal.expireShelved();
+	await reconcileArtifacts(bb);
 
 	return {
 		transitions,

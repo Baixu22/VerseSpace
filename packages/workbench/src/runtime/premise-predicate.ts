@@ -3,12 +3,7 @@ import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { hashPathClaim } from "../blackboard/footprint";
 import type { FootprintUsed, ReadSpan } from "../blackboard/sessions";
-import {
-	findSpool,
-	oldEndOf,
-	parseHunks,
-	resolveSpoolPath,
-} from "./premise-diff";
+import { observedSpoolPath, oldEndOf, parseHunks } from "./premise-diff";
 import { surfaceHash } from "./surface";
 
 export const SURFACE_EXTENSIONS = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
@@ -21,12 +16,8 @@ export async function surfaceUnchanged(
 	if (!SURFACE_EXTENSIONS.test(claim.path)) {
 		return false;
 	}
-	const spoolName = claim.spool ?? (await findSpool(bb, writerId, claim.path));
-	if (!spoolName) {
-		return false; // no read-time snapshot: nothing to compare against
-	}
 	const { readFile } = await import("node:fs/promises");
-	const spoolPath = await resolveSpoolPath(bb, writerId, spoolName);
+	const spoolPath = await observedSpoolPath(bb, writerId, claim);
 	if (!spoolPath) {
 		return false;
 	}

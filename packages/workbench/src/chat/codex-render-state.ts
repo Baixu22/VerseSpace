@@ -50,7 +50,11 @@ export function foldedCodexParts(
 	return collapseParts(parts, { streaming });
 }
 
-const COMMAND_ITEM_TYPES = new Set(["commandExecution", "collabAgentToolCall"]);
+const COMMAND_ITEM_TYPES = new Set([
+	"commandExecution",
+	"collabAgentToolCall",
+	"fileChange",
+]);
 
 /**
  * Pure rendering boundary for one codex line: mutates only its supplied state,
@@ -105,9 +109,14 @@ export function reduceCodexRenderEvent(
 		}
 		if (type === "item/completed") {
 			const isError =
-				stringField(item, "status") === "failed" ||
+				["failed", "declined"].includes(stringField(item, "status")) ||
 				(typeof item.exitCode === "number" && item.exitCode !== 0);
-			patchCommandResult(state, itemId, item.aggregatedOutput ?? null, isError);
+			patchCommandResult(
+				state,
+				itemId,
+				item.aggregatedOutput ?? item.changes ?? null,
+				isError,
+			);
 			result.toolResultItems.push({ itemId, item });
 		}
 	}

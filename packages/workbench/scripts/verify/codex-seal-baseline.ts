@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import type { Blackboard } from "../../src/blackboard";
-import { pendingPremiseNotices } from "../../src/runtime/delivery";
+import { claimVersion } from "../../src/blackboard/claim-version";
+import { currentPremiseNotices } from "../../src/runtime/premises";
 import { normalizeTarget } from "../../src/runtime/seal";
 
 export function probeCase(args: string[]): "own-stale" | "own-fresh" {
@@ -19,14 +20,13 @@ export async function sealBaseline(
 	stale: boolean,
 ) {
 	const view = await bb.sessions.readSetView(writerId);
-	const reads = [...view.reads.values()].filter(
-		(r) => normalizeTarget(bb.projectRoot, r.path) === target,
-	);
-	if (reads.length === 0)
-		throw new Error("真实读回合没有目标文件足迹，无法测量封印因果");
-	const claims = (await pendingPremiseNotices(bb))
-		.filter((n) => n.writerId === writerId)
-		.flatMap((n) => n.claims)
+	const reads = [...view.readFragments.values()]
+		.flat()
+		.filter((r) => normalizeTarget(bb.projectRoot, r.path) === target);
+	if (!reads.some((read) => claimVersion(read) != null))
+		throw new Error("真实读回合没有可比较的目标文件足迹，无法测量封印因果");
+	const claims = (await currentPremiseNotices(bb, writerId))
+		.flatMap((n) => n.stale)
 		.filter((c) => normalizeTarget(bb.projectRoot, c.path) === target);
 	if (stale !== claims.length > 0)
 		throw new Error("前提状态不符合案例，不能把无前提放行当作封印结果");

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,6 +11,27 @@ export interface TempWorkbench {
 	workbenchRoot: string;
 	bb: Blackboard;
 	cleanup(): Promise<void>;
+}
+
+/** A real HEAD for tests whose verification/approval must bind to code. */
+export function initGitFixture(cwd: string): void {
+	execFileSync("git", ["init", "-q", "-b", "main"], { cwd, stdio: "pipe" });
+	execFileSync(
+		"git",
+		[
+			"-c",
+			"core.hooksPath=",
+			"-c",
+			"user.name=test",
+			"-c",
+			"user.email=test@example.invalid",
+			"commit",
+			"--allow-empty",
+			"-qm",
+			"baseline",
+		],
+		{ cwd, stdio: "pipe" },
+	);
 }
 
 /** Initialized scratch workspace; each test gets an isolated temp directory. */

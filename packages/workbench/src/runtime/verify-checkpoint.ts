@@ -1,10 +1,20 @@
 import { isAbsolute, join } from "node:path";
+import { isDeepStrictEqual } from "node:util";
+import {
+	artifactSnapshotDifference,
+	captureArtifactSnapshot,
+} from "../artifacts/snapshot";
 import type { Blackboard } from "../blackboard";
 import { parseDurationSeconds } from "../duration";
 import type { Checkpoint } from "../types/checkpoint";
 import { runVerification } from "../verifier";
 import { event } from "./events";
 import type { RunOnceResult } from "./types";
+import {
+	captureBindingForWorktree,
+	compareVerificationBindings,
+} from "./verification-binding";
+import { captureVerificationContext } from "./verification-context";
 
 function worktreePath(bb: Blackboard, workspotId: string): string {
 	const fallback = join(bb.projectRoot, "worktrees", workspotId);
@@ -41,16 +51,35 @@ export async function verifyCheckpoint(
 	if (!checkpoint) {
 		return false;
 	}
-	const pending: Checkpoint = { ...checkpoint, lifecycle: "pending" };
+	const artifactBefore = await captureArtifactSnapshot(bb, checkpoint);
+	const pending: Checkpoint = {
+		...checkpoint,
+		lifecycle: "pending",
+		verificationBinding: undefined,
+		verificationBindingIssue: undefined,
+		artifactOrigin: checkpoint.artifactOrigin ?? artifactBefore,
+		artifactBinding: undefined,
+	};
 	await bb.checkpoints.save(pending, "staging");
 
 	// P0-2: `thresholds.checkpointTimeout` is the default when the checkpoint
 	// does not declare its own timeout. Before this it was read by nothing.
 	const config = await bb.config.load();
+	const worktree = await resolveWorktree(bb, checkpoint);
+	const defaultTimeout =
+		parseDurationSeconds(config.thresholds.checkpointTimeout) ?? undefined;
+	const context = await captureVerificationContext(
+		checkpoint.verification,
+		worktree,
+		defaultTimeout,
+		"command",
+	);
+	const reportPath = checkpoint.verification?.evidence?.report.path;
+	const before = await captureBindingForWorktree(bb, worktree, reportPath);
 	const result = await runVerification(
 		checkpoint.verification,
-		await resolveWorktree(bb, checkpoint),
-		parseDurationSeconds(config.thresholds.checkpointTimeout) ?? undefined,
+		worktree,
+		defaultTimeout,
 	);
 	const withResult: Checkpoint = {
 		...pending,
@@ -58,15 +87,57 @@ export async function verifyCheckpoint(
 			status: result.status,
 			output: result.status === "failed" ? result.output : undefined,
 			at: new Date().toISOString(),
+			exitCode: result.exitCode,
+			evidence: result.evidence,
 		},
 	};
 
 	if (result.status === "passed") {
+		// ponytail: endpoint snapshots do not detect ABA or lock external inputs;
+		// verification in an immutable copy is needed for that stronger guarantee.
+		const binding = await captureBindingForWorktree(bb, worktree, reportPath);
+		const afterContext = await captureVerificationContext(
+			checkpoint.verification,
+			worktree,
+			defaultTimeout,
+			"command",
+		);
+		const comparison = before
+			? compareVerificationBindings(before, binding)
+			: undefined;
+		const artifactAfter = await captureArtifactSnapshot(bb, checkpoint);
+		const artifactIssue = checkpoint.artifact
+			? !artifactBefore
+				? "产物来源或声明输入未知"
+				: artifactSnapshotDifference(artifactBefore, artifactAfter)
+			: null;
+		const issue = artifactIssue
+			? artifactIssue
+			: result.evidence && result.evidence.status !== "satisfied"
+				? `验证范围未满足：${result.evidence.reason}`
+				: !before || !binding || !context || !afterContext
+					? "验证代码状态未知：无法完整采集检查前后的工作区，不能确认当前有效"
+					: !isDeepStrictEqual(context, afterContext)
+						? "验证期间执行条件或配置输入已变化，需要重新验证"
+						: comparison?.status === "invalidated"
+							? `验证期间代码状态变化：${comparison.reason}；需要重新验证`
+							: undefined;
 		await bb.checkpoints.save(
-			{ ...withResult, lifecycle: "verified" },
+			{
+				...withResult,
+				lifecycle: issue ? "awaiting_review" : "verified",
+				verificationBinding:
+					issue || !binding ? undefined : { ...binding, context },
+				verificationBindingIssue: issue,
+				artifactBinding: issue ? undefined : artifactAfter,
+			},
 			"staging",
 		);
-		await bb.checkpoints.move(cpId, "staging", "verified");
+		if (issue) {
+			await event(bb, "verification_awaiting_review", { cpId, reason: issue });
+		} else {
+			await bb.checkpoints.move(cpId, "staging", "verified");
+		}
 	} else if (result.status === "failed" || result.status === "timeout") {
 		await bb.checkpoints.save(
 			{ ...withResult, lifecycle: "failed" },

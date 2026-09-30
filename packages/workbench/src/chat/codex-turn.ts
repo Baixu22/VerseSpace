@@ -27,7 +27,7 @@ export async function runCodexTurn(
 	text: string,
 	emit: (event: TurnRunEvent) => void,
 	opts: { messageId: string },
-): Promise<void> {
+): Promise<boolean> {
 	const session = await ensureCodexSession(context, id, meta);
 	// The session outlives the turn; cancel the idle-close armed by the previous
 	// turn. Without this the timer can fire mid-turn and kill the app-server,
@@ -45,7 +45,7 @@ export async function runCodexTurn(
 		// write failure — swallowing it here would hide a thread stuck at
 		// `running`, which is the same failure the claude lane refuses to hide.
 		await resetCodexThreadToIdle(context.store, id);
-		return;
+		return false;
 	}
 
 	const turn: CodexTurnState = {
@@ -56,11 +56,21 @@ export async function runCodexTurn(
 		emit,
 	};
 	// Install this turn's event sink; the app-server's onEvent routes here.
-	session.route = (event) => routeCodexEvent(context, id, turn, event);
+	let completed = false;
+	let failed = false;
+	session.route = (event) => {
+		if (event.type === "error") failed = true;
+		if (event.type === "turn/completed") {
+			completed =
+				(event.turn as { status?: string } | undefined)?.status === "completed";
+		}
+		routeCodexEvent(context, id, turn, event);
+	};
 
 	try {
 		await session.server.startTurn(session.codexThreadId, text);
 	} catch (error) {
+		failed = true;
 		emit({ type: "error", message: `codex 回合执行失败：${String(error)}` });
 	} finally {
 		session.route = undefined;
@@ -108,4 +118,5 @@ export async function runCodexTurn(
 			void session.server.shutdown();
 		}, codexSessionIdleCloseMs());
 	}
+	return completed && !failed;
 }

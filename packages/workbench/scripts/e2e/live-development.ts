@@ -14,6 +14,19 @@ import { assertLiveAuthorized } from "./live-auth";
 import { validateWithCorrections } from "./live-validation";
 import { observeRestore } from "./restoration";
 
+export interface LiveSealReading {
+	blocked: boolean;
+	decision: string;
+	hit: boolean;
+}
+
+/** A downgraded warning is not evidence that rereading resolved the stale input. */
+export function assertFreshSeal(reading: LiveSealReading): void {
+	if (reading.blocked || reading.hit !== false || reading.decision !== "pass") {
+		throw new Error("真实复读后前提仍失效或读数缺失；warn 降级不能当作已解决");
+	}
+}
+
 export async function runLiveDevelopment(ws: E2EWorkspace) {
 	await assertLiveAuthorized(ws.projectDir, "仅允许已授权的隔离工作区");
 	await mkdir(join(ws.projectDir, "runs"), { recursive: true });
@@ -118,10 +131,9 @@ export async function runLiveDevelopment(ws: E2EWorkspace) {
 			]);
 			if (![0, 2].includes(result.code ?? -1))
 				throw new Error(`封印命令异常：${result.code}`);
-			return JSON.parse(result.stdout.slice(result.stdout.indexOf("{"))) as {
-				blocked: boolean;
-				decision: string;
-			};
+			return JSON.parse(
+				result.stdout.slice(result.stdout.indexOf("{")),
+			) as LiveSealReading;
 		};
 		// The configured limit permits three blocks; the fourth hit downgrades.
 		const before = [await seal(), await seal(), await seal(), await seal()];
@@ -133,7 +145,7 @@ export async function runLiveDevelopment(ws: E2EWorkspace) {
 			"其他写者已修复这个文件。先 Read src/base-url.ts 和 src/base-url.requirements.txt，基于实际新代码复核每条需求，把 JSON 格式 {verdict: 'pass'或'fail', findings: 字符串数组} 的独立结论写入 src/base-url.review.json。不要修改实现；不能仅因作者说完成就认可。",
 		);
 		const after = await seal();
-		if (after.blocked) throw new Error("真实复读之后仍被旧前提阻断");
+		assertFreshSeal(after);
 		if (
 			(await readFile(join(ws.projectDir, "src/base-url.ts"), "utf8")) !==
 			implementation

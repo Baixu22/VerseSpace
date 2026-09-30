@@ -120,11 +120,11 @@ export function run(
 			try {
 				if (capabilities.turnRunner === "codex") {
 					// TF-0249: the codex lane folds notices into the prompt the same
-					// way, then acknowledges delivery once the turn is under way.
+					// way, then acknowledges delivery only after confirmed success.
 					// The framing comes from the shared `promptWithNotices` — an
 					// unframed join reads as if the notice text were the user's
 					// request.
-					await runCodexTurn(
+					const succeeded = await runCodexTurn(
 						context,
 						id,
 						meta,
@@ -132,7 +132,7 @@ export function run(
 						emitTurn,
 						{ messageId: assistantMessageId },
 					);
-					if (notices.length > 0) await acknowledgeDelivery();
+					if (succeeded && notices.length > 0) await acknowledgeDelivery();
 				} else {
 					await runClaudeTurn(context, id, meta, text, emitTurn, {
 						resend: Boolean(opts.resend),

@@ -27,6 +27,9 @@ const verdict = {
 	sealEventsAfterCodex: 0,
 	sealDecisions: [] as unknown[],
 	controlDecision: "",
+	writeMode: process.argv.includes("--native-write") ? "native" : "shell",
+	writeFootprints: 0,
+	readDuringWrite: 0,
 };
 async function measure() {
 	const scenario = probeCase(process.argv.slice(2));
@@ -77,9 +80,12 @@ async function measure() {
 		const beforeEvents = (await ws.bb.events.query({ type: SEAL_EVENT }))
 			.length;
 		const writeEvents: RunEvent[] = [];
+		const priorFootprints = (await ws.bb.sessions.footprint(thread.id)).length;
 		await chat.run(
 			thread.id,
-			"Run exactly this shell command and report what happened: echo '// written by codex' >> src/target.ts",
+			verdict.writeMode === "native"
+				? "Use your native apply_patch file editing tool to append exactly // written by codex to src/target.ts. Do not reread the file and do not use a shell command to write it. If the tool is declined, report that and stop; do not work around the denial."
+				: "Run exactly this shell command and report what happened: echo '// written by codex' >> src/target.ts",
 			(e) => {
 				writeEvents.push(e);
 			},
@@ -93,6 +99,22 @@ async function measure() {
 		);
 		verdict.sealEventsAfterCodex = events.length;
 		verdict.sealDecisions = events.map((e) => e.payload);
+		const footprints = (await ws.bb.sessions.footprint(thread.id)).slice(
+			priorFootprints,
+		);
+		verdict.writeFootprints = footprints.filter((line) =>
+			line.generated.some((claim) => claim.path === target),
+		).length;
+		verdict.readDuringWrite = footprints.filter((line) =>
+			line.used.some((claim) => claim.path === target),
+		).length;
+		if (process.env.WB_VERIFY_TRACE_DIR) {
+			await mkdir(process.env.WB_VERIFY_TRACE_DIR, { recursive: true });
+			await writeFile(
+				join(process.env.WB_VERIFY_TRACE_DIR, `${scenario}.json`),
+				JSON.stringify({ readEvents, writeEvents, footprints }, null, 2),
+			);
+		}
 		// Frozen pre-write baseline: same writer and claims, even if the model reread
 		// the file during its write turn. This control is excluded from lane counts.
 		verdict.controlDecision = (await decideSeal(ws.bb, baseline)).decision;

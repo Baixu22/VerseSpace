@@ -1,5 +1,4 @@
 import { isAbsolute, join } from "node:path";
-import { pendingPremiseNotices } from "../runtime/delivery";
 import { decideSeal } from "../runtime/seal";
 import {
 	HEARTBEAT_INTERVAL_MS,
@@ -92,13 +91,10 @@ export async function ensureCodexSession(
 			},
 			// TF-0263 option A: the codex write side goes through the same seal
 			// point as the Claude Code PreToolUse hook. The writer is this chat
-			// lane, and the claims are the same pending premise notices the hook
-			// would see. `decideSeal` records every verdict in events.jsonl, so a
+			// lane; decideSeal derives current validity independently of delivery.
+			// It records every verdict in events.jsonl, so a
 			// block here leaves the same audit trail as a block there.
 			sealApproval: async (target) => {
-				const claims = (await pendingPremiseNotices(context.bb)).flatMap(
-					(notice) => notice.claims,
-				);
 				let blocked = false;
 				for (const path of target.paths) {
 					const outcome = await decideSeal(context.bb, {
@@ -106,7 +102,6 @@ export async function ensureCodexSession(
 							? path
 							: join(context.bb.projectRoot, path),
 						writerId: id,
-						claims,
 					});
 					if (outcome.decision === "block") blocked = true;
 				}

@@ -1,5 +1,6 @@
 import type { ParsedStreamFootprint } from "../blackboard/footprint";
 import type { FootprintUsed } from "../blackboard/session-types";
+import { fileChangeItemPaths } from "./codex-app-server/file-change-paths";
 import { asRecord, stringField } from "./codex-render-blocks";
 
 /**
@@ -28,18 +29,25 @@ const READ_ACTIONS = new Set(["read", "listFiles"]);
 /**
  * codex commandAction kinds that MODIFY a file (a write).
  *
- * Unproven: all 11 retained codex fixtures carry only `read` / `listFiles`, so
- * the write half of this channel has no gate. ADR-0017 §「本轮实现边界」records
- * that; an item type with no render decision is surfaced as `undecided` rather
- * than dropped, so a real write arriving in a new shape is audible.
+ * These commandAction write kinds remain without native samples. The separate
+ * fileChange branch below is grounded in retained native add/update frames;
+ * it does not turn unknown shell commands into observable writes.
  */
 const WRITE_ACTIONS = new Set(["edit", "write", "applyPatch", "createFile"]);
 
 /** The tool-call shape a codex command becomes for rendering + classification. */
 export function codexCommandTool(item: Record<string, unknown>): {
 	toolName: string;
-	args: { command: string };
+	args: { command: string } | { paths: string[] };
 } {
+	if (item.type === "fileChange") {
+		return {
+			toolName: "fileChange",
+			args: {
+				paths: fileChangeItemPaths({ type: "item/started", item })?.paths ?? [],
+			},
+		};
+	}
 	if (stringField(item, "type") === "collabAgentToolCall") {
 		// spawnAgent / wait / etc. — a non-file tool; carries no command args.
 		return {
@@ -106,6 +114,18 @@ export function extractCodexFootprint(
 	item: Record<string, unknown>,
 	agent: string,
 ): ParsedStreamFootprint | null {
+	if (item.type === "fileChange") {
+		const change = fileChangeItemPaths({ type: "item/started", item });
+		return change
+			? {
+					activity: change.itemId,
+					agent,
+					used: [],
+					generated: change.paths.map((path) => ({ path, version: null })),
+					facets: { tool: "fileChange" },
+				}
+			: null;
+	}
 	if (stringField(item, "type") !== "commandExecution") return null;
 	const command = stringField(item, "command");
 	const activity = stringField(item, "id") || "act-unknown";

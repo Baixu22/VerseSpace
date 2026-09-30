@@ -63,6 +63,24 @@ workbench sync
 workbench watch
 ```
 
+## 声明验证范围与单产物重验
+
+源码新增的范围验证使用 Vitest JSON reporter；旧发行物不继承这些能力。把报告路径、完整 `fullName` 用例集合及必要的非敏感输入写入 JSON，例如：
+
+```json
+{"report":{"format":"vitest-json","path":"report.json","expectedTests":["consumer accepts API"]},"inputs":["consumer.test.ts","vitest.config.ts","bun.lock"]}
+```
+
+路径相对执行工位。通过 `checkpoint create --strategy test --command "bunx vitest run --reporter=json --outputFile=report.json" --evidence <声明文件> --artifact src/consumer.ts --input src/api.ts --target-ref main` 附加到原有 `--goal`、`--workspot`、`--assertion` 参数。输入应显式列出检查脚本、配置及锁文件；不解析任意 Shell，不保证发现隐含依赖或外部服务变化。只保存输入 hash，不归档配置值。
+
+命令退出成功但报告未更新、损坏、零用例、缺用例或含跳过时，历史退出结果保留，当前验证不能满足声明范围。产物依赖来自明确声明，不从先读后写推断因果。输入、产物、执行条件变化后，`checkpoint list --json` 和恢复卡显示待重验；重读输入不能清除产物事项。
+
+`checkpoint revalidate <checkpoint-id> [--workspot <id>] [--target-ref <ref>] --json` 在明确工位执行同一声明检查，生成新 checkpoint，不重放旧账本效果。历史 applied/done 保留，产物当前状态独立显示；无需改代码而重验通过也是有效结果。交接保留原始来源与本次执行位置。`currentArtifact.targetStatus` 将目标输入匹配、不同与未知分开：旧工位检查通过不等于适用于已经推进的 main，即使输入匹配也未证明合并结果。
+
+`sessions show --writer <id> --json` 的 `readFragments[].strength` 区分内容 hash、size-only 与 unknown；恢复卡同样展示强度。超过 2 MB 仍只比大小，同尺寸改写不可测；64 KB / 每写者 20 份快照的上限不变，快照缺失保守提示。范围按坐标和版本处理，不保证符号移动追踪或未知工具覆盖。
+
+`stats --json` 的 `noticeOutcomes.evidence` 按成功送达窗口分别统计重读、新版本观察、产物修改和声明范围验证。每项都有 observed / notObserved / unknown，可重叠；保留旧 repaired 算法，不把任何一项称为修复正确率。原生 Codex `fileChange` 的成功 add/update 帧已有夹具落账回归；没有审批或结构化目标的 shell 写仍不受完整保护。
+
 ## 命令一览
 
 | 命令 | 作用 |
@@ -72,7 +90,7 @@ workbench watch
 | `decision add` | 追加架构决策（不可改） |
 | `interface register/list/check` | 接口注册表与 hash 漂移检查 |
 | `ws create/list/reassign/status` | 工位（git worktree 绑定）管理 |
-| `checkpoint create/list/review` | 三区 checkpoint（staging/verified/failed） |
+| `checkpoint create/list/review/revalidate` | 三区 checkpoint 与独立产物重验 |
 | `dispatch <goal> [ws]` | 派发就绪目标到空闲工位 |
 | `sync` | 手动跑一轮 Runtime 循环 |
 | `watch` | 后台监听，文件变化自动跑循环 |
@@ -142,7 +160,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 
 | 工具 | 回答的问题 |
 | --- | --- |
-| `premises` | 哪些写者读过的文件已被其他写者修改（待投递的前提失效通知） |
+| `premises` | 默认查询待投递通知；`view=current` 重新核对当前失效输入，独立于投递状态 |
 | `footprints` | agent 实际读/写了哪些文件（足迹账本） |
 | `resume_cards` | 线程在离开期间发生了什么（读集 diff、恢复笔记、分支动静） |
 | `tribunal` | 裁决队列里有什么在等人类决策 |
@@ -183,7 +201,7 @@ bun run build:all   # 交叉编译四平台二进制到 dist/
 
 `test:build` 可用 `--native <二进制路径> --js <workbench.js 路径>` 指定独立构建。检测层基准可运行 `bun scripts/benchmark-premises.ts --json`；它验证合成场景的检测契约，不代表真实用户效果。
 
-显式设置 `E2E_LLM_KEY`、`E2E_LLM_MODEL` 后，`bun run test:live` 会创建全新的临时仓库，用真实模型决定 Read/Write 工具调用，验证恢复、分叉、通知、证据与封印链路，并单独验证原生 HTTP 流式回合。`E2E_LLM_BASE_URL` 可选，**脚本默认 `https://api.senseaudio.cn/v1` + `senseaudio-s2-flash`**（见 `scripts/e2e/live-credentials.ts`）；换成别的 provider 时必须同时给定 `E2E_LLM_BASE_URL` 与 `E2E_LLM_MODEL`，端点、模型、密钥三者是配套关系。随后模型自主修复一个 URL 兼容问题，另一个线程恢复并复核，再验证三个持久分支确实继承 provider 历史与读集。工具只允许隔离仓库 `src/` 下的文本读写，不开放 shell，不读取配置或密钥；原始模型调用 ID、用量、线程和工具结果保存在该临时仓库。该模式会访问第三方模型服务；不会在普通 `bun test` 中运行。报告明确标注脚本驱动的动作和复核；模型判为 pass 也不能替代独立测试或冒充自然用户数据。
+显式设置 `E2E_LLM_KEY`、`E2E_LLM_MODEL` 后，`bun run test:live` 会创建全新的临时仓库，用真实模型决定 Read/Write 工具调用，验证恢复、分叉、通知、证据与封印链路，并单独验证原生 HTTP 流式回合。`E2E_LLM_BASE_URL` 可选，**脚本默认 `https://api.senseaudio.cn/v1` + `senseaudio-s2-flash`**（见 `scripts/e2e/live-credentials.ts`）；换成别的 provider 时必须同时给定 `E2E_LLM_BASE_URL` 与 `E2E_LLM_MODEL`，端点、模型、密钥三者是配套关系。 `E2E_LLM_BASE_URL` 可填写完整 `/v1/responses` 地址，live 工具回合与原生 HTTP 流式检查会自动选择 Responses 协议；普通基址默认使用 Chat Completions。随后模型自主修复一个 URL 兼容问题，另一个线程恢复并复核，再验证三个持久分支确实继承 provider 历史与读集。工具只允许隔离仓库 `src/` 下的文本读写，不开放 shell，不读取配置或密钥；原始模型调用 ID、用量、线程和工具结果保存在该临时仓库。该模式会访问第三方模型服务；不会在普通 `bun test` 中运行。报告明确标注脚本驱动的动作和复核；模型判为 pass 也不能替代独立测试或冒充自然用户数据。
 
 Windows 上如已配置仓库外 `%LOCALAPPDATA%/HelmorWorkbench/credentials/openrouter.dpapi`（当前用户 DPAPI 加密），可直接运行 `powershell -NoProfile -File scripts/e2e/run-live.ps1`；加 `-CheckOnly` 只验证凭据可读取，不调用模型。脚本运行结束后恢复原环境变量，不输出或保存明文密钥。
 

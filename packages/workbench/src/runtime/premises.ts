@@ -1,12 +1,8 @@
 import type { Blackboard } from "../blackboard";
-import { hashPathClaim } from "../blackboard/footprint";
-import type { FootprintUsed } from "../blackboard/sessions";
 
 import { noticeIdForClaims } from "./notice-id";
+import { inspectWriterPremises } from "./premise-check";
 import { emptyPassCounts, PREMISE_PASS_EVENT } from "./premise-counts";
-
-import { diffFor } from "./premise-diff";
-import { spanInvalidated, surfaceUnchanged } from "./premise-predicate";
 
 export interface StalePremiseClaim {
 	path: string;
@@ -63,6 +59,30 @@ export async function reportedStaleKeys(bb: Blackboard): Promise<Set<string>> {
 	return keys;
 }
 
+/** Current stale inputs, including already delivered ones; no writes or active-window cutoff. */
+export async function currentPremiseNotices(
+	bb: Blackboard,
+	writerId?: string,
+): Promise<StalePremiseNotice[]> {
+	const writers = writerId
+		? [await bb.sessions.get(writerId)].filter((writer) => writer !== null)
+		: await bb.sessions.list();
+	const notices: StalePremiseNotice[] = [];
+	for (const writer of writers) {
+		if (writer.kind !== "agent" && writer.kind !== "human") continue;
+		const { stale } = await inspectWriterPremises(bb, writer.id);
+		if (!stale.length) continue;
+		notices.push({
+			writerId: writer.id,
+			writerKind: writer.kind,
+			stale,
+			noticeId: noticeIdForClaims(writer.id, stale),
+			message: formatNotice(stale.length),
+		});
+	}
+	return notices;
+}
+
 export async function reconcilePremises(
 	bb: Blackboard,
 	options: ReconcileOptions = {},
@@ -84,72 +104,17 @@ export async function reconcilePremises(
 		if (Number.isFinite(lastActive) && lastActive < cutoff) {
 			continue; // the writer itself went quiet: nothing live to notify
 		}
-		counts.writers += 1;
-		const { reads, writes } = await bb.sessions.readSetView(writer.id);
-		// Layer 3's dependency/subject split, derived rather than declared: a
-		// writer that also edits a file is working on it (subject-matter, so
-		// body changes matter). Explicit content reads already carry a span
-		// (including 1..EOF for whole reads) and must also observe body changes.
-		// Remaining claims use the dependency/surface heuristic. Asking the
-		// agent to declare which one it is would be the same tax the forest
-		// refuses everywhere else.
-		const touched = new Set(writes.map((write) => write.path));
-		const stale: Array<
-			StalePremiseClaim & { claim: FootprintUsed; diff?: string }
-		> = [];
-		for (const claim of reads.values()) {
-			if (claim.durability === "durable") {
-				counts.suppressedL1 += 1;
-				continue; // predicate layer 1: durable reads never invalidate
-			}
-			const current = await hashPathClaim(bb.projectRoot, claim.path);
-			if (current.version === claim.version) {
-				continue; // content unchanged — premise still holds
-			}
-			// The read-set/write overlap the layers get to argue about. Counted
-			// here, before any suppression, so `notified / overlaps` is a ratio
-			// of decisions rather than of surviving decisions.
-			counts.overlaps += 1;
-			// predicate layer 2: the file moved, but did the part the writer
-			// actually read move? Span claims need the diff to answer that.
-			let diff: string | undefined;
-			if (claim.span) {
-				diff = await diffFor(bb, writer.id, claim);
-				if (!(await spanInvalidated(bb, claim, claim.span, diff))) {
-					counts.suppressedL2 += 1;
-					continue; // the edit landed outside the read range
-				}
-			} else if (!touched.has(claim.path)) {
-				// dependency read: only the export surface has to hold
-				if (await surfaceUnchanged(bb, writer.id, claim)) {
-					counts.suppressedL3 += 1;
-					continue;
-				}
-			}
-			const candidate: StalePremiseClaim = {
-				path: claim.path,
-				observedVersion: claim.version ?? null,
-				currentVersion: current.version ?? null,
-			};
-			if (reported.has(staleKey(writer.id, candidate))) {
-				counts.suppressedDedup += 1;
-				continue;
-			}
-			stale.push({ ...candidate, claim, diff });
+		const checked = await inspectWriterPremises(bb, writer.id);
+		for (const key of Object.keys(counts) as Array<keyof typeof counts>) {
+			counts[key] += checked.counts[key];
 		}
-		counts.notified += stale.length;
-		if (stale.length === 0) {
-			continue;
-		}
-		// diffs need a git subprocess: compute only for surviving claims
-		const evidence: StalePremiseClaim[] = [];
-		for (const { claim, diff, ...rest } of stale) {
-			evidence.push({
-				...rest,
-				// span claims already have it; the rest pay one git call here
-				diff: diff ?? (await diffFor(bb, writer.id, claim)),
-			});
-		}
+		const evidence = checked.stale.filter((claim) => {
+			if (!reported.has(staleKey(writer.id, claim))) return true;
+			counts.suppressedDedup += 1;
+			counts.notified -= 1;
+			return false;
+		});
+		if (evidence.length === 0) continue;
 		const notice: StalePremiseNotice = {
 			noticeId: noticeIdForClaims(writer.id, evidence),
 			writerId: writer.id,

@@ -1,6 +1,6 @@
 import { isAbsolute, relative } from "node:path";
 import type { Blackboard } from "../blackboard";
-import type { StalePremiseClaim } from "./premises";
+import { currentPremiseNotices, type StalePremiseClaim } from "./premises";
 import {
 	consecutiveHitStreak,
 	SEAL_EVENT,
@@ -158,7 +158,8 @@ export interface DecideSealOptions {
 	target: string;
 	/** Writer id when the host knows it; the streak is counted per writer. */
 	writerId?: string;
-	claims: StalePremiseClaim[];
+	/** Explicit frozen evidence for controlled callers; production derives current validity. */
+	claims?: StalePremiseClaim[];
 	/** Override the configured mode (tests and `--mode`); config wins by default. */
 	mode?: SealMode;
 }
@@ -178,10 +179,15 @@ export async function decideSeal(
 	const mode = options.mode ?? config.seal.mode;
 	const limit = config.seal.consecutiveBlockLimit;
 	const writer = options.writerId ?? null;
+	const claims =
+		options.claims ??
+		(await currentPremiseNotices(bb, options.writerId)).flatMap(
+			(notice) => notice.stale,
+		);
 	const verdict = judgeSeal(
 		bb.projectRoot,
 		options.target,
-		options.claims,
+		claims,
 		config.protection.readonlyAreas,
 	);
 	const path = normalizeTarget(bb.projectRoot, options.target);

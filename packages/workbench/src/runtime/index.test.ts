@@ -6,6 +6,7 @@ import { openBlackboard } from "../blackboard";
 import { registryContextStore } from "../blackboard/context-store";
 import { initWorkbench } from "../commands/init";
 import { acquirePidLock } from "../fs/lockfile";
+import { initGitFixture } from "../test/fixtures";
 import type { Checkpoint } from "../types/checkpoint";
 import { runOnce } from "./index";
 import { applyRollback, planRollback } from "./rollback";
@@ -67,6 +68,7 @@ describe("runOnce", () => {
 			const bb = openBlackboard(join(projectDir, ".workbench"));
 			const goal = await bb.goals.add({ title: "A" });
 			await mkdir(join(projectDir, "worktrees", "ws-a"), { recursive: true });
+			initGitFixture(join(projectDir, "worktrees", "ws-a"));
 			await writeFile(
 				join(projectDir, "worktrees", "ws-a", "script.js"),
 				"process.exit(0);\n",
@@ -135,6 +137,7 @@ describe("runOnce", () => {
 			const bb = openBlackboard(join(projectDir, ".workbench"));
 			const goal = await bb.goals.add({ title: "A" });
 			await mkdir(join(projectDir, "worktrees", "ws-a"), { recursive: true });
+			initGitFixture(join(projectDir, "worktrees", "ws-a"));
 			await writeFile(
 				join(projectDir, "worktrees", "ws-a", "script.js"),
 				"process.exit(0);\n",

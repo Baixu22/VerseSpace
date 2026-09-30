@@ -26,6 +26,27 @@ const body = "export function compute() { return 1; }\n";
 const lines = "one\ntwo\nthree\nfour\n";
 const scenarios: Scenario[] = [
 	{
+		name: "超过哈希上限的文件变大",
+		path: "large.txt",
+		before: "a".repeat(2_000_001),
+		after: "b".repeat(2_000_002),
+		notify: true,
+	},
+	{
+		name: "超过哈希上限的文件未变",
+		path: "large.txt",
+		before: "a".repeat(2_000_001),
+		after: "a".repeat(2_000_001),
+		notify: false,
+	},
+	{
+		name: "超过哈希上限的同尺寸改写（大小比较边界）",
+		path: "large.txt",
+		before: "a".repeat(2_000_001),
+		after: "b".repeat(2_000_001),
+		notify: false,
+	},
+	{
 		name: "工作对象正文变化",
 		path: "subject.ts",
 		before: body,

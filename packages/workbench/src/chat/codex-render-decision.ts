@@ -80,6 +80,11 @@ const ITEM_DECISIONS: Record<
 		completed: "finalized",
 		reason: "a shell command — the codex footprint channel",
 	},
+	fileChange: {
+		started: "finalized",
+		completed: "finalized",
+		reason: "native file changes; retained 0.158 approval fixture",
+	},
 	collabAgentToolCall: {
 		started: "finalized",
 		completed: "finalized",

@@ -7,7 +7,7 @@ import type { ForkAgentPlan, ForkInheritance } from "./fork";
 import type { ThreadContext } from "./thread-context";
 
 export async function inheritParentFootprint(
-	context: ThreadContext,
+	context: Pick<ThreadContext, "bb">,
 	id: string,
 	plan: ForkAgentPlan,
 ): Promise<{ refs: string[]; comparable: boolean }> {
@@ -26,7 +26,7 @@ export async function inheritParentFootprint(
 	);
 	const refs = new Set<string>();
 	const used: FootprintUsed[] = [];
-	for (const [, claim] of view.reads) {
+	for (const claim of [...view.readFragments.values()].flat()) {
 		const { seq: _seq, spool: _spool, ...withoutLocalOnly } = claim;
 		used.push(withoutLocalOnly);
 		const ref = lineRefs.get(claim.seq);

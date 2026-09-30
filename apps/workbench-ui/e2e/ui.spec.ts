@@ -83,7 +83,9 @@ test("planning controls never submit the draft", async ({ page }) => {
 	await row.getByRole("button").first().click();
 	await expect(row).toHaveAttribute("data-active", "true");
 	const input = page.getByRole("textbox", { name: "消息", exact: true });
-	const plan = page.getByRole("button", { name: /^规划(中)?$/ });
+	const plan = page.getByRole("button", { name: /^规划(已选)?$/ });
+	const boundary = page.getByText(/规划开关仅对下次新启动的 Claude CLI/);
+	await expect(boundary).toBeVisible();
 	const original = String(candidate!.permissionMode === "plan");
 	await expect(plan).toHaveAttribute("aria-pressed", original);
 	const draft = "切换规划模式不应发送这条草稿。";
@@ -94,6 +96,7 @@ test("planning controls never submit the draft", async ({ page }) => {
 		original === "true" ? "false" : "true",
 	);
 	await expect(input).toHaveValue(draft);
+	await expect(boundary).toContainText("下一回合可能仍复用当前进程");
 	await plan.click();
 	await expect(plan).toHaveAttribute("aria-pressed", original);
 	await expect(input).toHaveValue(draft);

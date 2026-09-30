@@ -3,6 +3,7 @@ import type { WorkbenchEvent } from "../types/event";
 import { readSealRecord } from "./seal-counts";
 
 export const NOTICE_OUTCOMES = [
+	// Legacy JSON key: observed reread, not proof of a repair or verification.
 	"repaired",
 	"ignored",
 	"sealed",
@@ -175,8 +176,7 @@ export function judgeWindow(
 	if (rounds === 0) {
 		return { outcome: "unknown", unknownReason: "no-later-activity" };
 	}
-	// Re-read with no write: the writer went and checked, and its plan held.
-	// That is the notice being acted on, not the writer walking away, so it
-	// belongs with `repaired` rather than inflating the dismissed ratio.
+	// A reread is observable follow-up only; neither its version nor the plan's
+	// correctness is established here. Keep the legacy JSON classification.
 	return touched ? { outcome: "repaired" } : { outcome: "dismissed" };
 }

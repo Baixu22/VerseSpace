@@ -10,6 +10,7 @@ import {
 	writerSpoolDir,
 } from "../blackboard/sessions";
 import { pathExists } from "../fs/atomic";
+import { hashFile } from "../hash";
 
 export const execFileAsync = promisify(execFile);
 
@@ -60,19 +61,33 @@ export async function findSpool(
 	return candidates.sort().at(-1);
 }
 
+/** A snapshot is usable only for the version this observation actually saw. */
+export async function observedSpoolPath(
+	bb: Blackboard,
+	writerId: string,
+	claim: FootprintUsed,
+): Promise<string | undefined> {
+	if (!claim.version) return undefined;
+	const spoolName = claim.spool ?? (await findSpool(bb, writerId, claim.path));
+	if (!spoolName) return undefined;
+	const spoolFile = await resolveSpoolPath(bb, writerId, spoolName);
+	if (!spoolFile) return undefined;
+	try {
+		return (await hashFile(spoolFile)) === claim.version
+			? spoolFile
+			: undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 export async function diffFor(
 	bb: Blackboard,
 	writerId: string,
 	claim: FootprintUsed,
 ): Promise<string | undefined> {
-	const spoolName = claim.spool ?? (await findSpool(bb, writerId, claim.path));
-	if (!spoolName) {
-		return undefined;
-	}
-	const spoolFile = await resolveSpoolPath(bb, writerId, spoolName);
-	if (!spoolFile) {
-		return undefined;
-	}
+	const spoolFile = await observedSpoolPath(bb, writerId, claim);
+	if (!spoolFile) return undefined;
 	const current = isAbsolute(claim.path)
 		? claim.path
 		: join(bb.projectRoot, claim.path);

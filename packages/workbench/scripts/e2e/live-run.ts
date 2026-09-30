@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { runLiveDevelopment } from "./live-development";
 import { runLiveFork } from "./live-fork";
+import { liveProtocol } from "./live-wire";
 import { type E2EReport, makeTempWorkspace, runE2E } from "./scenario";
 
 if (!process.env.E2E_LLM_KEY || !process.env.E2E_LLM_MODEL)
@@ -60,8 +61,7 @@ const attempts = (
 const evidence = {
 	source: "live-model-scripted-scenario",
 	model: process.env.E2E_LLM_MODEL,
-	transport:
-		"OpenRouter HTTP + stream-json 工具观测；另测 Workbench 原生 HTTP SSE",
+	transport: `${liveProtocol(process.env.E2E_LLM_BASE_URL ?? "https://api.senseaudio.cn/v1")} HTTP + stream-json 工具观测；另测 Workbench 原生 HTTP SSE`,
 	limitations:
 		"模型回复与工具是真实执行；恢复手势、human/git 写者和复核操作由测试脚本驱动，不代表人工偏好或自然用户体验。",
 	...report,
