@@ -282,7 +282,7 @@
 		},
 		{
 			"id": "claim-premise-contract",
-			"statement": "合成前提检测的 11 个既定场景均满足契约；不代表真实用户精度",
+			"statement": "合成前提检测的 14 个既定场景均满足契约（含 3 个大文件对照）；同尺寸改写仍不可测，不代表真实用户精度",
 			"instrument": ["packages/workbench/scripts/benchmark-premises.ts"],
 			"subject_paths": [
 				"packages/workbench/**",
@@ -296,8 +296,8 @@
 				"total": "number"
 			},
 			"expected": {
-				"passed": 11,
-				"total": 11
+				"passed": 14,
+				"total": 14
 			},
 			"class": "L1",
 			"reproduce": "bun packages/workbench/scripts/benchmark-premises.ts --json"
