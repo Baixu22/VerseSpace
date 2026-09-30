@@ -103,9 +103,15 @@ try {
 		problems.push(`HEAD 领先 ${defaultBranch} ${ahead.length} 个提交`);
 	}
 
-	const unmerged = git(["branch", "--no-merged", defaultBranch])
+	const unmerged = git([
+		"for-each-ref",
+		"--no-merged",
+		defaultBranch,
+		"--format=%(refname:short)",
+		"refs/heads",
+	])
 		.split("\n")
-		.map((line) => line.replace(/^[*+]\s*/, "").trim())
+		.map((line) => line.trim())
 		.filter(Boolean);
 	for (const branch of unmerged) {
 		const files = git(["diff", "--name-only", `${defaultBranch}...${branch}`])
@@ -156,9 +162,16 @@ try {
 			) {
 				continue;
 			}
-			const branches = git(["branch", "--all", "--contains", token])
+			const branches = git([
+				"for-each-ref",
+				"--contains",
+				token,
+				"--format=%(refname:short)",
+				"refs/heads",
+				"refs/remotes",
+			])
 				.split("\n")
-				.map((line) => line.replace(/^[*+]\s*/, "").trim())
+				.map((line) => line.trim())
 				.filter(Boolean)
 				.filter(
 					(name) =>
