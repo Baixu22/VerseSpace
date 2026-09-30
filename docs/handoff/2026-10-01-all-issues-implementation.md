@@ -65,3 +65,15 @@
 UI 18 files / 68 passed；context-rot 69 pass / 0 fail；doctor 118 条断言、0 失效；上传门禁 exit 0，534 条相对链接、0 断链（当时文件集）。类型检查中的新 argv 用例 RegExp 类型已修正后通过。未运行非 Windows 执行或真人研究。
 
 原始过程证据位于本机 `.agent-contexts/all-issues-20261001/`，不上传。任务森林未修改。发布版本、tag、Release 资产没有改动。
+
+## 固定候选与真实 Codex 结论
+
+源码先保存为 `da64f8c`；注册器实际重跑 workbench：1093 pass / 0 fail、176 files、34 snapshots、4829 个断言，160.40 秒。Windows Chromium 为 14/14、28.8 秒。干净工作树从该提交安装 frozen lockfile 并构建：native 与 JS 两种形态的 init / doctor / stats / headless UI / bundled UI 均通过。构建刷新了跟踪的 UI 资产清单，单独保存为 `2d2765d`，随后在该候选完整重跑 workbench 仍为 1093/0。
+
+登记基准读数时注册器正确拒绝旧声明的固定 11 场景预期：当前仪器已有 14 场景。`c812a24` 将声明集合明确扩为 14（包含大文件变大、未变、同尺寸改写三个对照），没有缩小范围或手签旧结果。其后的注册读数必须重新执行匹配的仪器。
+
+原生 Codex 使用隔离 CODEX_HOME 与用户指定 GLM 服务，完成两组 own-fresh / own-stale（第二组显式 Windows elevated sandbox、high effort），四个实验进程均 exit 0（仅表示测得读数）。两组结果相同：fresh 无失效前提，写入落盘，但 writeFootprints=0、sealEvents=0；stale 有 1 条本写者失效前提、写入未落盘，但 sealEvents=0，冻结控制判 block。
+
+第二组轨迹确认模型实际用 shell 调用本机 apply_patch 包装器，而不是原生 fileChange。fresh 在包装器/PowerShell 引号失败后升级 shell 执行才写成；stale 因 CLI 只读沙箱拒写而停止。**不能把 CLI 沙箱拒写归因于 Workbench 封印**，也不能把 fresh 落盘写成原生写足迹通过。已停止重复调用，不无上限抽样。#31 仍缺真实、可归因的 native 审批对照；其历史 L1 “stale 仍落盘”声明也没有在这两组中复现，旧读数保持 stale，不篡改成绿灯。
+
+根工作区原有 README、两张图像、上传政策和调研文档独立保留。验收副本为干净源码候选，任务森林不复制；因此森林落地门禁在该副本按约定 exit 2（不能测量），不伪装通过。两类非绿项（原生 Codex 实验、个人森林落地）与代码测试/构建结果分别报告。
