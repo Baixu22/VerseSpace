@@ -15,6 +15,10 @@ dist-ssr
 .local-data/
 .local-docs/
 
+# Windows caches left under an unexpanded SystemDrive path by a host process.
+# Keep the exact cache subtree local; upload-surface/policy.json classifies it.
+/%SystemDrive%/ProgramData/Microsoft/Windows/Caches/
+
 # `.agent-contexts/` is process evidence and session drafts by its own README —
 # the same class of maintainer-local material as the task-forest. No product code,
 # CI job, or shipped doc depends on it; the docs that DO reference it are themselves

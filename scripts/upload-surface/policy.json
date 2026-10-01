@@ -67,6 +67,11 @@
 			"why": "依赖树，由 bun install 重建"
 		},
 		{
+			"globs": ["%SystemDrive%/ProgramData/Microsoft/Windows/Caches/**"],
+			"class": "machine-state",
+			"why": "Windows 主机缓存误落入未展开的 SystemDrive 字面路径；仅此缓存子树留本机，误纳入上传面仍应失败（2026-09-30）"
+		},
+		{
 			"globs": ["**/.agent-workbench/**"],
 			"class": "machine-state",
 			"why": "task-forest：维护者的个人编排脚手架，非工程交付物（2026-09-24 出仓）"
