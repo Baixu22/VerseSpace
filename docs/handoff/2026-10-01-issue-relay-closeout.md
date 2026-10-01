@@ -56,3 +56,9 @@ OpenAI 配置参考允许启动时加载 [model_catalog_json](https://developers
 本次本地构建 SHA256：Windows native `0109404c7339a84882fa0d0cb55e271480f5a2d35d9f4e9d82729539d095881f`，JS `f1653054b9aac405b49dc0bdeecfbdec4e830d330c0e001eee86b4e741f27581`。未发布 Release，未执行非 Windows 二进制。
 
 合并前 check:claims 为 exit 1：14 valid、2 historical observations、1 stale（forest-landing）。这不是产品套件失败；主线落地必须在实际合并后重测。根工作区保留用户原有 9 项 README/素材/上传政策/调研改动，不能称根工作区 clean。所有受测读取对象、仪器哈希与原始输出摘要均在 evidence/readings 中；raw 保留本机。
+
+## 主线落地
+
+PR #58 于 2026-10-01 合并为 `52f4f69025c27c5c07d1a6eede4d44be033af70d`，#31、#45–#57 共 14 项关闭，GitHub 开放 issue 数实查为 0。合并后，在干净验收检出中复制维护者 nodes.json 做只读落地检查（不改权威森林），forest-landing exit 0；check:claims exit 0，15 条当前声明 valid、2 条历史 observation。随后保存本段说明及匹配的 doctor/upload/landing 读数。
+
+该结论针对干净交付候选，不声称根工作区的用户未提交工作已落库。没有新 Release；四平台发行与已退役执行范围均未扩展。
