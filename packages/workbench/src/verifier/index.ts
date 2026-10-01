@@ -3,13 +3,16 @@ import type {
 	VerificationStrategy,
 	VerificationStrategyName,
 } from "../types/goal";
+import type { VerificationEvidence } from "../types/verification-evidence";
+import { collectVerificationEvidence, reportStamp } from "./evidence-report";
 
-export type VerifyResult =
+export type VerifyResult = (
 	| { status: "passed" }
 	| { status: "failed"; output: string }
 	| { status: "needs_human"; reason: string }
 	| { status: "timeout" }
-	| { status: "skipped"; reason: string };
+	| { status: "skipped"; reason: string }
+) & { exitCode?: number | null; evidence?: VerificationEvidence };
 
 export const DEFAULT_VERIFICATION_TIMEOUT_SECONDS = 300;
 
@@ -130,16 +133,29 @@ export async function runVerification(
 	);
 	const expectedExitCode = verification.expectedExitCode ?? 0;
 
+	const previousStamp = verification.evidence
+		? await reportStamp(cwd, verification.evidence.report.path)
+		: null;
 	const { timedOut, exitCode, output } = await execute(
 		command,
 		cwd,
 		timeoutSeconds,
 	);
+	const measured = verification.evidence
+		? {
+				exitCode,
+				evidence: await collectVerificationEvidence(
+					cwd,
+					verification.evidence,
+					previousStamp,
+				),
+			}
+		: {};
 	if (timedOut) {
-		return { status: "timeout" };
+		return { status: "timeout", ...measured };
 	}
 	if (exitCode === expectedExitCode) {
-		return { status: "passed" };
+		return { status: "passed", ...measured };
 	}
-	return { status: "failed", output: truncateForArchive(output) };
+	return { status: "failed", output: truncateForArchive(output), ...measured };
 }

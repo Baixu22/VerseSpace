@@ -1,7 +1,7 @@
 import { appendFile } from "node:fs/promises";
 import { setTimeout } from "node:timers/promises";
 import { z } from "zod";
-import { liveTools } from "./live-tools";
+import { type LiveCompletion, liveCompletion, liveRequest } from "./live-wire";
 
 export interface ToolCall {
 	id: string;
@@ -14,6 +14,8 @@ export interface LiveMessage {
 	content: string | null;
 	tool_calls?: ToolCall[];
 	tool_call_id?: string;
+	/** Responses output items retained for replay; not request headers or credentials. */
+	response_output?: unknown[];
 }
 
 export interface LiveProvider {
@@ -55,6 +57,7 @@ const replySchemaRaw = z.object({
 	// entirely on tool_calls turns instead of emitting null. Treat missing as null
 	// so downstream history persistence stays within LiveMessage shape.
 	content: z.string().nullable().optional(),
+	response_output: z.array(z.unknown()).optional(),
 	tool_calls: z
 		.array(
 			z.object({
@@ -79,7 +82,6 @@ export async function completeLiveTurn(
 	trace?: { file: string; sessionId: string; attemptsFile?: string },
 	requireTools = false,
 ): Promise<LiveMessage> {
-	const endpoint = `${provider.baseUrl.replace(/\/+$/, "")}/chat/completions`;
 	const started = Date.now();
 	const requestMessages = [...messages];
 	let retryDelay = 0;
@@ -92,21 +94,14 @@ export async function completeLiveTurn(
 		/** 只在 invalid-json 时填：正文的结构指纹（绝不回显正文）。 */
 		let shape: string | undefined;
 		try {
-			const response = await fetch(endpoint, {
+			const request = liveRequest(provider, requestMessages, requireTools);
+			const response = await fetch(request.url, {
 				method: "POST",
 				headers: {
 					authorization: `Bearer ${provider.key}`,
 					"content-type": "application/json",
 				},
-				body: JSON.stringify({
-					model: provider.model,
-					messages: requestMessages,
-					tools: liveTools,
-					tool_choice: requireTools ? "required" : "auto",
-					temperature: 0,
-					max_tokens: 4096,
-					stream: false,
-				}),
+				body: JSON.stringify(request.body),
 				signal,
 			});
 			status = response.status;
@@ -133,21 +128,10 @@ export async function completeLiveTurn(
 				);
 			}
 			outcome = "invalid-response";
-			interface CompletionBody {
-				id?: string;
-				model?: string;
-				usage?: {
-					prompt_tokens?: number;
-					completion_tokens?: number;
-					total_tokens?: number;
-					cost?: number;
-				};
-				choices?: Array<{ message?: LiveMessage; finish_reason?: string }>;
-			}
-			let body: CompletionBody;
+			let parsed: unknown;
 			const raw = await response.text();
 			try {
-				body = JSON.parse(raw) as CompletionBody;
+				parsed = JSON.parse(raw);
 			} catch {
 				// Proxies sometimes answer 200 with an HTML error page or a truncated
 				// body (live-tenant 2026-09-08: two S7b rounds died on "Failed to
@@ -168,6 +152,7 @@ export async function completeLiveTurn(
 					`真实模型返回了无法解析为 JSON 的正文（尝试 ${attempt + 1} 次）：${shape}`,
 				);
 			}
+			const body: LiveCompletion = liveCompletion(parsed, request.protocol);
 			const choice = body.choices?.[0];
 			if (!choice?.message || choice.finish_reason === "length")
 				throw new Error("真实模型回复为空或达到 token 上限，未执行截断工具");
@@ -181,6 +166,7 @@ export async function completeLiveTurn(
 						sessionId: trace.sessionId,
 						responseId: body.id,
 						model: body.model,
+						protocol: request.protocol,
 						finishReason: choice.finish_reason,
 						elapsedMs: Date.now() - started,
 						usage: body.usage && {

@@ -22,6 +22,8 @@ type UiServer = Bun.Server<undefined> & {
 };
 
 export interface UiServerOptions {
+	/** Keep short timeout reproduction in tests; production retains 120s for ordinary requests. */
+	idleTimeoutSeconds?: number;
 	/**
 	 * Background reconcile period. Tests drive the tick deterministically at a
 	 * short period instead of sleeping the production 15s (TF-0260).
@@ -120,12 +122,17 @@ export async function createUiServer(
 	const server = Bun.serve({
 		port,
 		hostname: "127.0.0.1",
-		fetch: handle,
-		// Bun's default 10s idle timeout kills slow-starting LLM streams: a
-		// free-tier model can think for well over 10s before the first SSE
-		// byte, and the NDJSON chat route dies mid-turn (E2E round 6, found
-		// 2026-09-06). Streaming responses reset the timer on every chunk.
-		idleTimeout: 120,
+		async fetch(request, server) {
+			const response = await handle(request);
+			// Model/tool silence is governed by the turn and process timeouts.
+			// A socket idle timer must not race those and hide their terminal error.
+			if (response.headers.get("content-type") === "application/x-ndjson") {
+				server.timeout(request, 0);
+			}
+			return response;
+		},
+		// Ordinary requests retain a bounded idle timeout; NDJSON turns opt out above.
+		idleTimeout: options.idleTimeoutSeconds ?? 120,
 	});
 
 	const RECONCILE_INTERVAL_MS = options.reconcileIntervalMs ?? 15_000;

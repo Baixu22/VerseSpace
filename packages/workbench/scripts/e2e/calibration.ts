@@ -8,6 +8,7 @@ import {
 	type Server,
 	sendTurn,
 } from "./driver";
+import { liveProtocol } from "./live-wire";
 import type { StepRunner } from "./scenario";
 
 export async function verifyOptionalLlm(
@@ -15,19 +16,22 @@ export async function verifyOptionalLlm(
 	step: StepRunner,
 ): Promise<void> {
 	// 真 LLM 腿（可选）：提供 E2E_LLM_* 环境变量时，通过 /api/config/chat
-	// 把 provider 切到 openai-chat 跑一轮真实的流式模型回合，然后切回来——
+	// 按端点选择 chat/responses 跑一轮真实流式模型回合，然后切回来——
 	// HTTP provider 没有工具通道（足迹 unobservable），这一腿验证的是
 	// 消息管线、SSE 消费与 provider 事实记账，不是足迹。
 	if (process.env.E2E_LLM_KEY && process.env.E2E_LLM_MODEL) {
-		await step("S1b 真 LLM 回合（openai-chat 流式）", async () => {
+		const baseUrl =
+			process.env.E2E_LLM_BASE_URL ?? "https://openrouter.ai/api/v1";
+		const provider = liveProtocol(baseUrl);
+		await step(`S1b 真 LLM 回合（${provider} 流式）`, async () => {
 			const patch = (body: Record<string, unknown>) =>
 				api(server, "/api/config/chat", {
 					method: "PATCH",
 					body: JSON.stringify(body),
 				});
 			await patch({
-				provider: "openai-chat",
-				baseUrl: process.env.E2E_LLM_BASE_URL ?? "https://openrouter.ai/api/v1",
+				provider,
+				baseUrl,
 				model: process.env.E2E_LLM_MODEL,
 			});
 			try {

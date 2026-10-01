@@ -1,5 +1,13 @@
 import { z } from "zod";
+import {
+	artifactDeclarationSchema,
+	artifactSnapshotSchema,
+} from "./artifact-evidence";
 import { verificationStrategySchema } from "./goal";
+import {
+	verificationEvidenceSchema,
+	verificationEvidenceSpecSchema,
+} from "./verification-evidence";
 
 export const CHECKPOINT_LIFECYCLES = [
 	"draft",
@@ -81,6 +89,48 @@ export const SCOPE_LABELS: Record<RollbackScope, string> = {
 	both: "恢复代码与上下文",
 };
 
+/**
+ * 验证绑定（2026-09-30，验证时效性）：「验证通过」是关于特定代码状态的声明，
+ * 不是永久事实。验证前后采集 HEAD 与改动文件状态，并要求两次一致；
+ * runtime 在推进 verified→applied 之前重新采集并比较，不一致就退回 staging
+ * 重新验证，而不是把过期绿灯推进成 applied/done。
+ *
+ * 新验证无法采集或前后状态不一致时停留待审查；旧的无绑定记录保持兼容。
+ */
+export const verificationContextSchema = z.object({
+	/** Canonical cwd used for the check/approval, not just the Git commit. */
+	cwd: z.string().min(1),
+	strategy: z.string().nullable(),
+	command: z.string().nullable(),
+	expectedExitCode: z.number().int(),
+	timeoutSeconds: z.number().positive(),
+	/** A human approval is not evidence that the declared command ran again. */
+	authority: z.enum(["command", "human"]),
+	evidence: z
+		.object({
+			declared: verificationEvidenceSpecSchema,
+			inputs: z.record(z.string(), z.string()),
+			runner: z.object({
+				node: z.string(),
+				bun: z.string().nullable(),
+				platform: z.string(),
+				arch: z.string(),
+			}),
+		})
+		.optional(),
+});
+export type VerificationContext = z.infer<typeof verificationContextSchema>;
+
+export const verificationBindingSchema = z.object({
+	/** 验证完成时工作区的 HEAD commit。 */
+	commit: z.string().min(1),
+	/** 改动文件的内容 hash；null 明确表示删除，干净工作区为空。 */
+	files: z.record(z.string(), z.string().nullable()).default({}),
+	/** Optional for legacy records; all new successful checks/approvals bind it. */
+	context: verificationContextSchema.optional(),
+});
+export type VerificationBinding = z.infer<typeof verificationBindingSchema>;
+
 export const checkpointSchema = z.object({
 	id: z.string().min(1),
 	goal: z.string().min(1),
@@ -90,6 +140,12 @@ export const checkpointSchema = z.object({
 	assertion: z.string().min(1),
 	verification: verificationStrategySchema.optional(),
 	artifacts: z.array(artifactSchema).default([]),
+	/** Optional, explicit single-artifact contract (ADR-0025). */
+	artifact: artifactDeclarationSchema.optional(),
+	artifactOrigin: artifactSnapshotSchema.optional(),
+	artifactBinding: artifactSnapshotSchema.optional(),
+	/** Root checkpoint; rechecks never repeat its effects or complete another goal. */
+	revalidates: z.string().min(1).optional(),
 	blackboardEffects: blackboardEffectsSchema.optional(),
 	unblocks: z.array(unblockEntrySchema).default([]),
 	ephemeralGoal: z.string().optional(),
@@ -106,10 +162,22 @@ export const checkpointSchema = z.object({
 			status: z.string(),
 			output: z.string().optional(),
 			at: z.string(),
+			exitCode: z.number().int().nullable().optional(),
+			evidence: verificationEvidenceSchema.optional(),
 		})
 		.optional(),
 	/** Verification can pass while applying the declared registry changes fails. */
 	applicationError: z.string().optional(),
+	/**
+	 * 验证绑定：验证完成时的代码状态。缺失 = 该次验证不可比较（旧 checkpoint
+	 * 的历史记录），保持既有行为；新采集问题另记 verificationBindingIssue。
+	 */
+	verificationBinding: verificationBindingSchema.optional(),
+	/** 本次验证的代码状态未知/不稳定，检查退出成功也不能自动推进。 */
+	verificationBindingIssue: z.string().optional(),
+	/** 上一次因代码变化而退回重验的原因（保留为读数，不随重验清除）。 */
+	verificationInvalidatedAt: z.string().optional(),
+	verificationInvalidatedReason: z.string().optional(),
 	/** 回退快照（TF-0098）；缺失即无恢复点，回退必须拒绝。 */
 	rollback: rollbackSchema.optional(),
 });

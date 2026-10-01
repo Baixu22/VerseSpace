@@ -40,7 +40,7 @@ export function evaluateCheckpoints(snapshot: WorldSnapshot): Transition[] {
 		} else if (checkpoint.lifecycle === "awaiting_review") {
 			transitions.push({
 				type: "notify_human",
-				message: `checkpoint ${checkpoint.id} 等待人工审查（workbench checkpoint review ${checkpoint.id}）`,
+				message: `checkpoint ${checkpoint.id} 等待人工审查（workbench checkpoint review ${checkpoint.id}）${checkpoint.verificationBindingIssue ? `：${checkpoint.verificationBindingIssue}` : ""}`,
 				severity: "info",
 				tribunal: envelopes.checkpointAwaitingReview(checkpoint.id),
 			});
@@ -49,7 +49,7 @@ export function evaluateCheckpoints(snapshot: WorldSnapshot): Transition[] {
 	}
 
 	for (const checkpoint of [...snapshot.checkpoints.verified].sort(byId)) {
-		if (checkpoint.lifecycle === "verified") {
+		if (checkpoint.lifecycle === "verified" && !checkpoint.revalidates) {
 			transitions.push({
 				type: "checkpoint_lifecycle",
 				cpId: checkpoint.id,

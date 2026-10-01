@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import type { Blackboard } from "../blackboard";
+import { claimStrength } from "../blackboard/claim-version";
 import { hashPathClaim } from "../blackboard/footprint";
 import { NoWorkbenchError } from "../errors";
 import { emitJson, type GlobalOptions } from "../output";
@@ -16,10 +17,13 @@ async function summarize(bb: Blackboard, id: string) {
 	if (!writer) {
 		return null;
 	}
-	const { reads, writes } = await bb.sessions.readSetView(id);
+	const { reads, readFragments, writes } = await bb.sessions.readSetView(id);
 	return {
 		writer,
 		reads: [...reads.values()].sort((a, b) => a.path.localeCompare(b.path)),
+		readFragments: [...readFragments.values()]
+			.flat()
+			.map((read) => ({ ...read, strength: claimStrength(read) })),
 		writes: writes.sort((a, b) => a.seq - b.seq),
 	};
 }
@@ -62,16 +66,21 @@ export async function sessionsShowCommand(
 	if (opts.quiet) {
 		return;
 	}
-	const { writer, reads, writes } = summary;
+	const { writer, reads, readFragments, writes } = summary;
 	console.log(`${writer.id} [${writer.kind}/${writer.status}] ${writer.label}`);
-	console.log(`读集（${reads.length} 个文件，每路径为最后观察到的版本）：`);
-	for (const read of reads) {
+	console.log(
+		`读集（${reads.length} 个文件，${readFragments.length} 个保留的版本/范围观察）：`,
+	);
+	for (const read of readFragments) {
 		const version = read.version
 			? read.version.slice(0, 12)
 			: read.size !== undefined
-				? `${read.size}B（未哈希）`
-				: "未知（文件缺失）";
-		console.log(`  ~ ${read.path} @ ${version}（seq ${read.seq}）`);
+				? `${read.size}B（size-only，仅大小；同尺寸改写不可测）`
+				: "unknown（无可比版本，不代表未变化）";
+		const range = read.span
+			? `，行 ${read.span.start}–${read.span.end === Number.MAX_SAFE_INTEGER ? "EOF" : read.span.end}`
+			: "";
+		console.log(`  ~ ${read.path} @ ${version}（seq ${read.seq}${range}）`);
 	}
 	console.log(`写集（${writes.length} 次）：`);
 	for (const write of writes) {

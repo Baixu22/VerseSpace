@@ -38,7 +38,7 @@
 - 检查 dist 中的归属文件与包内文件一致，流夹具与迁移前 Git blob 一致。
 - 任务森林通过 CLI 保存和应用修正后的提案，再校验并导出；不手写权威图或重写事件。
 
-本轮结果与可复跑命令记在 [验收记录](../retirement-closeout-validation-2026-09-21.md)。
+本轮结果与可复跑命令记在 [验收记录](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/retirement-closeout-validation-2026-09-21.md)。
 
 ## 补记（2026-09-23）：退役范围漏掉了 `docs/user/`
 

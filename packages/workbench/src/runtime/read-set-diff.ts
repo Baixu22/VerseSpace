@@ -1,7 +1,9 @@
 import { stat } from "node:fs/promises";
 import { isAbsolute, join } from "node:path";
 import type { Blackboard } from "../blackboard";
+import { claimStrength, claimVersion } from "../blackboard/claim-version";
 import { hashPathClaim } from "../blackboard/footprint";
+import { foldReadSet } from "../blackboard/session-view";
 import type { ResumeNote } from "../chat/resume";
 
 import { diffFor, spanInvalidated } from "./premises";
@@ -30,6 +32,8 @@ export interface ReadSetFact {
 }
 
 export interface ReadSetDiff {
+	/** Additive observation counts; size-only equality does not prove unchanged content. */
+	strength?: Record<"content-hash" | "size-only" | "unknown", number>;
 	status: "available" | "unknown";
 	baseline: {
 		footprintSeq: number;
@@ -116,11 +120,11 @@ export async function diffReadSet(
 		};
 	}
 
-	const [view, lines, allEvents] = await Promise.all([
-		bb.sessions.readSetView(writerId, baseline.footprintSeq),
+	const [lines, allEvents] = await Promise.all([
 		bb.sessions.footprint(writerId),
 		bb.events.all(),
 	]);
+	const view = foldReadSet(lines, baseline.footprintSeq);
 	const postLeave = await postLeaveWriters(
 		bb,
 		new Set(view.reads.keys()),
@@ -128,74 +132,77 @@ export async function diffReadSet(
 		allEvents,
 	);
 	const stale: ReadSetFact[] = [];
+	const strength = { "content-hash": 0, "size-only": 0, unknown: 0 };
 	let comparable = 0;
 	let excludedDurable = 0;
 	let excludedDirectories = 0;
 	let unsupported = 0;
 	const unsupportedPaths = new Set<string>();
-	for (const [path, claim] of view.reads) {
-		if (claim.durability === "durable") {
+	for (const [path, fragments] of view.readFragments) {
+		const volatile = fragments.filter(
+			(claim) => claim.durability !== "durable",
+		);
+		if (!volatile.length) {
 			excludedDurable += 1;
 			continue;
 		}
-		if (claim.version == null) {
-			// Grep / Glob record the directory they searched. It has no content
-			// version, so counting it would make the coverage number describe
-			// searches rather than file reads (TF-0129).
+		for (const claim of volatile) strength[claimStrength(claim)] += 1;
+		if (volatile.some((claim) => claimVersion(claim) == null)) {
 			if (await isDirectoryClaim(bb.projectRoot, path)) {
 				excludedDirectories += 1;
 				continue;
 			}
 			unsupported += 1;
 			unsupportedPaths.add(path.replace(/\\/g, "/"));
-			continue;
+		} else {
+			comparable += 1;
 		}
-		comparable += 1;
 		const current = await hashPathClaim(bb.projectRoot, path);
-		if (current.version === claim.version) {
-			continue;
-		}
-		let diff: string | undefined;
-		if (claim.span) {
-			diff = await diffFor(bb, writerId, claim);
-			if (!(await spanInvalidated(bb, claim, claim.span, diff))) {
+		for (const claim of volatile) {
+			const observedVersion = claimVersion(claim);
+			if (observedVersion == null || claimVersion(current) === observedVersion)
 				continue;
+			let diff: string | undefined;
+			if (claim.span) {
+				diff = await diffFor(bb, writerId, claim);
+				if (!(await spanInvalidated(bb, claim, claim.span, diff))) continue;
+			} else if (claim.durability === "volatile") {
+				diff = await diffFor(bb, writerId, claim);
 			}
-		} else if (claim.durability === "volatile") {
-			// A restore is a fact check, not an active notification. We still use
-			// the captured diff when available; absent spool means diff is simply
-			// unavailable, never that the claim is safe.
-			diff = await diffFor(bb, writerId, claim);
+			const attribution = postLeave.get(path) ?? {
+				writerId: null,
+				writerKind: null,
+				writerLabel: null,
+				currentEventSeq: null,
+				refs: [],
+			};
+			// The first invalid fragment is the example for this path; its own
+			// footprint is the evidence, never the last unrelated read of the file.
+			const original = baselineClaimRef(lines, path, claim.seq);
+			const refs = [
+				...(original?.eventId
+					? [`footprint:${original.eventId}`]
+					: [`footprintSeq:${claim.seq}`]),
+				...attribution.refs,
+			];
+			stale.push({
+				path,
+				observedVersion,
+				currentVersion: claimVersion(current),
+				writerId: attribution.writerId,
+				writerKind: attribution.writerKind,
+				writerLabel: attribution.writerLabel,
+				...(diff ? { diff } : {}),
+				refs,
+				observedFootprintSeq: claim.seq,
+				currentEventSeq: attribution.currentEventSeq,
+			});
+			break;
 		}
-		const attribution = postLeave.get(path) ?? {
-			writerId: null,
-			writerKind: null,
-			writerLabel: null,
-			currentEventSeq: null,
-			refs: [],
-		};
-		const original = baselineClaimRef(lines, path, baseline.footprintSeq);
-		const refs = [
-			...(original?.eventId
-				? [`footprint:${original.eventId}`]
-				: [`footprintSeq:${original?.seq ?? claim.seq}`]),
-			...attribution.refs,
-		];
-		stale.push({
-			path,
-			observedVersion: claim.version,
-			currentVersion: current.version ?? null,
-			writerId: attribution.writerId,
-			writerKind: attribution.writerKind,
-			writerLabel: attribution.writerLabel,
-			...(diff ? { diff } : {}),
-			refs,
-			observedFootprintSeq: claim.seq,
-			currentEventSeq: attribution.currentEventSeq,
-		});
 	}
 	return {
 		status: "available",
+		strength,
 		baseline: {
 			footprintSeq: baseline.footprintSeq,
 			eventSeq: baseline.eventSeq,
@@ -203,7 +210,7 @@ export async function diffReadSet(
 		},
 		checkedAt,
 		// Directory claims are out of the denominator: see `compared` above.
-		compared: view.reads.size - excludedDirectories,
+		compared: view.readFragments.size - excludedDirectories,
 		comparable,
 		excludedDurable,
 		excludedDirectories,

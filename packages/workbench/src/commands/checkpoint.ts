@@ -1,10 +1,16 @@
+import { readFile } from "node:fs/promises";
 import type { Command } from "commander";
+import { captureArtifactSnapshot } from "../artifacts/snapshot";
+import { listArtifactReviews } from "../artifacts/status";
 import { CHECKPOINT_ZONES } from "../blackboard/checkpoints";
 import { newId } from "../ids";
 import { emitJson, type GlobalOptions } from "../output";
 import { reviewCheckpoint } from "../runtime/review";
 import { captureCodeRollback } from "../runtime/rollback";
+import { checkpointVerificationStatus } from "../runtime/verification-status";
+import { artifactDeclarationSchema } from "../types/artifact-evidence";
 import type { Checkpoint } from "../types/checkpoint";
+import { verificationEvidenceSpecSchema } from "../types/verification-evidence";
 import { resolveBlackboard } from "./context";
 
 export async function checkpointCreate(
@@ -15,6 +21,12 @@ export async function checkpointCreate(
 		strategy?: string;
 		command?: string;
 		timeout?: string;
+		evidence?: string;
+		artifact?: string;
+		input?: string[];
+		targetRef?: string;
+		writer?: string;
+		thread?: string;
 	},
 	command: Command,
 ): Promise<void> {
@@ -23,6 +35,22 @@ export async function checkpointCreate(
 		throw new Error("checkpoint create 需要 --goal、--assertion、--workspot");
 	}
 	const strategy = options.strategy;
+	const evidence = options.evidence
+		? verificationEvidenceSpecSchema.parse(
+				JSON.parse(await readFile(options.evidence, "utf8")),
+			)
+		: undefined;
+	if (evidence && (!strategy || strategy === "human-review"))
+		throw new Error("--evidence 需要自动验证策略");
+	if (options.artifact && !evidence)
+		throw new Error("--artifact 需要 --evidence 声明检查范围");
+	const artifact = options.artifact
+		? artifactDeclarationSchema.parse({
+				path: options.artifact,
+				inputs: options.input ?? [],
+				targetRef: options.targetRef,
+			})
+		: undefined;
 	if (
 		strategy &&
 		!["test", "type-check", "build", "human-review"].includes(strategy)
@@ -67,11 +95,16 @@ export async function checkpointCreate(
 							| "human-review",
 						command: options.command,
 						timeout: options.timeout ? Number(options.timeout) : undefined,
+						evidence,
 					},
 		artifacts: [],
+		artifact,
+		writerId: options.writer,
+		threadId: options.thread,
 		unblocks: [],
 		rollback,
 	};
+	checkpoint.artifactOrigin = await captureArtifactSnapshot(bb, checkpoint);
 	await bb.checkpoints.save(checkpoint, "staging");
 	await bb.goals.update(options.goal, {
 		checkpoints: [...goal.checkpoints, checkpoint.id],
@@ -98,9 +131,30 @@ export async function checkpointList(
 			: options.failed
 				? (["failed"] as const)
 				: CHECKPOINT_ZONES;
-	const grouped = new Map<string, Checkpoint[]>();
+	const artifacts = await listArtifactReviews(bb);
+	const grouped = new Map<
+		string,
+		Array<
+			Checkpoint & {
+				currentVerification: Awaited<
+					ReturnType<typeof checkpointVerificationStatus>
+				>;
+			}
+		>
+	>();
 	for (const zone of zones) {
-		grouped.set(zone, await bb.checkpoints.scanZone(zone));
+		grouped.set(
+			zone,
+			await Promise.all(
+				(await bb.checkpoints.scanZone(zone)).map(async (cp) => ({
+					...cp,
+					currentVerification: await checkpointVerificationStatus(bb, cp),
+					currentArtifact: artifacts.find(
+						(artifact) => artifact.rootId === (cp.revalidates ?? cp.id),
+					),
+				})),
+			),
+		);
 	}
 	if (opts.json) {
 		emitJson(Object.fromEntries(grouped));
@@ -111,7 +165,16 @@ export async function checkpointList(
 				console.log("  （空）");
 			}
 			for (const cp of checkpoints) {
-				console.log(`  ${cp.id}  ${cp.lifecycle.padEnd(16)} ${cp.assertion}`);
+				console.log(
+					`  ${cp.id}  ${cp.lifecycle.padEnd(16)} ${cp.assertion}；${cp.currentVerification.message}`,
+				);
+				const artifact = artifacts.find(
+					(entry) => entry.rootId === (cp.revalidates ?? cp.id),
+				);
+				if (artifact)
+					console.log(
+						`    产物 ${artifact.path}：${artifact.status}；${artifact.reason}；重验入口 checkpoint revalidate ${artifact.checkpointId}`,
+					);
 			}
 		}
 	}

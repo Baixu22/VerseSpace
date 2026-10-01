@@ -216,3 +216,9 @@ app-server 端到端证明封印拿到真实路径并被阻断），以及
 不可归因、仍然只拿默认 `accept`。ADR-0023「对某个命令的负面观测不能泛化」对正反
 两个方向同样成立。完整读数、实现与诚实边界见
 [`docs/handoff/2026-09-27-codex-filechange-seal.md`](../handoff/2026-09-27-codex-filechange-seal.md)。
+
+## 补记（2026-10-01）：原生审批路径的成对实测
+
+接力 #31 在 Codex 0.159.0 + 显式原生 apply_patch 工具目录 + 本地 GLM profile 上取得 own-fresh / own-stale 对照：fresh 有一次 pass 和一条成功写足迹，stale 有一次 block 且不落盘，两者均无写回合复读。原生 item 与审批通过 itemId 归因；0.159 精选协议夹具和成对验收仪器进入仓库，详见[接力记录](../handoff/2026-10-01-issue-relay-closeout.md)。
+
+这是对已观测原生审批路径的证明，不是全通道保证。第二次采集中的 stale 模型报告补丁上下文失配，未出现原生审批、封印未介入，该样本不能算通过；仪器会拒绝。无审批、未知目标、缺读足迹和失败放行的边界继续按 ADR-0023 披露。旧 shell/profile 的缺口读数保留为历史观测，新的原生成对命题独立登记，不改写旧结果。

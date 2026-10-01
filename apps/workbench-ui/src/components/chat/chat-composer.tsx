@@ -50,7 +50,7 @@ export function ChatComposer() {
 						className="max-h-44 min-h-16 w-full resize-none bg-transparent px-1 py-1 text-body leading-relaxed text-fg-default outline-none placeholder:text-fg-muted"
 					/>
 					<div className="mt-2 flex items-center gap-2">
-						<Tooltip content="规划模式：先分析和制定计划，不执行修改">
+						<Tooltip content="规划模式仅在 Claude CLI 进程启动时读取；切换不会改变当前已启动的进程">
 							<Button
 								size="sm"
 								variant={planMode ? "secondary" : "ghost"}
@@ -60,7 +60,7 @@ export function ChatComposer() {
 								className="text-fg-muted"
 							>
 								<ListChecks className="size-3.5" />
-								{planMode ? "规划中" : "规划"}
+								{planMode ? "规划已选" : "规划"}
 							</Button>
 						</Tooltip>
 						<span className="ml-auto hidden text-mini text-fg-muted sm:inline">
@@ -94,6 +94,10 @@ export function ChatComposer() {
 							</Tooltip>
 						</AuiIf>
 					</div>
+					<p className="mt-2 text-mini text-fg-muted">
+						规划开关仅对下次新启动的 Claude CLI
+						进程生效；当前进程不受影响，下一回合可能仍复用当前进程。
+					</p>
 				</ComposerPrimitive.Root>
 			</div>
 		</ThreadPrimitive.ViewportFooter>

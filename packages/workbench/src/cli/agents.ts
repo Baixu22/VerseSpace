@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { agentRun } from "../commands/agent";
 
 import {
+	premisesCurrentCommand,
 	premisesPendingCommand,
 	premisesSealCommand,
 } from "../commands/premises";
@@ -98,7 +99,9 @@ export function registerAgents(program: Command): void {
 
 	const premises = program
 		.command("premises")
-		.description("stale-premise notices recorded but not yet delivered (R2)");
+		.description(
+			"current read premises, notice delivery and the seal point (R2)",
+		);
 
 	premises
 		.command("pending")
@@ -107,6 +110,11 @@ export function registerAgents(program: Command): void {
 			"detection is advisory and runs anywhere; delivery needs a live session, so this is the backlog",
 		)
 		.action((_options, command) => premisesPendingCommand(command));
+	premises
+		.command("current")
+		.summary("inspect current stale inputs independently of delivery")
+		.option("--writer <id>", "only inspect this writer")
+		.action(premisesCurrentCommand);
 
 	premises
 		.command("seal")

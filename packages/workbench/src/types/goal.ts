@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { verificationEvidenceSpecSchema } from "./verification-evidence";
 
 export const GOAL_STATUSES = [
 	"planned",
@@ -23,6 +24,7 @@ export const verificationStrategySchema = z.object({
 	command: z.string().min(1).optional(),
 	expectedExitCode: z.number().int().optional(),
 	timeout: z.number().int().positive().optional(),
+	evidence: verificationEvidenceSpecSchema.optional(),
 });
 export type VerificationStrategy = z.infer<typeof verificationStrategySchema>;
 

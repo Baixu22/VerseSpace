@@ -97,6 +97,7 @@ function settleCommandFootprint(
 	if (!footprint) return;
 	turn.pendingFootprints.delete(itemId);
 	const failed =
+		(item.type === "fileChange" && item.status !== "completed") ||
 		item.status === "failed" ||
 		(typeof item.exitCode === "number" && item.exitCode !== 0);
 	if (failed) return; // a failed command did not prove a read/write

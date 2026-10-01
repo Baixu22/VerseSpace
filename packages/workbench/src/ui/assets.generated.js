@@ -9,7 +9,7 @@ import a7 from "../../../../apps/workbench-ui/dist/assets/geist-mono-latin-wght-
 import a8 from "../../../../apps/workbench-ui/dist/assets/geist-mono-symbols2-wght-normal-GZpp1pK2.woff2" with { type: "file" };
 import a9 from "../../../../apps/workbench-ui/dist/assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2" with { type: "file" };
 import a10 from "../../../../apps/workbench-ui/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2" with { type: "file" };
-import a11 from "../../../../apps/workbench-ui/dist/assets/index-DVoyrqyG.js" with { type: "file" };
+import a11 from "../../../../apps/workbench-ui/dist/assets/index-CvSXJRuy.js" with { type: "file" };
 import a12 from "../../../../apps/workbench-ui/dist/assets/index-OdJn8z8V.css" with { type: "file" };
 import a13 from "../../../../apps/workbench-ui/dist/index.html" with { type: "file" };
 export const files = {
@@ -24,7 +24,7 @@ export const files = {
 	"assets/geist-mono-symbols2-wght-normal-GZpp1pK2.woff2": a8,
 	"assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2": a9,
 	"assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2": a10,
-	"assets/index-DVoyrqyG.js": a11,
+	"assets/index-CvSXJRuy.js": a11,
 	"assets/index-OdJn8z8V.css": a12,
 	"index.html": a13,
 };

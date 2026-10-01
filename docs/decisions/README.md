@@ -30,3 +30,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0022](./0022-claim-status-semantics.md) | 声明状态语义：`done` 必须指向读数（直接/覆盖两级，覆盖须写明「间接」）；无读数覆盖 → `review_needed`；交付物不存在 → `deprecated`；仪器退役的读数只能当观测；读数 stale ≠ 节点未完成 | 已接受 | TF-0278（阶段 TF-0277） |
 | [0023](./0023-research-prototype-closeout.md) | 按工程研究原型收尾：固定核心声明、Codex 实验通道边界、上传面引用裁决；冻结功能扩展；**取代 ADR-0017 关于 Codex 审批不咨询封印的现行描述** | 已接受 | 本轮（2026-09-26） |
 | [0024](./0024-retire-external-validation.md) | 永久关闭非 Windows 实机验证与真人研究；保留四平台交叉编译、Windows 工程验证与 Codex 实验 | 已接受 | TF-0237 / TF-0251 / TF-0265 / TF-0267 |
+| [0025](./0025-declared-verification-and-artifact-revalidation.md) | 声明验证范围、单产物重验与目标基线身份；有限扩展 ADR-0023 | 已接受 | GitHub #49–#57 |

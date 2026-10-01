@@ -8,10 +8,11 @@
  */
 
 import type { Blackboard } from "../blackboard";
-import { collectRestoreView } from "../chat/restore-view";
 import { ChatThreads } from "../chat/threads";
 import { pendingPremiseNotices } from "../runtime/delivery";
+import { currentPremiseNotices } from "../runtime/premises";
 import type { WorkbenchEvent } from "../types/event";
+import { resumeCardText } from "./resume-card";
 
 /** 响应默认体积上限（字符）。 */
 export const DEFAULT_TRUNCATION_CHARS = 2000;
@@ -72,10 +73,15 @@ export const MCP_TOOLS: McpTool[] = [
 	{
 		name: "premises",
 		description:
-			"查询待投递的前提失效通知：哪些写者读过的文件已被其他写者修改（R2 检测结果）。只读，不触发投递。",
+			"查询前提：view=pending（默认）读取待投递通知；view=current 重新核对当前读集，不以送达当作解决。仅限可观测读取，只读。",
 		inputSchema: {
 			type: "object",
 			properties: {
+				view: {
+					type: "string",
+					enum: ["pending", "current"],
+					description: "通知投递状态或当前读取前提。",
+				},
 				writer: {
 					type: "string",
 					description: "按写者 id 过滤（如线程 id 或 git-main）。",
@@ -87,6 +93,16 @@ export const MCP_TOOLS: McpTool[] = [
 			},
 		},
 		async run(params, bb) {
+			if (params.view === "current") {
+				const current = await currentPremiseNotices(
+					bb,
+					typeof params.writer === "string" ? params.writer : undefined,
+				);
+				const top = current.slice(0, limitOf(params.limit, 10));
+				return truncate(
+					`当前失效前提 ${current.length} 个写者（仅限可观测读取；与投递状态无关）：\n${top.map((n) => `- writer=${n.writerId}\n  ${n.stale.map((c) => `${c.path} ${c.observedVersion ?? "未知"} → ${c.currentVersion ?? "未知"}`).join("；")}`).join("\n")}`,
+				);
+			}
 			const pending = await pendingPremiseNotices(bb);
 			const writer =
 				typeof params.writer === "string" && params.writer
@@ -178,31 +194,7 @@ export const MCP_TOOLS: McpTool[] = [
 					? params.threadId
 					: undefined;
 			if (threadId) {
-				const view = await collectRestoreView(bb, chat, threadId);
-				if (!view.resumeCard) {
-					return `线程 ${threadId} 没有恢复卡。`;
-				}
-				const card = view.resumeCard;
-				const beats = (view.resumeNote?.beats ?? [])
-					.map((beat) => `${beat.kind}:${beat.text}`)
-					.join(" | ");
-				const facts = card.facts
-					.slice(0, card.factsPreviewCount)
-					.map(
-						(fact) => `${fact.path}${fact.summary ? ` ${fact.summary}` : ""}`,
-					)
-					.join("；");
-				const coverage = `${card.coverage.status}（${card.coverage.compared}/${card.coverage.comparable} 可比）`;
-				return truncate(
-					[
-						`线程 ${threadId} 恢复卡：`,
-						`- 覆盖：${coverage}`,
-						`- 恢复增量：${view.resumeDelta}`,
-						`- 恢复笔记：${beats || "无"}`,
-						`- 事实：${facts || "无"}`,
-						`- 已忽略：${card.dismissed ? "是" : "否"}；注入：${card.inject ? "是" : "否"}`,
-					].join("\n"),
-				);
+				return truncate(await resumeCardText(bb, chat, threadId));
 			}
 			const metas = await chat.list();
 			const withNotes = metas.filter((meta) => meta.resumeNote);

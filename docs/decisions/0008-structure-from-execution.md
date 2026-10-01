@@ -2,7 +2,7 @@
 
 - 状态：由 [ADR-0010](./0010-premise-custody.md) 收敛；下文保留历史提案
 - 日期：2026-08-30
-- 相关：[`positioning-v6.md`](../positioning-v6.md)（交互层）· [`positioning-v5.md`](../positioning-v5.md) §11.3 R1′（共用同一份采集）
+- 相关：[`positioning-v6.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/positioning-v6.md)（交互层）· [`positioning-v5.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/positioning-v5.md) §11.3 R1′（共用同一份采集）
 
 现行决策：保留从执行取证、默认线性对话与加法式交互；询问式提议 UI 已由 ADR-0009 裁掉。
 L3 必须等待 TF-0136 的真实使用证据门，不能把下文的候选设计当作开工授权。

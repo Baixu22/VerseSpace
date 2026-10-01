@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { hashPathClaim } from "../../src/blackboard/footprint";
 import { reconcilePremises } from "../../src/runtime/premises";
 import { judgeSeal } from "../../src/runtime/seal";
 import { makeTempWorkbench } from "../../src/test/fixtures";
@@ -23,7 +24,7 @@ test("the control uses the lane's own latest claims; another writer cannot stand
 			await ws.bb.sessions.recordActivity(writer, {
 				activity: "read",
 				agent: writer,
-				used: [{ path: target, version: null }],
+				used: [await hashPathClaim(ws.projectDir, target)],
 				generated: [],
 			});
 		}

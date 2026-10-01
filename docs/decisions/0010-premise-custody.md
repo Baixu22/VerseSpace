@@ -4,7 +4,7 @@
 - 日期：2026-09-05
 - 收敛：ADR-0006/0007/0008 的工程边界；其中 socket 投递、通用 saga、自动分类与 L3 开工承诺由本文取代，调研原文保留。
 - 森林节点：TF-0138（父：TF-0121 阶段 A；主线 TF-0120 → TF-0057）
-- 相关：[`positioning-v5.md`](../positioning-v5.md) · [`positioning-v6.md`](../positioning-v6.md) ·
+- 相关：[`positioning-v5.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/positioning-v5.md) · [`positioning-v6.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/positioning-v6.md) ·
   [`fable-brief/05-review/D2-Q1-unified-abstraction.md`](../fable-brief/05-review/D2-Q1-unified-abstraction.md) ·
   ADR-0006（建议式并发）· ADR-0007（单调优先）· ADR-0008（结构从执行推导）· ADR-0009（提议区间为空）
 
@@ -93,7 +93,7 @@ TF-0132（merge-back L1 独立里程碑）已按此裁决 deprecated，只保留
 
 TF-0140 的实测（2026-09-05，claude 2.1.251，脚本
 `packages/workbench/scripts/measure-fork-inheritance.ts`，报告
-[`report-2026-09-05-claude-fork-inheritance.md`](../report-2026-09-05-claude-fork-inheritance.md)）：
+[`report-2026-09-05-claude-fork-inheritance.md`](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/report-2026-09-05-claude-fork-inheritance.md)）：
 
 - `--resume <id> --fork-session` **能**接上 `--input-format stream-json` 铸出的会话，
   且铸新 session id（两次实测）。`src/chat/threads.ts` 的 `ensureClaudeSession` 拼的命令行成立。

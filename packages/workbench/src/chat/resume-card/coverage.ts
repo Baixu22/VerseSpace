@@ -45,6 +45,9 @@ export function coverageOf(
 	}
 	const excludedText =
 		excluded.length > 0 ? `（已剔除 ${excluded.join(" / ")}）` : "";
+	const strength = diff?.strength
+		? `；版本依据：内容 hash ${diff.strength["content-hash"]}，仅大小 ${diff.strength["size-only"]}，未知 ${diff.strength.unknown}（同尺寸大文件改写不可测）`
+		: "；版本依据强度未记录";
 
 	if (diff === null || diff.status === "unknown") {
 		return {
@@ -65,6 +68,6 @@ export function coverageOf(
 	return {
 		...base,
 		status: "available",
-		text: `覆盖率：${base.compared} 个读取里 ${base.comparable} 个可比对，其中 ${base.changed} 个已变${excludedText}${tools}。`,
+		text: `覆盖率：${base.compared} 个读取里 ${base.comparable} 个可比对，其中 ${base.changed} 个已变${excludedText}${tools}${strength}。`,
 	};
 }

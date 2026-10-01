@@ -33,6 +33,15 @@ const verdict = (
  * not "unknown".
  */
 const EVENT_NOOP_REASONS: Record<string, string> = {
+	"item/reasoning/summaryPartAdded":
+		"reasoning summary is outside the chat surface; retained 0.159 sample",
+	"item/reasoning/summaryTextDelta":
+		"reasoning summary is outside the chat surface; retained 0.159 sample",
+	"item/commandExecution/outputDelta":
+		"completed command item carries authoritative output; retained 0.159 sample",
+	"serverRequest/resolved":
+		"approval completion bookkeeping; the session owns the reply",
+	"turn/diff/updated": "aggregate diff duplicates the native fileChange items",
 	"thread/started":
 		"session lifecycle; the thread id is captured by the router",
 	"thread/status/changed": "idle/active bookkeeping",
@@ -79,6 +88,11 @@ const ITEM_DECISIONS: Record<
 		started: "finalized",
 		completed: "finalized",
 		reason: "a shell command — the codex footprint channel",
+	},
+	fileChange: {
+		started: "finalized",
+		completed: "finalized",
+		reason: "native file changes; retained 0.158 approval fixture",
 	},
 	collabAgentToolCall: {
 		started: "finalized",

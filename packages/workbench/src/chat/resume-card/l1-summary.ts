@@ -9,14 +9,18 @@
  *    句子不许出现在摘要里；
  * 2. R3 措辞互斥：「未经 Verifier」与 checkpoint id 不同时出现——引用了
  *    checkpoint 就说明 Verifier 管道知道它，措辞必须换成「无验证结论」；
- * 3. 有 verified@ 必并列「分支自身 k 个前提已失效」（k 可为 0）——验证通过
- *    不等于前提全部有效，这两句话必须同时出现。
+ * 3. 验证历史、当前有效性与当前可观测前提分开展示；历史检测事件不计为
+ *    当前失效文件，失败/超时与缺失绑定都不能写成当前已验证。
  *
  * 摘要是只读投影：builder 不写任何事件、不改任何状态。空分支零痕迹——
  * 没有边界后活动的分支产出零行，调用方据此不建恢复卡行。
  */
 
+import { listArtifactReviews } from "../../artifacts/status";
 import type { Blackboard } from "../../blackboard";
+import { claimVersion } from "../../blackboard/claim-version";
+import { currentPremiseNotices } from "../../runtime/premises";
+import { checkpointVerificationStatus } from "../../runtime/verification-status";
 import type { WorkbenchEvent } from "../../types/event";
 
 const normalize = (path: string) => path.replace(/\\/g, "/");
@@ -189,16 +193,44 @@ export async function buildBranchL1Summary(input: {
 	}
 
 	// ── Verifier 状态 + 失效前提数 ──
-	const premiseRefs: string[] = [];
-	let premiseCount = 0;
-	for (const event of events) {
-		if (event.type !== "premise_stale") continue;
-		const payload = payloadOf(event);
-		if (payload.writer !== branch.id) continue;
-		premiseCount += 1;
-		const ref = eventRef(event);
-		if (ref) premiseRefs.push(ref);
-	}
+	const historical = events.filter(
+		(event) =>
+			event.type === "premise_stale" && payloadOf(event).writer === branch.id,
+	);
+	const [writer, readView, footprint] = await Promise.all([
+		bb.sessions.get(branch.id),
+		bb.sessions.readSetView(branch.id),
+		bb.sessions.footprint(branch.id),
+	]);
+	const observations = [...readView.readFragments.values()].flat();
+	const observedSeqs = new Set(observations.map((read) => read.seq));
+	const comparable = observations.some((read) => claimVersion(read) != null);
+	const current =
+		writer && comparable ? await currentPremiseNotices(bb, branch.id) : [];
+	const premiseCount = current.reduce(
+		(sum, notice) => sum + notice.stale.length,
+		0,
+	);
+	const premiseText =
+		(writer && comparable
+			? `当前观测到 ${premiseCount} 个失效文件（仅限可比读取）`
+			: "当前读取前提覆盖未知") +
+		(historical.length ? `；历史检测记录 ${historical.length} 条` : "");
+	const premiseRefs = [
+		...new Set([
+			...historical.flatMap((event) => {
+				const ref = eventRef(event);
+				return ref ? [ref] : [];
+			}),
+			...footprint
+				.filter((line) => observedSeqs.has(line.seq))
+				.map((line) =>
+					line.eventId
+						? `footprint:${line.eventId}`
+						: `footprintSeq:${line.seq}`,
+				),
+		]),
+	];
 
 	const checkpoints = (
 		await Promise.all([
@@ -214,14 +246,11 @@ export async function buildBranchL1Summary(input: {
 
 	if (latest) {
 		// 引用了 checkpoint 就不能说「未经 Verifier」（R3 互斥）。
-		const verified = latest.verificationResult !== undefined;
-		const verifierText = verified
-			? `Verifier 已验证（checkpoint ${latest.id}）`
-			: `checkpoint ${latest.id} 无验证结论`;
-		// 有 verified@ 必并列分支自身的失效前提数（k 可为 0）。
+		const status = await checkpointVerificationStatus(bb, latest);
+		const verifierText = `checkpoint ${latest.id}：${status.message}`;
 		summary.lines.push({
 			kind: "verifier",
-			text: `${verifierText}；分支自身 ${premiseCount} 个前提已失效`,
+			text: `${verifierText}；${premiseText}`,
 			refs: [latest.id, ...premiseRefs],
 		});
 	} else if (summary.lines.length > 0) {
@@ -232,14 +261,21 @@ export async function buildBranchL1Summary(input: {
 			text: "未经 Verifier",
 			refs: [...ledgerRefs],
 		});
-		if (premiseCount > 0) {
+		if (premiseCount > 0 || historical.length > 0) {
 			summary.lines.push({
 				kind: "premises",
-				text: `分支自身 ${premiseCount} 个前提已失效`,
+				text: premiseText,
 				refs: premiseRefs,
 			});
 		}
 	}
 
+	for (const artifact of await listArtifactReviews(bb, branch.id)) {
+		summary.lines.push({
+			kind: "verifier",
+			text: `产物 ${artifact.path}：${artifact.status}；${artifact.reason}；checkpoint revalidate ${artifact.checkpointId}`,
+			refs: artifact.refs,
+		});
+	}
 	return summary;
 }

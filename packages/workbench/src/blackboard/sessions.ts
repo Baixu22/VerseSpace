@@ -16,10 +16,9 @@ import { sanitizeWriterId } from "./session-paths";
 import type {
 	FootprintEntry,
 	FootprintLine,
-	FootprintUsed,
 	SessionsEvents,
 } from "./session-types";
-import { foldReadSet } from "./session-view";
+import { foldReadSet, type ReadSetView } from "./session-view";
 
 export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 	function dirFor(id: string): string {
@@ -211,16 +210,14 @@ export function sessionsApi(paths: WorkbenchPaths, events: SessionsEvents) {
 
 		/**
 		 * Fold the writer's footprint into a read-set view: for every path,
-		 * the version the writer last observed. `uptoSeq` rebuilds the view
+		 * the last observation (`reads`) and versioned ranges (`readFragments`).
+		 * Validity checks and inheritance consume the ranges. `uptoSeq` rebuilds the view
 		 * as of any earlier moment (footprints are only ever appended).
 		 */
 		async readSetView(
 			writerId: string,
 			uptoSeq?: number,
-		): Promise<{
-			reads: Map<string, FootprintUsed & { seq: number }>;
-			writes: Array<FootprintUsed & { seq: number; ts: string }>;
-		}> {
+		): Promise<ReadSetView> {
 			return foldReadSet(await readFootprintLines(writerId), uptoSeq);
 		},
 

@@ -27,6 +27,9 @@ const verdict = {
 	sealEventsAfterCodex: 0,
 	sealDecisions: [] as unknown[],
 	controlDecision: "",
+	writeMode: process.argv.includes("--native-write") ? "native" : "shell",
+	writeFootprints: 0,
+	readDuringWrite: 0,
 };
 async function measure() {
 	const scenario = probeCase(process.argv.slice(2));
@@ -40,7 +43,7 @@ async function measure() {
 		const target = "src/target.ts";
 		const path = join(ws.projectDir, target);
 		await mkdir(join(ws.projectDir, "src"), { recursive: true });
-		await writeFile(path, "export const target = 1;\n");
+		await writeFile(path, "export const target = 1;\n// append-anchor\n");
 		await ws.bb.config.save({ project: "", chat: { provider: "codex" } });
 		const thread = await chat.create();
 		threadId = thread.id;
@@ -62,7 +65,10 @@ async function measure() {
 		if (scenario === "own-stale") {
 			// Change the export surface as well as the content, avoiding the documented
 			// dependency-body suppression heuristic as a confounder in this experiment.
-			await writeFile(path, "export const changedTarget = 2;\n");
+			await writeFile(
+				path,
+				"export const changedTarget = 2;\n// append-anchor\n",
+			);
 		}
 		await reconcilePremises(ws.bb);
 		const baseline = await sealBaseline(
@@ -77,9 +83,12 @@ async function measure() {
 		const beforeEvents = (await ws.bb.events.query({ type: SEAL_EVENT }))
 			.length;
 		const writeEvents: RunEvent[] = [];
+		const priorFootprints = (await ws.bb.sessions.footprint(thread.id)).length;
 		await chat.run(
 			thread.id,
-			"Run exactly this shell command and report what happened: echo '// written by codex' >> src/target.ts",
+			verdict.writeMode === "native"
+				? "Use your native apply_patch file editing tool with exactly this patch (the unchanged anchor avoids a patch-context failure before approval):\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n // append-anchor\n+// written by codex\n*** End Patch\nDo not reread the file and do not use a shell command to write it. If the tool is declined, report that and stop; do not work around the denial."
+				: "Run exactly this shell command and report what happened: echo '// written by codex' >> src/target.ts",
 			(e) => {
 				writeEvents.push(e);
 			},
@@ -93,6 +102,22 @@ async function measure() {
 		);
 		verdict.sealEventsAfterCodex = events.length;
 		verdict.sealDecisions = events.map((e) => e.payload);
+		const footprints = (await ws.bb.sessions.footprint(thread.id)).slice(
+			priorFootprints,
+		);
+		verdict.writeFootprints = footprints.filter((line) =>
+			line.generated.some((claim) => claim.path === target),
+		).length;
+		verdict.readDuringWrite = footprints.filter((line) =>
+			line.used.some((claim) => claim.path === target),
+		).length;
+		if (process.env.WB_VERIFY_TRACE_DIR) {
+			await mkdir(process.env.WB_VERIFY_TRACE_DIR, { recursive: true });
+			await writeFile(
+				join(process.env.WB_VERIFY_TRACE_DIR, `${scenario}.json`),
+				JSON.stringify({ readEvents, writeEvents, footprints }, null, 2),
+			);
+		}
 		// Frozen pre-write baseline: same writer and claims, even if the model reread
 		// the file during its write turn. This control is excluded from lane counts.
 		verdict.controlDecision = (await decideSeal(ws.bb, baseline)).decision;

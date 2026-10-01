@@ -1,10 +1,10 @@
 import type { Command } from "commander";
-
 import {
 	checkpointCreate,
 	checkpointList,
 	checkpointReview,
 } from "../commands/checkpoint";
+import { checkpointRevalidate } from "../commands/checkpoint-revalidate";
 import { configSet, queueCommand } from "../commands/config";
 
 import { dispatchCommand } from "../commands/dispatch";
@@ -94,7 +94,23 @@ export function registerWorkspace(program: Command): void {
 		.option("--strategy <name>", "test | type-check | build | human-review")
 		.option("--command <cmd>", "override the strategy's default command")
 		.option("--timeout <seconds>", "verification timeout")
+		.option(
+			"--evidence <json-file>",
+			"declared Vitest report, exact test names and non-sensitive file inputs",
+		)
+		.option("--artifact <path>", "single artifact relative to the workspot")
+		.option("--input <paths...>", "explicit artifact input dependencies")
+		.option("--target-ref <ref>", "explicit handoff target ref")
+		.option("--writer <id>", "writer responsible for this artifact")
+		.option("--thread <id>", "thread to show artifact evidence in")
 		.action(checkpointCreate);
+
+	checkpoint
+		.command("revalidate <id>")
+		.description("run declared artifact checks again without repeating effects")
+		.option("--workspot <id>", "explicit execution workspot for this new check")
+		.option("--target-ref <ref>", "explicit new target baseline")
+		.action(checkpointRevalidate);
 
 	checkpoint
 		.command("list")

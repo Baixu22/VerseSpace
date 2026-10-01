@@ -1,4 +1,5 @@
 import type { WorkbenchEvent } from "../types/event";
+import { foldNoticeEvidence } from "./notice-evidence";
 import type {
 	LabeledDelivery,
 	NoticeOutcome,
@@ -88,6 +89,7 @@ export interface HumanNoticeActions {
 }
 
 export interface NoticeOutcomeTotals {
+	evidence: ReturnType<typeof foldNoticeEvidence>;
 	agent: Record<NoticeOutcome, number> & {
 		delivered: number;
 		/** Unknowns split by why, so "unknown" is never a shrug. */
@@ -160,6 +162,7 @@ export function foldNoticeOutcomes(
 	}
 
 	return {
+		evidence: foldNoticeEvidence(events),
 		agent,
 		human,
 		rows: agent.delivered + human.actions + human.notesConsumed,

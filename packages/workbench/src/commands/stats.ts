@@ -136,7 +136,7 @@ function printCalibrationTable(outcomes: ChatStats["noticeOutcomes"]): void {
 		`校准表：${outcomes.rows} 行（agent 结局 ${agent.delivered} / 人侧动作 ${human.actions + human.notesConsumed}）`,
 	);
 	const left: Array<[string, number]> = [
-		["repaired 已修补", agent.repaired],
+		["repaired 已重读", agent.repaired],
 		["ignored 未读直改", agent.ignored],
 		["sealed 被封印", agent.sealed],
 		["dismissed 未再触碰", agent.dismissed],
@@ -154,6 +154,17 @@ function printCalibrationTable(outcomes: ChatStats["noticeOutcomes"]): void {
 		const h = right[index];
 		const rightCell = h ? `${h[0]} ${h[1]}` : "";
 		console.log(`  ${padCell(cells[index] ?? "", column)}│ ${rightCell}`);
+	}
+	console.log(
+		"  repaired 仅表示观察到重读（可能伴随写入），不证明版本已更新或程序验证通过。",
+	);
+	console.log(
+		`  证据分项（分母 ${outcomes.evidence.denominator}，可重叠，不是修复率）：`,
+	);
+	for (const [kind, counts] of Object.entries(outcomes.evidence.dimensions)) {
+		console.log(
+			`    ${kind}：已观察 ${counts.observed} / 未观察 ${counts.notObserved} / 未知 ${counts.unknown}`,
+		);
 	}
 	// ignored is the dangerous state: it never hides inside the aggregate.
 	if (agent.ignored > 0) {

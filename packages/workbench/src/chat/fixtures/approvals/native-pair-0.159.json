@@ -1,0 +1,113 @@
+{
+	"provenance": "Real Codex 0.159.0 app-server + local GLM 5.3 flash, 2026-10-01; own-fresh/own-stale. IDs and absolute paths normalized, reasoning text redacted, repeated telemetry omitted. Raw capture remains local.",
+	"frames": [
+		{
+			"method": "item/reasoning/summaryPartAdded",
+			"params": {
+				"threadId": "sample-1",
+				"turnId": "sample-2",
+				"itemId": "sample-3",
+				"summaryIndex": 0
+			},
+			"emittedAtMs": 1790832625416
+		},
+		{
+			"method": "item/reasoning/summaryTextDelta",
+			"params": {
+				"threadId": "sample-1",
+				"turnId": "sample-2",
+				"itemId": "sample-3",
+				"delta": "[reasoning summary redacted]",
+				"summaryIndex": 0
+			},
+			"emittedAtMs": 1790832625416
+		},
+		{
+			"method": "item/commandExecution/outputDelta",
+			"params": {
+				"threadId": "sample-1",
+				"turnId": "sample-2",
+				"itemId": "sample-4",
+				"delta": "export const target = 1;"
+			},
+			"emittedAtMs": 1790832629642
+		},
+		{
+			"method": "item/started",
+			"params": {
+				"item": {
+					"type": "fileChange",
+					"id": "sample-5",
+					"changes": [
+						{
+							"path": "src/target.ts",
+							"kind": {
+								"type": "update",
+								"move_path": null
+							},
+							"diff": "@@ -1 +1,2 @@\n export const target = 1;\n+// written by codex\n"
+						}
+					],
+					"status": "inProgress"
+				},
+				"threadId": "sample-1",
+				"turnId": "sample-6",
+				"startedAtMs": 1790832640428
+			},
+			"emittedAtMs": 1790832640428
+		},
+		{
+			"method": "item/fileChange/requestApproval",
+			"id": 0,
+			"params": {
+				"threadId": "sample-1",
+				"turnId": "sample-6",
+				"itemId": "sample-5",
+				"startedAtMs": 1790832640429,
+				"reason": null,
+				"grantRoot": null
+			}
+		},
+		{
+			"method": "serverRequest/resolved",
+			"params": {
+				"threadId": "sample-1",
+				"requestId": 0
+			},
+			"emittedAtMs": 1790832640441
+		},
+		{
+			"method": "item/completed",
+			"params": {
+				"item": {
+					"type": "fileChange",
+					"id": "sample-5",
+					"changes": [
+						{
+							"path": "src/target.ts",
+							"kind": {
+								"type": "update",
+								"move_path": null
+							},
+							"diff": "@@ -1 +1,2 @@\n export const target = 1;\n+// written by codex\n"
+						}
+					],
+					"status": "completed"
+				},
+				"threadId": "sample-1",
+				"turnId": "sample-6",
+				"completedAtMs": 1790832641603
+			},
+			"emittedAtMs": 1790832641605
+		},
+		{
+			"method": "turn/diff/updated",
+			"params": {
+				"threadId": "sample-1",
+				"turnId": "sample-6",
+				"diff": "diff --git a/src/target.ts b/src/target.ts\nindex c510ef926589f9a4b44f399176ed5718fa528c87..b8bef0645a9f91f63f13203e7abb6ab2352b7da6\n--- a/src/target.ts\n+++ b/src/target.ts\n@@ -1 +1,2 @@\n export const target = 1;\n+// written by codex\n"
+			},
+			"emittedAtMs": 1790832641605
+		}
+	]
+}

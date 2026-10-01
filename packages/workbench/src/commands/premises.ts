@@ -2,11 +2,40 @@ import type { Command } from "commander";
 import { NoWorkbenchError } from "../errors";
 import { emitJson, type GlobalOptions } from "../output";
 import { pendingPremiseNotices } from "../runtime/delivery";
+import { currentPremiseNotices } from "../runtime/premises";
 import { decideSeal, targetOfHookInput } from "../runtime/seal";
 import type { SealMode } from "../runtime/seal-counts";
 import { resolveBlackboard } from "./context";
 
 const SEAL_MODES: readonly string[] = ["block", "warn", "off"];
+
+/** Current input observations are independent of notification delivery. */
+export async function premisesCurrentCommand(
+	options: { writer?: string },
+	command: Command,
+): Promise<void> {
+	const opts = command.optsWithGlobals() as GlobalOptions;
+	const bb = await resolveBlackboard();
+	const current = await currentPremiseNotices(bb, options.writer);
+	if (opts.json) {
+		emitJson({ current });
+		return;
+	}
+	if (opts.quiet) return;
+	if (!current.length)
+		console.log(
+			"未检测到当前失效前提（仅限已记录且可观测的读取，不代表完整覆盖）。",
+		);
+	for (const notice of current) {
+		console.log(
+			`${notice.writerId}：${notice.stale.length} 个文件的读取前提仍失效（与通知是否送达无关）`,
+		);
+		for (const claim of notice.stale)
+			console.log(
+				`  ~ ${claim.path} ${claim.observedVersion ?? "未知"} → ${claim.currentVersion ?? "未知"}`,
+			);
+	}
+}
 
 /**
  * R2's inspection surface. Detection writes `premise_stale` events; this
@@ -115,16 +144,9 @@ export async function premisesSealCommand(
 		return;
 	}
 
-	const pending = await pendingPremiseNotices(bb);
-	const claims = (
-		writerId
-			? pending.filter((notice) => notice.writerId === writerId)
-			: pending
-	).flatMap((notice) => notice.claims);
 	const outcome = await decideSeal(bb, {
 		target,
 		writerId,
-		claims,
 		mode: SEAL_MODES.includes(options.mode as SealMode)
 			? (options.mode as SealMode)
 			: undefined,

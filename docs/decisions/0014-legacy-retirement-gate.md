@@ -3,7 +3,7 @@
 - 状态：已接受（2026-09-19）
 - 森林节点：TF-0218（删除 `apps/marketing` 与 `apps/registry`）、TF-0219（退役闸门核查）；归属阶段 7 `TF-0213`，上级目标 `TF-0176`
 - 补充/兑现：ADR-0013 决策 6 预留的「退役闸门另立 ADR-0014（尚未撰写）」
-- 相关：[吸收分析报告](../helmor-absorption-deep-exploration-2026-09-17.md)、ADR-0013、ADR-0011、ADR-0003
+- 相关：[吸收分析报告](https://github.com/Baixu22/VerseSpace/blob/799f89cd94ce774458e70c822bf116350d73fcb6/docs/helmor-absorption-deep-exploration-2026-09-17.md)、ADR-0013、ADR-0011、ADR-0003
 
 ## 背景
 

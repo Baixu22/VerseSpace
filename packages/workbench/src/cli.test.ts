@@ -4,7 +4,7 @@ import { createServer } from "node:net";
 import { join } from "node:path";
 import type { Command } from "commander";
 import { buildProgram } from "./cli";
-import { makeTempWorkbench } from "./test/fixtures";
+import { initGitFixture, makeTempWorkbench } from "./test/fixtures";
 
 describe("buildProgram", () => {
 	test("exposes the scaffolded top-level command tree", () => {
@@ -63,6 +63,7 @@ describe("buildProgram", () => {
 		}
 		expect(premises.commands.map((command) => command.name())).toEqual([
 			"pending",
+			"current",
 			"seal",
 			"review-seal",
 		]);
@@ -498,12 +499,29 @@ describe("argv execution", () => {
 			label: "checkpoint review <id>",
 			build: async (ws) => {
 				await seedCheckpoint(ws);
+				await seedWorkspot(ws);
+				const cwd = join(ws.projectDir, "worktrees", WORKSPOT_ID);
+				await mkdir(cwd, { recursive: true });
+				initGitFixture(cwd);
 				return ["checkpoint", "review", CHECKPOINT_ID, "--approve"];
 			},
 			verify: async (ws) => {
 				const verified = await ws.bb.checkpoints.scanZone("verified");
 				expect(verified.some((cp) => cp.id === CHECKPOINT_ID)).toBe(true);
+				expect(
+					verified.find((cp) => cp.id === CHECKPOINT_ID)?.verificationBinding
+						?.commit,
+				).toBeTruthy();
 			},
+		},
+		{
+			path: ["checkpoint", "revalidate"],
+			label: "checkpoint revalidate <id>",
+			build: async (ws) => {
+				await seedCheckpoint(ws);
+				return ["checkpoint", "revalidate", CHECKPOINT_ID, "--json"];
+			},
+			rejects: /没有声明产物依赖/,
 		},
 		{
 			path: ["dispatch"],

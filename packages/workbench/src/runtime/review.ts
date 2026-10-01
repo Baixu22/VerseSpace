@@ -1,5 +1,6 @@
 import type { Blackboard } from "../blackboard";
 import type { Checkpoint } from "../types/checkpoint";
+import { captureBindingForCheckpoint } from "./verification-binding";
 
 export interface ReviewOutcome {
 	ok: boolean;
@@ -37,7 +38,29 @@ export async function reviewCheckpoint(
 		};
 	}
 	const verdict: Checkpoint["lifecycle"] = approve ? "verified" : "rejected";
-	await bb.checkpoints.save({ ...checkpoint, lifecycle: verdict }, "staging");
+	// 人工审查通过同样是关于「审查时那份代码」的声明：批准时一并采集验证绑定，
+	// verified→applied 之前会重新确认，代码其后变化则退回重验
+	// （verification-binding.ts）。采集不可用时不能批准为当前有效。
+	const binding = approve
+		? await captureBindingForCheckpoint(bb, checkpoint)
+		: undefined;
+	if (approve && !binding) {
+		return {
+			ok: false,
+			id: cpId,
+			verdict,
+			reason: "当前工作区代码状态未知，无法批准；请恢复可读的 Git 工作区后重试",
+		};
+	}
+	await bb.checkpoints.save(
+		{
+			...checkpoint,
+			lifecycle: verdict,
+			verificationBinding: binding,
+			verificationBindingIssue: undefined,
+		},
+		"staging",
+	);
 	await bb.checkpoints.move(cpId, "staging", approve ? "verified" : "failed");
 	await bb.events.append({
 		timestamp: new Date().toISOString(),

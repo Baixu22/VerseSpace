@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { spawnSync } from "node:child_process";
 import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -8,7 +7,9 @@ import { type Blackboard, openBlackboard } from "../blackboard";
 import { checkpointCreate } from "../commands/checkpoint";
 import { initWorkbench } from "../commands/init";
 import { runDoctor } from "../doctor";
+import { createWorktree } from "../git";
 import { runOnce } from "../runtime";
+import { initGitFixture } from "../test/fixtures";
 import type { Checkpoint } from "../types/checkpoint";
 import type { Workspot } from "../types/workspot";
 
@@ -32,10 +33,7 @@ async function makeGitProject(): Promise<{
 		`workbench-e2e-${Date.now()}-${Math.random().toString(36).slice(2)}`,
 	);
 	await mkdir(projectDir, { recursive: true });
-	const git = spawnSync("git", ["init", "-q"], { cwd: projectDir });
-	if (git.status !== 0) {
-		throw new Error(`git init failed: ${git.stderr?.toString()}`);
-	}
+	initGitFixture(projectDir);
 	await initWorkbench(projectDir);
 	const bb = openBlackboard(join(projectDir, ".workbench"));
 	return {
@@ -52,7 +50,8 @@ async function dropCheckpoint(
 	scriptExitCode: number,
 ): Promise<string> {
 	const worktree = join(projectDir, "worktrees", "ws-a");
-	await mkdir(worktree, { recursive: true });
+	const created = await createWorktree(projectDir, worktree, "mvp-workspot");
+	if (!created.ok) throw new Error(created.reason);
 	await writeFile(
 		join(worktree, "script.js"),
 		`if (${scriptExitCode} !== 0) console.error("verification blew up");\nprocess.exit(${scriptExitCode});\n`,
