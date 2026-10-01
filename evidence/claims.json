@@ -344,7 +344,7 @@
 		},
 		{
 			"id": "claim-codex-write-seal-gap",
-			"statement": "own-stale 对照：Codex 写侧在前提失效时仍落盘，封印 0 次介入，而同一 decideSeal 对照判 block（写侧不在封印保护内）",
+			"statement": "历史 own-stale shell 写入观测：当时写入落盘且封印未介入；不代表已验证的原生 fileChange 审批路径",
 			"instrument": [
 				"packages/workbench/scripts/verify/codex-write-seal.ts",
 				"packages/workbench/scripts/verify/codex-seal-baseline.ts",
@@ -365,7 +365,8 @@
 				"sealEventsAfterCodex": "number",
 				"controlDecision": "string"
 			},
-			"class": "L1",
+			"class": "L3",
+			"retired_reason": "2026-10-01 原生工具成对验收单独登记；旧 shell/profile 的观测保留，不作为当前原生路径声明。未归因 shell 和无审批写入仍不保证受保护。",
 			"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --case own-stale --json",
 			"expected": {
 				"staleClaims": 1,
@@ -374,6 +375,28 @@
 				"controlDecision": "block"
 			},
 			"docs": ["docs/handoff/2026-09-27-codex-write-seal-gap.md"]
+		},
+		{
+			"id": "claim-codex-native-seal",
+			"statement": "显式原生工具的隔离 Codex profile：own-fresh 放行且有写足迹，own-stale 封印阻断且无写足迹，两者无复读；不是全通道写保护保证",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-native-pair.ts",
+				"packages/workbench/scripts/verify/codex-write-seal.ts",
+				"packages/workbench/scripts/verify/codex-seal-baseline.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/**",
+				"packages/workbench/scripts/verify/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": { "passed": "number", "total": "number" },
+			"class": "L1",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
+			"expected": { "passed": 2, "total": 2 },
+			"docs": ["docs/handoff/2026-10-01-issue-relay-closeout.md"]
 		},
 		{
 			"id": "claim-upload-surface-tests",

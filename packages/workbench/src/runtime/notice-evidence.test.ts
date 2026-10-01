@@ -122,3 +122,42 @@ test("unobservable, weak versions and missing artifact relations stay unknown", 
 		scopeVerified: "unknown",
 	});
 });
+
+test("a later window compares writes with the latest observed artifact, not its original version", () => {
+	const modified = hashText("already modified");
+	const events = timeline(fresh, modified);
+	events.splice(2, 0, {
+		...events[3]!,
+		payload: {
+			writer: "w",
+			used: [],
+			generated: [{ path: "consumer.ts", version: modified }],
+		},
+	});
+	const ordered = events.map((event, i) => ({
+		...event,
+		id: `e${i}`,
+		eventSeq: i + 1,
+	}));
+	expect(noticeEvidence(ordered)[0]?.observations.artifactModified).toBe(
+		"notObserved",
+	);
+	(ordered.at(-1)!.payload as Record<string, unknown>).generated = [
+		{ path: "consumer.ts", version: hashText("another modification") },
+	];
+	expect(noticeEvidence(ordered)[0]?.observations.artifactModified).toBe(
+		"observed",
+	);
+	const verifiedBaseline = timeline(fresh, modified);
+	(verifiedBaseline[0]!.payload as Record<string, unknown>).verifiedAt = {
+		files: { "consumer.ts": modified },
+	};
+	expect(
+		noticeEvidence(verifiedBaseline)[0]?.observations.artifactModified,
+	).toBe("notObserved");
+	const unknownBaseline = timeline(fresh, modified);
+	(unknownBaseline[0]!.payload as Record<string, unknown>).origin = undefined;
+	expect(
+		noticeEvidence(unknownBaseline)[0]?.observations.artifactModified,
+	).toBe("unknown");
+});

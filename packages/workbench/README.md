@@ -121,7 +121,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 | 车道 | provider | 读集（agent 读了哪些文件） | 前提失效时 |
 | --- | --- | --- | --- |
 | 工具车道 | `claude`（本机 Claude Code） | **可观测**：工具调用留下足迹，可追溯到具体文件 | 能定位受影响的消息，并给出证据 |
-| 实验工具车道 | `codex` | 部分可观测：结构化路径与有限 cat 后备解析；无路径的 Get-Content 不被捕获 | 可归因写审批会咨询 seal；缺足迹、无审批或无法归因时不受保护，**真实写保护未验证** |
+| 实验工具车道 | `codex` | 部分可观测：结构化路径与有限 cat 后备解析；无路径的 Get-Content 不被捕获 | 可归因写审批会咨询 seal；缺足迹、无审批或无法归因时不受保护，**仅显式原生工具 profile 的 fresh/stale 对照已验**（见[接力记录](../../docs/handoff/2026-10-01-issue-relay-closeout.md)） |
 | 纯文本车道 | `openai-chat` / `openai-responses` / `anthropic` | **不可观测**：没有工具通道，读过什么无从得知 | 只能标注「读集不可观测、不参与继承」，不给证据 |
 
 选择建议：要让前提链成立（读集继承、失效定位、分叉时的读集来源），用 `claude`；只做对话、不在意前提链，HTTP 车道可用且不需要本机 Claude 登录。面板线程头按**每一轮实际使用的 provider** 标注可观测性——provider 是全局配置，同一条线程换过 provider 时，标注跟着最后一轮走，不回头改写历史轮次。

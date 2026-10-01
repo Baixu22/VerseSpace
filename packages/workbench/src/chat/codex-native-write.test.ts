@@ -3,8 +3,14 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { hashText } from "../hash";
 import { makeTempWorkbench } from "../test/fixtures";
+import { approvalTargets } from "./codex-app-server/approval-targets";
+import { FileChangePathIndex } from "./codex-app-server/file-change-paths";
 import { normalizeNotification } from "./codex-app-server/protocol";
-import { createCodexRenderState } from "./codex-render-state";
+import { resolveCodexRenderDecision } from "./codex-render-decision";
+import {
+	createCodexRenderState,
+	reduceCodexRenderEvent,
+} from "./codex-render-state";
 import { type CodexTurnState, routeCodexEvent } from "./codex-router";
 import type { ThreadContext } from "./thread-context";
 
@@ -82,4 +88,42 @@ test("retained native create/update frames render and capture only completed wri
 	} finally {
 		await ws.cleanup();
 	}
+});
+
+test("real 0.159 native approval correlates with its item; sampled telemetry has explicit decisions", async () => {
+	const fixture = JSON.parse(
+		await readFile(
+			join(import.meta.dir, "fixtures/approvals/native-pair-0.159.json"),
+			"utf8",
+		),
+	);
+	const index = new FileChangePathIndex();
+	const state = createCodexRenderState();
+	let approvals = 0;
+	for (const frame of fixture.frames) {
+		if (frame.method === "item/fileChange/requestApproval") {
+			const target = approvalTargets(
+				frame.method,
+				frame.params,
+				index.pathsFor(frame.params.itemId),
+			);
+			expect(target).toEqual({
+				isApproval: true,
+				kind: "write",
+				paths: ["src/target.ts"],
+			});
+			approvals++;
+			continue;
+		}
+		const event = normalizeNotification(frame.method, frame.params);
+		index.note(event);
+		expect(resolveCodexRenderDecision(event)).toBeDefined();
+		reduceCodexRenderEvent(state, event);
+	}
+	expect(approvals).toBe(1);
+	expect(
+		state.messageParts.some(
+			(part) => part.type === "tool-call" && part.toolName === "fileChange",
+		),
+	).toBe(true);
 });

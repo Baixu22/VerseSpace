@@ -27,6 +27,52 @@ function claims(value: unknown): Claim[] {
 		: [];
 }
 
+/** Compare each write with the latest observed version, including earlier windows. */
+function artifactModification(
+	timeline: WorkbenchEvent[],
+	start: number,
+	writer: string,
+	paths: Set<string>,
+): Observation {
+	const versions = new Map<string, string | null | undefined>();
+	const artifacts = new Set<string>();
+	let unknown = false;
+	for (const [index, event] of timeline.entries()) {
+		const payload = payloadOf(event);
+		if (event.type === "artifact_validity") {
+			const review = event.payload as unknown as ArtifactReview;
+			if (
+				(review.writerId === writer || review.threadId === writer) &&
+				review.inputs?.some((path) => paths.has(path))
+			) {
+				artifacts.add(review.path);
+				if (!versions.has(review.path))
+					versions.set(
+						review.path,
+						review.verifiedAt?.files[review.path] ??
+							review.origin?.files[review.path],
+					);
+			}
+		}
+		if (event.type !== "footprint") continue;
+		for (const read of claims(payload.used))
+			versions.set(read.path, read.version);
+		for (const write of claims(payload.generated)) {
+			const before = versions.get(write.path);
+			if (
+				index >= start &&
+				payload.writer === writer &&
+				artifacts.has(write.path)
+			) {
+				if (!exact(before) || !exact(write.version)) unknown = true;
+				else if (before !== write.version) return "observed";
+			}
+			versions.set(write.path, write.version);
+		}
+	}
+	return unknown ? "unknown" : "notObserved";
+}
+
 /** Per successful delivery window; these dimensions overlap, and are not repair correctness. */
 export function noticeEvidence(events: WorkbenchEvent[]) {
 	const timeline = ordered(events);
@@ -55,9 +101,6 @@ export function noticeEvidence(events: WorkbenchEvent[]) {
 				event.type === "footprint" && payloadOf(event).writer === writer,
 		);
 		const reads = footprints.flatMap((event) => claims(payloadOf(event).used));
-		const writes = footprints.flatMap((event) =>
-			claims(payloadOf(event).generated),
-		);
 		const observable =
 			payload.readObservability !== "unobservable" &&
 			footprints.length > 0 &&
@@ -93,20 +136,13 @@ export function noticeEvidence(events: WorkbenchEvent[]) {
 				observable && relations.length > 0 ? "notObserved" : "unknown",
 			scopeVerified: relations.length > 0 ? "notObserved" : "unknown",
 		};
-		if (
-			observable &&
-			relations.some(
-				(review) =>
-					exact(review.origin?.files[review.path]) &&
-					writes.some(
-						(write) =>
-							write.path === review.path &&
-							exact(write.version) &&
-							write.version !== review.origin?.files[review.path],
-					),
-			)
-		)
-			observations.artifactModified = "observed";
+		if (observable && relations.length > 0)
+			observations.artifactModified = artifactModification(
+				timeline.slice(0, window.end),
+				window.start,
+				writer,
+				paths,
+			);
 		const verified = windowEvents.filter((event) => {
 			if (event.type !== "artifact_validity") return false;
 			const review = event.payload as unknown as ArtifactReview;
