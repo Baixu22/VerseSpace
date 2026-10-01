@@ -336,16 +336,22 @@ describe("Codex write-turn capture (issue #31)", () => {
 		}
 	});
 
-	test("the real write turn also carries shapes the render table has no decision for", async () => {
+	test("historical write-turn shapes distinguish newly modeled telemetry from remaining gaps", async () => {
 		// 这几行是 dump 的原样参数（归一化成 `type`-tagged 形态），不是本仓库的
 		// 夹具：它们进不了 `streams/codex/`，因为那里的门禁要求每个夹具零
 		// undecided。它们出现的次数（dump 全量）：outputDelta 82、
 		// summaryTextDelta 71、summaryPartAdded 8、serverRequest/resolved 5、
 		// warning 1、remoteControl/status/changed 1。
+		const modeled = new Set([
+			"item/commandExecution/outputDelta",
+			"item/reasoning/summaryTextDelta",
+			"item/reasoning/summaryPartAdded",
+			"serverRequest/resolved",
+		]);
 		for (const { key, event } of UNMODELED_REAL_SHAPES) {
 			const result = reduceCodexRenderEvent(createCodexRenderState(), event);
-			expect(result.decision, `${key} 现在有决策了：请更新这份读数`).toBe(
-				"undecided",
+			expect(result.decision, key).toBe(
+				modeled.has(key) ? "noop" : "undecided",
 			);
 			expect(result.decisionKey).toBe(key);
 		}
