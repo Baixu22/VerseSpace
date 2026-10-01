@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-upload-surface-clean",
 	"instrument_sha256": "scripts/check-upload-surface.mjs:1a86bd91368bdc1bc5b1209bca0fc23898349e90b82c5affde3ee388a8786d48\nscripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/policy.json:765e2eee1db0e6180e2001fa71d7cc6062180a05f96c328fdcd9e020110a2a7c",
-	"subject_sha": "7f3cc2f08eded68b24fd6bccb640e9bbc68d5c18",
+	"subject_sha": "7b83d2744aafb8ffc7650af2fb87736bf4af59bf",
 	"environment": {
 		"os": "windows-x64",
 		"bun": "1.3.14",
 		"checkout": "isolated issue-relay-acceptance"
 	},
-	"measured_at": "2026-10-01T06:21:24.703Z",
+	"measured_at": "2026-10-01T06:24:58.220Z",
 	"reading": {
 		"exit": 0,
 		"violations": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:3c6cf12d3ccf35f0dd5f60d7445cd44d360e4e8a7f073b6cbf340e4a99467e29",
+	"raw_digest": "sha256:5cabeb31363c44243d9b9ac9fb74c6532ecfdf52a30994aac480e1d79d953474",
 	"reproduce": "node scripts/check-upload-surface.mjs --strict-references",
 	"class": "curated-evidence"
 }
