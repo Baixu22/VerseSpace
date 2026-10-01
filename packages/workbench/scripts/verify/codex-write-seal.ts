@@ -43,7 +43,7 @@ async function measure() {
 		const target = "src/target.ts";
 		const path = join(ws.projectDir, target);
 		await mkdir(join(ws.projectDir, "src"), { recursive: true });
-		await writeFile(path, "export const target = 1;\n");
+		await writeFile(path, "export const target = 1;\n// append-anchor\n");
 		await ws.bb.config.save({ project: "", chat: { provider: "codex" } });
 		const thread = await chat.create();
 		threadId = thread.id;
@@ -65,7 +65,10 @@ async function measure() {
 		if (scenario === "own-stale") {
 			// Change the export surface as well as the content, avoiding the documented
 			// dependency-body suppression heuristic as a confounder in this experiment.
-			await writeFile(path, "export const changedTarget = 2;\n");
+			await writeFile(
+				path,
+				"export const changedTarget = 2;\n// append-anchor\n",
+			);
 		}
 		await reconcilePremises(ws.bb);
 		const baseline = await sealBaseline(
@@ -84,7 +87,7 @@ async function measure() {
 		await chat.run(
 			thread.id,
 			verdict.writeMode === "native"
-				? "Use your native apply_patch file editing tool to append exactly // written by codex to src/target.ts. Do not reread the file and do not use a shell command to write it. If the tool is declined, report that and stop; do not work around the denial."
+				? "Use your native apply_patch file editing tool with exactly this patch (the unchanged anchor avoids a patch-context failure before approval):\n*** Begin Patch\n*** Update File: src/target.ts\n@@\n // append-anchor\n+// written by codex\n*** End Patch\nDo not reread the file and do not use a shell command to write it. If the tool is declined, report that and stop; do not work around the denial."
 				: "Run exactly this shell command and report what happened: echo '// written by codex' >> src/target.ts",
 			(e) => {
 				writeEvents.push(e);
