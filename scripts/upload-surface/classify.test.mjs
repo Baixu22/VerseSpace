@@ -218,6 +218,32 @@ test("real policy: E2E artifacts under a nested package are local-only", () => {
 	}
 });
 
+test("real policy: misplaced Windows caches stay local and cannot be uploaded", () => {
+	const real = loadPolicy({
+		policyPath: join(HERE, "policy.json"),
+		inventoryPath: join(HERE, "legacy-local-docs.json"),
+	});
+	const caches = [
+		"%SystemDrive%/ProgramData/Microsoft/Windows/Caches/cversions.2.db",
+		"%SystemDrive%/ProgramData/Microsoft/Windows/Caches/{6AF0698E-D558-4F6E-9B3C-3716689AF493}.2.ver0x0000000000000001.db",
+		"%SystemDrive%/ProgramData/Microsoft/Windows/Caches/{DDF571F2-BE98-426D-8288-1A9A39C3FDA2}.2.ver0x0000000000000001.db",
+	];
+	assert.equal(evaluate({ policy: real, ignored: caches }).status, "clean");
+	assert.deepEqual(
+		evaluate({ policy: real, uploaded: caches }).violations.map((v) => v.code),
+		caches.map(() => "useless-uploaded"),
+	);
+	const compiled = compilePolicy(real);
+	for (const path of [
+		"%SystemDrive%/ProgramData/Microsoft/Windows/Other/cache.db",
+		"%SystemDrive%/ProgramData/Microsoft/Windows/Caches-backup/cache.db",
+		"data/application.db",
+	]) {
+		assert.equal(classifyPath(compiled, path).class, "unclassified", path);
+	}
+	assert.equal(classifyPath(compiled, "README.md").class, "outcome");
+});
+
 test("real policy: the frozen inventory may only shrink", () => {
 	// Guards the doctrine rather than the code: an entry that an explicit rule
 	// now covers is dead weight, and the list growing is how "有用未传" would
