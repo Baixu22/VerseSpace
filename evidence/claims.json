@@ -1,431 +1,520 @@
 {
-	"$comment": "声明注册表（TF-0274）。每条声明必须点名仓库内的仪器（instrument）、它覆盖的路径（subject_paths）、以及读数必须携带的数字形状（reading_shape）。读数在 evidence/readings/<id>.json；原始输出在 evidence/raw/（gitignored，ADR-0020 的 process-evidence）。门禁：node scripts/check-claims.mjs。失效规则：仪器内容变了、或 subject_paths 里有任何改动晚于读数的提交，读数立刻 stale。",
-	"version": 1,
-	"claims": [
-		{
-			"id": "claim-catch-sites",
-			"statement": "非测试 catch 站点与文件数由清点仪器生成；数字见对应读数",
-			"instrument": ["scripts/audit/catch-sites.mjs"],
-			"subject_paths": [
-				"packages/workbench/src/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"files": "number",
-				"sites": "number"
-			},
-			"class": "L1",
-			"reproduce": "node scripts/audit/catch-sites.mjs --json",
-			"docs": ["docs/handoff/2026-09-25-catch-after-continue-audit.md"],
-			"minimum": {
-				"sites": 1,
-				"files": 1
-			}
-		},
-		{
-			"id": "claim-claims-gate",
-			"statement": "证据账本的纯函数评估器测试全绿（含失效规则的反例）",
-			"instrument": [
-				"scripts/claims/ledger.mjs",
-				"scripts/claims/ledger.test.mjs"
-			],
-			"subject_paths": [
-				"scripts/claims/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"pass": "number",
-				"fail": "number"
-			},
-			"class": "L1",
-			"reproduce": "node scripts/claims/ledger.test.mjs",
-			"expected": {
-				"fail": 0
-			},
-			"minimum": {
-				"pass": 1
-			}
-		},
-		{
-			"id": "claim-workbench-suite",
-			"statement": "workbench 套件全绿（0 fail）",
-			"instrument": ["package.json", "packages/workbench/package.json"],
-			"subject_paths": [
-				"packages/workbench/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json",
-				"packages/context-rot/**"
-			],
-			"reading_shape": {
-				"pass": "number",
-				"fail": "number"
-			},
-			"class": "L1",
-			"reproduce": "bun run test:workbench",
-			"expected": {
-				"fail": 0
-			},
-			"minimum": {
-				"pass": 1
-			}
-		},
-		{
-			"id": "claim-ui-suite",
-			"statement": "dashboard 套件全绿（0 fail）",
-			"instrument": ["package.json", "apps/workbench-ui/package.json"],
-			"subject_paths": [
-				"apps/workbench-ui/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"pass": "number",
-				"fail": "number"
-			},
-			"class": "L1",
-			"reproduce": "bun run test:workbench-ui",
-			"expected": {
-				"fail": 0
-			},
-			"minimum": {
-				"pass": 1
-			}
-		},
-		{
-			"id": "claim-context-rot-suite",
-			"statement": "context-rot 套件全绿（0 fail）",
-			"instrument": ["package.json", "packages/context-rot/package.json"],
-			"subject_paths": [
-				"packages/context-rot/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"pass": "number",
-				"fail": "number"
-			},
-			"class": "L1",
-			"reproduce": "bun run test:context-rot",
-			"expected": {
-				"fail": 0
-			},
-			"minimum": {
-				"pass": 1
-			}
-		},
-		{
-			"id": "claim-doctor-clean",
-			"statement": "doctor 在本机 exit 0：指令文件没有失效引用，黑板一致",
-			"instrument": [
-				"packages/workbench/src/commands/doctor.ts",
-				"packages/workbench/src/rot/scan.ts",
-				"packages/context-rot/src/scan.ts",
-				"packages/context-rot/src/file-index.ts",
-				"packages/context-rot/src/verify.ts"
-			],
-			"subject_paths": [
-				"AGENTS.md",
-				"CLAUDE.md",
-				"docs/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json",
-				"packages/workbench/src/**",
-				"packages/context-rot/src/**",
-				".gitignore"
-			],
-			"reading_shape": {
-				"exit": "number",
-				"stale": "number"
-			},
-			"class": "L1",
-			"reproduce": "bun packages/workbench/src/index.ts doctor",
-			"expected": {
-				"exit": 0,
-				"stale": 0
-			}
-		},
-		{
-			"id": "claim-upload-surface-clean",
-			"statement": "上传面与引用检查均无违规（含 strict-references）",
-			"instrument": [
-				"scripts/check-upload-surface.mjs",
-				"scripts/upload-surface/policy.json",
-				"scripts/upload-surface/classify.mjs"
-			],
-			"subject_paths": ["**"],
-			"reading_shape": {
-				"exit": "number",
-				"violations": "number"
-			},
-			"class": "L1",
-			"reproduce": "node scripts/check-upload-surface.mjs --strict-references",
-			"expected": {
-				"exit": 0,
-				"violations": 0
-			}
-		},
-		{
-			"id": "claim-browser-e2e",
-			"statement": "真实浏览器 suite 全过、0 skip（隔离工作区 + 真 Vite + 真后端）",
-			"instrument": [
-				"scripts/win/e2e-browser.ps1",
-				"apps/workbench-ui/playwright.config.ts"
-			],
-			"subject_paths": [
-				"apps/workbench-ui/**",
-				"packages/workbench/src/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json",
-				"packages/context-rot/**"
-			],
-			"reading_shape": {
-				"passed": "number",
-				"failed": "number",
-				"skipped": "number"
-			},
-			"class": "L1",
-			"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1",
-			"expected": {
-				"failed": 0,
-				"skipped": 0
-			},
-			"minimum": {
-				"passed": 1
-			}
-		},
-		{
-			"id": "claim-lint",
-			"statement": "biome lint 全仓 exit 0（0 error）",
-			"instrument": ["package.json", "biome.json"],
-			"subject_paths": [
-				"**/*.ts",
-				"**/*.tsx",
-				"**/*.mjs",
-				"**/*.json",
-				"**/*.css",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"exit": "number",
-				"errors": "number"
-			},
-			"class": "L1",
-			"reproduce": "bun run lint",
-			"expected": {
-				"exit": 0,
-				"errors": 0
-			}
-		},
-		{
-			"id": "claim-typecheck",
-			"statement": "三个包的 tsc --noEmit 全过（exit 0）",
-			"instrument": ["package.json"],
-			"subject_paths": [
-				"packages/workbench/**",
-				"packages/context-rot/**",
-				"apps/workbench-ui/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"exit": "number"
-			},
-			"class": "L1",
-			"reproduce": "bun run typecheck",
-			"expected": {
-				"exit": 0
-			}
-		},
-		{
-			"id": "claim-codex-write-unsealed",
-			"statement": "历史观测（2026-09-26，ff6ac4ab）：当时的 Codex 写入落盘、seal 未介入；不代表当前版本",
-			"instrument": [
-				"packages/workbench/scripts/verify/codex-write-seal.ts",
-				"scripts/verify/codex-gateway.toml"
-			],
-			"subject_paths": [
-				"packages/workbench/src/chat/**",
-				"packages/workbench/src/runtime/seal.ts",
-				".claude/settings.json",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"staleClaims": "number",
-				"writeLanded": "boolean",
-				"sealEventsAfterCodex": "number",
-				"controlDecision": "string"
-			},
-			"class": "L3",
-			"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --json",
-			"docs": ["docs/handoff/2026-09-26-codex-write-unsealed.md"],
-			"retired_reason": "原实验定义在审批接线与 own-stale 对照加入后已退役，原始读数只解释旧版本；见 ADR-0023。",
-			"expected": {
-				"staleClaims": 1,
-				"writeLanded": true,
-				"sealEventsAfterCodex": 0,
-				"controlDecision": "block"
-			}
-		},
-		{
-			"id": "claim-premise-contract",
-			"statement": "合成前提检测的 14 个既定场景均满足契约（含 3 个大文件对照）；同尺寸改写仍不可测，不代表真实用户精度",
-			"instrument": ["packages/workbench/scripts/benchmark-premises.ts"],
-			"subject_paths": [
-				"packages/workbench/**",
-				"packages/context-rot/**",
-				"bun.lock",
-				"package.json",
-				"evidence/claims.json"
-			],
-			"reading_shape": {
-				"passed": "number",
-				"total": "number"
-			},
-			"expected": {
-				"passed": 14,
-				"total": 14
-			},
-			"class": "L1",
-			"reproduce": "bun packages/workbench/scripts/benchmark-premises.ts --json"
-		},
-		{
-			"id": "claim-built-shapes",
-			"statement": "当前源码的本机二进制与 JS 构建形态均通过隔离冒烟",
-			"instrument": [
-				"packages/workbench/scripts/build.ts",
-				"packages/workbench/scripts/check-built.ts"
-			],
-			"subject_paths": [
-				"packages/workbench/**",
-				"packages/context-rot/**",
-				"apps/workbench-ui/**",
-				"bun.lock",
-				"package.json",
-				"evidence/claims.json"
-			],
-			"reading_shape": {
-				"exit": "number"
-			},
-			"expected": {
-				"exit": 0
-			},
-			"class": "L1",
-			"reproduce": "cd packages/workbench && bun run build && bun run test:build"
-		},
-		{
-			"id": "claim-forest-landing",
-			"statement": "任务森林落库门禁：默认分支无代码漂移（exit 0）",
-			"instrument": ["scripts/check-forest-landing.mjs"],
-			"subject_paths": ["**"],
-			"reading_shape": {
-				"exit": "number",
-				"problems": "number"
-			},
-			"class": "L1",
-			"reproduce": "node scripts/check-forest-landing.mjs --json",
-			"expected": {
-				"exit": 0,
-				"problems": 0
-			}
-		},
-		{
-			"id": "claim-codex-write-seal-gap",
-			"statement": "历史 own-stale shell 写入观测：当时写入落盘且封印未介入；不代表已验证的原生 fileChange 审批路径",
-			"instrument": [
-				"packages/workbench/scripts/verify/codex-write-seal.ts",
-				"packages/workbench/scripts/verify/codex-seal-baseline.ts",
-				"packages/workbench/src/chat/codex-footprint.ts",
-				"packages/workbench/src/runtime/seal.ts"
-			],
-			"subject_paths": [
-				"packages/workbench/src/chat/**",
-				"packages/workbench/src/runtime/seal.ts",
-				"packages/workbench/scripts/verify/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"staleClaims": "number",
-				"writeLanded": "boolean",
-				"sealEventsAfterCodex": "number",
-				"controlDecision": "string"
-			},
-			"class": "L3",
-			"retired_reason": "2026-10-01 原生工具成对验收单独登记；旧 shell/profile 的观测保留，不作为当前原生路径声明。未归因 shell 和无审批写入仍不保证受保护。",
-			"reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --case own-stale --json",
-			"expected": {
-				"staleClaims": 1,
-				"writeLanded": true,
-				"sealEventsAfterCodex": 0,
-				"controlDecision": "block"
-			},
-			"docs": ["docs/handoff/2026-09-27-codex-write-seal-gap.md"]
-		},
-		{
-			"id": "claim-codex-native-seal",
-			"statement": "显式原生工具的隔离 Codex profile：own-fresh 放行且有写足迹，own-stale 封印阻断且无写足迹，两者无复读；不是全通道写保护保证",
-			"instrument": [
-				"packages/workbench/scripts/verify/codex-native-pair.ts",
-				"packages/workbench/scripts/verify/codex-write-seal.ts",
-				"packages/workbench/scripts/verify/codex-seal-baseline.ts"
-			],
-			"subject_paths": [
-				"packages/workbench/src/chat/**",
-				"packages/workbench/src/runtime/**",
-				"packages/workbench/scripts/verify/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": { "passed": "number", "total": "number" },
-			"class": "L1",
-			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
-			"expected": { "passed": 2, "total": 2 },
-			"docs": ["docs/handoff/2026-10-01-issue-relay-closeout.md"]
-		},
-		{
-			"id": "claim-upload-surface-tests",
-			"statement": "上传面分类器与链接检查的自测全绿（0 fail）",
-			"instrument": [
-				"scripts/upload-surface/classify.mjs",
-				"scripts/upload-surface/classify.test.mjs",
-				"scripts/upload-surface/links.mjs",
-				"scripts/upload-surface/links.test.mjs",
-				"scripts/upload-surface/policy.json"
-			],
-			"subject_paths": [
-				"scripts/upload-surface/**",
-				"evidence/claims.json",
-				"bun.lock",
-				"package.json"
-			],
-			"reading_shape": {
-				"pass": "number",
-				"fail": "number"
-			},
-			"class": "L1",
-			"reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
-			"expected": {
-				"fail": 0
-			},
-			"minimum": {
-				"pass": 1
-			}
-		}
-	]
+  "$comment": "声明注册表（TF-0274）。每条声明必须点名仓库内的仪器（instrument）、它覆盖的路径（subject_paths）、以及读数必须携带的数字形状（reading_shape）。读数在 evidence/readings/<id>.json；原始输出在 evidence/raw/（gitignored，ADR-0020 的 process-evidence）。门禁：node scripts/check-claims.mjs。失效规则：仪器内容变了、或 subject_paths 里有任何改动晚于读数的提交，读数立刻 stale。",
+  "version": 1,
+  "claims": [
+    {
+      "id": "claim-catch-sites",
+      "statement": "非测试 catch 站点与文件数由清点仪器生成；数字见对应读数",
+      "instrument": [
+        "scripts/audit/catch-sites.mjs"
+      ],
+      "subject_paths": [
+        "packages/workbench/src/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "files": "number",
+        "sites": "number"
+      },
+      "class": "L1",
+      "reproduce": "node scripts/audit/catch-sites.mjs --json",
+      "docs": [
+        "docs/handoff/2026-09-25-catch-after-continue-audit.md"
+      ],
+      "minimum": {
+        "sites": 1,
+        "files": 1
+      }
+    },
+    {
+      "id": "claim-claims-gate",
+      "statement": "证据账本的纯函数评估器测试全绿（含失效规则的反例）",
+      "instrument": [
+        "scripts/claims/ledger.mjs",
+        "scripts/claims/ledger.test.mjs"
+      ],
+      "subject_paths": [
+        "scripts/claims/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "pass": "number",
+        "fail": "number"
+      },
+      "class": "L1",
+      "reproduce": "node scripts/claims/ledger.test.mjs",
+      "expected": {
+        "fail": 0
+      },
+      "minimum": {
+        "pass": 1
+      }
+    },
+    {
+      "id": "claim-workbench-suite",
+      "statement": "workbench 套件全绿（0 fail）",
+      "instrument": [
+        "package.json",
+        "packages/workbench/package.json"
+      ],
+      "subject_paths": [
+        "packages/workbench/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json",
+        "packages/context-rot/**"
+      ],
+      "reading_shape": {
+        "pass": "number",
+        "fail": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun run test:workbench",
+      "expected": {
+        "fail": 0
+      },
+      "minimum": {
+        "pass": 1
+      }
+    },
+    {
+      "id": "claim-ui-suite",
+      "statement": "dashboard 套件全绿（0 fail）",
+      "instrument": [
+        "package.json",
+        "apps/workbench-ui/package.json"
+      ],
+      "subject_paths": [
+        "apps/workbench-ui/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "pass": "number",
+        "fail": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun run test:workbench-ui",
+      "expected": {
+        "fail": 0
+      },
+      "minimum": {
+        "pass": 1
+      }
+    },
+    {
+      "id": "claim-context-rot-suite",
+      "statement": "context-rot 套件全绿（0 fail）",
+      "instrument": [
+        "package.json",
+        "packages/context-rot/package.json"
+      ],
+      "subject_paths": [
+        "packages/context-rot/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "pass": "number",
+        "fail": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun run test:context-rot",
+      "expected": {
+        "fail": 0
+      },
+      "minimum": {
+        "pass": 1
+      }
+    },
+    {
+      "id": "claim-doctor-clean",
+      "statement": "doctor 在本机 exit 0：指令文件没有失效引用，黑板一致",
+      "instrument": [
+        "packages/workbench/src/commands/doctor.ts",
+        "packages/workbench/src/rot/scan.ts",
+        "packages/context-rot/src/scan.ts",
+        "packages/context-rot/src/file-index.ts",
+        "packages/context-rot/src/verify.ts"
+      ],
+      "subject_paths": [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "docs/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json",
+        "packages/workbench/src/**",
+        "packages/context-rot/src/**",
+        ".gitignore"
+      ],
+      "reading_shape": {
+        "exit": "number",
+        "stale": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun packages/workbench/src/index.ts doctor",
+      "expected": {
+        "exit": 0,
+        "stale": 0
+      }
+    },
+    {
+      "id": "claim-upload-surface-clean",
+      "statement": "上传面与引用检查均无违规（含 strict-references）",
+      "instrument": [
+        "scripts/check-upload-surface.mjs",
+        "scripts/upload-surface/policy.json",
+        "scripts/upload-surface/classify.mjs"
+      ],
+      "subject_paths": [
+        "**"
+      ],
+      "reading_shape": {
+        "exit": "number",
+        "violations": "number"
+      },
+      "class": "L1",
+      "reproduce": "node scripts/check-upload-surface.mjs --strict-references",
+      "expected": {
+        "exit": 0,
+        "violations": 0
+      }
+    },
+    {
+      "id": "claim-browser-e2e",
+      "statement": "真实浏览器 suite 全过、0 skip（隔离工作区 + 真 Vite + 真后端）",
+      "instrument": [
+        "scripts/win/e2e-browser.ps1",
+        "apps/workbench-ui/playwright.config.ts"
+      ],
+      "subject_paths": [
+        "apps/workbench-ui/**",
+        "packages/workbench/src/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json",
+        "packages/context-rot/**"
+      ],
+      "reading_shape": {
+        "passed": "number",
+        "failed": "number",
+        "skipped": "number"
+      },
+      "class": "L1",
+      "reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1",
+      "expected": {
+        "failed": 0,
+        "skipped": 0
+      },
+      "minimum": {
+        "passed": 1
+      }
+    },
+    {
+      "id": "claim-lint",
+      "statement": "biome lint 全仓 exit 0（0 error）",
+      "instrument": [
+        "package.json",
+        "biome.json"
+      ],
+      "subject_paths": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.mjs",
+        "**/*.json",
+        "**/*.css",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "exit": "number",
+        "errors": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun run lint",
+      "expected": {
+        "exit": 0,
+        "errors": 0
+      }
+    },
+    {
+      "id": "claim-typecheck",
+      "statement": "三个包的 tsc --noEmit 全过（exit 0）",
+      "instrument": [
+        "package.json"
+      ],
+      "subject_paths": [
+        "packages/workbench/**",
+        "packages/context-rot/**",
+        "apps/workbench-ui/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "exit": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun run typecheck",
+      "expected": {
+        "exit": 0
+      }
+    },
+    {
+      "id": "claim-codex-write-unsealed",
+      "statement": "历史观测（2026-09-26，ff6ac4ab）：当时的 Codex 写入落盘、seal 未介入；不代表当前版本",
+      "instrument": [
+        "packages/workbench/scripts/verify/codex-write-seal.ts",
+        "scripts/verify/codex-gateway.toml"
+      ],
+      "subject_paths": [
+        "packages/workbench/src/chat/**",
+        "packages/workbench/src/runtime/seal.ts",
+        ".claude/settings.json",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "staleClaims": "number",
+        "writeLanded": "boolean",
+        "sealEventsAfterCodex": "number",
+        "controlDecision": "string"
+      },
+      "class": "L3",
+      "reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --json",
+      "docs": [
+        "docs/handoff/2026-09-26-codex-write-unsealed.md"
+      ],
+      "retired_reason": "原实验定义在审批接线与 own-stale 对照加入后已退役，原始读数只解释旧版本；见 ADR-0023。",
+      "expected": {
+        "staleClaims": 1,
+        "writeLanded": true,
+        "sealEventsAfterCodex": 0,
+        "controlDecision": "block"
+      }
+    },
+    {
+      "id": "claim-premise-contract",
+      "statement": "合成前提检测的 14 个既定场景均满足契约（含 3 个大文件对照）；同尺寸改写仍不可测，不代表真实用户精度",
+      "instrument": [
+        "packages/workbench/scripts/benchmark-premises.ts"
+      ],
+      "subject_paths": [
+        "packages/workbench/**",
+        "packages/context-rot/**",
+        "bun.lock",
+        "package.json",
+        "evidence/claims.json"
+      ],
+      "reading_shape": {
+        "passed": "number",
+        "total": "number"
+      },
+      "expected": {
+        "passed": 14,
+        "total": 14
+      },
+      "class": "L1",
+      "reproduce": "bun packages/workbench/scripts/benchmark-premises.ts --json"
+    },
+    {
+      "id": "claim-built-shapes",
+      "statement": "当前源码的本机二进制与 JS 构建形态均通过隔离冒烟",
+      "instrument": [
+        "packages/workbench/scripts/build.ts",
+        "packages/workbench/scripts/check-built.ts"
+      ],
+      "subject_paths": [
+        "packages/workbench/**",
+        "packages/context-rot/**",
+        "apps/workbench-ui/**",
+        "bun.lock",
+        "package.json",
+        "evidence/claims.json"
+      ],
+      "reading_shape": {
+        "exit": "number"
+      },
+      "expected": {
+        "exit": 0
+      },
+      "class": "L1",
+      "reproduce": "cd packages/workbench && bun run build && bun run test:build"
+    },
+    {
+      "id": "claim-forest-landing",
+      "statement": "任务森林落库门禁：默认分支无代码漂移（exit 0）",
+      "instrument": [
+        "scripts/check-forest-landing.mjs"
+      ],
+      "subject_paths": [
+        "**"
+      ],
+      "reading_shape": {
+        "exit": "number",
+        "problems": "number"
+      },
+      "class": "L1",
+      "reproduce": "node scripts/check-forest-landing.mjs --json",
+      "expected": {
+        "exit": 0,
+        "problems": 0
+      }
+    },
+    {
+      "id": "claim-codex-write-seal-gap",
+      "statement": "历史 own-stale shell 写入观测：当时写入落盘且封印未介入；不代表已验证的原生 fileChange 审批路径",
+      "instrument": [
+        "packages/workbench/scripts/verify/codex-write-seal.ts",
+        "packages/workbench/scripts/verify/codex-seal-baseline.ts",
+        "packages/workbench/src/chat/codex-footprint.ts",
+        "packages/workbench/src/runtime/seal.ts"
+      ],
+      "subject_paths": [
+        "packages/workbench/src/chat/**",
+        "packages/workbench/src/runtime/seal.ts",
+        "packages/workbench/scripts/verify/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "staleClaims": "number",
+        "writeLanded": "boolean",
+        "sealEventsAfterCodex": "number",
+        "controlDecision": "string"
+      },
+      "class": "L3",
+      "retired_reason": "2026-10-01 原生工具成对验收单独登记；旧 shell/profile 的观测保留，不作为当前原生路径声明。未归因 shell 和无审批写入仍不保证受保护。",
+      "reproduce": "bun packages/workbench/scripts/verify/codex-write-seal.ts --case own-stale --json",
+      "expected": {
+        "staleClaims": 1,
+        "writeLanded": true,
+        "sealEventsAfterCodex": 0,
+        "controlDecision": "block"
+      },
+      "docs": [
+        "docs/handoff/2026-09-27-codex-write-seal-gap.md"
+      ]
+    },
+    {
+      "id": "claim-codex-native-seal",
+      "statement": "显式原生工具的隔离 Codex profile：own-fresh 放行且有写足迹，own-stale 封印阻断且无写足迹，两者无复读；不是全通道写保护保证",
+      "instrument": [
+        "packages/workbench/scripts/verify/codex-native-pair.ts",
+        "packages/workbench/scripts/verify/codex-write-seal.ts",
+        "packages/workbench/scripts/verify/codex-seal-baseline.ts"
+      ],
+      "subject_paths": [
+        "packages/workbench/src/chat/**",
+        "packages/workbench/src/runtime/**",
+        "packages/workbench/scripts/verify/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "passed": "number",
+        "total": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
+      "expected": {
+        "passed": 2,
+        "total": 2
+      },
+      "docs": [
+        "docs/handoff/2026-10-01-issue-relay-closeout.md"
+      ]
+    },
+    {
+      "id": "claim-upload-surface-tests",
+      "statement": "上传面分类器与链接检查的自测全绿（0 fail）",
+      "instrument": [
+        "scripts/upload-surface/classify.mjs",
+        "scripts/upload-surface/classify.test.mjs",
+        "scripts/upload-surface/links.mjs",
+        "scripts/upload-surface/links.test.mjs",
+        "scripts/upload-surface/policy.json"
+      ],
+      "subject_paths": [
+        "scripts/upload-surface/**",
+        "evidence/claims.json",
+        "bun.lock",
+        "package.json"
+      ],
+      "reading_shape": {
+        "pass": "number",
+        "fail": "number"
+      },
+      "class": "L1",
+      "reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
+      "expected": {
+        "fail": 0
+      },
+      "minimum": {
+        "pass": 1
+      }
+    },
+    {
+      "id": "claim-premise-notice-realtraffic",
+      "statement": "读侧建议式并发管线在真实账本上实际触发的计数（失效检测/排队/投递/可观测性/线程失效通知）；描述一次被捕获账本上的真实并发使用，不证明正确性结论，不代表真实用户精度或总体加速",
+      "instrument": [
+        "scripts/verify/measure-premise-notices.ts"
+      ],
+      "subject_paths": [
+        "scripts/verify/measure-premise-notices.ts",
+        "evidence/claims.json"
+      ],
+      "reading_shape": {
+        "eventLines": "number",
+        "premiseStale": "number",
+        "premiseNoticeQueued": "number",
+        "premiseNoticeDelivered": "number",
+        "premiseNoticeOutcome": "number",
+        "deliveredFootprint": "number",
+        "threadNotices": "number",
+        "threadInvalidationNotices": "number",
+        "threadsWithNotices": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun scripts/verify/measure-premise-notices.ts --json",
+      "docs": [
+        "docs/handoff/2026-10-10-premise-notice-realtraffic.md"
+      ]
+    },
+    {
+      "id": "claim-premise-base-rate-amplifier",
+      "statement": "读侧基率放大器（ADR-0006 sec.2）在真实账本上的实测：premise_pass 累计的原始候选重叠被去重与 L1 噪声层抑制后，仅少量到达投递；这是 PPV 论证的具体体现，不证明正确性结论",
+      "instrument": [
+        "scripts/verify/measure-premise-notices.ts"
+      ],
+      "subject_paths": [
+        "scripts/verify/measure-premise-notices.ts",
+        "evidence/claims.json"
+      ],
+      "reading_shape": {
+        "premisePassEvents": "number",
+        "premisePassOverlaps": "number",
+        "premisePassSuppressedDedup": "number",
+        "premisePassSuppressedL1": "number",
+        "premisePassNotified": "number",
+        "footprintWriters": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun scripts/verify/measure-premise-notices.ts --json",
+      "docs": [
+        "docs/handoff/2026-10-10-premise-notice-realtraffic.md"
+      ]
+    }
+  ]
 }
