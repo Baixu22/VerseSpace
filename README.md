@@ -25,6 +25,7 @@
 - [它不保证什么](#它不保证什么)
 - [核心概念](#核心概念)
 - [数据流](#数据流)
+- [声明验证范围与单产物重验](#声明验证范围与单产物重验)
 - [足迹、前提检测与封印](#足迹前提检测与封印)
 - [快速开始](#快速开始)
 - [命令速查](#命令速查)
@@ -57,7 +58,20 @@
 
 > **读表须知**：工程门的绿灯只覆盖「本机能跑的仪器」；产品维度（生产率、真实用户、跨平台）没有被证明，也不要在引用本仓库时把它们说成已证明。
 
-本 README 按当前工作区源码的入口与调用链描述行为；[2026-09-30 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md)记录修复前的检查，[后续修复记录](docs/handoff/2026-09-30-issue-batch.md)更新 #45–#48 的实现与验收结论。上述修复尚未发布，`0.4.1` 发行物不自动包含它们；历史发行测试也不自动覆盖今天的源码。
+本 README 对应当前主线源码。[2026-09-30 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md)是修复前的历史记录；[实现记录](docs/handoff/2026-10-01-all-issues-implementation.md)和[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)说明 #31、#45–#57 的最终落地结果。上述改动已合并，尚未发布新版本；`0.4.1` 发行物不自动包含它们，旧发行测试也不自动覆盖当前源码。
+
+### 最近落地的修复与能力
+
+| 范围 | 当前行为 |
+| --- | --- |
+| #45–#48：通知、封印、大文件、规划提示 | Codex 成功终态才确认送达；封印按本写者当前前提判断；大文件大小变化可检测；规划开关常驻提示新 CLI 进程才生效 |
+| #50：验证范围 | 可声明 Vitest JSON 用例集合与配置/检查脚本/锁文件；退出成功但报告缺失、损坏、未更新、零用例、子集或跳过，均不能满足声明范围 |
+| #51–#52：产物与交接 | 显式绑定单产物、输入版本、工位和目标 ref；输入变化产生独立重验事项，复读不能清除；原工位通过不等于适用于已推进的 main |
+| #53–#54：证据强度与指标 | 区分内容 hash、size-only、unknown；分别统计重读、新版本观察、产物修改和范围验证。重复写同一版本不计为本次修改 |
+| #55–#56：成本与模型实测 | 已测合成 JSONL 的 1千/1万/5万条规模，仅去掉恢复查询的一次重复读取；GLM 默认 120 秒请求预算的完整 live 场景通过，历史失败保留 |
+| #31：原生 Codex 审批 | Codex 0.159.0 + 本地 GLM + 显式原生工具 profile 的 fresh/stale 对照通过；补留协议夹具和严格成对仪器，仍不保证所有工具路径受保护 |
+
+这些结果的受测提交、命令、计数和限制见上面的两份记录；性能样本不是容量保证，模型成功样本不是通用可靠性保证。
 
 ---
 
@@ -69,6 +83,7 @@
   - **本地面板** — `workbench ui` 启动聊天面板（线程、分叉、恢复卡、证据与裁决）；目标 DAG、工位与 checkpoint 通过 CLI 管理；
   - **MCP 只读投影** — `premises` / `footprints` / `resume_cards` / `tribunal` / `notices` 五个工具。
 - **编排原语**：目标 DAG、工位（git worktree）、三区 checkpoint、派发与 watch 循环、裁决队列。
+- **声明范围与产物重验**：将一份产物绑定到明确输入及检查集合，区分历史通过、当前有效性与目标主线适用性；通过 CLI 发起独立重验，CLI JSON、MCP 恢复卡和聊天恢复信息读取同一产物状态。
 - **封印（seal）拦截点**：检查只读区域与已有失效前提并留痕。`seal.mode`（`block` 默认 / `warn` / `off`）控制失效前提的处理；只读区域拒写不受该模式及连续命中降级影响。Claude Code 需安装 PreToolUse hook；Codex 是实验通道，覆盖范围与证据返回方式均不同，见下文。
 - **聊天面板**：线性对话、消息处分叉、双通道恢复卡、以分支为主线（adopt / revert）、工具足迹可点击查看原始消息与事件。
 
@@ -194,6 +209,25 @@ stateDiagram-v2
 
 checkpoint 的**目录**（staging / verified / failed）、**生命周期**（draft / pending / verified / applied / failed / awaiting_review / rejected）和**验证结果**是不同字段。`verified` 表示验证过关，`applied` 表示声明的账本效果已经应用；两者都不表示代码已经提交、合并或发布。
 
+## 声明验证范围与单产物重验
+
+自动检查可以通过 `--evidence <声明文件>` 指定 Vitest JSON 报告路径、完整的 `fullName` 用例集合，以及必要的非敏感配置、检查脚本和锁文件。验证同时记录实际用例名称/状态、数量与报告 hash。只有报告确由本次更新、实际集合与声明一致且全部通过，才满足范围；报告缺失、损坏、计数矛盾、零用例、只跑子集或含跳过均不能冒充完整验收。未声明报告的旧用法仍保留退出码结果，但范围未知。
+
+在原有 checkpoint 参数上增加 `--artifact <产物路径>`、`--input <输入路径...>` 和可选 `--target-ref <ref>`，即可声明一个产物的依赖。例：读 `api.ts@v1` 后形成 `consumer.ts`，API 变为 v2 时，产物进入待重验；只重读 API 不证明 consumer 已兼容。检查失败继续保留事项，修复后通过或无需改代码而通过，都会产生新的验证证据。
+
+```bash
+# 在已准备好工位与声明文件的项目中，ID 替换为实际值：
+workbench checkpoint create --goal <goal-id> --workspot ws-a --assertion "consumer 兼容 API" --strategy test --command "bunx vitest run --reporter=json --outputFile=report.json" --evidence checks.json --artifact src/consumer.ts --input src/api.ts --target-ref main
+workbench checkpoint list --json
+workbench checkpoint revalidate <checkpoint-id> --workspot ws-a --target-ref main --json
+```
+
+声明文件格式与准备步骤见[包说明](packages/workbench/README.md#声明验证范围与单产物重验)。路径相对执行工位；检查脚本、配置与锁文件应显式列入 evidence inputs。依赖来自调用者声明，不把“先读 A 后写 B”推断为强因果，也不自动寻找全部传递依赖。
+
+`checkpoint list --json` 的 `currentArtifact` 将 `current / stale / pending / failed / unknown` 与 `targetStatus` 分开呈现。记录保留原始仓库/工位来源、本次执行目录和目标 ref/tree；dirty/untracked 的声明文件内容参与比较，同内容暂存或提交不单独算作产物语义变化。原工位磁盘不变而目标 main 推进时，不能沿用旧目标结论；`inputs-match` 也只表示声明输入匹配，**不证明合并结果已验证**。
+
+重验生成新的 checkpoint，不撤销历史 `applied/done`、不重复执行旧账本 effects。运行锁防止并发重验，不锁住外部编辑器或服务；缺失身份、文件或执行证据时保留未知。设计与验收范围见 [ADR-0025](docs/decisions/0025-declared-verification-and-artifact-revalidation.md)。
+
 ---
 
 ## 足迹、前提检测与封印
@@ -234,6 +268,8 @@ workbench --json premises pending
 
 只有至多 64,000 字节的 volatile 文件会保存读取快照，每写者保留最近 20 份；淘汰或缺失快照会使 diff 不可用、部分判断退回保守提示。目录、读取失败和未识别工具也不能当作已验证。
 
+`sessions show --writer <id> --json` 的 `readFragments[].strength` 及恢复卡明确区分 `content-hash / size-only / unknown`。跨版本读取片段仍按版本和坐标处理，不保证符号移动追踪；快照淘汰不删除旧前提，也不将不可比较的内容标成未变。
+
 ### 通知怎样进入模型
 
 失效事件先保存在审计日志，UI 宿主再排入 `threads/<id>/notices.jsonl`。下一用户回合读取队列，把通知追加进提示，并作为该用户消息的 `notice` part 保存。批处理写者没有该聊天通道，其通知保持 pending；MCP 读取通知也不会替它确认。
@@ -253,6 +289,8 @@ workbench --json premises pending
 - `premises review-seal` 记录人工对判定的复核，不会自动修复文件、重规划或覆盖工具权限。
 
 Codex seal 与带 `--writer` 的 Claude hook 按当前写者的读集和磁盘重新判断前提，不再以 pending 通知作有效性来源。通知送达不解除仍失效的前提，当前版本的重读也不再被未确认的旧通知误阻断。`premises current --writer <id> --json` 查询当前失效输入，`premises pending` 仍只查询待投递通知；两者都不证明派生产物已经修复。该修复不扩大审批或足迹覆盖范围，Codex 的显式原生工具 profile 已通过 fresh/stale 对照（[#31](https://github.com/Baixu22/VerseSpace/issues/31)），未归因和无审批路径仍不保证受保护。
+
+直接实测使用 Codex 0.159.0、本地 GLM、显式原生 apply_patch 工具目录、on-request 审批及 read-only Windows elevated sandbox：fresh 记录一次 pass 并落下一条写足迹；stale 记录一次 block，文件未变且无写足迹，两者均没有写回合复读。可复跑入口是 `bun packages/workbench/scripts/verify/codex-native-pair.ts`，需要隔离的 CODEX_HOME 与匹配的本地配置。模型自行拒写、补丁上下文失配或仅 CLI 沙箱拒写都不能充当 Workbench 封印通过；实验配置和非通过样本见[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)。
 
 ---
 
@@ -299,13 +337,13 @@ workbench watch                 # 可选：前台持续监听，Ctrl+C 停止
 | `human-review` | 不运行命令 | needs_human → awaiting_review，需 `checkpoint review <id> --approve` 或 `--reject` |
 | 未声明策略 | 不运行命令 | skipped，留在 staging；不当作通过 |
 
-前三种可用 `--command` 覆盖；命令由 supervisor 解析成 argv 执行，不隐式提供任意 Shell 管道/重定向，复杂验证应放进项目脚本。`--timeout` 的单位为秒；未指定时取 `thresholds.checkpointTimeout`（默认 `5m`）。验收文字和 `--assertion` 是声明，不会自动转换成测试；exit 0 也不会再检查“到底执行了多少测试”。
+前三种可用 `--command` 覆盖；命令由 supervisor 解析成 argv 执行，不隐式提供任意 Shell 管道/重定向，复杂验证应放进项目脚本。`--timeout` 的单位为秒；未指定时取 `thresholds.checkpointTimeout`（默认 `5m`）。验收文字和 `--assertion` 不会自动转换成测试；未提供 `--evidence` 时只保留退出码语义，提供声明后还会校验实际用例集合与计数，见[声明验证范围与单产物重验](#声明验证范围与单产物重验)。
 
 验证通过后，继续 `sync` 才推进应用效果与目标完成。无额外阻塞的本轮隔离示例实测为：第一轮 verified，第二轮 applied，第三轮 goal done；有其他状态变化时不能把三轮当通用保证。**`sync` 退出 0 也可能包含失败的验证结果**，验收要检查 `verifications[].result.status` 与 checkpoint 记录。
 
 **验证有保质期（2026-09-30 起）**：新验证绑定检查前后一致的 Git 可见代码状态（HEAD、改动文件 hash 与删除状态），以及实际执行目录、解析默认值后的检查命令、预期退出码和超时。推进 `applied` 前再次比较，代码或执行条件改变时退回 `staging` 重验；检查期间发生变化或采集失败时保留实际结果，停在 `awaiting_review`。人工批准另记 `authority=human`，不冒充再次运行自动检查。旧记录可兼容读取，但缺少完整绑定时不能宣称当前有效。
 
-`checkpoint list --json` 在原记录旁返回只读的 `currentVerification`；文本列表和恢复卡使用同一判断，区分失败、超时、跳过、待审查、历史通过但当前未知、以及验证已过期。查询不执行检查、不改事件或生命周期。恢复卡的当前失效文件数来自当前读集，历史检测事件另列，重读不等于旧测试重新通过。绑定仍不覆盖完整环境、工具链、被忽略文件或外部服务，也不是原子快照；没有自动解析用例集合来证明全部需求已验收。
+`checkpoint list --json` 在原记录旁返回只读的 `currentVerification`；文本列表和恢复卡使用同一判断，区分失败、超时、跳过、待审查、历史通过但当前未知、以及验证已过期。查询不执行检查、不改事件或生命周期。恢复卡的当前失效文件数来自当前读集，历史检测事件另列，重读不等于旧测试重新通过。显式 evidence inputs 可绑定被 Git 忽略的配置、检查脚本和锁文件；记录的是 Workbench 的运行时版本，不保证子进程实际工具链、未声明文件、环境变量或外部服务，也不是原子快照。声明用例通过不证明声明本身覆盖了全部需求。
 
 `checkpoint restore` 也不是全仓快照恢复：`--code` 对快照记录中后来发生变化的路径恢复到采集时的 **Git HEAD 内容**，并非还原当时尚未提交的正文；不在该 HEAD 的新增文件可能恢复失败。`--context` 恢复已保存的接口注册表旧值，不是回滚聊天历史或模型记忆。无对应快照会拒绝；`--both` 不承诺代码与账本的原子事务。默认只显示计划，`--yes` 才执行，**同时使用 `--json` 始终只输出计划**。
 
@@ -322,7 +360,7 @@ workbench watch                 # 可选：前台持续监听，Ctrl+C 停止
 | `decision add` | 追加架构决策（append-only，修正靠新决策取代） |
 | `interface register/list/check` | 接口注册表与 hash 漂移检查 |
 | `ws create/list/reassign/status` | 工位（git worktree 绑定）管理 |
-| `checkpoint create/list/restore/review` | 三区 checkpoint（staging / verified / failed）；`restore` 默认 dry-run，`--yes` 才执行（`--code` / `--context` / `--both` 三选一；`--json` 模式只输出计划恒不执行），`review --approve/--reject` 裁定 human-review checkpoint |
+| `checkpoint create/list/restore/review/revalidate` | 三区 checkpoint（staging / verified / failed）；`restore` 默认 dry-run，`--yes` 才执行（`--code` / `--context` / `--both` 三选一；`--json` 模式只输出计划恒不执行），`review --approve/--reject` 裁定 human-review checkpoint；`revalidate` 为声明产物生成独立检查证据 |
 | `dispatch <goal> [ws]` | 派发就绪目标到空闲工位（真实 git worktree + 上下文生成）；`--force` 可越过满载的 CONWIP 池 |
 | `sync` | 手动跑一轮 Runtime 循环 |
 | `watch` | 前台常驻监听，文件变化后推进编排并对账前提；Ctrl+C 停止 |
@@ -475,6 +513,8 @@ HTTP provider 可从服务进程的 `WORKBENCH_CHAT_API_KEY` 环境变量读取�
 
 裁决队列按可行动性、优先级和原因折叠条目；`shelve` 是有期限的推迟，`resolve` 是记录结案，**不会自动执行卡片建议、修复依赖或批准 checkpoint**。人工验证仍通过 `checkpoint review`。`metrics` 的当前生产采集来自批处理 `agents/capture`；`stats` 聚合账本里的分叉、恢复与通知事件，缺少样本会限制指标含义，不是所有聊天调用的用量/成功率总表。
 
+`stats --json` 的 `noticeOutcomes.evidence` 以成功送达窗口为分母，分别统计 `reread`（重读）、`observedNewVersion`（观察到要求的新版本）、`artifactModified`（产物版本改变）和 `scopeVerified`（声明范围验证）。每项均保留 `observed / notObserved / unknown`，各维度可以重叠。重读旧版本不计新版本观察；相同产物版本的重复写入不计本次修改；无需改代码但检查通过可以计范围验证。旧 `repaired` 算法保持兼容，不能将这些数称为修复正确率。
+
 `.workbench/workbench.yaml` 的选项是**被执行的**，不是装饰：`protection.readonlyAreas` 经封印点拒写；`thresholds.checkpointTimeout` / `thresholds.idleNotification` 生效；`protection.gitHook` / `config.project` 由 `doctor` 断言。
 
 ### hooks 是独立安装步骤
@@ -551,6 +591,7 @@ node packages/context-rot/scripts/install-hooks.mjs /absolute/path/to/managed-pr
 | --- | --- |
 | 读集完整性 | 仅观测支持的工具/路径；大文件采用大小比较，同尺寸改写仍漏检；目录、过滤规则和活跃窗口也影响覆盖。人类读取和模型隐含知识不自动进入读集 |
 | 前提与计划 | 检测文件变化，不证明语义依赖或计划正确；没有完整跨文件失效传播或自动重规划保证 |
+| 声明产物与验证 | 已支持单产物显式依赖与独立重验；遗漏的依赖、声明范围之外的缺陷、外部服务变化和合并结果不自动获得验证保证 |
 | 通知确认 | Codex 已按成功终态确认，失败通知保留以供重投；各通道的送达记录都不证明模型理解或修复了前提，也不保证 exactly-once |
 | 写保护 | seal 不覆盖所有工具、Git 或编辑器；Codex 已按写者过滤前提，但目标归因/审批缺口及封印故障放行仍存在，只验证了显式原生工具 profile 的封印对照 |
 | 分叉与跨 provider 历史 | UI 消息前缀、CLI 内部 session、文件读集是三件事；普通 CLI 分叉或切换 provider 不保证把可见历史传给新模型 |
@@ -699,11 +740,13 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 | [AGENTS.md](AGENTS.md) | 架构总览、模块表、代码组织规则、本机环境坑 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献流程、门禁清单、Windows 注意事项 |
 | [SECURITY.md](SECURITY.md) | 安全边界与报告渠道 |
-| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0024（先读这些再提架构改动） |
+| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0025（先读这些再提架构改动） |
 | [docs/handoff/](docs/handoff/README.md) | 每轮交接：改了什么、实测读数、刻意没做什么 |
-| [本轮 README 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md) | 本次修正的能力声明、发现的实现缺口、CLI/HTTP/MCP 与模拟协议探针的实际结果 |
-| [#45–#48 修复与验收记录](docs/handoff/2026-09-30-issue-batch.md) | 通知确认、封印写者归属、大文件比较与规划提示的本地修复；测试结果及 #31 未验收边界 |
+| [本轮 README 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md) | 2026-09-30 修复前的能力核查与探针结果；当前结论以接力记录为准 |
+| [#45–#48 修复与验收记录](docs/handoff/2026-09-30-issue-batch.md) | 通知确认、封印写者归属、大文件比较与规划提示的本地修复；当时测试结果及历史 #31 未验收边界 |
 | [evidence/claims.json](evidence/claims.json) | 注册声明、历史观测与失效规则 |
+| [2026-10-01 实现记录](docs/handoff/2026-10-01-all-issues-implementation.md) | #45–#57 的实现映射、单产物对照、JSONL 分布和 GLM 默认预算完整 live 读数 |
+| [2026-10-01 接力验收](docs/handoff/2026-10-01-issue-relay-closeout.md) | #31 原生成对实验、重复写指标修复、最终受测版本、全量门禁与主线落地 |
 | [packages/workbench/CHANGELOG.md](packages/workbench/CHANGELOG.md) | 发行变更（0.1.0 → 0.4.1） |
 | [docs/user/](docs/user/README.md) | **旧 Helmor 用户指南，已退役，仅作记录** |
 
