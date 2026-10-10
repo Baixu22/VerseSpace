@@ -292,31 +292,38 @@ test("accepted reference: only an exact (referrer, local) pair counts", () => {
 	assert.ok(!isAcceptedLocalReference(undefined, "docs/a.md", "docs/b.md"));
 });
 
-test("real policy: the adjudicated references are recorded and still local-only", () => {
+test("real policy: adjudicated references are recorded, reasoned, and still local-only", () => {
 	// 2026-09-26 closeout: ADR-0020 §复核 said "adjudicate the 6, then add
 	// --strict-references". The adjudication is a decision, so it lives in the
-	// policy rather than in a rewritten dated record.
+	// policy rather than in a rewritten dated record. The set of accepted entries
+	// grows as further pre-existing local-only references are adjudicated; the test
+	// therefore checks structure, not a hard-coded count.
 	const real = loadPolicy({
 		policyPath: join(HERE, "policy.json"),
 		inventoryPath: join(HERE, "legacy-local-docs.json"),
 	});
 	const accepted = real.acceptedLocalReferences ?? [];
-	assert.equal(accepted.length, 1);
-	assert.equal(
-		accepted[0].referrer,
-		"docs/handoff/2026-09-25-upload-surface-round.md",
+	assert.ok(accepted.length >= 1, "at least the 2026-09-25 adjudication exists");
+	// The original 2026-09-25 adjudication must remain intact (regression guard).
+	const original = accepted.find(
+		(e) => e.referrer === "docs/handoff/2026-09-25-upload-surface-round.md",
 	);
-	assert.equal(accepted[0].localPaths.length, 6);
-	assert.ok(accepted[0].why.length > 20, "例外必须写明理由");
-	// Every accepted local doc must actually be local-only under the real policy.
-	// Otherwise the entry is stale and the gate is excusing a reference to a file
-	// that ships.
+	assert.ok(original, "2026-09-25 adjudication entry preserved");
+	assert.equal(original.localPaths.length, 6);
+	assert.ok(original.why.length > 20, "例外必须写明理由");
+	// Every accepted entry must be reasoned, and every accepted local doc must
+	// actually be local-only under the real policy - otherwise the entry is stale
+	// and the gate is excusing a reference to a file that ships.
 	const compiled = compilePolicy(real);
-	for (const local of accepted[0].localPaths) {
-		assert.equal(
-			real.classes[classifyPath(compiled, local).class].upload,
-			false,
-			local,
-		);
+	for (const entry of accepted) {
+		assert.ok(entry.why && entry.why.length > 20, "每个例外必须写明理由");
+		for (const local of entry.localPaths ?? []) {
+			assert.equal(
+				real.classes[classifyPath(compiled, local).class].upload,
+				false,
+				local,
+			);
+		}
 	}
 });
+
