@@ -51,7 +51,7 @@ function countEvents(eventsPath: string) {
 	const text = readFileSync(eventsPath, "utf8");
 	const lines = text.split("\n").filter(Boolean);
 	for (const line of lines) {
-		let ev: any;
+		let ev: unknown;
 		try {
 			ev = JSON.parse(line);
 		} catch {
@@ -138,13 +138,13 @@ function main() {
 	const reading = {
 		ledgerDir,
 		eventLines: lines,
-		premiseStale: types["premise_stale"] ?? 0,
-		premiseNoticeQueued: types["premise_notice_queued"] ?? 0,
-		premiseNoticeDelivered: types["premise_notice_delivered"] ?? 0,
-		premiseNoticeOutcome: types["premise_notice_outcome"] ?? 0,
+		premiseStale: types.premise_stale ?? 0,
+		premiseNoticeQueued: types.premise_notice_queued ?? 0,
+		premiseNoticeDelivered: types.premise_notice_delivered ?? 0,
+		premiseNoticeOutcome: types.premise_notice_outcome ?? 0,
 		outcomeQueued: outcomes["queued"] ?? 0,
-		deliveredFootprint: deliveredObs["footprint"] ?? 0,
-		deliveredUnobservable: deliveredObs["unobservable"] ?? 0,
+		deliveredFootprint: deliveredObs.footprint ?? 0,
+		deliveredUnobservable: deliveredObs.unobservable ?? 0,
 		threadNotices: thread.notices,
 		threadInvalidationNotices: thread.invalidation,
 		threadsWithNotices: thread.threads,
@@ -158,7 +158,7 @@ function main() {
 		premisePassWriters: pass.writers,
 	};
 	if (values.json) {
-		process.stdout.write(JSON.stringify(reading, null, 2) + "\n");
+		process.stdout.write(`${JSON.stringify(reading, null, 2)}\n`);
 	} else {
 		for (const [k, v] of Object.entries(reading)) {
 			if (k === "ledgerDir") continue;
