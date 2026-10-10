@@ -1,13 +1,9 @@
 {
 	"claim_id": "claim-forest-landing",
 	"instrument_sha256": "scripts/check-forest-landing.mjs:601c7688b24af34bcb581715af33a35ac1f1ebc685ac86592c8ccac7bbff5e35",
-	"subject_sha": "8aa6b2f7e5b56a40cebedf70b165aaf21cde075c",
-	"environment": {
-		"os": "windows-x64",
-		"checkout": "isolated issue-relay-acceptance",
-		"forest": "read-only copy; canonical unchanged"
-	},
-	"measured_at": "2026-10-01T06:30:52.110Z",
+	"subject_sha": "81d7832a3dfbe0573fd0de895e47ec246520afb6",
+	"environment": {},
+	"measured_at": "2026-10-10T13:06:37.309Z",
 	"reading": {
 		"exit": 0,
 		"problems": 0
