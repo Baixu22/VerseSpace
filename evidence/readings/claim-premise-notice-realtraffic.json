@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-premise-notice-realtraffic",
-	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:8cd715fbaa6faa6fc5d9383663b616b078eb5a44e34fb12a9c1f0af4728446d1",
-	"subject_sha": "930bdc1643e01b9e05086698d9cfbdd02eafe340",
+	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:54883d786eb1b5684bf0fd22e14568f5a61d5a07982252e9575086bb4d8fd2f5",
+	"subject_sha": "b89328716ca412cb535d6b5aa369328c3346eb13",
 	"environment": {},
-	"measured_at": "2026-10-10T07:47:09.882Z",
+	"measured_at": "2026-10-10T08:07:48.457Z",
 	"reading": {
 		"eventLines": 5063,
 		"premiseStale": 128,

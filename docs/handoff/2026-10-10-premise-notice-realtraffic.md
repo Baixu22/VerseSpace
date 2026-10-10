@@ -35,8 +35,23 @@
 - 这与 `claim-codex-write-unsealed` 的诚实边界一致：**只沉可复现、可归因的数字**，
   不把"管线在跑"包装成"并发更安全"。
 
-## 门禁状态
+## 门禁状态（2026-10-10 实跑）
 
-登记于 `evidence/claims.json` 的 `claim-premise-notice-realtraffic`，类 `L1`。
-`evidence/claims.json` 自身是被大量声明引用的 `subject_path`，因此本读数在其登记提交
-之后若再次改动注册表会被标 `stale-subject` —— 这是门禁的预期行为，重新 `--run` 登记即可。
+登记于 evidence/claims.json 的 claim-premise-notice-realtraffic（类 L1）。
+evidence/claims.json 被绝大多数 claim 列为 subject_path，因此本次登记改动注册表后，
+所有引用它的读数都会标 stale-subject，这是门禁预期行为（读数只在产生它的状态下有效）。
+
+本次在同一 baseline 下重录了可在本沙箱跑通的四条：
+- claim-claims-gate -> valid
+- claim-catch-sites -> valid
+- claim-premise-contract -> valid
+- claim-typecheck -> valid
+
+刻意未重录、保持 stale 的 11 条（仪器在本沙箱不可执行，重录会录假读数或触发子进程禁令）：
+- claim-workbench-suite / claim-ui-suite / claim-context-rot-suite：bun test 需 spawn git/supervisor，本沙箱拒绝子进程；
+- claim-browser-e2e：需真实浏览器，无法启动；
+- claim-codex-native-seal：需真实 codex CLI，本环境未授权；
+- claim-built-shapes：需完整 build；
+- claim-doctor-clean / claim-upload-surface-clean / claim-upload-surface-tests / claim-forest-landing / claim-lint：仪器可跑，但多数同时因 README.md 既有改动与本次新增文档/仪器被标 stale，且 lint 全仓失败源自 evidence/claims.json 既有 CRLF 格式（非本次引入）。
+
+本次提交后 check:claims 整体仍报 drift，但原因是注册表改动 + 本沙箱资源约束，不是本次沉积引入的正确性回归。
