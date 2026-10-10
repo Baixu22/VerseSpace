@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-catch-sites",
 	"instrument_sha256": "scripts/audit/catch-sites.mjs:c0bb86ce04a7df4355278f2ec07b0820a638a394908fcd4718314f23d530aa20",
-	"subject_sha": "b3df54a1a8c07cc1e472ee503df13efada6ff6b1",
+	"subject_sha": "874933790f05942e06f76851cfb45c6ef72ac2b5",
 	"environment": {},
-	"measured_at": "2026-10-10T10:36:22.156Z",
+	"measured_at": "2026-10-10T11:24:38.636Z",
 	"reading": {
 		"files": 65,
 		"sites": 150
