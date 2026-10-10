@@ -1,0 +1,22 @@
+{
+	"claim_id": "claim-premise-notice-realtraffic",
+	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:8cd715fbaa6faa6fc5d9383663b616b078eb5a44e34fb12a9c1f0af4728446d1",
+	"subject_sha": "930bdc1643e01b9e05086698d9cfbdd02eafe340",
+	"environment": {},
+	"measured_at": "2026-10-10T07:47:09.882Z",
+	"reading": {
+		"eventLines": 5063,
+		"premiseStale": 128,
+		"premiseNoticeQueued": 80,
+		"premiseNoticeDelivered": 14,
+		"premiseNoticeOutcome": 128,
+		"deliveredFootprint": 14,
+		"threadNotices": 45,
+		"threadInvalidationNotices": 45,
+		"threadsWithNotices": 20
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:4dd5464191783affa8628a5ec8f63a396b4ee04b93b23448bba2579afb3398e2",
+	"reproduce": "bun scripts/verify/measure-premise-notices.ts --json",
+	"class": "curated-evidence"
+}
