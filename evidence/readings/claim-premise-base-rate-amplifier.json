@@ -1,0 +1,19 @@
+{
+	"claim_id": "claim-premise-base-rate-amplifier",
+	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:9bb94ba4b31fe3b74e7cd22d5a18002eef2e2f8ab2ef05e1b916aceeaf6c2ad0",
+	"subject_sha": "bb297dcd32ffaf4565fcf59dfc064d3cab576e3d",
+	"environment": {},
+	"measured_at": "2026-10-10T10:31:22.213Z",
+	"reading": {
+		"premisePassEvents": 3516,
+		"premisePassOverlaps": 88252,
+		"premisePassSuppressedDedup": 87982,
+		"premisePassSuppressedL1": 830,
+		"premisePassNotified": 248,
+		"footprintWriters": 22
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:d821796ca9137394d61189ca5de81209be5d2fb54b665d0bbc03a7e041c7f94f",
+	"reproduce": "bun scripts/verify/measure-premise-notices.ts --json",
+	"class": "curated-evidence"
+}

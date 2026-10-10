@@ -55,3 +55,22 @@ evidence/claims.json 被绝大多数 claim 列为 subject_path，因此本次登
 - claim-doctor-clean / claim-upload-surface-clean / claim-upload-surface-tests / claim-forest-landing / claim-lint：仪器可跑，但多数同时因 README.md 既有改动与本次新增文档/仪器被标 stale，且 lint 全仓失败源自 evidence/claims.json 既有 CRLF 格式（非本次引入）。
 
 本次提交后 check:claims 整体仍报 drift，但原因是注册表改动 + 本沙箱资源约束，不是本次沉积引入的正确性回归。
+## 基率放大器实测（同一次账本，2026-10-10 追加）
+
+ADR-0006 sec.2 的核心论点是：记录读集的首要理由不是审计，而是把并发冲突告警的有效基率（PPV）
+从约 2% 抬进 10-30%，使同一检测器 PPV 从约 0.15 升到 0.5-0.8。本账本上的 premise_pass
+事件把这一过程变成了可数的事实：
+
+| 维度 | 值 |
+| --- | --- |
+| premise_pass 评估次数 | 3516 |
+| 原始候选重叠（brute-force 会全部告警） | 88252 |
+| 被去重抑制 | 87982 |
+| 被 L1 噪声层抑制 | 830 |
+| 实际到达投递的通知 | 248 |
+| 记录到的不同写者（footprint writers） | 22 |
+| 读集累计写者实例 | 10705 |
+
+含义：88252 个原始候选重叠，经去重 + 读集重叠过滤后只剩 248 个真正投递——这正是
+PPV 公式中"提高 p"的工程化落地。它不证明 LLM 是否正确修补，也不代表真实用户精度，但把
+"读侧让告警可用"从一句话论点变成了一次捕获账本上的可复算读数。

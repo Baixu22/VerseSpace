@@ -491,6 +491,30 @@
       "docs": [
         "docs/handoff/2026-10-10-premise-notice-realtraffic.md"
       ]
+    },
+    {
+      "id": "claim-premise-base-rate-amplifier",
+      "statement": "读侧基率放大器（ADR-0006 sec.2）在真实账本上的实测：premise_pass 累计的原始候选重叠被去重与 L1 噪声层抑制后，仅少量到达投递；这是 PPV 论证的具体体现，不证明正确性结论",
+      "instrument": [
+        "scripts/verify/measure-premise-notices.ts"
+      ],
+      "subject_paths": [
+        "scripts/verify/measure-premise-notices.ts",
+        "evidence/claims.json"
+      ],
+      "reading_shape": {
+        "premisePassEvents": "number",
+        "premisePassOverlaps": "number",
+        "premisePassSuppressedDedup": "number",
+        "premisePassSuppressedL1": "number",
+        "premisePassNotified": "number",
+        "footprintWriters": "number"
+      },
+      "class": "L1",
+      "reproduce": "bun scripts/verify/measure-premise-notices.ts --json",
+      "docs": [
+        "docs/handoff/2026-10-10-premise-notice-realtraffic.md"
+      ]
     }
   ]
 }
