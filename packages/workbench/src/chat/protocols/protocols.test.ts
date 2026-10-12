@@ -126,12 +126,12 @@ describe("OpenAI Responses codec", () => {
 		expect(frame!.error?.kind).toBe("quota");
 	});
 
-	test("does not change storage: no store field is sent either way", () => {
+	test("server-side storage is allowed explicitly (store: true)", () => {
 		const body = openAiResponsesCodec.body({
 			model: "gpt-4o-mini",
 			turns: [],
 		});
-		expect(body).not.toHaveProperty("store");
+		expect(body.store).toBe(true);
 	});
 });
 
@@ -186,6 +186,16 @@ describe("Anthropic codec", () => {
 		]);
 		expect(frames[0]!.error?.kind).toBe("content_filter");
 		expect(frames[1]!.terminal).toBe(true);
+	});
+
+	test("long sessions use the 1-hour TTL; short ones keep the 5-minute default", () => {
+		expect(
+			anthropicCodec.body({ model: "m", turns: [], longSession: true })
+				.cache_control,
+		).toEqual({ type: "ephemeral", ttl: "1h" });
+		expect(
+			anthropicCodec.body({ model: "m", turns: [] }).cache_control,
+		).toEqual({ type: "ephemeral" });
 	});
 
 	test("max_tokens is always present, because the protocol requires it", () => {

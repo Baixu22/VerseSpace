@@ -56,6 +56,7 @@ export type AssistantRunEvent =
 export type ChatRunEvent =
 	| AssistantRunEvent
 	| { type: "user"; message: StoredMessage }
+	| { type: "forked"; threadId: string; title: string }
 	| { type: "turn_started"; messageId: string }
 	| { type: "notice_delivered"; count: number; messageId: string };
 

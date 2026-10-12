@@ -38,7 +38,11 @@ export const anthropicCodec: ProtocolCodec = {
 			stream: true,
 			// Automatic caching: the breakpoint follows the last cacheable block
 			// as the conversation grows, so no per-message markers are needed.
-			cache_control: { type: "ephemeral" },
+			// Long sessions get the 1-hour TTL (2x write price): idle gaps longer
+			// than five minutes would otherwise expire the prefix every time.
+			cache_control: request.longSession
+				? { type: "ephemeral", ttl: "1h" }
+				: { type: "ephemeral" },
 		};
 		if (request.system) body.system = request.system;
 		if (request.temperature !== undefined)

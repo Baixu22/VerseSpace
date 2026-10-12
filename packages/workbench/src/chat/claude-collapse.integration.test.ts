@@ -143,7 +143,7 @@ describe("Claude collapsed transcript integration", () => {
 				"second\n",
 			]);
 			for (const event of emitted) {
-				if (event.type !== "user")
+				if (event.type !== "user" && event.type !== "forked")
 					expect(event.messageId).toBe(done.message.id);
 			}
 			const messages = await chat.messages(thread.id);

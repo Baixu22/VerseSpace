@@ -21,6 +21,11 @@ export interface CodecRequest {
 	maxTokens?: number;
 	temperature?: number;
 	effort?: "low" | "medium" | "high";
+	/**
+	 * The thread is long enough that reuse is likely across idle gaps. Only
+	 * Anthropic reads this: it switches automatic caching to the 1-hour TTL.
+	 */
+	longSession?: boolean;
 	/** Stable per-thread key; codecs without a cache hint ignore it. */
 	cacheKey?: string;
 }

@@ -18,12 +18,26 @@ import { turnInFlight } from "./thread-lifecycle";
 
 import type { ThreadMeta } from "./thread-types";
 
-export async function fork(
+export function fork(
 	context: ThreadContext,
 	id: string,
 	anchorMessageId: string,
 ): Promise<ForkOutcome> {
-	return context.store.enqueue(id, async () => {
+	return context.store.enqueue(id, () =>
+		forkLocked(context, id, anchorMessageId),
+	);
+}
+
+/**
+ * Fork without taking the source thread's queue lock. Only call this from code
+ * that already holds that lock (the turn runner), or it will deadlock.
+ */
+export async function forkLocked(
+	context: ThreadContext,
+	id: string,
+	anchorMessageId: string,
+): Promise<ForkOutcome> {
+	{
 		// claude sessions stay alive BETWEEN turns (running holds the live
 		// child for minutes) — refuse only when a turn is actually in flight
 		if (turnInFlight(context, id)) {
@@ -121,5 +135,5 @@ export async function fork(
 				agentContextPlan,
 			),
 		};
-	});
+	}
 }

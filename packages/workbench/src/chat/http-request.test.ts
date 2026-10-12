@@ -48,3 +48,40 @@ test("Chat Completions defaults are unchanged apart from the cache key", () => {
 	const bare = buildHttpRequest("openai-chat", "k", chat, history);
 	expect(bare.body).not.toHaveProperty("prompt_cache_key");
 });
+
+test("Gemini is reached through its OpenAI-compatible endpoint on the Chat Completions lane", () => {
+	const chat = {
+		provider: "openai-chat",
+		model: "gemini-2.5-flash",
+		baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+		noticeTokenBudget: 300,
+	} as never;
+	const { url, body } = buildHttpRequest(
+		"openai-chat",
+		"k",
+		chat,
+		history,
+		"t",
+	);
+	expect(url).toBe(
+		"https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+	);
+	expect(body.model).toBe("gemini-2.5-flash");
+	expect(body.stream_options).toEqual({ include_usage: true });
+});
+
+test("Anthropic switches to the 1-hour TTL only for long sessions", () => {
+	const chat = {
+		provider: "anthropic",
+		model: "claude-sonnet-4-5",
+		noticeTokenBudget: 300,
+	} as never;
+	const short = buildHttpRequest("anthropic", "k", chat, history).body;
+	expect(short.cache_control).toEqual({ type: "ephemeral" });
+	const long = Array.from({ length: 20 }, (_, i) => ({
+		role: i % 2 === 0 ? "user" : "assistant",
+		content: `第 ${i} 条`,
+	}));
+	const longBody = buildHttpRequest("anthropic", "k", chat, long).body;
+	expect(longBody.cache_control).toEqual({ type: "ephemeral", ttl: "1h" });
+});

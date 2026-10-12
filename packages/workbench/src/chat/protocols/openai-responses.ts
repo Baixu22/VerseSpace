@@ -10,9 +10,8 @@ import type { ParsedFrame, ProtocolCodec } from "./types.ts";
 /**
  * OpenAI Responses API.
  *
- * Storage is deliberately left at the provider default: whether to allow
- * server-side storage (`store`) is an open product decision, so this codec
- * does not change it in either direction.
+ * Server-side storage is allowed (`store: true`, the provider default made
+ * explicit). Storage is what lets a later turn reuse `previous_response_id`.
  */
 export const openAiResponsesCodec: ProtocolCodec = {
 	provider: "openai-responses",
@@ -29,6 +28,7 @@ export const openAiResponsesCodec: ProtocolCodec = {
 			model: request.model,
 			input: request.turns,
 			stream: true,
+			store: true,
 		};
 		if (request.system) body.instructions = request.system;
 		if (request.cacheKey) body.prompt_cache_key = request.cacheKey;

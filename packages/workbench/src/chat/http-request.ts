@@ -26,6 +26,14 @@ export const HTTP_PROVIDER_DEFAULTS: Record<
 };
 
 /**
+ * A thread with at least this many prior messages counts as a long session
+ * (about ten exchanges). Anthropic's default five-minute cache expires between
+ * the turns of a long conversation whenever the user pauses, so the 1-hour TTL
+ * is used from here on.
+ */
+export const LONG_SESSION_MESSAGES = 20;
+
+/**
  * Builds the endpoint, headers and body for one HTTP target. Wire-format
  * knowledge lives in the codec for that protocol; this function only resolves
  * the target's model and endpoint.
@@ -64,6 +72,7 @@ export function buildHttpRequest(
 			maxTokens: chat.maxTokens,
 			temperature: chat.temperature,
 			effort: chat.effort,
+			longSession: history.length >= LONG_SESSION_MESSAGES,
 			cacheKey,
 		}),
 	};
