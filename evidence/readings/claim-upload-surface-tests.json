@@ -1,15 +1,15 @@
 {
 	"claim_id": "claim-upload-surface-tests",
-	"instrument_sha256": "scripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/classify.test.mjs:401180ccd1f9ea8e15d7e7d504c0c0de3646764831516942b19dc78b0e0c7a3f\nscripts/upload-surface/links.mjs:9f1352df9aa86bd72a08d59301fca3c8e52537ad50f0042c2b883f8afb419e47\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d\nscripts/upload-surface/policy.json:6912b45aed2863bafa215a01069575c49c4e3dbad84623ed0e4f498e90f5cedb",
-	"subject_sha": "55a8f18752b2feb13f6d5c7123819d54ba4b91f0",
+	"instrument_sha256": "scripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/classify.test.mjs:26e3916e17b18d44d2258b178637af3e4d3d97f10c2969b0c4ca2e1867ff5f71\nscripts/upload-surface/links.mjs:9f1352df9aa86bd72a08d59301fca3c8e52537ad50f0042c2b883f8afb419e47\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d\nscripts/upload-surface/policy.json:8a4b5bb2a4e3e1119d13c76bd8ba710434f3fabacfefe44e1053b2ac857057a9",
+	"subject_sha": "3fccbc056556a1deb0ed8ed89ce4cf72fca32e5a",
 	"environment": {},
-	"measured_at": "2026-10-10T12:41:03.512Z",
+	"measured_at": "2026-10-12T01:27:37.633Z",
 	"reading": {
 		"pass": 31,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:162831b71dbc57c4461b1060513c7f9d9413f707927c060281a3c8c9da1a6a33",
+	"raw_digest": "sha256:f206e468b74e9a764a4af949d8c1cc30c12bf9c61306e7c8a8aef8fc143f8d7f",
 	"reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
 	"class": "curated-evidence"
 }

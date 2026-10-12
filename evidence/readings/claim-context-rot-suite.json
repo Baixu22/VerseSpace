@@ -1,19 +1,15 @@
 {
 	"claim_id": "claim-context-rot-suite",
 	"instrument_sha256": "package.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857\npackages/context-rot/package.json:a74f6f8149fa8dfb65292b3fb358d8144dd66ae2c12c0184a6442101048fc82d",
-	"subject_sha": "951ec039bbe7de39e7e5b173a9653185a42824fe",
-	"environment": {
-		"os": "windows-x64",
-		"bun": "1.3.14",
-		"checkout": "isolated issue-relay-acceptance"
-	},
-	"measured_at": "2026-10-01T06:20:04.747Z",
+	"subject_sha": "3fccbc056556a1deb0ed8ed89ce4cf72fca32e5a",
+	"environment": {},
+	"measured_at": "2026-10-12T01:22:14.250Z",
 	"reading": {
 		"pass": 69,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:df23954c647d20a171c9e0491bb38dadbe3742380246a1bbe913b457b15ff82c",
+	"raw_digest": "sha256:79c273f6b7513b64aaaef526284ff3ffbf4c37751a92dcacf7bcca5c7cefef2a",
 	"reproduce": "bun run test:context-rot",
 	"class": "curated-evidence"
 }

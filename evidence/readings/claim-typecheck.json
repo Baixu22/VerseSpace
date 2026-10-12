@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-typecheck",
 	"instrument_sha256": "package.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857",
-	"subject_sha": "874933790f05942e06f76851cfb45c6ef72ac2b5",
+	"subject_sha": "3fccbc056556a1deb0ed8ed89ce4cf72fca32e5a",
 	"environment": {},
-	"measured_at": "2026-10-10T11:25:03.704Z",
+	"measured_at": "2026-10-12T01:22:07.509Z",
 	"reading": {
 		"exit": 0
 	},
