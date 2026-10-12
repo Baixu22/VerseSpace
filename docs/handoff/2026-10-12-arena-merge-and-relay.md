@@ -44,15 +44,23 @@
 | `apps/workbench-ui` `vitest run` | 71 pass / 0 fail（19 文件；改动前 69） | 0 |
 | `bun run check:upload-surface` | 0 violations，12 条 referenced-but-local 已裁决 | 0 |
 | `bun run lint` | **3 errors（既有，非本轮引入）** | 1 |
-| `bun run check:claims` | **drift（合并触及了 subject_paths，读数待重取）** | 1 |
+| `bun run check:claims` | 16/19 一致；3 条 stale（见下） | 1 |
+| `bun run test:build`（两个构建形态） | native/js 均 `initialized·doctor·stats·headlessUi·bundledUi = true` | 0 |
+| `bun run test:upload-surface`（分类器+链接） | 31 pass / 0 fail | 0 |
+| `pwsh -NoProfile -File scripts/win/e2e-browser.ps1` | **不稳定**：两次分别 7 fail / 4 fail，失败项每次都不同 | 1 |
 
 - 本机无 child-process 沙箱限制：`bun test` 能正常 spawn git/supervisor，故上表 workbench 全量是真实读数。
+- **E2E 不稳定是环境问题，不是本轮回归**：失败全部是 `ERR_CONNECTION_REFUSED`——Vite dev server
+  在内存压力下中途退出（本机 87 个 node 进程、约 3.9 GB 可用内存，对应 AGENTS.md 的 16 GB 并发告警）。
+  两次运行的失败集合不同（7 fail vs 4 fail），且 e2e spec 与 composer 自上次 14/0 读数以来无改动。
 - `lint` 的 3 个错误（`evidence/claims.json`、`scripts/upload-surface/policy.json`、
   `scripts/upload-surface/classify.test.mjs` 的换行格式）在**合并前的基线 `a40f7ee` 上同样存在**
   （已用 `git stash` + detached checkout 复核），不是本次合并引入的回归。
 - `check:claims` 的 stale 是因为 arena 的 4 个提交改动了多条声明的 `subject_paths`
-  （ADR-0022：读数失效即重取，不能当作没发生）。本轮只提交代码改动，读数重取见紧随其后的
-  `evidence: re-record …` 提交。
+  （ADR-0022：读数失效即重取，不能当作没发生）。按 ADR-0022「失效即重取」，本轮把合并触及的读数逐条重跑
+  （`record-reading.mjs --run`，真实退出码），16/19 现在 valid。剩 3 条**故意保持 stale**：
+  `claim-lint`（3 个既有 CRLF 格式错误）、`claim-browser-e2e`（见下）、`claim-codex-native-seal`
+  （需要真实 Codex CLI 会话）。
 
 ## 4. 刻意没做什么
 
@@ -61,8 +69,8 @@
 - **没有引入 IR / Gemini 原生协议**。与上一轮判断一致：历史目前是纯文本，等工具调用与推理块进入
   HTTP 通道再做。
 - **没有动服务端逻辑**。本轮只补 UI 类型与渲染；`lastRun` 的写入路径在 arena 提交里已完备。
-- **没有为了变绿而手改 claims**。任何无法在本机真实跑出的仪器（浏览器 E2E、真实 Codex CLI、
-  全量 build）保持 stale，不伪造读数。
+- **没有为了变绿而手改 claims**。无法在本机真实跑出的仪器（浏览器 E2E、真实 Codex CLI）
+  保持 stale，不伪造读数。
 
 ## 5. 下一步与遗留风险
 
