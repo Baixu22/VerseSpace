@@ -1,17 +1,23 @@
-import type { WorkbenchConfig } from "../types/config";
+import { codecFor, type HttpProvider } from "./protocols";
 
 export interface SseConsumeResult {
 	/** False when EOF arrived with an unterminated SSE frame. */
 	complete: boolean;
 }
 
+/**
+ * A shadow variant: one extra non-streamed-to-user request whose text is kept
+ * as an alternate. It uses the same codec as the main request, so it can only
+ * ever yield text the protocol actually produced.
+ */
 export async function runHttpShadow(
-	provider: WorkbenchConfig["chat"]["provider"],
+	provider: HttpProvider,
 	url: string,
 	headers: Record<string, string>,
 	body: Record<string, unknown>,
 	signal: AbortSignal,
 ): Promise<string> {
+	const codec = codecFor(provider);
 	try {
 		let text = "";
 		const response = await fetch(url, {
@@ -24,36 +30,8 @@ export async function runHttpShadow(
 			return "";
 		}
 		await consumeSse(response, (payload) => {
-			if (payload === "[DONE]") {
-				return;
-			}
-			let event: Record<string, unknown>;
-			try {
-				event = JSON.parse(payload) as Record<string, unknown>;
-			} catch {
-				return;
-			}
-			let delta: string | undefined;
-			if (provider === "anthropic") {
-				if (event.type === "content_block_delta") {
-					const d = event.delta as { type?: string; text?: string } | undefined;
-					if (d?.type === "text_delta" && d.text) {
-						delta = d.text;
-					}
-				}
-			} else if (provider === "openai-chat") {
-				const choices = event.choices as
-					| Array<{ delta?: { content?: string } }>
-					| undefined;
-				delta = choices?.[0]?.delta?.content;
-			} else {
-				// openai-responses
-				if (event.type === "response.output_text.delta") {
-					delta = event.delta as string;
-				}
-			}
-			if (delta) {
-				text += delta;
+			for (const frame of codec.parse(payload)) {
+				if (frame.text) text += frame.text;
 			}
 		});
 		return text;
@@ -62,9 +40,15 @@ export async function runHttpShadow(
 	}
 }
 
+export interface ConsumeSseOptions {
+	/** Called for every chunk read from the body, including keep-alives. */
+	onChunk?: () => void;
+}
+
 export async function consumeSse(
 	response: Response,
 	onSseData: (payload: string) => void,
+	options: ConsumeSseOptions = {},
 ): Promise<SseConsumeResult> {
 	const reader = response.body!.getReader();
 	const decoder = new TextDecoder();
@@ -79,6 +63,7 @@ export async function consumeSse(
 	};
 	for (;;) {
 		const { done, value } = await reader.read();
+		options.onChunk?.();
 		if (done) {
 			break;
 		}

@@ -27,6 +27,7 @@ export const createSendSlice: StateCreator<
 		};
 		// TF-0207: replaced by the server's turn id as soon as `turn_started`
 		// arrives; until then the placeholder is what patches address.
+		let streamThreadId = threadId;
 		let assistantId = `local-a-${Date.now()}`;
 		const placeholderId = assistantId;
 		const assistantPlaceholder: StoredMessage = {
@@ -39,18 +40,18 @@ export const createSendSlice: StateCreator<
 		set((s) => ({
 			messages: {
 				...s.messages,
-				[threadId]: [
-					...(s.messages[threadId] ?? EMPTY),
+				[streamThreadId]: [
+					...(s.messages[streamThreadId] ?? EMPTY),
 					userMessage,
 					assistantPlaceholder,
 				],
 			},
-			runningThreadId: threadId,
+			runningThreadId: streamThreadId,
 		}));
 
 		try {
 			const response = await apiFetch(
-				`/api/chat/threads/${threadId}/messages`,
+				`/api/chat/threads/${streamThreadId}/messages`,
 				{
 					method: "POST",
 					headers: { "content-type": "application/json" },
@@ -76,16 +77,38 @@ export const createSendSlice: StateCreator<
 						continue;
 					}
 					const event = JSON.parse(line) as ChatRunEvent;
-					if (event.type === "user") {
+					if (event.type === "forked") {
+						// 协议切换：服务端把本轮转入分叉线程（阶段二）。源线程没有写入
+						// 本轮消息，撤回乐观占位，并把后续流式内容改投到分叉。
+						const sourceId = streamThreadId;
+						const forkId = event.threadId;
+						set((s) => ({
+							messages: {
+								...s.messages,
+								[sourceId]: (s.messages[sourceId] ?? EMPTY).filter(
+									(m) => m.id !== userMessage.id && m.id !== placeholderId,
+								),
+								[forkId]: [
+									...(s.messages[forkId] ?? EMPTY),
+									userMessage,
+									assistantPlaceholder,
+								],
+							},
+							activeId: forkId,
+							runningThreadId: forkId,
+						}));
+						streamThreadId = forkId;
+					} else if (event.type === "user") {
 						// 服务器确认了用户消息（真实持久化 id）——换掉本地占位
 						// id，消息操作（分叉锚点等）必须用服务端 id
 						set((s) => ({
 							messages: {
 								...s.messages,
-								[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
-									m.id === userMessage.id
-										? { ...event.message, status: "complete" as const }
-										: m,
+								[streamThreadId]: (s.messages[streamThreadId] ?? EMPTY).map(
+									(m) =>
+										m.id === userMessage.id
+											? { ...event.message, status: "complete" as const }
+											: m,
 								),
 							},
 						}));
@@ -96,8 +119,8 @@ export const createSendSlice: StateCreator<
 						set((s) => ({
 							messages: {
 								...s.messages,
-								[threadId]: (s.messages[threadId] ?? EMPTY).map((m) =>
-									m.id === placeholderId ? { ...m, id: realId } : m,
+								[streamThreadId]: (s.messages[streamThreadId] ?? EMPTY).map(
+									(m) => (m.id === placeholderId ? { ...m, id: realId } : m),
 								),
 							},
 						}));
@@ -105,7 +128,7 @@ export const createSendSlice: StateCreator<
 					} else if (event.type === "notice_delivered") {
 						// Background runs must not show delivery on a different conversation.
 						if (
-							get().activeId === threadId &&
+							get().activeId === streamThreadId &&
 							Number.isInteger(event.count) &&
 							event.count > 0
 						) {
@@ -120,10 +143,11 @@ export const createSendSlice: StateCreator<
 						set((s) => ({
 							messages: {
 								...s.messages,
-								[threadId]: (s.messages[threadId] ?? EMPTY).map((message) =>
-									message.id === assistantId
-										? applyAssistantRunEvent(message, event)
-										: message,
+								[streamThreadId]: (s.messages[streamThreadId] ?? EMPTY).map(
+									(message) =>
+										message.id === assistantId
+											? applyAssistantRunEvent(message, event)
+											: message,
 								),
 							},
 						}));
@@ -133,9 +157,9 @@ export const createSendSlice: StateCreator<
 		} finally {
 			set((s) => ({
 				runningThreadId:
-					s.runningThreadId === threadId ? null : s.runningThreadId,
+					s.runningThreadId === streamThreadId ? null : s.runningThreadId,
 				threads: s.threads.map((t) =>
-					t.id === threadId ? { ...t, status: "idle" as const } : t,
+					t.id === streamThreadId ? { ...t, status: "idle" as const } : t,
 				),
 			}));
 			// keep the threads sidebar titles fresh (first message renames)
@@ -146,7 +170,7 @@ export const createSendSlice: StateCreator<
 				set({ threads });
 			}
 			// 轮次边界刷新：meta + 建议 + 决策账本（TF-0095）
-			await refreshThread(set, threadId);
+			await refreshThread(set, streamThreadId);
 			// TF-0242：一轮可能新增/解除裁决项——边界刷新全局队列。
 			void get().loadTribunal();
 		}

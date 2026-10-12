@@ -9,9 +9,9 @@
  *
  * The table below is the single answer. Two rules keep it honest:
  *
- * 1. This is about CAPABILITIES, not wire formats. The HTTP lane still picks
- *    `anthropic` vs `openai-chat` bodies in its own module (`http-request.ts`,
- *    `http-stream.ts`) — that choice is about which API shape to speak, and
+ * 1. This is about CAPABILITIES, not wire formats. The HTTP lane picks the
+ *    wire format through the protocol codecs in `protocols/` — that choice is
+ *    about which API shape to speak, and
  *    putting it here would turn "capabilities" into "everything about a
  *    provider", which is how these tables rot.
  * 2. A capability is only listed when something actually branches on it. Any

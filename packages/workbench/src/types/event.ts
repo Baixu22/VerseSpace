@@ -28,6 +28,9 @@ export const THREAD_EVENT_SOURCE = "threads" as const;
 export const THREAD_EVENT_TYPES = new Set([
 	"thread.created",
 	"thread.forked",
+	// 协议切换（阶段二）：观察「本轮因协议变化分叉」与「绑定目标变化」两个事实。
+	"thread.protocol_forked",
+	"thread.binding_changed",
 	"thread.left",
 	"thread.restored",
 	"thread.switch",

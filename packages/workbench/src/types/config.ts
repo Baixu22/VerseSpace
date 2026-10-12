@@ -5,6 +5,14 @@ export type SchedulerPolicy = (typeof schedulerPolicies)[number];
 
 const DEFAULT_AGENT_COMMAND = "claude -p --verbose --output-format stream-json";
 
+/** 备用目标只允许 HTTP 通道的三种协议；CLI 通道无法被 HTTP 失败转移。 */
+const chatFallbackTargetSchema = z.object({
+	provider: z.enum(["openai-chat", "openai-responses", "anthropic"]),
+	model: z.string().optional(),
+	baseUrl: z.string().optional(),
+	apiKey: z.string().optional(),
+});
+
 export const workbenchConfigSchema = z.object({
 	project: z.string().default(""),
 	scheduler: z
@@ -94,6 +102,11 @@ export const workbenchConfigSchema = z.object({
 			baseUrl: z.string().optional(),
 			temperature: z.number().min(0).max(2).optional(),
 			maxTokens: z.number().int().positive().optional(),
+			/**
+			 * HTTP 通道的空闲超时（毫秒）：等待响应头、以及两次数据之间的最长间隔。
+			 * 超过即视为该目标超时，计入失败转移。
+			 */
+			timeoutMs: z.number().int().min(1000).max(600000).optional(),
 			effort: z.enum(["low", "medium", "high"]).optional(),
 			/**
 			 * 自动扇出变体数（TF-0094）：≥2 时同一请求并发发 shadow 变体，
@@ -102,6 +115,14 @@ export const workbenchConfigSchema = z.object({
 			fanout: z.number().int().min(1).max(3).optional(),
 			/** Maximum approximate token budget for one premise notice bundle. */
 			noticeTokenBudget: z.number().int().positive().max(4000).default(300),
+			/**
+			 * 有序备用目标（HTTP 通道）。主目标按 `maxAttempts` 重试后仍是
+			 * 可重试错误，或遇到 401/403，才依次切到这里；只在首个输出字节
+			 * 之前切换，绝不把两个上游的回答拼在一起。
+			 */
+			fallbacks: z.array(chatFallbackTargetSchema).max(4).optional(),
+			/** 每个目标的最大尝试次数（含首次）。 */
+			maxAttempts: z.number().int().min(1).max(4).optional(),
 		})
 		.default({ provider: "claude", noticeTokenBudget: 300 }),
 	/**

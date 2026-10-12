@@ -1,11 +1,9 @@
 import type { ForkInheritance, ForkLineage } from "./fork";
-
 import type { PromotionRecord } from "./promote";
-
 import type { ChatProvider, ReadObservability } from "./provider-capabilities";
 import { readObservabilityOf } from "./provider-capabilities";
-
 import type { ResumeNote } from "./resume";
+import type { ThreadBinding } from "./thread-binding";
 
 export type PermissionMode = "default" | "plan" | "acceptEdits";
 
@@ -19,6 +17,17 @@ export interface ThreadLastRun {
 	provider: ChatProvider;
 	readObservability: ReadObservability;
 	at: string;
+	/** Upstream requests the turn made, including retries. HTTP lane only. */
+	attempts?: number;
+	/** The configured primary, when a fallback answered the turn. */
+	switchedFrom?: string;
+	/** Cache-relevant token counts from the provider, when reported. */
+	usage?: {
+		promptTokens: number;
+		cachedTokens: number;
+		cacheWriteTokens: number;
+		outputTokens: number;
+	};
 }
 
 /**
@@ -81,6 +90,8 @@ export interface ThreadMeta {
 	 * 从未运行过的线程没有这个字段。
 	 */
 	lastRun?: ThreadLastRun;
+	/** Session binding: the configured target this thread was started on (phase 2). */
+	binding?: ThreadBinding;
 	/** 准备恢复笔记（TF-0097）：离开车道时由 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;
 	/**
@@ -168,6 +179,11 @@ export type TurnRunEvent =
 /** NDJSON events exposed by the Workbench chat route. */
 export type RunEvent =
 	| { type: "user"; message: StoredMessage }
+	/**
+	 * The turn was moved to a forked thread because the protocol changed. The
+	 * client should continue in `threadId`; the source thread is unchanged.
+	 */
+	| { type: "forked"; threadId: string; title: string; messageId?: undefined }
 	| { type: "turn_started"; messageId: string }
 	/** Request failures may precede allocation of an assistant message. */
 	| { type: "error"; message: string; messageId?: string }

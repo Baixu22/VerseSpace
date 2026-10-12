@@ -5,7 +5,9 @@ import { noticeParts } from "./notice-parts";
 import { ackNotices, drainNotices, selectNoticeEntries } from "./notice-queue";
 import { promptWithNotices } from "./prompt";
 import { capabilitiesOf } from "./provider-capabilities";
+import { decideBinding } from "./thread-binding";
 import type { ThreadContext } from "./thread-context";
+import { forkLocked } from "./thread-fork";
 import { observeForkInheritance } from "./thread-inheritance";
 import { maybePromote } from "./thread-promotion";
 import type {
@@ -29,6 +31,39 @@ export function run(
 		const chat = config.chat;
 		const capabilities = capabilitiesOf(chat.provider);
 		const readObservability = readObservabilityOf(chat.provider);
+
+		// Session binding (phase 2): a protocol change moves this turn to a fork,
+		// so the original thread and its cache are never mixed with another
+		// protocol's state. Same-protocol changes continue in place.
+		const threadMessages = await context.store.messages(id);
+		const binding = decideBinding(
+			meta.binding,
+			threadMessages.length > 0,
+			chat,
+		);
+		if (binding.kind === "fork") {
+			const anchor = threadMessages.at(-1);
+			const outcome = anchor
+				? await forkLocked(context, id, anchor.id)
+				: undefined;
+			if (!outcome?.ok || !outcome.thread) {
+				emit({ type: "error", message: outcome?.reason ?? "无法分叉线程" });
+				return;
+			}
+			await context.store.appendThreadEvent("thread.protocol_forked", id, {
+				from: binding.from.provider,
+				to: binding.next.provider,
+				forkThreadId: outcome.thread.id,
+			});
+			emit({
+				type: "forked",
+				threadId: outcome.thread.id,
+				title: outcome.thread.title,
+			});
+			// The fork has no binding yet, so it adopts the configuration and runs
+			// the turn itself. `opts` passes through: a resend stays a resend.
+			return run(context, outcome.thread.id, text, emit, opts);
+		}
 
 		// Drained before the user message is persisted so the notices that get
 		// folded into this turn's prompt are recorded on that very message.
@@ -69,6 +104,16 @@ export function run(
 			emit({ messageId: assistantMessageId, ...event });
 
 		meta.status = "running";
+		if (binding.kind === "bind" || binding.kind === "rebind") {
+			meta.binding = binding.next;
+		}
+		if (binding.kind === "rebind") {
+			await context.store.appendThreadEvent("thread.binding_changed", id, {
+				reason: binding.reason,
+				from: binding.from.model,
+				to: binding.next.model,
+			});
+		}
 		meta.lastRun = {
 			provider: chat.provider,
 			readObservability,
@@ -167,7 +212,7 @@ export function run(
 		context.running.set(id, controller);
 		const messageParts: MessagePart[] = [];
 		try {
-			await runHttp(
+			const used = await runHttp(
 				context,
 				chat,
 				id,
@@ -183,6 +228,20 @@ export function run(
 					}),
 				acknowledgeDelivery,
 			);
+			// lastRun records the provider that actually answered. A failover
+			// can move the turn to a fallback, and the next turn's cache and
+			// observability decisions depend on that fact, not the config.
+			if (used) {
+				meta.lastRun = {
+					provider: used.provider,
+					readObservability: readObservabilityOf(used.provider),
+					at: meta.lastRun?.at ?? new Date().toISOString(),
+					attempts: used.attempts,
+					switchedFrom: used.switchedFrom,
+					usage: used.usage,
+				};
+				await context.store.saveMeta(meta);
+			}
 		} catch (error) {
 			emitTurn({ type: "error", message: String(error).slice(0, 400) });
 		} finally {

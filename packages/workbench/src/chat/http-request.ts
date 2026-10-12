@@ -1,80 +1,79 @@
 import type { WorkbenchConfig } from "../types/config";
 
 import { httpEndpoint } from "./http-endpoint";
+import { codecFor, type HttpProvider } from "./protocols";
 
 /**
- * TF-0204: the `provider === "…"` comparisons in this file (and in
- * `http-stream.ts` / `http-run.ts`) are deliberately NOT part of the
- * capabilities table. They choose a wire format — which request body to send
- * and which response shape to parse — and two providers that differ here can
- * still be identical on every capability. Moving them into the table would
- * make it "everything we know about a provider", which is the shape that rots;
- * a capability belongs there only when a *behaviour* branches on it.
+ * Defaults per HTTP provider, read from each protocol codec. Shared by the
+ * request builder and the target planner.
+ */
+export const HTTP_PROVIDER_DEFAULTS: Record<
+	HttpProvider,
+	{ model: string; baseUrl: string }
+> = {
+	anthropic: {
+		model: codecFor("anthropic").defaultModel,
+		baseUrl: codecFor("anthropic").defaultBaseUrl,
+	},
+	"openai-chat": {
+		model: codecFor("openai-chat").defaultModel,
+		baseUrl: codecFor("openai-chat").defaultBaseUrl,
+	},
+	"openai-responses": {
+		model: codecFor("openai-responses").defaultModel,
+		baseUrl: codecFor("openai-responses").defaultBaseUrl,
+	},
+};
+
+/**
+ * A thread with at least this many prior messages counts as a long session
+ * (about ten exchanges). Anthropic's default five-minute cache expires between
+ * the turns of a long conversation whenever the user pauses, so the 1-hour TTL
+ * is used from here on.
+ */
+export const LONG_SESSION_MESSAGES = 20;
+
+/**
+ * Builds the endpoint, headers and body for one HTTP target. Wire-format
+ * knowledge lives in the codec for that protocol; this function only resolves
+ * the target's model and endpoint.
+ *
+ * TF-0204: the wire format is a protocol property, not a capability, so it is
+ * kept out of the capabilities table.
  */
 export function buildHttpRequest(
-	provider: WorkbenchConfig["chat"]["provider"],
+	provider: HttpProvider,
 	key: string,
 	chat: WorkbenchConfig["chat"],
 	history: Array<{ role: string; content: string }>,
+	/**
+	 * Stable per-thread key. It routes same-thread requests to the same prompt
+	 * cache (OpenAI `prompt_cache_key`) and is the stable identity for the
+	 * thread's cache on the other lanes. Omitted = no cache hint is sent.
+	 */
+	cacheKey?: string,
 ): {
 	url: string;
 	headers: Record<string, string>;
 	body: Record<string, unknown>;
 } {
-	let url: string;
-	const headers: Record<string, string> = {
-		"content-type": "application/json",
+	const codec = codecFor(provider);
+	const baseUrl = chat.baseUrl ?? codec.defaultBaseUrl;
+	const query = new URLSearchParams(codec.query()).toString();
+	const url =
+		httpEndpoint(baseUrl, codec.path(chat.model ?? codec.defaultModel)) +
+		(query ? `?${query}` : "");
+	return {
+		url,
+		headers: codec.headers(key),
+		body: codec.body({
+			model: chat.model ?? codec.defaultModel,
+			turns: history.map((m) => ({ role: m.role, content: m.content })),
+			maxTokens: chat.maxTokens,
+			temperature: chat.temperature,
+			effort: chat.effort,
+			longSession: history.length >= LONG_SESSION_MESSAGES,
+			cacheKey,
+		}),
 	};
-	const body: Record<string, unknown> = {};
-
-	if (provider === "anthropic") {
-		url = httpEndpoint(
-			chat.baseUrl ?? "https://api.anthropic.com",
-			"/v1/messages",
-		);
-		headers["x-api-key"] = key;
-		headers["anthropic-version"] = "2023-06-01";
-		body.model = chat.model ?? "claude-sonnet-4-5";
-		body.max_tokens = chat.maxTokens ?? 1024;
-		if (chat.temperature !== undefined) {
-			body.temperature = chat.temperature;
-		}
-		body.stream = true;
-		body.messages = history;
-	} else if (provider === "openai-chat") {
-		url = httpEndpoint(
-			chat.baseUrl ?? "https://api.openai.com/v1",
-			"/chat/completions",
-		);
-		headers.authorization = `Bearer ${key}`;
-		body.model = chat.model ?? "gpt-4o-mini";
-		body.messages = history;
-		body.stream = true;
-		if (chat.temperature !== undefined) {
-			body.temperature = chat.temperature;
-		}
-		if (chat.maxTokens !== undefined) {
-			body.max_tokens = chat.maxTokens;
-		}
-	} else {
-		// openai-responses
-		url = httpEndpoint(
-			chat.baseUrl ?? "https://api.openai.com/v1",
-			"/responses",
-		);
-		headers.authorization = `Bearer ${key}`;
-		body.model = chat.model ?? "gpt-4o-mini";
-		body.input = history.map((m) => ({ role: m.role, content: m.content }));
-		body.stream = true;
-		if (chat.temperature !== undefined) {
-			body.temperature = chat.temperature;
-		}
-		if (chat.maxTokens !== undefined) {
-			body.max_output_tokens = chat.maxTokens;
-		}
-		if (chat.effort) {
-			body.reasoning = { effort: chat.effort };
-		}
-	}
-	return { url, headers, body };
 }

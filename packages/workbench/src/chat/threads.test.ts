@@ -1450,7 +1450,7 @@ process.stdin.on("data", (chunk) => {
 });
 
 describe("ChatThreads 每轮 provider 与读集可观测性（TF-0191）", () => {
-	test("新线程无 lastRun；HTTP 轮次记 unobservable；换成 claude 后同一线程改记 footprint", async () => {
+	test("新线程无 lastRun；HTTP 轮次记 unobservable；换成 claude 后在分叉线程记 footprint，源线程不变", async () => {
 		const ws = await makeTempWorkbench();
 		const fakeDir = await mkdtemp(join(tmpdir(), "workbench-lastrun-agent-"));
 		const originalFetch = globalThis.fetch;
@@ -1491,14 +1491,26 @@ process.stdin.once("data", () => {
 				...workbenchConfigSchema.parse({}),
 				chat: { provider: "claude" },
 			});
-			await chat.run(thread.id, "claude turn", () => {});
+			// A protocol change does not rebind the thread: the claude turn runs in a
+			// fork that inherits the transcript, and the source keeps its record.
+			const switchEvents: Array<{ type: string; threadId?: string }> = [];
+			await chat.run(thread.id, "claude turn", (event) =>
+				switchEvents.push(event as { type: string; threadId?: string }),
+			);
+			const forked = switchEvents.find((e) => e.type === "forked");
+			expect(forked?.threadId).toBeDefined();
+			const forkId = forked!.threadId!;
 			for (let attempt = 0; attempt < 40; attempt += 1) {
-				if (!chatContext(chat).live.has(thread.id)) break;
+				if (!chatContext(chat).live.has(forkId)) break;
 				await new Promise((resolve) => setTimeout(resolve, 25));
 			}
-			expect((await chat.get(thread.id)).lastRun).toMatchObject({
+			expect((await chat.get(forkId)).lastRun).toMatchObject({
 				provider: "claude",
 				readObservability: "footprint",
+			});
+			expect((await chat.get(thread.id)).lastRun).toMatchObject({
+				provider: "openai-chat",
+				readObservability: "unobservable",
 			});
 		} finally {
 			globalThis.fetch = originalFetch;
