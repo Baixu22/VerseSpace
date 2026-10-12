@@ -98,6 +98,17 @@ export interface ThreadMeta {
 		provider: string;
 		readObservability: "footprint" | "unobservable";
 		at: string;
+		/** 上游请求数（含重试）；仅 HTTP 通道。 */
+		attempts?: number;
+		/** 兜底应答时，配置里的主目标标签（实际应答方见 provider）。 */
+		switchedFrom?: string;
+		/** provider 上报的缓存相关 token；缺失表示上游没有返回，不是 0。 */
+		usage?: {
+			promptTokens: number;
+			cachedTokens: number;
+			cacheWriteTokens: number;
+			outputTokens: number;
+		};
 	};
 	/** 准备恢复笔记（TF-0097）：离开时 agent 起草，返回时呈现为有序叙事。 */
 	resumeNote?: ResumeNote;

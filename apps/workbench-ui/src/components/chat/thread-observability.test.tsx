@@ -85,6 +85,59 @@ describe("ThreadObservability（TF-0191）", () => {
 	});
 });
 
+it("切换：兜底应答时标出实际 provider、主目标与尝试次数", () => {
+	mount(
+		thread({
+			lastRun: {
+				provider: "openai-chat",
+				readObservability: "unobservable",
+				at: "2026-10-12T00:00:00.000Z",
+				attempts: 2,
+				switchedFrom: "openai-chat/gpt-4o-mini",
+			},
+		}),
+	);
+	expect(screen.getByTestId("thread-switched")).toHaveTextContent(
+		"已切换 · openai-chat · 2 次尝试",
+	);
+});
+
+it("缓存用量：只在 provider 上报时显示命中率", () => {
+	const { unmount } = mount(
+		thread({
+			lastRun: {
+				provider: "openai-chat",
+				readObservability: "unobservable",
+				at: "2026-10-12T00:00:00.000Z",
+				usage: {
+					promptTokens: 2048,
+					cachedTokens: 1920,
+					cacheWriteTokens: 0,
+					outputTokens: 3,
+				},
+			},
+		}),
+	);
+	expect(screen.getByTestId("thread-cache-usage")).toHaveTextContent(
+		"缓存命中 94%",
+	);
+	unmount();
+
+	// provider 没有回报提示量：不渲染、不猜测为 0
+	const { container: noUsage } = mount(
+		thread({
+			lastRun: {
+				provider: "openai-chat",
+				readObservability: "unobservable",
+				at: "2026-10-12T00:00:00.000Z",
+			},
+		}),
+	);
+	expect(
+		noUsage.querySelector('[data-testid="thread-cache-usage"]'),
+	).toBeNull();
+});
+
 it("codex stays visibly experimental even when a footprint was captured", () => {
 	mount(
 		thread({
