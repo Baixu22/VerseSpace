@@ -167,7 +167,7 @@ export function run(
 		context.running.set(id, controller);
 		const messageParts: MessagePart[] = [];
 		try {
-			await runHttp(
+			const used = await runHttp(
 				context,
 				chat,
 				id,
@@ -183,6 +183,17 @@ export function run(
 					}),
 				acknowledgeDelivery,
 			);
+			// lastRun records the provider that actually answered. A failover
+			// can move the turn to a fallback, and the next turn's cache and
+			// observability decisions depend on that fact, not the config.
+			if (used && used.provider !== meta.lastRun?.provider) {
+				meta.lastRun = {
+					provider: used.provider,
+					readObservability: readObservabilityOf(used.provider),
+					at: meta.lastRun?.at ?? new Date().toISOString(),
+				};
+				await context.store.saveMeta(meta);
+			}
 		} catch (error) {
 			emitTurn({ type: "error", message: String(error).slice(0, 400) });
 		} finally {
