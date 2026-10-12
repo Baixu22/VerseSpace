@@ -51,7 +51,8 @@ test("decision table: bad requests fail unless adaptation changed the body", () 
 	expect(decideAfterFailure({ ...base, status: 400, adapted: true }).kind).toBe(
 		"adapt",
 	);
-	expect(decideAfterFailure({ ...base, status: 404 }).kind).toBe("fail");
+	// 404 means the model is not on this endpoint: another target may have it.
+	expect(decideAfterFailure({ ...base, status: 404 }).kind).toBe("failover");
 });
 
 test("decision table: output already shown means never retry or switch", () => {

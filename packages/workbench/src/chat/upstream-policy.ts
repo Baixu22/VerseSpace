@@ -9,13 +9,19 @@
  * Hard rules:
  * - Once any output has reached the user, the turn never retries or switches.
  *   Two upstreams' answers must not be stitched together.
- * - 400/422 is only retried when the adaptation layer can change the request.
- * - 401/403 switch to the next target (a different key may work) but are not
- *   retried on the same target.
- * - Other 4xx are request bugs; every target would reject them, so they fail.
+ * - The failure class decides the action, not the status code alone:
+ *   - bad_request: adapt the request if a parameter can change, else fail.
+ *   - rate, overloaded, server, timeout, network, stream: retry the same
+ *     target with backoff, then switch to the next target.
+ *   - quota, auth, model_missing, context_overflow: switch at once. Retrying
+ *     the same target cannot help.
+ *   - content_filter, malformed: fail. No target changes the answer.
+ * - A target that keeps failing is moved behind healthy targets for a short
+ *   cooldown. It is never removed, so the plan can always fall back to it.
  */
 
 import type { AdaptationTarget, ModelAdaptation } from "./model-adaptation";
+import { type FailureKind, kindFromStatus } from "./protocols";
 
 export interface AttemptOutcome {
 	ok: boolean;
@@ -23,9 +29,14 @@ export interface AttemptOutcome {
 	status?: number;
 	/** Human-readable failure, already safe to show (no secrets). */
 	message?: string;
+	/** Failure class from the protocol layer. Preferred over `status`. */
+	kind?: FailureKind;
 	/** True once any text delta has been delivered to the user. */
 	emittedOutput: boolean;
-	/** Set by the lane when the stream failed with a recognised transient error. */
+	/**
+	 * Legacy hint for failures without a `kind`: false marks the failure as
+	 * definitive (for example a malformed frame).
+	 */
 	transient?: boolean;
 	retryAfterMs?: number;
 }
@@ -38,6 +49,7 @@ export type FailoverDecision =
 
 export interface PolicyInput {
 	status?: number;
+	failure?: FailureKind;
 	emittedOutput: boolean;
 	transient?: boolean;
 	/** Attempts already made on this target, counting the one that just failed. */
@@ -54,6 +66,24 @@ const RETRY_BASE_MS = 500;
 const RETRY_CAP_MS = 4_000;
 const RETRY_AFTER_CAP_MS = 10_000;
 
+/** Failures a retry on the same target can plausibly fix. */
+const RETRYABLE: ReadonlySet<FailureKind> = new Set<FailureKind>([
+	"rate",
+	"overloaded",
+	"server",
+	"timeout",
+	"network",
+	"stream",
+]);
+
+/** Failures where this target is the wrong choice, but another may succeed. */
+const SWITCHABLE: ReadonlySet<FailureKind> = new Set<FailureKind>([
+	"quota",
+	"auth",
+	"model_missing",
+	"context_overflow",
+]);
+
 /** Exponential backoff with jitter. A server Retry-After is honoured up to a cap. */
 export function retryDelayMs(
 	attempt: number,
@@ -67,23 +97,32 @@ export function retryDelayMs(
 	return Math.round(exp * (0.75 + random() * 0.5));
 }
 
+/**
+ * Failure class for an attempt. An explicit `failure` from the protocol layer
+ * wins; otherwise the class is inferred from the status, with `transient`
+ * kept as the legacy signal for failures that have neither.
+ */
+export function failureKindOf(input: {
+	failure?: FailureKind;
+	status?: number;
+	transient?: boolean;
+}): FailureKind {
+	if (input.failure) return input.failure;
+	if (input.status !== undefined) return kindFromStatus(input.status);
+	// No status = no HTTP answer. Retryable unless the lane said otherwise.
+	return input.transient === false ? "malformed" : "network";
+}
+
 export function decideAfterFailure(input: PolicyInput): FailoverDecision {
 	if (input.emittedOutput) return { kind: "fail" };
 
-	if (input.status === 400 || input.status === 422) {
+	const kind = failureKindOf(input);
+
+	if (kind === "bad_request") {
 		return input.adapted ? { kind: "adapt" } : { kind: "fail" };
 	}
 
-	// No status = the request never produced an HTTP answer (network error, cut
-	// stream). It is retryable unless the lane has said the failure is definitive
-	// (for example a malformed frame), so `transient: false` always wins.
-	const noAnswer = input.status === undefined && input.transient !== false;
-	const transientStatus =
-		input.status === 408 ||
-		input.status === 425 ||
-		input.status === 429 ||
-		(input.status !== undefined && input.status >= 500);
-	if (noAnswer || transientStatus) {
+	if (RETRYABLE.has(kind)) {
 		if (input.attempt < input.maxAttempts) {
 			return {
 				kind: "retry",
@@ -93,9 +132,11 @@ export function decideAfterFailure(input: PolicyInput): FailoverDecision {
 		return input.hasNextTarget ? { kind: "failover" } : { kind: "fail" };
 	}
 
-	if (input.status === 401 || input.status === 403) {
+	if (SWITCHABLE.has(kind)) {
 		return input.hasNextTarget ? { kind: "failover" } : { kind: "fail" };
 	}
+
+	// content_filter, malformed, and anything unclassified.
 	return { kind: "fail" };
 }
 
@@ -113,12 +154,16 @@ export interface PlannedTarget extends AdaptationTarget {
 	label: string;
 }
 
+export function targetKey(target: AdaptationTarget): string {
+	return `${target.provider}\u0000${target.model}\u0000${target.baseUrl}`;
+}
+
 /** Primary first, then fallbacks in order, with identical endpoints collapsed. */
 export function buildAttemptPlan(targets: PlannedTarget[]): PlannedTarget[] {
 	const seen = new Set<string>();
 	const plan: PlannedTarget[] = [];
 	for (const target of targets) {
-		const key = `${target.provider}\u0000${target.model}\u0000${target.baseUrl}`;
+		const key = targetKey(target);
 		if (seen.has(key)) continue;
 		seen.add(key);
 		plan.push(target);
@@ -126,10 +171,66 @@ export function buildAttemptPlan(targets: PlannedTarget[]): PlannedTarget[] {
 	return plan;
 }
 
+export interface TargetHealthOptions {
+	/** Consecutive abandoned targets before cooldown starts. */
+	threshold?: number;
+	cooldownMs?: number;
+	now?: () => number;
+}
+
+/**
+ * Process-local, in-memory cooldown per target. Not shared across instances,
+ * and not persisted: a restart forgets it, which is the safe default.
+ */
+export class TargetHealth {
+	private readonly state = new Map<
+		string,
+		{ failures: number; coolingUntil: number }
+	>();
+	private readonly threshold: number;
+	private readonly cooldownMs: number;
+	private readonly now: () => number;
+
+	constructor(options: TargetHealthOptions = {}) {
+		this.threshold = options.threshold ?? 2;
+		this.cooldownMs = options.cooldownMs ?? 60_000;
+		this.now = options.now ?? Date.now;
+	}
+
+	isCoolingDown(target: AdaptationTarget): boolean {
+		const entry = this.state.get(targetKey(target));
+		return entry !== undefined && entry.coolingUntil > this.now();
+	}
+
+	/** Called when a target was abandoned for the turn. */
+	recordFailure(target: AdaptationTarget): void {
+		const key = targetKey(target);
+		const entry = this.state.get(key) ?? { failures: 0, coolingUntil: 0 };
+		entry.failures += 1;
+		if (entry.failures >= this.threshold) {
+			entry.coolingUntil = this.now() + this.cooldownMs;
+		}
+		this.state.set(key, entry);
+	}
+
+	recordSuccess(target: AdaptationTarget): void {
+		this.state.delete(targetKey(target));
+	}
+
+	/** Healthy targets first, cooling ones last, each group in configured order. */
+	order<T extends AdaptationTarget>(targets: T[]): T[] {
+		const healthy = targets.filter((t) => !this.isCoolingDown(t));
+		const cooling = targets.filter((t) => this.isCoolingDown(t));
+		return [...healthy, ...cooling];
+	}
+}
+
 export interface FailoverResult<T> {
 	ok: boolean;
 	target?: PlannedTarget;
 	value?: T;
+	/** Total upstream requests made, including retries and adaptations. */
+	attempts: number;
 	/** Every failure in order, for a summary the user can act on. */
 	failures: Array<{ label: string; message: string }>;
 }
@@ -144,6 +245,7 @@ export interface FailoverOptions<T> {
 		target: PlannedTarget,
 		body: Record<string, unknown>,
 	) => Promise<AttemptOutcome & { value?: T }>;
+	health?: TargetHealth;
 	sleep?: (ms: number) => Promise<void>;
 	random?: () => number;
 	signal?: AbortSignal;
@@ -157,7 +259,10 @@ export async function runWithFailover<T>(
 	const sleep =
 		options.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
 	const failures: Array<{ label: string; message: string }> = [];
-	const plan = options.targets;
+	let attempts = 0;
+	const plan = options.health
+		? options.health.order(options.targets)
+		: options.targets;
 
 	for (let index = 0; index < plan.length; index++) {
 		const target = plan[index]!;
@@ -178,6 +283,7 @@ export async function runWithFailover<T>(
 				throw new DOMException("aborted", "AbortError");
 			}
 			attempt += 1;
+			attempts += 1;
 			const body = options.adaptation.adjust(target, options.buildBody(target));
 			let outcome: AttemptOutcome & { value?: T };
 			try {
@@ -186,18 +292,25 @@ export async function runWithFailover<T>(
 				if (options.signal?.aborted) throw error;
 				outcome = {
 					ok: false,
+					kind: "network",
 					emittedOutput: false,
 					message: error instanceof Error ? error.message : String(error),
 				};
 			}
 			if (outcome.ok) {
-				return { ok: true, target, value: outcome.value, failures };
+				options.health?.recordSuccess(target);
+				return { ok: true, target, value: outcome.value, attempts, failures };
 			}
 
 			const message = outcome.message ?? "上游请求失败";
+			const failure = failureKindOf({
+				failure: outcome.kind,
+				status: outcome.status,
+				transient: outcome.transient,
+			});
 			let adapted = false;
 			if (
-				(outcome.status === 400 || outcome.status === 422) &&
+				failure === "bad_request" &&
 				adaptations < MAX_ADAPTATIONS_PER_TARGET
 			) {
 				adapted = options.adaptation.learn(target, body, message) !== null;
@@ -206,6 +319,7 @@ export async function runWithFailover<T>(
 
 			const decision = decideAfterFailure({
 				status: outcome.status,
+				failure: outcome.kind,
 				emittedOutput: outcome.emittedOutput,
 				transient: outcome.transient,
 				attempt,
@@ -219,6 +333,7 @@ export async function runWithFailover<T>(
 			if (decision.kind === "adapt") {
 				// Same target, same attempt budget: the request changed, not the odds.
 				attempt -= 1;
+				attempts -= 1;
 				continue;
 			}
 			if (decision.kind === "retry") {
@@ -228,16 +343,17 @@ export async function runWithFailover<T>(
 			}
 			failures.push({ label: target.label, message });
 			if (decision.kind === "failover") {
+				options.health?.recordFailure(target);
 				switchTarget = true;
 				continue;
 			}
 			// fail: stop the whole chain. Output already delivered, or a
 			// request-level error that every target would reject.
-			return { ok: false, failures };
+			return { ok: false, attempts, failures };
 		}
 	}
 
-	return { ok: false, failures };
+	return { ok: false, attempts, failures };
 }
 
 /** One readable line per failure, for the final error shown to the user. */

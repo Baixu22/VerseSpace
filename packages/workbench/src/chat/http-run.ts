@@ -6,16 +6,27 @@ import { buildHttpRequest, HTTP_PROVIDER_DEFAULTS } from "./http-request";
 import { consumeSse, runHttpShadow } from "./http-stream";
 import { ModelAdaptation } from "./model-adaptation";
 import { promptWithNotices } from "./prompt";
+import {
+	classifyFailure,
+	codecFor,
+	finalizeUsage,
+	type HttpProvider,
+	isHttpProvider,
+	mergeUsage,
+	type StreamError,
+	type TurnUsage,
+	type UsagePatch,
+} from "./protocols";
 import { type ChatProvider, capabilitiesOf } from "./provider-capabilities";
 import type { ThreadContext } from "./thread-context";
 import type { MessagePart, TurnRunEvent } from "./thread-types";
 import {
 	type AttemptOutcome,
 	buildAttemptPlan,
-	isTransientStreamError,
 	type PlannedTarget,
 	runWithFailover,
 	summariseFailures,
+	TargetHealth,
 } from "./upstream-policy";
 
 /**
@@ -24,6 +35,15 @@ import {
  * call per process, not one per turn.
  */
 const adaptation = new ModelAdaptation();
+
+/**
+ * Process-wide cooldown per target. A target that keeps failing is tried last
+ * for a minute, so a dead primary stops adding latency to every turn.
+ */
+const health = new TargetHealth();
+
+/** Idle budget between bytes from the upstream, and before the first byte. */
+const DEFAULT_TIMEOUT_MS = 90_000;
 
 export async function history(
 	context: ThreadContext,
@@ -42,23 +62,20 @@ export async function history(
 export function plannedHttpTargets(
 	chat: WorkbenchConfig["chat"],
 ): PlannedTarget[] {
-	const primaryModel =
-		chat.model ?? HTTP_PROVIDER_DEFAULTS[chat.provider as "anthropic"]?.model;
+	const provider = chat.provider as HttpProvider;
+	const primaryModel = chat.model ?? HTTP_PROVIDER_DEFAULTS[provider]?.model;
 	const primary: PlannedTarget = {
-		provider: chat.provider as PlannedTarget["provider"],
+		provider,
 		model: primaryModel ?? "",
-		baseUrl:
-			chat.baseUrl ??
-			HTTP_PROVIDER_DEFAULTS[chat.provider as "anthropic"]?.baseUrl ??
-			"",
+		baseUrl: chat.baseUrl ?? HTTP_PROVIDER_DEFAULTS[provider]?.baseUrl ?? "",
 		apiKey: chatApiKey(chat),
-		label: `${chat.provider}/${primaryModel ?? ""}`,
+		label: `${provider}/${primaryModel ?? ""}`,
 	};
 	const fallbacks = (chat.fallbacks ?? []).map((target): PlannedTarget => {
 		const defaults = HTTP_PROVIDER_DEFAULTS[target.provider];
 		// A fallback on the same provider inherits the primary endpoint; a
 		// different provider never does (its base URL belongs to another vendor).
-		const sameProvider = target.provider === chat.provider;
+		const sameProvider = target.provider === provider;
 		const baseUrl =
 			target.baseUrl ??
 			(sameProvider ? chat.baseUrl : undefined) ??
@@ -93,6 +110,12 @@ export interface HttpRunResult {
 	/** The provider that actually answered; may differ from the configured primary. */
 	provider: ChatProvider;
 	model: string;
+	/** Upstream requests made for this turn, including retries. */
+	attempts: number;
+	/** The configured primary when a fallback answered; otherwise undefined. */
+	switchedFrom?: string;
+	/** Cache-relevant token counts, when the provider reported them. */
+	usage?: TurnUsage;
 }
 
 export async function runHttp(
@@ -133,21 +156,21 @@ export async function runHttp(
 	const result = await runWithFailover<{
 		shadowTexts: string[];
 		primaryText: string;
+		usage?: TurnUsage;
 	}>({
 		targets,
 		maxAttempts,
 		adaptation,
+		health,
 		signal,
-		buildBody: (target) => {
-			const { body } = buildHttpRequest(
+		buildBody: (target) =>
+			buildHttpRequest(
 				target.provider,
 				target.apiKey,
 				effectiveChat(chat, target),
 				priorMessages,
 				id,
-			);
-			return body;
-		},
+			).body,
 		send: (target, body) =>
 			sendOne({
 				target,
@@ -175,7 +198,8 @@ export async function runHttp(
 		return undefined;
 	}
 
-	if (result.target !== primary) {
+	const switched = result.target !== primary;
+	if (switched) {
 		console.warn(
 			`[chat] 主目标不可用，本轮已切换到备用目标 ${result.target.label}`,
 		);
@@ -189,6 +213,9 @@ export async function runHttp(
 	return {
 		provider: result.target.provider,
 		model: result.target.model,
+		attempts: result.attempts,
+		switchedFrom: switched ? primary.label : undefined,
+		usage: result.value?.usage,
 	};
 }
 
@@ -225,9 +252,20 @@ async function sendOne({
 	onContextObserved,
 	onNoticesSent,
 }: SendOneInput): Promise<
-	AttemptOutcome & { value?: { shadowTexts: string[]; primaryText: string } }
+	AttemptOutcome & {
+		value?: { shadowTexts: string[]; primaryText: string; usage?: TurnUsage };
+	}
 > {
 	const provider = target.provider;
+	if (!isHttpProvider(provider)) {
+		return {
+			ok: false,
+			kind: "bad_request",
+			message: `未知的协议：${provider}`,
+			emittedOutput: false,
+		};
+	}
+	const codec = codecFor(provider);
 	// Endpoint and auth headers only: the body is built once per attempt by
 	// the orchestrator (with history and the thread cache key) and arrives here
 	// already adapted, so the empty history below is never sent.
@@ -237,94 +275,64 @@ async function sendOne({
 		effectiveChat(chat, target),
 		[],
 	);
+	const timeoutMs = chat.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 	// Per-attempt controller: a failed attempt must cancel its shadows without
 	// cancelling the user's turn, while a user cancel still reaches everything.
 	const attempt = new AbortController();
 	const onAbort = () => attempt.abort();
 	signal.addEventListener("abort", onAbort, { once: true });
 
+	// Idle watchdog: it covers the wait for headers and every gap between
+	// chunks, so a silent upstream cannot hold the turn forever.
+	let timedOut = false;
+	let idleTimer: ReturnType<typeof setTimeout> | undefined;
+	const armIdle = (): void => {
+		if (idleTimer) clearTimeout(idleTimer);
+		idleTimer = setTimeout(() => {
+			timedOut = true;
+			attempt.abort();
+		}, timeoutMs);
+	};
+	const disarmIdle = (): void => {
+		if (idleTimer) clearTimeout(idleTimer);
+		idleTimer = undefined;
+	};
+
 	let emittedOutput = false;
-	let streamErrored = false;
-	let streamErrorMessage = "";
-	let streamMalformed = false;
-	let streamTerminal = false;
+	let terminal = false;
+	let malformed = false;
+	let failure: StreamError | undefined;
+	let usagePatch: UsagePatch | undefined;
 	const onSseData = (payload: string) => {
 		if (!payload) return;
-		if (payload === "[DONE]") {
-			streamTerminal = true;
-			return;
-		}
-		let event: Record<string, unknown>;
-		try {
-			event = JSON.parse(payload) as Record<string, unknown>;
-		} catch {
-			streamMalformed = true;
-			return;
-		}
-		let delta: string | undefined;
-		if (provider === "anthropic") {
-			if (event.type === "content_block_delta") {
-				const d = event.delta as { type?: string; text?: string } | undefined;
-				if (d?.type === "text_delta" && d.text) {
-					delta = d.text;
+		for (const frame of codec.parse(payload)) {
+			if (frame.malformed) {
+				malformed = true;
+				continue;
+			}
+			usagePatch = mergeUsage(usagePatch, frame.usage);
+			if (frame.error) {
+				failure ??= frame.error;
+				continue;
+			}
+			if (frame.terminal) terminal = true;
+			if (frame.text) {
+				emittedOutput = true;
+				const last = messageParts.at(-1);
+				if (last?.type === "text") {
+					last.text += frame.text;
+				} else {
+					messageParts.push({ type: "text", text: frame.text });
 				}
-			} else if (event.type === "message_stop") {
-				streamTerminal = true;
-			} else if (event.type === "error") {
-				streamErrored = true;
-				const err = event.error as { message?: string } | undefined;
-				streamErrorMessage = err?.message ?? "anthropic stream error";
+				emit({ type: "delta", text: frame.text });
 			}
-		} else if (provider === "openai-chat") {
-			if (event.type === "error" || event.error) {
-				streamErrored = true;
-				const err = event.error as { message?: string } | undefined;
-				streamErrorMessage =
-					err?.message ?? String(event.message ?? "openai stream error");
-			}
-			const choices = event.choices as
-				| Array<{
-						delta?: { content?: string };
-						finish_reason?: string | null;
-				  }>
-				| undefined;
-			delta = choices?.[0]?.delta?.content;
-			if (choices?.[0]?.finish_reason) {
-				streamTerminal = true;
-			}
-		} else {
-			// openai-responses
-			if (event.type === "response.output_text.delta") {
-				delta = event.delta as string;
-			} else if (
-				event.type === "response.completed" ||
-				event.type === "response.done"
-			) {
-				streamTerminal = true;
-			} else if (
-				event.type === "error" ||
-				event.type === "response.failed" ||
-				event.type === "response.incomplete"
-			) {
-				streamErrored = true;
-				streamErrorMessage = String(event.message ?? "responses error");
-			}
-		}
-		if (delta) {
-			emittedOutput = true;
-			const last = messageParts.at(-1);
-			if (last?.type === "text") {
-				last.text += delta;
-			} else {
-				messageParts.push({ type: "text", text: delta });
-			}
-			emit({ type: "delta", text: delta });
 		}
 	};
 
 	try {
 		// The main request goes first: it is the streamed answer. Shadow
 		// variants follow concurrently and are captured, never displayed.
+		armIdle();
 		const response = await fetch(url, {
 			method: "POST",
 			headers,
@@ -336,6 +344,7 @@ async function sendOne({
 			return {
 				ok: false,
 				status: response.status,
+				kind: classifyFailure({ status: response.status, message: detail }),
 				message: `${provider} HTTP ${response.status}：${detail}`,
 				emittedOutput: false,
 				retryAfterMs: parseRetryAfter(response.headers.get("retry-after")),
@@ -349,29 +358,39 @@ async function sendOne({
 					)
 				: [];
 
-		const stream = await consumeSse(response, onSseData);
+		const stream = await consumeSse(response, onSseData, {
+			onChunk: armIdle,
+		});
+		disarmIdle();
 		const streamFailed =
-			streamErrored || streamMalformed || !stream.complete || !streamTerminal;
+			failure !== undefined || malformed || !stream.complete || !terminal;
 		if (streamFailed) {
 			// Abandon this attempt's shadows; they are not part of any answer.
 			attempt.abort();
 			await Promise.all(shadowPromises);
-			const message = streamErrored
-				? streamErrorMessage || `${provider} stream error`
-				: streamMalformed
-					? "provider 返回了损坏的 SSE 数据"
-					: stream.complete
-						? "provider 流没有结束标记，通知保留待重试"
-						: "provider SSE 流在完整帧前结束，通知保留待重试";
+			if (failure) {
+				return {
+					ok: false,
+					kind: failure.kind,
+					message: failure.message,
+					emittedOutput,
+				};
+			}
+			if (malformed) {
+				return {
+					ok: false,
+					kind: "malformed",
+					message: "provider 返回了损坏的 SSE 数据",
+					emittedOutput,
+				};
+			}
 			return {
 				ok: false,
-				message,
+				kind: "stream",
+				message: stream.complete
+					? "provider 流没有结束标记，通知保留待重试"
+					: "provider SSE 流在完整帧前结束，通知保留待重试",
 				emittedOutput,
-				// A cut-off stream or a recognised transient error may succeed on
-				// retry. A malformed frame or a bad-request error will not.
-				transient: streamErrored
-					? isTransientStreamError(streamErrorMessage)
-					: !streamMalformed,
 			};
 		}
 
@@ -398,16 +417,30 @@ async function sendOne({
 		return {
 			ok: true,
 			emittedOutput,
-			value: { shadowTexts, primaryText },
+			value: {
+				shadowTexts,
+				primaryText,
+				usage: finalizeUsage(usagePatch),
+			},
 		};
 	} catch (error) {
 		if (signal.aborted) throw error;
+		if (timedOut) {
+			return {
+				ok: false,
+				kind: "timeout",
+				message: `${provider} 在 ${Math.round(timeoutMs / 1000)} 秒内没有返回数据，已放弃该目标`,
+				emittedOutput,
+			};
+		}
 		return {
 			ok: false,
+			kind: "network",
 			message: error instanceof Error ? error.message : String(error),
 			emittedOutput,
 		};
 	} finally {
+		disarmIdle();
 		signal.removeEventListener("abort", onAbort);
 	}
 }

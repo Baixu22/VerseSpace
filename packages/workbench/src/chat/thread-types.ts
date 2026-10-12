@@ -19,6 +19,17 @@ export interface ThreadLastRun {
 	provider: ChatProvider;
 	readObservability: ReadObservability;
 	at: string;
+	/** Upstream requests the turn made, including retries. HTTP lane only. */
+	attempts?: number;
+	/** The configured primary, when a fallback answered the turn. */
+	switchedFrom?: string;
+	/** Cache-relevant token counts from the provider, when reported. */
+	usage?: {
+		promptTokens: number;
+		cachedTokens: number;
+		cacheWriteTokens: number;
+		outputTokens: number;
+	};
 }
 
 /**

@@ -18,6 +18,8 @@
  * touched, so a misleading error cannot strip what the request needs.
  */
 
+import type { HttpProvider } from "./protocols";
+
 export const ADAPTABLE_PARAMS = [
 	"temperature",
 	"top_p",
@@ -26,12 +28,13 @@ export const ADAPTABLE_PARAMS = [
 	"frequency_penalty",
 	"prompt_cache_key",
 	"cache_control",
+	"stream_options",
 ] as const;
 
 export type AdaptableParam = (typeof ADAPTABLE_PARAMS)[number];
 
 export interface AdaptationTarget {
-	provider: "openai-chat" | "openai-responses" | "anthropic";
+	provider: HttpProvider;
 	model: string;
 	/** Endpoint identity: the same model behind two gateways may differ. */
 	baseUrl: string;

@@ -102,6 +102,11 @@ export const workbenchConfigSchema = z.object({
 			baseUrl: z.string().optional(),
 			temperature: z.number().min(0).max(2).optional(),
 			maxTokens: z.number().int().positive().optional(),
+			/**
+			 * HTTP 通道的空闲超时（毫秒）：等待响应头、以及两次数据之间的最长间隔。
+			 * 超过即视为该目标超时，计入失败转移。
+			 */
+			timeoutMs: z.number().int().min(1000).max(600000).optional(),
 			effort: z.enum(["low", "medium", "high"]).optional(),
 			/**
 			 * 自动扇出变体数（TF-0094）：≥2 时同一请求并发发 shadow 变体，

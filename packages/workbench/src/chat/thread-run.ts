@@ -186,11 +186,14 @@ export function run(
 			// lastRun records the provider that actually answered. A failover
 			// can move the turn to a fallback, and the next turn's cache and
 			// observability decisions depend on that fact, not the config.
-			if (used && used.provider !== meta.lastRun?.provider) {
+			if (used) {
 				meta.lastRun = {
 					provider: used.provider,
 					readObservability: readObservabilityOf(used.provider),
 					at: meta.lastRun?.at ?? new Date().toISOString(),
+					attempts: used.attempts,
+					switchedFrom: used.switchedFrom,
+					usage: used.usage,
 				};
 				await context.store.saveMeta(meta);
 			}
