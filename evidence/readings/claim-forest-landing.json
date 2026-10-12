@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-forest-landing",
 	"instrument_sha256": "scripts/check-forest-landing.mjs:601c7688b24af34bcb581715af33a35ac1f1ebc685ac86592c8ccac7bbff5e35",
-	"subject_sha": "7854419064956873762ec788a8d6e3871863f8d9",
+	"subject_sha": "d89407d3b10179fbd87995b94b87d1028df38fcd",
 	"environment": {},
-	"measured_at": "2026-10-12T01:28:38.984Z",
+	"measured_at": "2026-10-12T01:36:56.881Z",
 	"reading": {
 		"exit": 0,
 		"problems": 0
