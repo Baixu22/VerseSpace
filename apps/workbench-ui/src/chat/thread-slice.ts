@@ -147,6 +147,7 @@ export const createThreadSlice: StateCreator<
 							resumeNote: null,
 							resumeDelta: 0,
 							readSetDiff: null,
+							artifactReviews: null,
 							resumeCard: null,
 							resumeCardDismissed: false,
 							resumeCardRevealed: false,

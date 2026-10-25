@@ -12,9 +12,9 @@
        provider=openai-responses, effort=high;
     3. starts the backend on -ApiPort and Vite on -UiPort — both movable, so a
        run does not collide with whatever the developer already has running;
-    4. seeds two conversations, the two preconditions the spec needs, so a
-       missing one is reported as a failure **with a reason** rather than a
-       silent skip (that is TF-0255's third acceptance item);
+    4. seeds five conversations and current/stale/unknown artifact reviews;
+       missing preconditions are reported as failures **with a reason** rather
+       than silent skips (TF-0255's third acceptance item);
     5. runs `playwright test`;
     6. tears everything down: the process tree, then the temp workspace.
 
@@ -125,11 +125,24 @@ try {
 	# "缺前置数据" a real failure instead of an invisible skip.
 	$boot = Invoke-RestMethod -Uri "http://127.0.0.1:$ApiPort/api/bootstrap"
 	$headers = @{ 'content-type' = 'application/json'; 'x-workbench-token' = $boot.token }
-	1..2 | ForEach-Object {
-		$body = @{ title = "e2e conversation $_" } | ConvertTo-Json -Compress
-		Invoke-RestMethod -Uri "http://127.0.0.1:$ApiPort/api/chat/threads" -Method Post -Headers $headers -Body $body | Out-Null
+	$titles = @(
+		'e2e conversation 1',
+		'e2e conversation 2',
+		'e2e artifact current',
+		'e2e artifact stale',
+		'e2e artifact unknown'
+	)
+	$threads = foreach ($title in $titles) {
+		$body = @{ title = $title } | ConvertTo-Json -Compress
+		Invoke-RestMethod -Uri "http://127.0.0.1:$ApiPort/api/chat/threads" -Method Post -Headers $headers -Body $body
 	}
-	Write-Host '[e2e] seeded 2 conversations'
+	$artifactSeed = & $bun "$repo\packages\workbench\scripts\e2e\seed-artifact-reviews.ts" `
+		--workspace $ws `
+		--current $threads[2].id `
+		--stale $threads[3].id `
+		--unknown $threads[4].id
+	if ($LASTEXITCODE -ne 0) { throw "artifact review seed exited $LASTEXITCODE" }
+	Write-Host "[e2e] seeded 5 conversations and artifact states: $artifactSeed"
 
 	$env:WORKBENCH_E2E_URL = "http://127.0.0.1:$UiPort"
 	if ($SkipConfigSandbox) {

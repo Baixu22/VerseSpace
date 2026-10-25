@@ -13,6 +13,7 @@ import { createTribunalSlice } from "./tribunal-slice";
 
 export type { StoredMessage, ThreadMeta } from "./message-types";
 export type {
+	ArtifactReviewProjectionView,
 	ResumeCardFactRow,
 	ResumeCardNarrativeRow,
 	ResumeCardView,
@@ -31,6 +32,7 @@ export const useChatStore = create<ChatState>((...args) => ({
 	resumeNote: null,
 	resumeDelta: 0,
 	readSetDiff: null,
+	artifactReviews: null,
 	resumeCard: null,
 	resumeCardDismissed: false,
 	resumeCardRevealed: false,

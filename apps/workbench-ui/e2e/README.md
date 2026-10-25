@@ -24,15 +24,18 @@ One command does the whole thing — isolated workspace, both servers, the spec'
 preconditions, Playwright, then teardown:
 
 ```sh
-pwsh -NoProfile -File scripts/win/e2e-browser.ps1            # 14 tests, 0 skipped
+pwsh -NoProfile -File scripts/win/e2e-browser.ps1            # 15 tests, 0 skipped
 pwsh -NoProfile -File scripts/win/e2e-browser.ps1 -KeepWorkspace   # keep the workspace + logs
 pwsh -NoProfile -File scripts/win/e2e-browser.ps1 -ApiPort 7800 -UiPort 5288
 ```
 
 It creates a temp workspace, runs `workbench init` there, configures the opt-in
 lane, starts the backend on `-ApiPort` and Vite on `-UiPort` (both movable, so a
-run does not collide with whatever you already have running), seeds the two
-conversations the spec needs, runs `playwright test`, and kills the process tree.
+run does not collide with whatever you already have running), seeds five
+conversations, creates current/stale/unknown artifact-review fixtures through
+the real blackboard and fixed-file verifier, runs `playwright test`, and kills
+the process tree. The artifact test also captures one success screenshot per
+state after asserting the shared projection.
 Exit code is Playwright's. **This is what the `workbench-ui-e2e` CI job runs** —
 the job is a thin wrapper, not a separate script nobody has executed.
 

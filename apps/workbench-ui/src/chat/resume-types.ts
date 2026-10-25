@@ -61,6 +61,72 @@ export interface ResumeCardFactRow {
 	};
 }
 
+export type ArtifactReviewStatus =
+	| "current"
+	| "stale"
+	| "pending"
+	| "failed"
+	| "unknown";
+
+export interface ArtifactReviewProjectionItem {
+	rootId: string;
+	checkpointId: string;
+	path: string;
+	status: ArtifactReviewStatus;
+	reason: string;
+	targetStatus: "target-checked" | "inputs-match" | "inputs-differ" | "unknown";
+	evidenceStrength: "observed-origin-and-scope" | "declared-scope" | "unknown";
+	refs: string[];
+	revalidateCommand: string;
+	handoff?: {
+		digest: string;
+		checkpointHash: string;
+		originStrength: string;
+		targetStatus: string;
+	};
+	facts: {
+		origin: {
+			strength: "tool-observed" | "fs-sample" | "declared" | "unknown";
+			reason: string;
+		};
+		inputs: {
+			status: "matched" | "different" | "unknown";
+			total: number;
+			changedTotal: number;
+			previewTruncated: boolean;
+			changed: string[];
+			versions: Array<{ path: string; hash: string }>;
+		};
+		verification: {
+			checkpointId: string;
+			result: string | null;
+			scope: string;
+			authority: string;
+			at: string | null;
+		};
+	};
+	target: {
+		status: ArtifactReviewProjectionItem["targetStatus"];
+		change:
+			| "none"
+			| "outside-declared-range"
+			| "revalidation-required"
+			| "unknown";
+		ref: string | null;
+		checkedCommit: string | null;
+		currentCommit: string | null;
+	};
+}
+
+export interface ArtifactReviewProjectionView {
+	schemaVersion: 1;
+	total: number;
+	counts: Record<ArtifactReviewStatus, number>;
+	items: ArtifactReviewProjectionItem[];
+	omitted: number;
+	truncated: boolean;
+}
+
 export interface ResumeCardView {
 	coverage: { status: "available" | "unknown"; text: string };
 	narrative: ResumeCardNarrativeRow[];
