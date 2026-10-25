@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import type { Blackboard } from "../blackboard";
 import { claimStrength } from "../blackboard/claim-version";
 import { hashPathClaim } from "../blackboard/footprint";
+import { inputCoverageView } from "../blackboard/input-coverage";
 import { NoWorkbenchError } from "../errors";
 import { emitJson, type GlobalOptions } from "../output";
 import { WRITER_KINDS, type WriterKind } from "../types/session";
@@ -20,6 +21,7 @@ async function summarize(bb: Blackboard, id: string) {
 	const { reads, readFragments, writes } = await bb.sessions.readSetView(id);
 	return {
 		writer,
+		inputCoverage: await inputCoverageView(bb, id),
 		reads: [...reads.values()].sort((a, b) => a.path.localeCompare(b.path)),
 		readFragments: [...readFragments.values()]
 			.flat()
@@ -68,6 +70,7 @@ export async function sessionsShowCommand(
 	}
 	const { writer, reads, readFragments, writes } = summary;
 	console.log(`${writer.id} [${writer.kind}/${writer.status}] ${writer.label}`);
+	console.log(summary.inputCoverage.text);
 	console.log(
 		`读集（${reads.length} 个文件，${readFragments.length} 个保留的版本/范围观察）：`,
 	);

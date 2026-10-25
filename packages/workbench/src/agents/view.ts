@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { Blackboard } from "../blackboard";
+import { inputCoverageView } from "../blackboard/input-coverage";
 import { type AgentSession, readLatestSession } from "./session";
 
 /** Pull the human-visible text out of one captured stream line. */
@@ -32,10 +33,18 @@ export function describeStreamLine(raw: string): string {
 export async function readAgentView(
 	bb: Blackboard,
 	workspotId: string,
-): Promise<{ session: AgentSession | null; lastLines: string[] }> {
+): Promise<{
+	session: AgentSession | null;
+	lastLines: string[];
+	inputCoverage: Awaited<ReturnType<typeof inputCoverageView>>;
+}> {
 	const session = await readLatestSession(bb, workspotId);
 	if (!session) {
-		return { session: null, lastLines: [] };
+		return {
+			session: null,
+			lastLines: [],
+			inputCoverage: await inputCoverageView(bb, `agent:${workspotId}`),
+		};
 	}
 	let lastLines: string[] = [];
 	try {
@@ -56,5 +65,9 @@ export async function readAgentView(
 	} catch {
 		// log not written yet (process still starting)
 	}
-	return { session, lastLines };
+	return {
+		session,
+		lastLines,
+		inputCoverage: await inputCoverageView(bb, `agent:${workspotId}`),
+	};
 }

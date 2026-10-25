@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { inputCoverageView } from "../blackboard/input-coverage";
 import { chatContext } from "../test/chat-context";
 import { makeTempWorkbench } from "../test/fixtures";
 import { ChatThreads } from "./threads";
@@ -51,6 +52,12 @@ process.exit(0);
 			footprint.flatMap((entry) => entry.used.map((claim) => claim.path)),
 		).toEqual(["first.txt", "second.txt"]);
 		expect(footprint.flatMap((entry) => entry.generated)).toEqual([]);
+		expect((await inputCoverageView(ws.bb, thread.id)).coverage).toMatchObject({
+			candidates: 2,
+			successful: 2,
+			observedEvents: 0,
+			paths: { unknown: 2 },
+		});
 	} finally {
 		if (threadId) await chat.cancel(threadId);
 		if (previous === undefined) delete process.env.WORKBENCH_CHAT_COMMAND;
@@ -94,6 +101,11 @@ for await (const line of createInterface({input:process.stdin})) {
 		await chat.run(id, "probe", () => {});
 		await chatContext(chat).live.get(id)?.closed;
 		expect(await ws.bb.sessions.footprint(id)).toEqual([]);
+		expect((await inputCoverageView(ws.bb, id)).coverage).toMatchObject({
+			candidates: 1,
+			pending: 1,
+			observedEvents: 0,
+		});
 		expect(await Bun.file(join(ws.projectDir, "absent.txt")).exists()).toBe(
 			false,
 		);

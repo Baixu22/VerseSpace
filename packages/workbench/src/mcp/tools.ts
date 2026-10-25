@@ -8,6 +8,7 @@
  */
 
 import type { Blackboard } from "../blackboard";
+import { inputCoverageView } from "../blackboard/input-coverage";
 import { ChatThreads } from "../chat/threads";
 import { pendingPremiseNotices } from "../runtime/delivery";
 import { currentPremiseNotices } from "../runtime/premises";
@@ -156,18 +157,23 @@ export const MCP_TOOLS: McpTool[] = [
 					? params.writer
 					: undefined;
 			// query 取尾部（时间正序），倒序后新的在前。
+			const coverage = writer ? await inputCoverageView(bb, writer) : undefined;
 			const views = [...events]
 				.reverse()
 				.map(toFootprintView)
 				.filter((v) => writer === undefined || v.writer === writer);
 			if (views.length === 0) {
-				return "没有足迹事件。";
+				return coverage
+					? truncate(`没有足迹事件。\n${coverage.text}`)
+					: "没有足迹事件。";
 			}
 			const lines = views.map(
 				(v) =>
 					`- ${v.at} writer=${v.writer} tool=${v.tool} used=[${v.used.join(",")}] generated=[${v.generated.join(",")}]`,
 			);
-			return truncate(`最近足迹 ${views.length} 条：\n${lines.join("\n")}`);
+			return truncate(
+				`${coverage ? `${coverage.text}\n` : ""}最近足迹 ${views.length} 条：\n${lines.join("\n")}`,
+			);
 		},
 	},
 	{

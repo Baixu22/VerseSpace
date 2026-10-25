@@ -575,7 +575,7 @@
 		},
 		{
 			"id": "claim-moat-input-origin",
-			"statement": "TF-0289/0290 区分返回内容、文件采样与声明来源；Claude 聊天/批量捕获及 Codex 单文件 cat 成功结果绑定内容摘要，竞争标记不同、歧义保持未知，旧日志不升级",
+			"statement": "TF-0289/0290/0291 区分返回内容与文件采样，成功 CLI 捕获绑定摘要且歧义保持未知；本轮收到的候选工具事件覆盖可复算，零样本/HTTP/旧日志不可计算，CLI/MCP/恢复投影一致",
 			"instrument": [
 				"packages/workbench/src/blackboard/input-origin.test.ts",
 				"packages/workbench/src/blackboard/sessions.test.ts",
@@ -599,7 +599,21 @@
 				"packages/workbench/src/chat/codex-footprint.test.ts",
 				"packages/workbench/src/chat/fixtures/streams/claude/bash-and-edit.jsonl",
 				"packages/workbench/src/chat/fixtures/streams/codex/command-with-delta.jsonl",
-				"packages/workbench/fixtures/artifact-use/cases.json"
+				"packages/workbench/fixtures/artifact-use/cases.json",
+				"packages/workbench/src/blackboard/input-coverage.ts",
+				"packages/workbench/src/blackboard/input-coverage.test.ts",
+				"packages/workbench/src/blackboard/input-coverage-surfaces.test.ts",
+				"packages/workbench/src/chat/input-coverage-events.ts",
+				"packages/workbench/src/chat/claude-types.ts",
+				"packages/workbench/src/chat/claude-turn.ts",
+				"packages/workbench/src/chat/codex-turn.ts",
+				"packages/workbench/src/chat/thread-run.ts",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/agents/view.ts",
+				"packages/workbench/src/commands/sessions.ts",
+				"packages/workbench/src/mcp/tools.ts",
+				"packages/workbench/src/mcp/resume-card.ts",
+				"packages/workbench/src/types/event.ts"
 			],
 			"subject_paths": [
 				"packages/workbench/src/blackboard/input-origin.test.ts",
@@ -625,7 +639,21 @@
 				"packages/workbench/src/chat/codex-footprint.test.ts",
 				"packages/workbench/src/chat/fixtures/streams/claude/bash-and-edit.jsonl",
 				"packages/workbench/src/chat/fixtures/streams/codex/command-with-delta.jsonl",
-				"packages/workbench/fixtures/artifact-use/cases.json"
+				"packages/workbench/fixtures/artifact-use/cases.json",
+				"packages/workbench/src/blackboard/input-coverage.ts",
+				"packages/workbench/src/blackboard/input-coverage.test.ts",
+				"packages/workbench/src/blackboard/input-coverage-surfaces.test.ts",
+				"packages/workbench/src/chat/input-coverage-events.ts",
+				"packages/workbench/src/chat/claude-types.ts",
+				"packages/workbench/src/chat/claude-turn.ts",
+				"packages/workbench/src/chat/codex-turn.ts",
+				"packages/workbench/src/chat/thread-run.ts",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/agents/view.ts",
+				"packages/workbench/src/commands/sessions.ts",
+				"packages/workbench/src/mcp/tools.ts",
+				"packages/workbench/src/mcp/resume-card.ts",
+				"packages/workbench/src/types/event.ts"
 			],
 			"reading_shape": {
 				"exit": "number",
@@ -633,9 +661,14 @@
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts packages/workbench/src/chat/input-capture.test.ts packages/workbench/src/chat/input-capture-boundaries.test.ts packages/workbench/src/chat/fork-inheritance.test.ts packages/workbench/src/agents/capture.test.ts packages/workbench/src/chat/tool-footprints.test.ts packages/workbench/src/chat/codex-native-write.test.ts packages/workbench/src/chat/codex-footprint.test.ts --timeout 60000",
-			"expected": { "exit": 0, "fail": 0 },
-			"minimum": { "pass": 42 }
+			"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts packages/workbench/src/chat/input-capture.test.ts packages/workbench/src/chat/input-capture-boundaries.test.ts packages/workbench/src/chat/fork-inheritance.test.ts packages/workbench/src/agents/capture.test.ts packages/workbench/src/chat/tool-footprints.test.ts packages/workbench/src/chat/codex-native-write.test.ts packages/workbench/src/chat/codex-footprint.test.ts packages/workbench/src/blackboard/input-coverage.test.ts packages/workbench/src/blackboard/input-coverage-surfaces.test.ts --timeout 60000",
+			"expected": {
+				"exit": 0,
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 49
+			}
 		}
 	]
 }

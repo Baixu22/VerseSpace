@@ -129,7 +129,9 @@ export function isWorldEvent(
 	event: Pick<WorkbenchEvent, "source" | "type">,
 ): boolean {
 	return (
-		event.source !== THREAD_EVENT_SOURCE && !event.type.startsWith("thread.")
+		event.source !== "capture" &&
+		event.source !== THREAD_EVENT_SOURCE &&
+		!event.type.startsWith("thread.")
 	);
 }
 

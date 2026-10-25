@@ -2,12 +2,14 @@ import { resolve } from "node:path";
 import type { ParsedStreamFootprint } from "../blackboard/footprint";
 import { hashPathClaim } from "../blackboard/footprint";
 import { captureReturnedInput } from "../blackboard/footprint-sample";
+import type { InputCoverageTracker } from "../blackboard/input-coverage";
 import { writerSpoolDir } from "../blackboard/sessions";
 import { codexReturnedInput, extractCodexFootprint } from "./codex-footprint";
 import {
 	type CodexRenderState,
 	reduceCodexRenderEvent,
 } from "./codex-render-state";
+import { observeCodexCandidates } from "./input-coverage-events";
 import type { ThreadContext } from "./thread-context";
 import type { TurnRunEvent } from "./thread-types";
 
@@ -20,6 +22,7 @@ export interface CodexTurnState {
 	render: CodexRenderState;
 	pendingFootprints: Map<string, ParsedStreamFootprint>;
 	fpQueue: Promise<void>;
+	inputCoverage?: InputCoverageTracker;
 	undecidedEventTypes: Set<string>;
 	emit: (event: TurnRunEvent) => void;
 }
@@ -36,6 +39,7 @@ export function routeCodexEvent(
 	turn: CodexTurnState,
 	event: Record<string, unknown>,
 ): void {
+	if (turn.inputCoverage) observeCodexCandidates(turn.inputCoverage, event);
 	const result = reduceCodexRenderEvent(turn.render, event);
 	if (result.decision === "undecided") {
 		turn.undecidedEventTypes.add(result.decisionKey);
@@ -79,13 +83,26 @@ function settleCommandFootprint(
 	item: Record<string, unknown>,
 ): void {
 	const footprint = turn.pendingFootprints.get(itemId);
-	if (!footprint) return;
+	if (turn.inputCoverage && !turn.inputCoverage.acceptResult(itemId)) return;
+	if (!footprint) {
+		turn.inputCoverage?.settle(
+			itemId,
+			item.status === "failed" ||
+				(typeof item.exitCode === "number" && item.exitCode !== 0)
+				? null
+				: [],
+		);
+		return;
+	}
 	turn.pendingFootprints.delete(itemId);
 	const failed =
 		(item.type === "fileChange" && item.status !== "completed") ||
 		item.status === "failed" ||
 		(typeof item.exitCode === "number" && item.exitCode !== 0);
-	if (failed) return; // a failed command did not prove a read/write
+	if (failed) {
+		turn.inputCoverage?.settle(itemId, null);
+		return;
+	}
 	const returned = codexReturnedInput(context.bb.projectRoot, footprint, item);
 	const cwd =
 		typeof item.cwd === "string" && item.cwd
@@ -111,6 +128,7 @@ function settleCommandFootprint(
 			);
 		}
 		await context.bb.sessions.recordActivity(id, footprint);
+		turn.inputCoverage?.settle(itemId, footprint.used);
 	});
 }
 

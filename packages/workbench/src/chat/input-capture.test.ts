@@ -5,6 +5,7 @@ import { createAgentCapture } from "../agents/capture";
 import { claimObservation } from "../blackboard/claim-version";
 import { extractFootprint } from "../blackboard/footprint";
 import { captureReturnedInput } from "../blackboard/footprint-sample";
+import { createInputCoverage } from "../blackboard/input-coverage";
 import { hashText } from "../hash";
 import { makeTempWorkbench } from "../test/fixtures";
 import { claudeReturnedInput } from "./claude-input";
@@ -45,6 +46,7 @@ function claudeTurn(): ActiveTurn {
 		...createClaudeRenderState(),
 		pendingFootprints: new Map(),
 		fpQueue: Promise.resolve(),
+		inputCoverage: createInputCoverage(),
 		undecidedEventTypes: new Set(),
 		inheritanceStarted: true,
 		inheritancePromise: Promise.resolve(),
@@ -64,6 +66,7 @@ function codexTurn(): CodexTurnState {
 		render: createCodexRenderState(),
 		pendingFootprints: new Map(),
 		fpQueue: Promise.resolve(),
+		inputCoverage: createInputCoverage(),
 		undecidedEventTypes: new Set(),
 		emit: () => {},
 	};
@@ -97,6 +100,12 @@ test("retained Claude Read binds original returned content in chat and batch des
 		}
 		await turn.fpQueue;
 		await batch.finish();
+		expect(turn.inputCoverage!.finish()).toMatchObject({
+			candidates: 1,
+			successful: 1,
+			observedEvents: 1,
+			bindings: { different: 1 },
+		});
 		for (const id of ["chat", "batch"]) {
 			const lines = await ws.bb.sessions.footprint(id);
 			expect(lines).toHaveLength(1);
@@ -147,6 +156,12 @@ test("retained Codex single cat is bound at completion and duplicate results can
 		routeCodexEvent(context, "codex", turn, events[1]);
 		await turn.fpQueue;
 		const lines = await ws.bb.sessions.footprint("codex");
+		expect(turn.inputCoverage!.finish()).toMatchObject({
+			candidates: 1,
+			successful: 1,
+			observedEvents: 1,
+			bindings: { different: 1 },
+		});
 		expect(lines).toHaveLength(1);
 		expect(claimObservation(lines[0]!.used[0]!)).toMatchObject({
 			source: "tool-observed",

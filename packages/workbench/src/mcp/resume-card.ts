@@ -16,7 +16,8 @@ export async function resumeCardText(
 		)
 		.join("\n");
 	const view = await collectRestoreView(bb, chat, threadId);
-	if (!view.resumeCard) return `线程 ${threadId} 没有恢复卡。\n${artifactText}`;
+	if (!view.resumeCard)
+		return `线程 ${threadId} 没有恢复卡。\n${artifactText}\n${view.inputCoverage.text}`;
 	const card = view.resumeCard;
 	const beats = (view.resumeNote?.beats ?? [])
 		.map((beat) => `${beat.kind}:${beat.text}`)
@@ -27,6 +28,7 @@ export async function resumeCardText(
 		.join("；");
 	return [
 		`线程 ${threadId} 恢复卡：`,
+		view.inputCoverage.text,
 		artifactText,
 		`- 覆盖：${card.coverage.text}`,
 		`- 恢复增量：${view.resumeDelta}`,

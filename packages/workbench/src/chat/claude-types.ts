@@ -1,4 +1,5 @@
 import type { ParsedStreamFootprint } from "../blackboard/footprint";
+import type { InputCoverageTracker } from "../blackboard/input-coverage";
 
 import type { LivenessWatch, ProcHandle } from "../supervisor";
 
@@ -16,6 +17,7 @@ export interface ActiveTurn extends ClaudeRenderState {
 	stderr: string;
 	pendingFootprints: Map<string, ParsedStreamFootprint>;
 	fpQueue: Promise<void>;
+	inputCoverage?: InputCoverageTracker;
 	sawInit: boolean;
 	finished: boolean;
 	noticeAcked: boolean;
