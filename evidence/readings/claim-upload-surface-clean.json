@@ -1,15 +1,15 @@
 {
 	"claim_id": "claim-upload-surface-clean",
-	"instrument_sha256": "scripts/check-upload-surface.mjs:1a86bd91368bdc1bc5b1209bca0fc23898349e90b82c5affde3ee388a8786d48\nscripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/policy.json:8a4b5bb2a4e3e1119d13c76bd8ba710434f3fabacfefe44e1053b2ac857057a9",
-	"subject_sha": "17cd8ceb07b032f4468f0847b438cedd2e10f0b2",
+	"instrument_sha256": "scripts/check-upload-surface.mjs:0ba41ef3b1033fdb34657188c8cff2fe8ac818ee1d7f97f8a9b28910d0a301a4\nscripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/policy.json:8a4b5bb2a4e3e1119d13c76bd8ba710434f3fabacfefe44e1053b2ac857057a9",
+	"subject_sha": "2ac5cb3100c80eb3eaab080855bda00532fa30a3",
 	"environment": {},
-	"measured_at": "2026-10-12T01:36:12.649Z",
+	"measured_at": "2026-10-25T09:36:58.499Z",
 	"reading": {
 		"exit": 0,
 		"violations": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:cf041c613f8601ba04fe6022fed3b96833f9fcbbdeaaddf019cf1cf3e79d35d7",
+	"raw_digest": "sha256:c63f7a18551f9e1c96f953086b41817015189ee0fb82359dcf608936eb315326",
 	"reproduce": "node scripts/check-upload-surface.mjs --strict-references",
 	"class": "curated-evidence"
 }
