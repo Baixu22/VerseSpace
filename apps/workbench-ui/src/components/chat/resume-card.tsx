@@ -7,6 +7,7 @@ import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";
+import { ResumeArtifactRows } from "./resume-card-artifacts";
 import { ResumeFactRow, ResumeNarrativeRow } from "./resume-card-rows";
 
 /** Dual-channel restore card: facts first, narrative second (TF-0128). */
@@ -17,6 +18,7 @@ export function ResumeCard() {
 	const dismissed = useChatStore((s) => s.resumeCardDismissed);
 	const revealed = useChatStore((s) => s.resumeCardRevealed);
 	const readSetDiff = useChatStore((s) => s.readSetDiff);
+	const artifactReviews = useChatStore((s) => s.artifactReviews);
 	const consume = useChatStore((s) => s.consumeResumeNote);
 	const dismiss = useChatStore((s) => s.dismissResumeCard);
 	const reportShown = useChatStore((s) => s.reportResumeCardShown);
@@ -41,14 +43,20 @@ export function ResumeCard() {
 			branchRows.map((fact) => `branch:${fact.branch!.threadId}`),
 		);
 	}, [card, dismissed, readSetDiff, reportShown]);
-	if (!card || (dismissed && !revealed)) return null;
+	const showCard = Boolean(card && (!dismissed || revealed));
+	const showArtifacts = Boolean(artifactReviews?.total);
+	if (!showCard && !showArtifacts) return null;
 
 	// 预览条数随卡片载荷下发（服务端 FACTS_PREVIEW_COUNT 是唯一来源）——
 	// 客户端不再自带一份同值常量（2026-09-13 收尾 §5.6）
-	const visibleFacts = factsExpanded
-		? card.facts
-		: card.facts.slice(0, card.factsPreviewCount);
-	const hiddenCount = Math.max(0, card.facts.length - visibleFacts.length);
+	const visibleFacts = card
+		? factsExpanded
+			? card.facts
+			: card.facts.slice(0, card.factsPreviewCount)
+		: [];
+	const hiddenCount = card
+		? Math.max(0, card.facts.length - visibleFacts.length)
+		: 0;
 	return (
 		<motion.section
 			{...FADE_IN}
@@ -65,7 +73,7 @@ export function ResumeCard() {
 						<span className="text-small font-medium text-fg-default">
 							恢复卡
 						</span>
-						{note ? (
+						{note && showCard ? (
 							<Badge
 								variant="secondary"
 								className={cn(
@@ -76,7 +84,7 @@ export function ResumeCard() {
 								{note.confirmedAt ? "已确认" : "待确认"}
 							</Badge>
 						) : null}
-						{delta > 0 ? (
+						{showCard && delta > 0 ? (
 							<Badge
 								variant="outline"
 								className="h-4 px-1.5 text-small font-normal"
@@ -86,12 +94,14 @@ export function ResumeCard() {
 						) : null}
 					</div>
 					<p className="mt-0.5 truncate text-small text-fg-subtle">
-						{note
+						{showCard && note
 							? `离开于 ${new Date(note.draftedAt).toLocaleString()}`
-							: card.coverage.text}
+							: showCard && card
+								? card.coverage.text
+								: `${artifactReviews?.total ?? 0} 项产物检查`}
 					</p>
 				</div>
-				{note && !note.confirmedAt ? (
+				{showCard && note && !note.confirmedAt ? (
 					<Button
 						type="button"
 						variant="ghost"
@@ -102,96 +112,101 @@ export function ResumeCard() {
 						确认
 					</Button>
 				) : null}
-				<Tooltip content="收起恢复卡">
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
-						className="text-fg-muted"
-						aria-label="收起"
-						onClick={() => void dismiss()}
-					>
-						<X className="size-3.5" />
-					</Button>
-				</Tooltip>
+				{showCard ? (
+					<Tooltip content="收起恢复卡">
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="text-fg-muted"
+							aria-label="收起"
+							onClick={() => void dismiss()}
+						>
+							<X className="size-3.5" />
+						</Button>
+					</Tooltip>
+				) : null}
 			</header>
 
-			<div className="grid gap-3 px-3 py-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(15rem,0.85fr)]">
-				<div className="min-w-0">
-					<div className="flex items-center justify-between gap-2">
-						<span className="shrink-0 text-small font-medium text-fg-muted">
-							事实 {card.facts.length > 0 ? `· ${card.facts.length}` : ""}
-						</span>
-						<Tooltip content={card.coverage.text}>
-							<span className="min-w-0 truncate text-small text-fg-subtle">
-								{card.coverage.text}
+			{showCard && card ? (
+				<div className="grid gap-3 px-3 py-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(15rem,0.85fr)]">
+					<div className="min-w-0">
+						<div className="flex items-center justify-between gap-2">
+							<span className="shrink-0 text-small font-medium text-fg-muted">
+								事实 {card.facts.length > 0 ? `· ${card.facts.length}` : ""}
 							</span>
-						</Tooltip>
+							<Tooltip content={card.coverage.text}>
+								<span className="min-w-0 truncate text-small text-fg-subtle">
+									{card.coverage.text}
+								</span>
+							</Tooltip>
+						</div>
+						{card.facts.length > 0 ? (
+							<>
+								<motion.ul
+									initial="hidden"
+									animate="show"
+									variants={STAGGER_PARENT}
+									className="mt-2 space-y-1.5"
+								>
+									<AnimatePresence initial={false}>
+										{visibleFacts.map((fact) => (
+											<ResumeFactRow
+												key={`${fact.source}-${fact.branch?.threadId ?? fact.path}-${fact.currentVersion ?? "missing"}`}
+												fact={fact}
+											/>
+										))}
+									</AnimatePresence>
+								</motion.ul>
+								{hiddenCount > 0 ? (
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="mt-1 text-fg-subtle"
+										onClick={() => {
+											setFactsExpanded(true);
+											void consume("facts");
+										}}
+									>
+										及另 {hiddenCount} 条
+									</Button>
+								) : null}
+							</>
+						) : (
+							<p className="mt-2 text-small text-fg-subtle">
+								{card.coverage.status === "unknown"
+									? "尚无可比较的文件记录。"
+									: "没有检测到前提变化。"}
+							</p>
+						)}
 					</div>
-					{card.facts.length > 0 ? (
-						<>
-							<motion.ul
+
+					{card.narrative.length > 0 || delta > 0 ? (
+						<div className="min-w-0 border-t border-border-subtle pt-3 lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
+							<span className="text-small font-medium text-fg-muted">
+								接力脉络
+							</span>
+							{showCard && delta > 0 ? (
+								<p className="mt-2 rounded-md bg-accent-default/8 px-2 py-1.5 text-small text-fg-muted">
+									你不在时这条对话多了 {delta} 条，往下翻看新内容。
+								</p>
+							) : null}
+							<motion.ol
 								initial="hidden"
 								animate="show"
 								variants={STAGGER_PARENT}
-								className="mt-2 space-y-1.5"
+								className="relative mt-2 space-y-3 before:absolute before:bottom-1 before:left-[3px] before:top-2 before:w-px before:bg-border-subtle"
 							>
-								<AnimatePresence initial={false}>
-									{visibleFacts.map((fact) => (
-										<ResumeFactRow
-											key={`${fact.source}-${fact.branch?.threadId ?? fact.path}-${fact.currentVersion ?? "missing"}`}
-											fact={fact}
-										/>
-									))}
-								</AnimatePresence>
-							</motion.ul>
-							{hiddenCount > 0 ? (
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="mt-1 text-fg-subtle"
-									onClick={() => {
-										setFactsExpanded(true);
-										void consume("facts");
-									}}
-								>
-									及另 {hiddenCount} 条
-								</Button>
-							) : null}
-						</>
-					) : (
-						<p className="mt-2 text-small text-fg-subtle">
-							{card.coverage.status === "unknown"
-								? "尚无可比较的文件记录。"
-								: "没有检测到前提变化。"}
-						</p>
-					)}
+								{card.narrative.map((row, index) => (
+									<ResumeNarrativeRow key={`${row.kind}-${index}`} row={row} />
+								))}
+							</motion.ol>
+						</div>
+					) : null}
 				</div>
-
-				{card.narrative.length > 0 || delta > 0 ? (
-					<div className="min-w-0 border-t border-border-subtle pt-3 lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
-						<span className="text-small font-medium text-fg-muted">
-							接力脉络
-						</span>
-						{delta > 0 ? (
-							<p className="mt-2 rounded-md bg-accent-default/8 px-2 py-1.5 text-small text-fg-muted">
-								你不在时这条对话多了 {delta} 条，往下翻看新内容。
-							</p>
-						) : null}
-						<motion.ol
-							initial="hidden"
-							animate="show"
-							variants={STAGGER_PARENT}
-							className="relative mt-2 space-y-3 before:absolute before:bottom-1 before:left-[3px] before:top-2 before:w-px before:bg-border-subtle"
-						>
-							{card.narrative.map((row, index) => (
-								<ResumeNarrativeRow key={`${row.kind}-${index}`} row={row} />
-							))}
-						</motion.ol>
-					</div>
-				) : null}
-			</div>
+			) : null}
+			<ResumeArtifactRows projection={artifactReviews} />
 		</motion.section>
 	);
 }

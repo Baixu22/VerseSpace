@@ -15,6 +15,7 @@ export async function refreshThread(
 					suggestions: data.suggestions,
 					decisionPoints: data.decisionPoints,
 					readSetDiff: data.readSetDiff ?? null,
+					artifactReviews: data.artifactReviews ?? null,
 					resumeCard: data.resumeCard ?? null,
 					resumeCardDismissed: Boolean(data.resumeCardDismissed),
 					resumeDelta: data.resumeDelta ?? 0,

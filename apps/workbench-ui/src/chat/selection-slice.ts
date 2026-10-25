@@ -44,6 +44,7 @@ export const createSelectionSlice: StateCreator<
 							resumeNote: null,
 							resumeDelta: 0,
 							readSetDiff: null,
+							artifactReviews: null,
 							resumeCard: null,
 							resumeCardDismissed: false,
 							resumeCardRevealed: false,
@@ -92,6 +93,7 @@ export const createSelectionSlice: StateCreator<
 				resumeNote: null,
 				resumeDelta: 0,
 				readSetDiff: null,
+				artifactReviews: null,
 				resumeCard: null,
 				resumeCardDismissed: false,
 				resumeCardRevealed: false,
@@ -123,6 +125,7 @@ export const createSelectionSlice: StateCreator<
 				resumeNote: data.resumeNote,
 				resumeDelta: data.resumeDelta ?? 0,
 				readSetDiff: data.readSetDiff ?? null,
+				artifactReviews: data.artifactReviews ?? null,
 				resumeCard: data.resumeCard ?? null,
 				resumeCardDismissed: Boolean(data.resumeCardDismissed),
 				resumeCardRevealed: false,
@@ -152,7 +155,8 @@ export const createSelectionSlice: StateCreator<
 			body: JSON.stringify({
 				fromThreadId: prevId,
 				resumeCardVisible: Boolean(
-					data.resumeCard && !data.resumeCardDismissed,
+					(data.resumeCard && !data.resumeCardDismissed) ||
+						data.artifactReviews?.total,
 				),
 				lastMessageId: data.messages.at(-1)?.id ?? null,
 			}),

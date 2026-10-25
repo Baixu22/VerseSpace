@@ -6,7 +6,12 @@ import type {
 	ThreadMeta,
 	TribunalItemView,
 } from "./message-types";
-import type { ReadSetDiff, ResumeCardView, ResumeNote } from "./resume-types";
+import type {
+	ArtifactReviewProjectionView,
+	ReadSetDiff,
+	ResumeCardView,
+	ResumeNote,
+} from "./resume-types";
 export interface ForkDeclaration {
 	inheritedMessages: number;
 	anchor: { id: string; role: string; at: string };
@@ -52,6 +57,8 @@ export interface ChatState {
 	resumeDelta: number;
 	/** R2′ restore-time read-set facts; null means no card or unknown baseline. */
 	readSetDiff: ReadSetDiff | null;
+	/** Shared finite projection; viewing it never changes artifact validity. */
+	artifactReviews: ArtifactReviewProjectionView | null;
 	resumeCard: ResumeCardView | null;
 	resumeCardDismissed: boolean;
 	resumeCardRevealed: boolean;
@@ -135,6 +142,7 @@ export interface ThreadGetResponse {
 	 */
 	resumeDelta: number;
 	readSetDiff?: ReadSetDiff;
+	artifactReviews?: ArtifactReviewProjectionView | null;
 	resumeCard?: ResumeCardView | null;
 	resumeCardDismissed?: boolean;
 	canPromote?: boolean;

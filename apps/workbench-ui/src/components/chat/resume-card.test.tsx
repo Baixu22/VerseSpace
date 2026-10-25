@@ -122,6 +122,7 @@ function resetChatStore(): void {
 		resumeNote: null,
 		resumeDelta: 0,
 		readSetDiff: null,
+		artifactReviews: null,
 		resumeCard: null,
 		resumeCardDismissed: false,
 		resumeCardRevealed: false,

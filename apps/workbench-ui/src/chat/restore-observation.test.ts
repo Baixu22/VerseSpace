@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiFetch } from "../auth";
+import type { ArtifactReviewProjectionView } from "./resume-types";
 import { type ResumeCardView, useChatStore } from "./store";
 
 vi.mock("../auth", () => ({ apiFetch: vi.fn() }));
@@ -14,11 +15,20 @@ const card: ResumeCardView = {
 	inject: true,
 	factsPreviewCount: 3,
 };
+const artifacts: ArtifactReviewProjectionView = {
+	schemaVersion: 1,
+	total: 1,
+	counts: { current: 0, stale: 1, pending: 0, failed: 0, unknown: 0 },
+	items: [],
+	omitted: 0,
+	truncated: false,
+};
 
 function view(
 	id: string,
 	resumeCard: ResumeCardView | null,
 	dismissed = false,
+	artifactReviews: ArtifactReviewProjectionView | null = null,
 ) {
 	return {
 		meta: {
@@ -41,6 +51,7 @@ function view(
 		resumeNote: null,
 		resumeCard,
 		resumeCardDismissed: dismissed,
+		artifactReviews,
 	};
 }
 
@@ -52,6 +63,9 @@ afterEach(() => {
 		messages: {},
 		drafts: {},
 		parked: {},
+		artifactReviews: null,
+		resumeCard: null,
+		resumeCardDismissed: false,
 	});
 });
 
@@ -60,15 +74,23 @@ describe("恢复耗时的 UI 观测", () => {
 		{ label: "有卡", resumeCard: card, dismissed: false, visible: true },
 		{ label: "卡已收起", resumeCard: card, dismissed: true, visible: false },
 		{ label: "无卡", resumeCard: null, dismissed: false, visible: false },
+		{
+			label: "仅产物卡",
+			resumeCard: null,
+			dismissed: true,
+			artifactReviews: artifacts,
+			visible: true,
+		},
 	])("$label：带上实际可见性和加载时的消息边界", async ({
 		resumeCard,
 		dismissed,
+		artifactReviews = null,
 		visible,
 	}) => {
 		api.mockImplementation(async (path) =>
 			response(
 				path === "/api/chat/threads/target"
-					? view("target", resumeCard, dismissed)
+					? view("target", resumeCard, dismissed, artifactReviews)
 					: { ok: true },
 			),
 		);
