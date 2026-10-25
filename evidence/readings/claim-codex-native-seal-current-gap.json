@@ -1,0 +1,23 @@
+{
+	"claim_id": "claim-codex-native-seal-current-gap",
+	"instrument_sha256": "packages/workbench/scripts/verify/codex-native-pair.ts:4b6363d7acbcaad8efb0a17718270eee2f3d55df3b966dace4518a719a22fa8f\npackages/workbench/scripts/verify/codex-seal-baseline.ts:61d1e50e1d8ad963b234278b513cf4dff8df8e7db4cc5011bf6aa629e82257e1\npackages/workbench/scripts/verify/codex-write-seal.ts:b5573f620a7c97f124a112a1975198e2ec3820d49eb9991d514a2a42cf9bcb5b",
+	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1",
+		"codex": "26.1021.3705.0",
+		"codexHome": "D:/helmor-main/.agent-contexts/codex-verify-current",
+		"model": "ccs-404/deepseek-v4.1-flash"
+	},
+	"measured_at": "2026-10-25T17:57:41.134Z",
+	"reading": {
+		"exit": 1,
+		"passed": 0,
+		"total": 2
+	},
+	"instrument_exit": 1,
+	"raw_digest": "sha256:7227ae6321c5d5048c38b6a0302e47940229f266e8d5b9f11a86448390c88303",
+	"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
+	"class": "curated-evidence"
+}

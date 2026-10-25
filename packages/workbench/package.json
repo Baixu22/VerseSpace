@@ -1,7 +1,7 @@
 {
 	"name": "@baixu22/workbench",
 	"description": "Workbench — CLI + filesystem state manager for AI-assisted development.",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"type": "module",
 	"license": "MIT AND Apache-2.0",
 	"bin": {

@@ -20,7 +20,7 @@
 
 ## 目录
 
-- [现状与验证边界](#现状与验证边界2026-10-01-更新)
+- [现状与验证边界](#现状与验证边界2026-10-26-更新)
 - [它能做什么](#它能做什么)
 - [它不保证什么](#它不保证什么)
 - [核心概念](#核心概念)
@@ -43,22 +43,22 @@
 
 ---
 
-## 现状与验证边界（2026-10-01 更新）
+## 现状与验证边界（2026-10-26 更新）
 
 本仓库按**工程研究原型**收尾，不是已验收的产品。两类结论必须分开读：**工程门读数（本机可执行范围）** ／ **产品证据不足**（[ADR-0023](docs/decisions/0023-research-prototype-closeout.md)）。
 
 | 维度 | 现状 |
 | --- | --- |
-| 工程门 | 2026-10-01 已落主线：Workbench 1096、UI 68、context-rot 69、浏览器 14 项检查通过；原生 Codex 对照 2/2，静态、构建、声明与落地门禁通过，详见[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)。未发布新 Release |
+| 工程门 | 当前 `0.5.0` 候选源码包含 Workbench 1242、UI 75、context-rot 69 与真实 Windows 浏览器 15 项验收；静态、两形态构建、声明、归属与默认分支落地读数记录在最终交接，未发布新 Release |
 | 声明与读数 | [`evidence/claims.json`](evidence/claims.json) 登记当前命题及历史观测，读数在 `evidence/readings/`；`bun run check:claims` 核对注册范围内的仪器、输入与读数。有效不代表整个产品已验收，历史观测不充当当前通过证据 |
 | 产品证据 | **不足**：真人自然使用与非 Windows 实机验证已永久关闭（[ADR-0024](docs/decisions/0024-retire-external-validation.md)），不再作为待办；相关收益与跨平台执行仍未验证。Codex 仅显式原生工具 profile 的 fresh/stale 封印对照已验，不是全通道保护保证 |
-| 发行 | Workbench `0.4.1`，`workbench-v0.4.1` Release 已于 2026-09-28 发布；2026-09-30 回读确认非草稿、8 项资产。**仓库目前为私有，访问源码和 Release 需要仓库权限**；发布不等于公开可下载 |
+| 发行 | 当前公开 Release 仍是 Workbench `0.4.1`；源码候选为未发布的 `0.5.0`，没有 `workbench-v0.5.0` tag 或 Release。**仓库目前为私有，访问源码和 Release 需要仓库权限**；发布不等于公开可下载 |
 | 平台覆盖 | 只有 **windows-x64** 跑过完整测试套件；其余三个平台目前只有交叉编译产物 |
 | CI | **没有 CI**（[ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)）：GitHub Actions 与极狐 JihuLab 通道都已退役，PR 上不会出现任何状态检查，门禁一律本机手跑 |
 
 > **读表须知**：工程门的绿灯只覆盖「本机能跑的仪器」；产品维度（生产率、真实用户、跨平台）没有被证明，也不要在引用本仓库时把它们说成已证明。
 
-本 README 对应当前主线源码。[2026-09-30 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md)是修复前的历史记录；[实现记录](docs/handoff/2026-10-01-all-issues-implementation.md)和[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)说明 #31、#45–#57 的最终落地结果。上述改动已合并，尚未发布新版本；`0.4.1` 发行物不自动包含它们，旧发行测试也不自动覆盖当前源码。
+本 README 对应当前主线源码。[2026-09-30 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md)是修复前的历史记录；[实现记录](docs/handoff/2026-10-01-all-issues-implementation.md)和[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)说明 #31、#45–#57 的最终落地结果。后续 #70–#77 的产物证据、受控对照与恢复卡交接见 [最终候选收口](docs/handoff/2026-10-26-workbench-0.5.0-candidate.md)。源码候选 `0.5.0` 尚未发布；`0.4.1` 发行物不自动包含这些改动。
 
 ### 最近落地的修复与能力
 
@@ -70,6 +70,9 @@
 | #53–#54：证据强度与指标 | 区分内容 hash、size-only、unknown；分别统计重读、新版本观察、产物修改和范围验证。重复写同一版本不计为本次修改 |
 | #55–#56：成本与模型实测 | 已测合成 JSONL 的 1千/1万/5万条规模，仅去掉恢复查询的一次重复读取；GLM 默认 120 秒请求预算的完整 live 场景通过，历史失败保留 |
 | #31：原生 Codex 审批 | Codex 0.159.0 + 本地 GLM + 显式原生工具 profile 的 fresh/stale 对照通过；补留协议夹具和严格成对仪器，仍不保证所有工具路径受保护 |
+| #70–#73：产物事实 | 显式历史输入、固定副本、目标范围、便携清单、接收方复核与 CLI/MCP/恢复同一有限投影；未知、来源弱、目标和范围外推进分别保留 |
+| #74–#76：受控裁决 | 冻结强朴素/旧主线/增强与消融重放；增强声明范围零错误，旧主线差异保留，四次消费检查 4→1；三尺度总体时间均未优于朴素，不宣称净收益 |
+| #77：现有恢复卡 | 显示五状态、来源、输入、检查、目标与复制重验命令；真实浏览器 current/stale/unknown 截图通过，查看/复制不清除待重验 |
 
 这些结果的受测提交、命令、计数和限制见上面的两份记录；性能样本不是容量保证，模型成功样本不是通用可靠性保证。
 
@@ -83,9 +86,9 @@
   - **本地面板** — `workbench ui` 启动聊天面板（线程、分叉、恢复卡、证据与裁决）；目标 DAG、工位与 checkpoint 通过 CLI 管理；
   - **MCP 只读投影** — `premises` / `footprints` / `resume_cards` / `tribunal` / `notices` 五个工具。
 - **编排原语**：目标 DAG、工位（git worktree）、三区 checkpoint、派发与 watch 循环、裁决队列。
-- **声明范围与产物重验**：将一份产物绑定到明确输入及检查集合，区分历史通过、当前有效性与目标主线适用性；通过 CLI 发起独立重验，CLI JSON、MCP 恢复卡和聊天恢复信息读取同一产物状态。
+- **声明范围与产物重验**：将一份产物绑定到明确输入及检查集合，区分历史通过、当前有效性与目标主线适用性；通过 CLI 发起独立重验，或导出有限 manifest 由接收方按本机策略复核。CLI JSON、MCP 恢复卡和聊天恢复卡读取同一有限产物投影；查看与复制命令不写有效性事实。
 - **封印（seal）拦截点**：检查只读区域与已有失效前提并留痕。`seal.mode`（`block` 默认 / `warn` / `off`）控制失效前提的处理；只读区域拒写不受该模式及连续命中降级影响。Claude Code 需安装 PreToolUse hook；Codex 是实验通道，覆盖范围与证据返回方式均不同，见下文。
-- **聊天面板**：线性对话、消息处分叉、双通道恢复卡、以分支为主线（adopt / revert）、工具足迹可点击查看原始消息与事件。
+- **聊天面板**：线性对话、消息处分叉、双通道恢复卡、以分支为主线（adopt / revert）、工具足迹可点击查看原始消息与事件；恢复卡可复制既有 checkpoint 重验命令。
 
 一个典型场景：Agent 读取接口文件后，人或另一个任务改变了接口；原 Agent 接下来编辑调用方，即使两边改的是不同文件、Git 没有文本冲突，也可能沿用旧约定。Workbench 可以针对**已记录且可比较的读取**提示文件变化，但不证明模型计划已经失效或已经修好，也不自动把跨文件依赖传播成写禁令。
 
@@ -416,7 +419,7 @@ workbench ui --port 8080 --ui-dir ./some-dist
 | 车道 | provider | 读集（agent 读了哪些文件） | 前提失效时 |
 | --- | --- | --- | --- |
 | 工具车道 | `claude`（本机 Claude Code） | 部分可观测：识别到路径且有成功结果的工具调用 | 对可比读集给出变化证据；seal 需独立安装 hook |
-| 实验工具车道 | `codex` | 部分可观测：结构化路径与有限 cat 后备解析；无路径的 Get-Content 不被捕获 | 可归因写审批会咨询 seal；缺足迹、无审批或无法归因时不受保护，**仅显式原生工具 profile 的对照已验** |
+| 实验工具车道 | `codex` | 部分可观测：结构化路径与有限 cat 后备解析；无路径的 Get-Content 不被捕获 | 可归因写审批会咨询 seal；缺足迹、无审批或无法归因时不受保护。Codex 0.159 的显式原生 profile 曾有正面对照；当前 26.1021 隔离 profile 实测 fresh/stale 原生写均落盘且无 seal 事件，**当前未通过写保护声明** |
 | 纯文本车道 | `openai-chat` / `openai-responses` / `anthropic` | 当前实现不执行文件工具，因而没有本轮工具读集 | 可消费已排队通知并重发文本历史，但不能据回复证明读取或修复；已有历史证据不会因此被删除 |
 
 选择建议：需要文件工具足迹时优先使用 `claude`，并核对本节的采集/继承条件；纯对话可使用 HTTP 车道，无需本机 Claude 登录。provider 是全局配置，线程头根据 `lastRun` 展示**最近一轮**的可观测性限制；它不是逐条历史消息的完整 provider 归属记录，也不代表整条线程始终使用同一车道。
@@ -468,7 +471,7 @@ HTTP provider 可从服务进程的 `WORKBENCH_CHAT_API_KEY` 环境变量读取�
 | --- | --- |
 | `premises` | 默认查询待投递通知；`view=current` 重新核对当前失效输入，独立于投递状态 |
 | `footprints` | 最近已登记的写者读写路径；可按 writer 筛选，不能据空结果断言从未读取 |
-| `resume_cards` | 线程在离开期间发生了什么（读集 diff、恢复笔记、分支动静） |
+| `resume_cards` | 线程在离开期间发生了什么；默认读集/恢复笔记/分支动静，`view=artifacts` 读取同一有限产物投影 |
 | `tribunal` | 裁决队列里有什么在等人类决策 |
 | `notices` | 通知投递情况（已投递 / 待投递） |
 
@@ -607,7 +610,7 @@ node packages/context-rot/scripts/install-hooks.mjs /absolute/path/to/managed-pr
 
 | 路径 | 内容 |
 | --- | --- |
-| [packages/workbench](packages/workbench) | CLI、前提账本、调度、聊天车道与本地 HTTP 服务（`@baixu22/workbench`，v0.4.1） |
+| [packages/workbench](packages/workbench) | CLI、前提账本、调度、聊天车道与本地 HTTP 服务（源码候选 `@baixu22/workbench@0.5.0`，未发布） |
 | [apps/workbench-ui](apps/workbench-ui) | React 19 + Vite + Tailwind v4 本地面板，构建后嵌入 Workbench |
 | [packages/context-rot](packages/context-rot) | 独立的指引引用检查器，也是 Workbench doctor 的扫描器 |
 | [evidence](evidence) | 声明账本（`claims.json`）、当前读数及历史观测；原始日志按 [ADR-0020](docs/decisions/0020-relay-handoff-upload-surface.md) 留本机 |
@@ -615,7 +618,7 @@ node packages/context-rot/scripts/install-hooks.mjs /absolute/path/to/managed-pr
 | [docs/decisions](docs/decisions) | ADR：一条决策一个文件、只增不改（0001–0024） |
 | [docs/assets](docs/assets) | README / 文档插图 |
 
-根工作区 `package.json` 的 `0.46.0` 是私有 monorepo 的版本值；Workbench 发行使用 `packages/workbench/package.json` 的 `0.4.1`，不要混用。
+根工作区 `package.json` 的 `0.46.0` 是私有 monorepo 的版本值；Workbench 源码候选使用 `packages/workbench/package.json` 的 `0.5.0`，公开旧发行仍是 `0.4.1`，不要混用。
 
 **`packages/workbench` 主要模块**（细节见 [AGENTS.md](AGENTS.md)）：
 
@@ -719,7 +722,7 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 2. `bun run release:tag:workbench --push`（默认 dry-run；`--push` 是真实发布）。
 3. 在仓库根目录运行 `bun run --cwd packages/workbench build:all`，再 `node scripts/publish-workbench-release.mjs --tag workbench-v<version>`（替换为实际版本）——挂上四平台二进制 + `SHA256SUMS` + 许可/归属文件，并在说明里写明**只有 windows-x64 跑过测试套件**。
 
-发行说明里**必须保留平台覆盖声明**。本版为 `0.4.1`；发行必须对应最终提交、Windows 验证、tag 与资产校验和。非 Windows 实机验证及真人研究已永久关闭，四平台交叉编译产物保留；关闭不代表通过。npm 形态**尚未发布**，不是待办清单上的「下一步」，而是维护者明确暂缓的决定（详见 [packages/workbench/README](packages/workbench/README.md)）。
+发行说明里**必须保留平台覆盖声明**。源码候选为 `0.5.0`，但当前公开发行仍是 `0.4.1`；本轮未推 tag 或创建 Release。任何后续发布必须对应最终提交、Windows 验证、tag 与资产校验和。非 Windows 实机验证及真人研究已永久关闭，四平台交叉编译产物保留；关闭不代表通过。npm 形态**尚未发布**，不是待办清单上的「下一步」，而是维护者明确暂缓的决定（详见 [packages/workbench/README](packages/workbench/README.md)）。
 
 ---
 
@@ -747,7 +750,7 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 | [evidence/claims.json](evidence/claims.json) | 注册声明、历史观测与失效规则 |
 | [2026-10-01 实现记录](docs/handoff/2026-10-01-all-issues-implementation.md) | #45–#57 的实现映射、单产物对照、JSONL 分布和 GLM 默认预算完整 live 读数 |
 | [2026-10-01 接力验收](docs/handoff/2026-10-01-issue-relay-closeout.md) | #31 原生成对实验、重复写指标修复、最终受测版本、全量门禁与主线落地 |
-| [packages/workbench/CHANGELOG.md](packages/workbench/CHANGELOG.md) | 发行变更（0.1.0 → 0.4.1） |
+| [packages/workbench/CHANGELOG.md](packages/workbench/CHANGELOG.md) | 发行变更（0.1.0 → 0.5.0 候选） |
 | [docs/user/](docs/user/README.md) | **旧 Helmor 用户指南，已退役，仅作记录** |
 
 ---
