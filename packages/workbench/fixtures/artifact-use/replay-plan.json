@@ -1,0 +1,53 @@
+{
+	"schemaVersion": 1,
+	"frozenBaseline": "a7197bacd7159e704278a0dd5cf2233952d4e0fe",
+	"planningBaseline": "391fd5",
+	"baselineSourceTree": "debffa2e78769d1aa1c879375bc50a3db7c96272",
+	"enhancedProductionBase": "b1a5b978a15d2e7b54e00558122cb4883d99d569",
+	"fixtureDigest": "d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515",
+	"judgeDigest": "1d578185d88bc50cb31be033c6a376107b15ad44ba3e841078ebfa04ea572d57",
+	"timing": "Freeze group definitions before any new controlled replay; production implementation already exists",
+	"budget": {
+		"source": "Before production implementation: zero safety/source errors; four unchanged consumptions should reuse one completed check, matching existing Workbench behavior. Timing is comparative only.",
+		"falseCurrent": 0,
+		"sourceMisattribution": 0,
+		"samples": 5,
+		"warmups": 1,
+		"maxCaseSeconds": 60,
+		"repeatChecks": 4,
+		"netBenefit": "report medians, range, bytes and repeated executions; no benefit claim if total time is not lower",
+		"maxChecksForFourUnchangedConsumptions": 1
+	},
+	"heldout": "Development excludes partition=heldout. Final replay includes the unchanged reserved cases for the first enhanced comparison.",
+	"groups": [
+		{
+			"id": "naive",
+			"definition": "Frozen strong native checker, rerun at each consumption"
+		},
+		{
+			"id": "old",
+			"definition": "Frozen baseline production source and unchanged observer"
+		},
+		{
+			"id": "enhanced",
+			"definition": "Current production, exact returned-input receipts, fixed files and real use guard"
+		},
+		{
+			"id": "without-return-origin",
+			"definition": "Replace returned receipts with file sampling and legacy declared scope; other current layers retained"
+		},
+		{
+			"id": "without-fixed-copy",
+			"definition": "Execute current declared check in live source workspace; returned receipts and guard retained"
+		},
+		{
+			"id": "without-use-guard",
+			"definition": "Use current artifact review status as acceptance; do not invoke the consumption guard"
+		},
+		{
+			"id": "without-target-range",
+			"definition": "Remove declared target blob/range fingerprint from recorded binding; keep fixed-file object and guard"
+		}
+	],
+	"modelUsage": "No provider called. Tokens and monetary cost remain unmeasured, never zero."
+}
