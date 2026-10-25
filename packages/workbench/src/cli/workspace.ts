@@ -4,6 +4,7 @@ import {
 	checkpointList,
 	checkpointReview,
 } from "../commands/checkpoint";
+import { checkpointConsume } from "../commands/checkpoint-consume";
 import { checkpointRevalidate } from "../commands/checkpoint-revalidate";
 import { configSet, queueCommand } from "../commands/config";
 
@@ -115,6 +116,16 @@ export function registerWorkspace(program: Command): void {
 		.option("--workspot <id>", "explicit execution workspot for this new check")
 		.option("--target-ref <ref>", "explicit new target baseline")
 		.action(checkpointRevalidate);
+	checkpoint
+		.command("consume <id>")
+		.description(
+			"accept a declared artifact with its latest verified evidence once",
+		)
+		.requiredOption(
+			"--evidence <checkpoint-id>",
+			"exact latest checkpoint that authorizes consumption",
+		)
+		.action(checkpointConsume);
 
 	checkpoint
 		.command("list")

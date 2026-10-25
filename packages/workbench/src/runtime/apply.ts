@@ -112,7 +112,9 @@ export async function applyTransition(
 			// 验证时效性（2026-09-30）：verified→applied 之前重新确认验证依据仍
 			// 成立。代码在验证后变化（人编辑、其他 agent、合并）时，这不是「已验证
 			// 的效果被应用」，而是旧绿灯放行新代码——退回 staging 重新验证。
-			const staleReason = await verificationStalenessReason(bb, verified);
+			const staleReason = verified.artifact
+				? null
+				: await verificationStalenessReason(bb, verified);
 			if (staleReason) {
 				await invalidateVerification(bb, verified, staleReason, notifications);
 				return true;

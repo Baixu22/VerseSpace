@@ -721,6 +721,70 @@
 			"minimum": {
 				"pass": 9
 			}
+		},
+		{
+			"id": "claim-moat-consumption",
+			"statement": "TF-0295 声明产物消费核对最新检查、来源、输入 manifest 与产物/报告 digest；真实 Runtime/CLI 拒绝未知、过期、旧对象和重复 effects，中断凭据不升级为完成",
+			"instrument": [
+				"packages/workbench/src/artifacts/use-guard.ts",
+				"packages/workbench/src/artifacts/consume.ts",
+				"packages/workbench/src/artifacts/use-guard.test.ts",
+				"packages/workbench/src/artifacts/use-interruption.test.ts",
+				"packages/workbench/src/artifacts/use-manifest.test.ts",
+				"packages/workbench/src/artifacts/facts.ts",
+				"packages/workbench/src/artifacts/input-origin.ts",
+				"packages/workbench/src/artifacts/snapshot.ts",
+				"packages/workbench/src/artifacts/status.ts",
+				"packages/workbench/src/test/artifact-use-fixture.ts",
+				"packages/workbench/src/runtime/apply.ts",
+				"packages/workbench/src/runtime/checkpoint-effects.ts",
+				"packages/workbench/src/runtime/verification-status.ts",
+				"packages/workbench/src/runtime/integrity.test.ts",
+				"packages/workbench/src/automaton/checkpoint-machine.ts",
+				"packages/workbench/src/automaton/checkpoint-machine.test.ts",
+				"packages/workbench/src/commands/checkpoint-consume.ts",
+				"packages/workbench/src/cli/workspace.ts",
+				"packages/workbench/src/cli.test.ts",
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/types/artifact-evidence.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/artifacts/use-guard.ts",
+				"packages/workbench/src/artifacts/consume.ts",
+				"packages/workbench/src/artifacts/use-guard.test.ts",
+				"packages/workbench/src/artifacts/use-interruption.test.ts",
+				"packages/workbench/src/artifacts/use-manifest.test.ts",
+				"packages/workbench/src/artifacts/facts.ts",
+				"packages/workbench/src/artifacts/input-origin.ts",
+				"packages/workbench/src/artifacts/snapshot.ts",
+				"packages/workbench/src/artifacts/status.ts",
+				"packages/workbench/src/test/artifact-use-fixture.ts",
+				"packages/workbench/src/runtime/apply.ts",
+				"packages/workbench/src/runtime/checkpoint-effects.ts",
+				"packages/workbench/src/runtime/verification-status.ts",
+				"packages/workbench/src/runtime/integrity.test.ts",
+				"packages/workbench/src/automaton/checkpoint-machine.ts",
+				"packages/workbench/src/automaton/checkpoint-machine.test.ts",
+				"packages/workbench/src/commands/checkpoint-consume.ts",
+				"packages/workbench/src/cli/workspace.ts",
+				"packages/workbench/src/cli.test.ts",
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/types/artifact-evidence.ts"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"fail": "number",
+				"pass": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/artifacts/use-guard.test.ts packages/workbench/src/artifacts/use-interruption.test.ts packages/workbench/src/artifacts/use-manifest.test.ts packages/workbench/src/cli.test.ts packages/workbench/src/runtime/integrity.test.ts packages/workbench/src/automaton/checkpoint-machine.test.ts --timeout 60000",
+			"expected": {
+				"fail": 0,
+				"exit": 0
+			},
+			"minimum": {
+				"pass": 57
+			}
 		}
 	]
 }

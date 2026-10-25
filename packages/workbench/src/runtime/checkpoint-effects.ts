@@ -1,4 +1,5 @@
 import { isDeepStrictEqual } from "node:util";
+import { checkArtifactUse } from "../artifacts/use-guard";
 import type { Blackboard } from "../blackboard";
 import type { Checkpoint } from "../types/checkpoint";
 import {
@@ -37,15 +38,38 @@ export async function applyCheckpoint(
 	bb: Blackboard,
 	checkpoint: Checkpoint,
 	notifications: RuntimeNotification[],
-): Promise<void> {
+	options: { evidenceId?: string } = {},
+): Promise<{ ok: boolean; reason?: string }> {
 	let candidate = checkpoint;
+	let consumptionStarted = false;
+	if (checkpoint.artifact) {
+		const use = await checkArtifactUse(bb, checkpoint, options.evidenceId);
+		if (!use.ok) {
+			await event(bb, "artifact_use_rejected", use);
+			if (checkpoint.lifecycle !== "applied" && !checkpoint.artifactConsumption)
+				await bb.checkpoints.save(
+					{ ...checkpoint, artifactUseIssue: use.reason },
+					"verified",
+				);
+			notifications.push({
+				severity: "warning",
+				message: `产物验收拒绝：${use.reason}；可正常编辑并重验后显式 consume`,
+			});
+			return { ok: false, reason: use.reason };
+		}
+		candidate = {
+			...checkpoint,
+			artifactConsumption: use.receipt,
+			artifactUseIssue: undefined,
+		};
+	}
 	try {
 		// Validate the entire batch before the first write. The runtime does not
 		// promise a multi-file transaction; failures preserve the recovery data.
 		const plans = await planUpdates(bb, checkpoint);
 		if (plans.length > 0) {
 			candidate = {
-				...checkpoint,
+				...candidate,
 				rollback: {
 					...checkpoint.rollback,
 					context: {
@@ -56,7 +80,12 @@ export async function applyCheckpoint(
 					},
 				},
 			};
+		}
+		// A durable started receipt prevents replay after a crash between registry
+		// writes. It is not a claim that the effects have finished.
+		if (plans.length > 0 || candidate.artifactConsumption) {
 			await bb.checkpoints.save(candidate, "verified");
+			consumptionStarted = !!candidate.artifactConsumption;
 		}
 		for (const { before, patch } of plans) {
 			if (
@@ -69,18 +98,37 @@ export async function applyCheckpoint(
 				expectedVersion: before.version,
 			});
 		}
+		if (candidate.artifactConsumption)
+			candidate = {
+				...candidate,
+				artifactConsumption: {
+					...candidate.artifactConsumption,
+					state: "applied",
+				},
+			};
 		await event(bb, "checkpoint_applied", {
 			cpId: checkpoint.id,
 			effects: checkpoint.blackboardEffects,
+			...(candidate.artifactConsumption
+				? { consumption: candidate.artifactConsumption }
+				: {}),
 		});
 		await bb.checkpoints.save(
 			{ ...candidate, lifecycle: "applied", applicationError: undefined },
 			"verified",
 		);
+		return { ok: true };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		await bb.checkpoints.save(
-			{ ...candidate, lifecycle: "failed", applicationError: message },
+			{
+				...candidate,
+				artifactConsumption: consumptionStarted
+					? { ...candidate.artifactConsumption!, state: "started" }
+					: undefined,
+				lifecycle: "failed",
+				applicationError: message,
+			},
 			"verified",
 		);
 		await bb.checkpoints.move(checkpoint.id, "verified", "failed");
@@ -92,5 +140,6 @@ export async function applyCheckpoint(
 			severity: "error",
 			message: `checkpoint ${checkpoint.id} 应用失败：${message}`,
 		});
+		return { ok: false, reason: message };
 	}
 }

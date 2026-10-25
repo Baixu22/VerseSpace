@@ -31,6 +31,10 @@ export async function checkpointVerificationStatus(
 	): VerificationStatus => ({ status, result, message });
 	if (cp.applicationError)
 		return view("failed", `应用失败：${cp.applicationError}`);
+	if (cp.artifactConsumption?.state === "started")
+		return view("unknown", "验收已开始，效果完成未确认");
+	if (cp.artifactUseIssue)
+		return view("unknown", `产物验收尚未消费：${cp.artifactUseIssue}`);
 	if (cp.lifecycle === "rejected") return view("rejected", "人工审查已驳回");
 	if (cp.lifecycle === "pending") return view("pending", "检查执行中");
 	if (cp.verificationBindingIssue)
