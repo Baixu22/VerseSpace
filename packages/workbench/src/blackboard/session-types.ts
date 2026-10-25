@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { WorkbenchEvent } from "../types/event";
 
 const contentDigest = z.string().regex(/^[a-f0-9]{64}$/);
-const selectorSchema = z.discriminatedUnion("kind", [
+export const inputSelectorSchema = z.discriminatedUnion("kind", [
 	z.strictObject({ kind: z.literal("file") }),
 	z
 		.strictObject({
@@ -20,7 +20,7 @@ export const inputObservationSchema = z.discriminatedUnion("source", [
 		source: z.literal("tool-observed"),
 		returnedHash: contentDigest,
 		contentHash: contentDigest,
-		selector: selectorSchema,
+		selector: inputSelectorSchema,
 		normalization: z.literal("utf8-lines-v1"),
 		sample: z
 			.strictObject({

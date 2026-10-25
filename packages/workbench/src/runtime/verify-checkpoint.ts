@@ -1,5 +1,6 @@
 import { isAbsolute, join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { selectArtifactInputs } from "../artifacts/input-origin";
 import {
 	artifactSnapshotDifference,
 	captureArtifactSnapshot,
@@ -58,6 +59,11 @@ export async function verifyCheckpoint(
 		verificationBinding: undefined,
 		verificationBindingIssue: undefined,
 		artifactOrigin: checkpoint.artifactOrigin ?? artifactBefore,
+		artifactInputOrigin:
+			checkpoint.artifactInputOrigin ??
+			(checkpoint.revalidates
+				? undefined
+				: await selectArtifactInputs(bb, checkpoint)),
 		artifactBinding: undefined,
 	};
 	await bb.checkpoints.save(pending, "staging");

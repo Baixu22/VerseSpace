@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
 	artifactDeclarationSchema,
+	artifactInputOriginSchema,
 	artifactSnapshotSchema,
 } from "./artifact-evidence";
 import { verificationStrategySchema } from "./goal";
@@ -143,6 +144,8 @@ export const checkpointSchema = z.object({
 	/** Optional, explicit single-artifact contract (ADR-0025). */
 	artifact: artifactDeclarationSchema.optional(),
 	artifactOrigin: artifactSnapshotSchema.optional(),
+	/** Caller-selected historical read records, separate from current file sampling. */
+	artifactInputOrigin: artifactInputOriginSchema.optional(),
 	artifactBinding: artifactSnapshotSchema.optional(),
 	/** Root checkpoint; rechecks never repeat its effects or complete another goal. */
 	revalidates: z.string().min(1).optional(),
