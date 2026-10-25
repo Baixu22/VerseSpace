@@ -574,6 +574,80 @@
 			}
 		},
 		{
+			"id": "claim-moat-controlled-comparison",
+			"statement": "TF-0306 在冻结 18 例和同一 fixture/judge 摘要上串行重放强朴素、冻结旧主线、增强生产与三项消融；增强声明范围零错误/未知，旧组和消融差异按实测保留，模型用量未测",
+			"instrument": [
+				"packages/workbench/scripts/verify/artifact-use/check-freeze.mjs",
+				"packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs",
+				"packages/workbench/scripts/verify/artifact-use/judge.mjs",
+				"packages/workbench/scripts/verify/artifact-use/judge.test.mjs",
+				"packages/workbench/scripts/verify/artifact-use/naive.mjs",
+				"packages/workbench/scripts/verify/artifact-use/workbench.ts",
+				"packages/workbench/scripts/verify/artifact-use/frozen-source.mjs",
+				"packages/workbench/scripts/verify/artifact-use/enhanced.ts",
+				"packages/workbench/scripts/verify/artifact-use/probe.ts",
+				"packages/workbench/scripts/verify/artifact-use/replay.ts",
+				"packages/workbench/fixtures/artifact-use/cases.json",
+				"packages/workbench/fixtures/artifact-use/check.cjs",
+				"packages/workbench/fixtures/artifact-use/freeze.json",
+				"packages/workbench/fixtures/artifact-use/replay-plan.json",
+				"packages/workbench/fixtures/artifact-use/replay-plan-freeze.json"
+			],
+			"subject_paths": [
+				"packages/workbench/scripts/verify/artifact-use/**",
+				"packages/workbench/fixtures/artifact-use/**",
+				"docs/handoff/2026-10-25-controlled-replay.md"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"cases": "number",
+				"groups": "number",
+				"naiveErrors": "number",
+				"oldErrors": "number",
+				"oldFalseCurrent": "number",
+				"oldSourceMisattribution": "number",
+				"enhancedFalseCurrent": "number",
+				"enhancedFalseReject": "number",
+				"enhancedSourceMisattribution": "number",
+				"enhancedUnknown": "number",
+				"withoutReturnOriginSourceMisattribution": "number",
+				"withoutFixedCopyFalseCurrent": "number",
+				"withoutUseGuardErrors": "number",
+				"withoutTargetRangeErrors": "number",
+				"processFailures": "number",
+				"timedOut": "number",
+				"naiveRepeatChecks": "number",
+				"enhancedRepeatChecks": "number"
+			},
+			"class": "L1",
+			"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/replay.ts --final --output evidence/raw/claim-moat-controlled-comparison.json",
+			"expected": {
+				"exit": 0,
+				"cases": 18,
+				"groups": 7,
+				"naiveErrors": 0,
+				"oldErrors": 5,
+				"oldFalseCurrent": 1,
+				"oldSourceMisattribution": 4,
+				"enhancedFalseCurrent": 0,
+				"enhancedFalseReject": 0,
+				"enhancedSourceMisattribution": 0,
+				"enhancedUnknown": 0,
+				"withoutReturnOriginSourceMisattribution": 4,
+				"withoutFixedCopyFalseCurrent": 1,
+				"withoutUseGuardErrors": 0,
+				"withoutTargetRangeErrors": 0,
+				"processFailures": 0,
+				"timedOut": 0,
+				"naiveRepeatChecks": 4,
+				"enhancedRepeatChecks": 1
+			},
+			"minimum": {
+				"cases": 18,
+				"groups": 7
+			}
+		},
+		{
 			"id": "claim-moat-input-origin",
 			"statement": "TF-0289/0290/0291 区分返回内容与文件采样，成功 CLI 捕获绑定摘要且歧义保持未知；本轮收到的候选工具事件覆盖可复算，零样本/HTTP/旧日志不可计算，CLI/MCP/恢复投影一致",
 			"instrument": [
