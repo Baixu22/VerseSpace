@@ -1,0 +1,20 @@
+{
+	"claim_id": "claim-moat-input-origin",
+	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/src/blackboard/claim-version.ts:228b81413c237c98a75120ad1e916a0e61d80f2ef9ef4cd965aa7eef447d3c4e\npackages/workbench/src/blackboard/input-origin.test.ts:c52b0ab0b8a7badf9da5c89ac0755ac8fca2983b28f1fdbb3e33cdc189d433a0\npackages/workbench/src/blackboard/session-types.ts:cc6901a3f494b84adbe52d70ebf365b8e29dcca699dd3a813b79858e0f46f4fd\npackages/workbench/src/blackboard/session-view.ts:4d2f39063806eed33dd2ee0a9ade220f01095f42c6845e4e16dc30e5058f93e9\npackages/workbench/src/blackboard/sessions.test.ts:0c93a08c116247f6f1fb59be1329656c51256e74e70cf145517056cd717a3327\npackages/workbench/src/runtime/read-fragments.test.ts:ce02b50b57447a37675cc71768abdefe6ee49bf8bd7bc3772ce03807a2014b7c",
+	"subject_sha": "489111bf74aa682a397f1cb910034b0c01eb3e5b",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1"
+	},
+	"measured_at": "2026-10-25T10:45:42.616Z",
+	"reading": {
+		"exit": 0,
+		"pass": 17,
+		"fail": 0
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:c0f3180663ac0334406b13cf9c737ce4063892b18b454fe1596a9cdcecbd52d9",
+	"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts --timeout 60000",
+	"class": "curated-evidence"
+}

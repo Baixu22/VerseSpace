@@ -1,4 +1,52 @@
+import { z } from "zod";
 import type { WorkbenchEvent } from "../types/event";
+
+const contentDigest = z.string().regex(/^[a-f0-9]{64}$/);
+const selectorSchema = z.discriminatedUnion("kind", [
+	z.strictObject({ kind: z.literal("file") }),
+	z
+		.strictObject({
+			kind: z.literal("lines"),
+			start: z.number().int().positive(),
+			end: z.number().int().positive(),
+		})
+		.refine((range) => range.end >= range.start),
+]);
+
+/** Returned text, normalized content and sampled file versions are different objects. */
+export const inputObservationSchema = z.discriminatedUnion("source", [
+	z.strictObject({
+		schemaVersion: z.literal(1),
+		source: z.literal("tool-observed"),
+		returnedHash: contentDigest,
+		contentHash: contentDigest,
+		selector: selectorSchema,
+		normalization: z.literal("utf8-lines-v1"),
+		sample: z
+			.strictObject({
+				version: contentDigest,
+				contentHash: contentDigest,
+				stable: z.boolean(),
+			})
+			.optional(),
+	}),
+	z.strictObject({
+		schemaVersion: z.literal(1),
+		source: z.literal("fs-sample"),
+		sample: z.strictObject({ version: contentDigest, stable: z.boolean() }),
+	}),
+	z.strictObject({
+		schemaVersion: z.literal(1),
+		source: z.literal("declared"),
+		contentHash: contentDigest,
+	}),
+	z.strictObject({
+		schemaVersion: z.literal(1),
+		source: z.literal("unknown"),
+		reason: z.string().min(1),
+	}),
+]);
+export type InputObservation = z.infer<typeof inputObservationSchema>;
 
 export interface ReadSpan {
 	/** 1-based, inclusive. `end` may exceed the file length (read to EOF). */
@@ -14,7 +62,7 @@ export interface ReadSpan {
 
 export interface FootprintUsed {
 	path: string;
-	/** Content hash at the time the writer observed the file. */
+	/** Sampled full-file hash; never by itself proof of returned tool content. */
 	version?: string | null;
 	/** File size when the content was too large to hash. */
 	size?: number;
@@ -24,6 +72,8 @@ export interface FootprintUsed {
 	spool?: string;
 	/** R2 predicate layer 2: only this range has to still hold. */
 	span?: ReadSpan;
+	/** Optional for old logs. Missing/invalid evidence remains unknown, never backfilled. */
+	observation?: InputObservation;
 }
 
 export interface FootprintEntry {

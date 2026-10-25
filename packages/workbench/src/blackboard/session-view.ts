@@ -1,7 +1,12 @@
 import { claimVersion } from "./claim-version";
 import type { FootprintLine, FootprintUsed } from "./session-types";
 
-export type ObservedRead = FootprintUsed & { seq: number };
+export type ObservedRead = FootprintUsed & {
+	seq: number;
+	actingAgent?: string;
+	eventId?: string;
+	eventSeq?: number;
+};
 export interface ReadSetView {
 	/** Last observation per path, retained for existing inspection callers. */
 	reads: Map<string, ObservedRead>;
@@ -37,7 +42,7 @@ export function foldReadSet(
 	lines: FootprintLine[],
 	uptoSeq?: number,
 ): ReadSetView {
-	const reads = new Map<string, FootprintUsed & { seq: number }>();
+	const reads = new Map<string, ObservedRead>();
 	const readFragments = new Map<string, ObservedRead[]>();
 	const writes: Array<FootprintUsed & { seq: number; ts: string }> = [];
 	for (const line of lines) {
@@ -59,6 +64,9 @@ export function foldReadSet(
 				...used,
 				...(span ? { span } : {}),
 				seq: line.seq,
+				actingAgent: line.agent,
+				eventId: line.eventId,
+				eventSeq: line.eventSeq,
 			};
 			reads.set(used.path, observed);
 			readFragments.set(used.path, [
