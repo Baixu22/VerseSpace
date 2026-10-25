@@ -1,0 +1,20 @@
+{
+	"claim_id": "claim-moat-portable-evidence",
+	"instrument_sha256": "packages/workbench/src/artifacts/input-origin.ts:eb8cb256d812146d2522baf6428125d1ea5061a0cda86343165f3db1761044ba\npackages/workbench/src/artifacts/manifest-codec.ts:b13b2eb0d78c1763408b7bfc285f615cedf50ae9d7f6b55639ba4c7efad72869\npackages/workbench/src/artifacts/manifest.test.ts:ba03adc63dfc31d6cdbd865bc8922055768c2cfb6b2a9bc57987c512ade84788\npackages/workbench/src/artifacts/manifest.ts:58c7a611940be1bf781c7267235d1ecd0564cc1848fd04e240c26753f86fa794\npackages/workbench/src/artifacts/snapshot.ts:fac5ddfe35e4b6bb17d1ce09c1024f2f19fd9b7c37a148fb3cb58e7ade8f62f8\npackages/workbench/src/artifacts/status.ts:5e7c0282305501f6dede20fc57866b68292b3995e49d27179fa8b345e0d507ab\npackages/workbench/src/cli.test.ts:a9ad4199a1fd42749fc78aee4ce4149d3dea483419612a92469414dd6863dede\npackages/workbench/src/cli/workspace.ts:6db3156e8ea60055b0e9da528e5a003b3ba77a91ca68b90d6b2240fcf878a56f\npackages/workbench/src/commands/checkpoint-export.ts:92d80eaf6898d85173e4ff49c0788f91a6d60c906d61c613835ef0fb86f1ed8c\npackages/workbench/src/test/artifact-use-fixture.ts:ec1e290deab239e530fb2dc95466710dc047f6dc8335d5362a0cd8be2101d23e\npackages/workbench/src/types/artifact-manifest.ts:bdc44a1a7678d8f3dea698b0841762ea56cb50074cc230adb4bed21ebf72b6f9\npackages/workbench/src/verifier/fixed-object.ts:ec7a40a01157034a5a376bbe095970497a1b6392d9b666ae28a6ecc18b4f4c04\npackages/workbench/src/verifier/isolated-files.ts:59f9d15ccb079d7f5c01820c3b4bdd91565cdc8ff71cd0c4adbbd939ed54e604",
+	"subject_sha": "86b63692f2e2ebd0e73076d6f85a314a9184f8da",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1"
+	},
+	"measured_at": "2026-10-25T13:51:51.195Z",
+	"reading": {
+		"exit": 0,
+		"pass": 38,
+		"fail": 0
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:2f49137153044d7886f5c958a13f32d3f80dd78c75012e07b7b78905d3507a0d",
+	"reproduce": "bun test packages/workbench/src/artifacts/manifest.test.ts packages/workbench/src/cli.test.ts --timeout 60000",
+	"class": "curated-evidence"
+}
