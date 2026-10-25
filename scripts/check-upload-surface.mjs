@@ -104,7 +104,7 @@ function readList(text) {
 }
 
 function git(args) {
-	return execFileSync("git", args, {
+	return execFileSync("git", ["-c", "core.quotepath=false", ...args], {
 		cwd: ROOT,
 		encoding: "utf8",
 		maxBuffer: 1 << 28,
