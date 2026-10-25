@@ -572,6 +572,37 @@
 				"cases": 16,
 				"tests": 3
 			}
+		},
+		{
+			"id": "claim-moat-input-origin",
+			"statement": "TF-0289 观察来源 schema 与读取关联区分工具返回内容、完整文件采样和调用者声明；旧日志、歧义范围及无效字段保持未知。本读数不证明生产捕获已绑定返回内容",
+			"instrument": [
+				"packages/workbench/src/blackboard/input-origin.test.ts",
+				"packages/workbench/src/blackboard/sessions.test.ts",
+				"packages/workbench/src/runtime/read-fragments.test.ts",
+				"packages/workbench/src/blackboard/session-types.ts",
+				"packages/workbench/src/blackboard/session-view.ts",
+				"packages/workbench/src/blackboard/claim-version.ts",
+				"packages/workbench/fixtures/artifact-use/cases.json"
+			],
+			"subject_paths": [
+				"packages/workbench/src/blackboard/input-origin.test.ts",
+				"packages/workbench/src/blackboard/sessions.test.ts",
+				"packages/workbench/src/runtime/read-fragments.test.ts",
+				"packages/workbench/src/blackboard/session-types.ts",
+				"packages/workbench/src/blackboard/session-view.ts",
+				"packages/workbench/src/blackboard/claim-version.ts",
+				"packages/workbench/fixtures/artifact-use/cases.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"pass": "number",
+				"fail": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts --timeout 60000",
+			"expected": { "exit": 0, "fail": 0 },
+			"minimum": { "pass": 17 }
 		}
 	]
 }
