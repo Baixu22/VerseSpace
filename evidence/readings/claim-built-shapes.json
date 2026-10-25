@@ -1,14 +1,14 @@
 {
 	"claim_id": "claim-built-shapes",
 	"instrument_sha256": "packages/workbench/scripts/build.ts:08d6527ce22db21914535fba21e680046e07a3a37cdb3a2787e7cf09d7ca3656\npackages/workbench/scripts/check-built.ts:2592b97987a2df9a1f9a1583fe18f6d9aef1f86470a7a3c8c871c3dca8f71b42",
-	"subject_sha": "fc62b9d9aebac375fb8c9c18d2bb0da0d7cbe1e1",
+	"subject_sha": "b11dedaa531a207ffee9f3f9c7b58545c2a25c00",
 	"environment": {},
-	"measured_at": "2026-10-12T01:29:28.265Z",
+	"measured_at": "2026-10-25T09:28:14.603Z",
 	"reading": {
 		"exit": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:1aee2393db1a86696ea399032541442f1a67788f183133f93beb3eee53d0a135",
+	"raw_digest": "sha256:a10d25f1b2561743a21be867726f0811434174207bca9a0216b354df6c593dcf",
 	"reproduce": "cd packages/workbench && bun run build && bun run test:build",
 	"class": "curated-evidence"
 }
