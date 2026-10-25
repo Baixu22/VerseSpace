@@ -8,6 +8,7 @@ import { verificationStrategySchema } from "./goal";
 import {
 	verificationEvidenceSchema,
 	verificationEvidenceSpecSchema,
+	verificationObjectSchema,
 } from "./verification-evidence";
 
 export const CHECKPOINT_LIFECYCLES = [
@@ -107,6 +108,13 @@ export const verificationContextSchema = z.object({
 	timeoutSeconds: z.number().positive(),
 	/** A human approval is not evidence that the declared command ran again. */
 	authority: z.enum(["command", "human"]),
+	fixedRunner: z
+		.object({
+			name: z.literal("node"),
+			version: z.string(),
+			executableHash: z.string().regex(/^[a-f0-9]{64}$/),
+		})
+		.optional(),
 	evidence: z
 		.object({
 			declared: verificationEvidenceSpecSchema,
@@ -181,6 +189,7 @@ export const checkpointSchema = z.object({
 			at: z.string(),
 			exitCode: z.number().int().nullable().optional(),
 			evidence: verificationEvidenceSchema.optional(),
+			object: verificationObjectSchema.optional(),
 		})
 		.optional(),
 	/** Verification can pass while applying the declared registry changes fails. */

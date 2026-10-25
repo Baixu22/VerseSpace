@@ -24,6 +24,14 @@ export const verificationEvidenceSpecSchema = z.object({
 	}),
 	/** Explicit non-sensitive config/lockfiles; values are never archived. */
 	inputs: z.array(evidencePathSchema).default([]),
+	/** Trusted offline Node script; the caller declares every local dependency. */
+	fixedFiles: z
+		.strictObject({
+			mode: z.literal("node-offline-files-v1"),
+			script: evidencePathSchema,
+			complete: z.literal(true),
+		})
+		.optional(),
 });
 export type VerificationEvidenceSpec = z.infer<
 	typeof verificationEvidenceSpecSchema
@@ -45,3 +53,38 @@ export const verificationEvidenceSchema = z.object({
 	reason: z.string(),
 });
 export type VerificationEvidence = z.infer<typeof verificationEvidenceSchema>;
+
+export const verificationObjectSchema = z.strictObject({
+	schemaVersion: z.literal(1),
+	mode: z.literal("node-offline-files-v1"),
+	sourceCwd: z.string(),
+	executedCwd: z.string(),
+	script: evidencePathSchema,
+	reportPath: evidencePathSchema,
+	bootstrapHash: z.string().regex(/^[a-f0-9]{64}$/),
+	files: z.array(
+		z.strictObject({
+			path: evidencePathSchema,
+			hash: z.string().regex(/^[a-f0-9]{64}$/),
+			bytes: z.number().int().nonnegative(),
+		}),
+	),
+	manifestHash: z.string().regex(/^[a-f0-9]{64}$/),
+	runner: z.strictObject({
+		name: z.literal("node"),
+		version: z.string(),
+		executableHash: z.string().regex(/^[a-f0-9]{64}$/),
+	}),
+	reportFile: evidencePathSchema.optional(),
+	reportHash: z
+		.string()
+		.regex(/^[a-f0-9]{64}$/)
+		.optional(),
+	copyBytes: z.number().int().nonnegative(),
+	copyMs: z.number().nonnegative(),
+	runMs: z.number().nonnegative(),
+	limitations: z.literal(
+		"Trusted declared offline files; no hostile-code sandbox or atomic source snapshot",
+	),
+});
+export type VerificationObject = z.infer<typeof verificationObjectSchema>;

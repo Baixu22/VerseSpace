@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import type { Blackboard } from "../blackboard";
 import { claimObservation } from "../blackboard/claim-version";
@@ -121,14 +122,27 @@ export async function checkArtifactUse(
 	const cwd = await workspotWorktreePath(bb, latest.workspot);
 	if (!cwd) return decision("检查工位不可读取");
 	const report = await collectVerificationEvidence(
-		cwd,
-		latest.verification.evidence,
+		latest.verificationResult.object
+			? join(bb.paths.checkpoints, "objects")
+			: cwd,
+		latest.verificationResult.object
+			? {
+					...latest.verification.evidence,
+					report: {
+						...latest.verification.evidence.report,
+						path: latest.verificationResult.object.reportFile!,
+					},
+				}
+			: latest.verification.evidence,
 		null,
 	);
 	if (
 		report.status !== "satisfied" ||
 		!report.reportHash ||
-		!isDeepStrictEqual(report, latest.verificationResult.evidence)
+		!isDeepStrictEqual(
+			{ ...report, reportPath: latest.verificationResult.evidence.reportPath },
+			latest.verificationResult.evidence,
+		)
 	)
 		return decision("实际报告与最新记录的范围、用例或 digest 不一致");
 	const artifactHash = latest.artifactBinding.files[root.artifact.path];
