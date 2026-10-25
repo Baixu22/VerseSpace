@@ -26,7 +26,7 @@ import { ChatThreads } from "./threads";
  * 按 `read:<相对路径>` 发一次真实工具调用、把 argv 落盘供断言。
  */
 const FAKE_AGENT = String.raw`
-const { appendFileSync } = require("node:fs");
+const { appendFileSync, readFileSync } = require("node:fs");
 const { join } = require("node:path");
 const args = process.argv.slice(1);
 appendFileSync(join(__dirname, "argv.log"), JSON.stringify(args) + "\n");
@@ -51,8 +51,11 @@ process.stdin.on("data", (chunk) => {
       turn += 1;
       const id = "read-" + turn + "-" + Math.random().toString(36).slice(2, 6);
       const target = join(process.cwd(), prompt.slice("read:".length).trim());
+      const content = readFileSync(target, "utf8");
+      const rows = content.split("\n");
       line({ type: "assistant", message: { content: [{ type: "tool_use", id, name: "Read", input: { file_path: target } }] } });
-      line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: id, content: "facts" }] } });
+      line({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: id, content: rows.map((row, index) => (index + 1) + "\t" + row).join("\n") }] },
+        tool_use_result: { type: "text", file: { filePath: target, content, startLine: 1, numLines: rows.length, totalLines: rows.length } } });
     }
     line({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] } });
     line({ type: "result", subtype: "success", result: "ok" });

@@ -575,7 +575,7 @@
 		},
 		{
 			"id": "claim-moat-input-origin",
-			"statement": "TF-0289 观察来源 schema 与读取关联区分工具返回内容、完整文件采样和调用者声明；旧日志、歧义范围及无效字段保持未知。本读数不证明生产捕获已绑定返回内容",
+			"statement": "TF-0289/0290 区分返回内容、文件采样与声明来源；Claude 聊天/批量捕获及 Codex 单文件 cat 成功结果绑定内容摘要，竞争标记不同、歧义保持未知，旧日志不升级",
 			"instrument": [
 				"packages/workbench/src/blackboard/input-origin.test.ts",
 				"packages/workbench/src/blackboard/sessions.test.ts",
@@ -583,6 +583,22 @@
 				"packages/workbench/src/blackboard/session-types.ts",
 				"packages/workbench/src/blackboard/session-view.ts",
 				"packages/workbench/src/blackboard/claim-version.ts",
+				"packages/workbench/src/blackboard/footprint-sample.ts",
+				"packages/workbench/src/blackboard/input-content.ts",
+				"packages/workbench/src/agents/capture.ts",
+				"packages/workbench/src/agents/capture.test.ts",
+				"packages/workbench/src/chat/claude-input.ts",
+				"packages/workbench/src/chat/claude-router.ts",
+				"packages/workbench/src/chat/codex-footprint.ts",
+				"packages/workbench/src/chat/codex-router.ts",
+				"packages/workbench/src/chat/input-capture.test.ts",
+				"packages/workbench/src/chat/input-capture-boundaries.test.ts",
+				"packages/workbench/src/chat/fork-inheritance.test.ts",
+				"packages/workbench/src/chat/tool-footprints.test.ts",
+				"packages/workbench/src/chat/codex-native-write.test.ts",
+				"packages/workbench/src/chat/codex-footprint.test.ts",
+				"packages/workbench/src/chat/fixtures/streams/claude/bash-and-edit.jsonl",
+				"packages/workbench/src/chat/fixtures/streams/codex/command-with-delta.jsonl",
 				"packages/workbench/fixtures/artifact-use/cases.json"
 			],
 			"subject_paths": [
@@ -592,6 +608,23 @@
 				"packages/workbench/src/blackboard/session-types.ts",
 				"packages/workbench/src/blackboard/session-view.ts",
 				"packages/workbench/src/blackboard/claim-version.ts",
+				"packages/workbench/src/blackboard/footprint-sample.ts",
+				"packages/workbench/src/blackboard/input-content.ts",
+				"packages/workbench/src/blackboard/footprint.ts",
+				"packages/workbench/src/agents/capture.ts",
+				"packages/workbench/src/agents/capture.test.ts",
+				"packages/workbench/src/chat/claude-input.ts",
+				"packages/workbench/src/chat/claude-router.ts",
+				"packages/workbench/src/chat/codex-footprint.ts",
+				"packages/workbench/src/chat/codex-router.ts",
+				"packages/workbench/src/chat/input-capture.test.ts",
+				"packages/workbench/src/chat/input-capture-boundaries.test.ts",
+				"packages/workbench/src/chat/fork-inheritance.test.ts",
+				"packages/workbench/src/chat/tool-footprints.test.ts",
+				"packages/workbench/src/chat/codex-native-write.test.ts",
+				"packages/workbench/src/chat/codex-footprint.test.ts",
+				"packages/workbench/src/chat/fixtures/streams/claude/bash-and-edit.jsonl",
+				"packages/workbench/src/chat/fixtures/streams/codex/command-with-delta.jsonl",
 				"packages/workbench/fixtures/artifact-use/cases.json"
 			],
 			"reading_shape": {
@@ -600,9 +633,9 @@
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts --timeout 60000",
+			"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts packages/workbench/src/chat/input-capture.test.ts packages/workbench/src/chat/input-capture-boundaries.test.ts packages/workbench/src/chat/fork-inheritance.test.ts packages/workbench/src/agents/capture.test.ts packages/workbench/src/chat/tool-footprints.test.ts packages/workbench/src/chat/codex-native-write.test.ts packages/workbench/src/chat/codex-footprint.test.ts --timeout 60000",
 			"expected": { "exit": 0, "fail": 0 },
-			"minimum": { "pass": 17 }
+			"minimum": { "pass": 42 }
 		}
 	]
 }
