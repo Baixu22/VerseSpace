@@ -1,3 +1,7 @@
+import {
+	createInputCoverage,
+	recordInputCoverage,
+} from "../blackboard/input-coverage";
 import { runClaudeTurn } from "./claude-turn";
 import { runCodexTurn } from "./codex-turn";
 import { runHttp } from "./http-run";
@@ -246,6 +250,12 @@ export function run(
 			emitTurn({ type: "error", message: String(error).slice(0, 400) });
 		} finally {
 			context.running.delete(id);
+			await recordInputCoverage(
+				context.bb,
+				id,
+				createInputCoverage("unobservable").finish(),
+				assistantMessageId,
+			);
 			const full = messageParts
 				.filter((p): p is { type: "text"; text: string } => p.type === "text")
 				.map((p) => p.text)

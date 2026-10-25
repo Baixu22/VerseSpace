@@ -1,4 +1,5 @@
 import type { Blackboard } from "../blackboard";
+import { inputCoverageView } from "../blackboard/input-coverage";
 import { diffReadSet } from "../runtime/read-set-diff";
 import { collectDecisionPoints } from "./ledger";
 import { UNNAMED_TITLE } from "./promote";
@@ -39,6 +40,11 @@ export async function collectRestoreView(
 	});
 	return {
 		meta,
+		inputCoverage: await inputCoverageView(
+			bb,
+			threadId,
+			meta.lastRun?.readObservability,
+		),
 		messages,
 		suggestions: suggestNext(messages),
 		decisionPoints: collectDecisionPoints(messages, meta),

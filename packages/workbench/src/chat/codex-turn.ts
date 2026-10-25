@@ -1,3 +1,7 @@
+import {
+	createInputCoverage,
+	recordInputCoverage,
+} from "../blackboard/input-coverage";
 import { createCodexRenderState, finalCodexParts } from "./codex-render-state";
 import { type CodexTurnState, routeCodexEvent } from "./codex-router";
 import { ensureCodexSession, resetCodexThreadToIdle } from "./codex-session";
@@ -52,6 +56,7 @@ export async function runCodexTurn(
 		render: createCodexRenderState(),
 		pendingFootprints: new Map(),
 		fpQueue: Promise.resolve(),
+		inputCoverage: createInputCoverage(),
 		undecidedEventTypes: new Set(),
 		emit,
 	};
@@ -79,6 +84,12 @@ export async function runCodexTurn(
 	// Finalize: drain footprint hashing, persist the assistant message, update
 	// meta, then arm the idle-close timer (same order as the claude lane).
 	await turn.fpQueue;
+	await recordInputCoverage(
+		context.bb,
+		id,
+		turn.inputCoverage!.finish(),
+		opts.messageId,
+	);
 	turn.pendingFootprints.clear();
 	if (turn.undecidedEventTypes.size > 0) {
 		console.warn(

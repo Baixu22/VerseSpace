@@ -1,4 +1,8 @@
 import {
+	createInputCoverage,
+	recordInputCoverage,
+} from "../blackboard/input-coverage";
+import {
 	createClaudeRenderState,
 	finalClaudeParts,
 } from "./claude-render-state";
@@ -50,6 +54,7 @@ export async function runClaudeTurn(
 		stderr: "",
 		pendingFootprints: new Map(),
 		fpQueue: Promise.resolve(),
+		inputCoverage: createInputCoverage(),
 		sawInit: false,
 		finished: false,
 		noticeAcked: opts.precedingNotices.length === 0,
@@ -118,6 +123,12 @@ export async function runClaudeTurn(
 	await turn.fpQueue;
 	await turn.inheritancePromise;
 	await turn.noticeAckPromise;
+	await recordInputCoverage(
+		context.bb,
+		id,
+		turn.inputCoverage!.finish(),
+		opts.messageId,
+	);
 	// Unfinished tool calls remain in the transcript, never in the read/write
 	// ledger. A result-less attempt is not proof that a tool ran.
 	turn.pendingFootprints.clear();

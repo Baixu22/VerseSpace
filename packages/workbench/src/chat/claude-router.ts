@@ -5,6 +5,7 @@ import { acknowledgeClaudeNotices } from "./claude-ack";
 import { claudeReturnedInput } from "./claude-input";
 import { reduceClaudeRenderEvent } from "./claude-render-state";
 import type { LiveClaudeSession } from "./claude-types";
+import { observeClaudeCandidates } from "./input-coverage-events";
 import type { ThreadContext } from "./thread-context";
 import {
 	inheritParentFootprint,
@@ -46,6 +47,7 @@ export function registerTurnRouter(
 		}
 		startInheritanceObservation(context, id, session, event);
 
+		if (turn.inputCoverage) observeClaudeCandidates(turn.inputCoverage, event);
 		const render = reduceClaudeRenderEvent(turn, event);
 		if (render.decision === "undecided") {
 			turn.undecidedEventTypes.add(render.decisionKey);
@@ -128,10 +130,18 @@ function recordToolResultFootprint(
 	event: Record<string, unknown>,
 ): void {
 	const toolCallId = String(block.tool_use_id ?? "");
+	if (turn.inputCoverage && !turn.inputCoverage.acceptResult(toolCallId))
+		return;
 	const footprint = turn.pendingFootprints.get(toolCallId);
-	if (!footprint) return;
+	if (!footprint) {
+		turn.inputCoverage?.settle(toolCallId, block.is_error === true ? null : []);
+		return;
+	}
 	turn.pendingFootprints.delete(toolCallId);
-	if (block.is_error === true) return;
+	if (block.is_error === true) {
+		turn.inputCoverage?.settle(toolCallId, null);
+		return;
+	}
 	const returned = claudeReturnedInput(
 		context.bb.projectRoot,
 		footprint,
@@ -158,6 +168,7 @@ function recordToolResultFootprint(
 			);
 		}
 		await context.bb.sessions.recordActivity(id, footprint);
+		turn.inputCoverage?.settle(toolCallId, footprint.used);
 	});
 }
 

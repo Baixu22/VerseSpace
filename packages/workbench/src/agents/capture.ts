@@ -6,8 +6,13 @@ import {
 	type ParsedStreamFootprint,
 } from "../blackboard/footprint";
 import { captureReturnedInput } from "../blackboard/footprint-sample";
+import {
+	createInputCoverage,
+	recordInputCoverage,
+} from "../blackboard/input-coverage";
 import { writerSpoolDir } from "../blackboard/sessions";
 import { claudeReturnedInput } from "../chat/claude-input";
+import { observeClaudeCandidates } from "../chat/input-coverage-events";
 import { foldAndAssess } from "../tribunal/lane-distress";
 import { extractUsage } from "./usage";
 
@@ -20,6 +25,7 @@ export async function createAgentCapture(
 ) {
 	const pending = new Map<string, ParsedStreamFootprint>();
 	const seen = new Set<string>();
+	const coverage = createInputCoverage();
 	let queue: Promise<void> = Promise.resolve();
 	let laneMetrics = await bb.metrics.get(workspotId);
 	let dirty = false;
@@ -45,6 +51,7 @@ export async function createAgentCapture(
 		} catch {
 			return;
 		}
+		observeClaudeCandidates(coverage, event);
 		const sample = extractUsage(event);
 		if (sample) {
 			if (sample.failed) {
@@ -87,11 +94,18 @@ export async function createAgentCapture(
 			for (const block of content) {
 				if (block.type !== "tool_result") continue;
 				const toolCallId = String(block.tool_use_id ?? "");
+				if (!coverage.acceptResult(toolCallId)) continue;
 				const fp = pending.get(toolCallId);
-				if (!fp) continue;
+				if (!fp) {
+					coverage.settle(toolCallId, block.is_error === true ? null : []);
+					continue;
+				}
 				pending.delete(toolCallId);
 				// A rejected tool did not observe or generate the requested file.
-				if (block.is_error === true) continue;
+				if (block.is_error === true) {
+					coverage.settle(toolCallId, null);
+					continue;
+				}
 				const returned = claudeReturnedInput(worktree, fp, block, event);
 				enqueue(async () => {
 					for (const used of fp.used) {
@@ -113,6 +127,7 @@ export async function createAgentCapture(
 						);
 					}
 					await bb.sessions.recordActivity(writerId, fp);
+					coverage.settle(toolCallId, fp.used);
 				});
 			}
 		}
@@ -122,6 +137,7 @@ export async function createAgentCapture(
 		line,
 		async finish(): Promise<string | undefined> {
 			await queue;
+			await recordInputCoverage(bb, writerId, coverage.finish());
 			if (recordingError) throw recordingError;
 			await flushUsage();
 			// Raw stream logs retain attempts; only successful tool results are
