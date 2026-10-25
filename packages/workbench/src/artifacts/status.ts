@@ -2,6 +2,7 @@ import type { Blackboard } from "../blackboard";
 import { hashText } from "../hash";
 import { verificationStalenessReason } from "../runtime/verification-binding";
 import type { Checkpoint } from "../types/checkpoint";
+import { type ArtifactFacts, artifactFacts } from "./facts";
 
 export interface ArtifactReview {
 	rootId: string;
@@ -19,6 +20,9 @@ export interface ArtifactReview {
 	writerId?: string;
 	threadId?: string;
 	refs: string[];
+	facts?: ArtifactFacts;
+	/** Legacy no-record declarations retain scope-check semantics, not provenance proof. */
+	evidenceStrength?: "observed-origin-and-scope" | "declared-scope" | "unknown";
 }
 
 /** Immutable checkpoint history + current files; reading never acknowledges a task. */
@@ -43,6 +47,7 @@ export async function listArtifactReviews(
 					b.timestamp.localeCompare(a.timestamp) || b.id.localeCompare(a.id),
 			)[0]!;
 			const artifact = cp.artifact!;
+			const facts = await artifactFacts(bb, root, cp);
 			let status: ArtifactReview["status"] = "unknown";
 			let reason = "声明范围、来源或验证绑定不完整";
 			if (cp.lifecycle === "draft" || cp.lifecycle === "pending") {
@@ -54,6 +59,7 @@ export async function listArtifactReviews(
 			} else if (cp.verificationBindingIssue) {
 				reason = cp.verificationBindingIssue;
 			} else if (
+				(cp.lifecycle === "verified" || cp.lifecycle === "applied") &&
 				cp.artifactBinding &&
 				cp.verificationResult?.status === "passed" &&
 				cp.verificationResult.evidence?.status === "satisfied" &&
@@ -62,6 +68,15 @@ export async function listArtifactReviews(
 				const stale = await verificationStalenessReason(bb, cp);
 				status = stale ? "stale" : "current";
 				reason = stale ?? "本工位声明产物与输入的检查范围已满足";
+				if (
+					!stale &&
+					root.artifact?.inputRecords &&
+					facts.origin.strength !== "tool-observed"
+				) {
+					status = "unknown";
+					reason =
+						"所选历史输入来源不是完整工具观察；当前范围检查与来源未知分别保留";
+				}
 			}
 			const targetStatus =
 				status === "current" &&
@@ -91,6 +106,13 @@ export async function listArtifactReviews(
 				checkedAt: cp.verificationResult?.at,
 				writerId: cp.writerId,
 				threadId: cp.threadId,
+				facts,
+				evidenceStrength:
+					status !== "current"
+						? "unknown"
+						: facts.origin.strength === "tool-observed"
+							? "observed-origin-and-scope"
+							: "declared-scope",
 				refs: [...new Set([root.id, cp.id])],
 			};
 		}),
@@ -107,7 +129,13 @@ export async function reconcileArtifacts(bb: Blackboard): Promise<void> {
 	}
 	for (const review of await listArtifactReviews(bb)) {
 		const signature = hashText(
-			JSON.stringify([review.checkpointId, review.status, review.reason]),
+			JSON.stringify([
+				review.checkpointId,
+				review.status,
+				review.reason,
+				review.facts,
+				review.evidenceStrength,
+			]),
 		);
 		if (previous.get(review.rootId) === signature) continue;
 		await bb.events.append({
