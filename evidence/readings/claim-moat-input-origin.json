@@ -1,20 +1,20 @@
 {
 	"claim_id": "claim-moat-input-origin",
-	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/src/blackboard/claim-version.ts:228b81413c237c98a75120ad1e916a0e61d80f2ef9ef4cd965aa7eef447d3c4e\npackages/workbench/src/blackboard/input-origin.test.ts:c52b0ab0b8a7badf9da5c89ac0755ac8fca2983b28f1fdbb3e33cdc189d433a0\npackages/workbench/src/blackboard/session-types.ts:cc6901a3f494b84adbe52d70ebf365b8e29dcca699dd3a813b79858e0f46f4fd\npackages/workbench/src/blackboard/session-view.ts:4d2f39063806eed33dd2ee0a9ade220f01095f42c6845e4e16dc30e5058f93e9\npackages/workbench/src/blackboard/sessions.test.ts:0c93a08c116247f6f1fb59be1329656c51256e74e70cf145517056cd717a3327\npackages/workbench/src/runtime/read-fragments.test.ts:ce02b50b57447a37675cc71768abdefe6ee49bf8bd7bc3772ce03807a2014b7c",
-	"subject_sha": "489111bf74aa682a397f1cb910034b0c01eb3e5b",
+	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/src/agents/capture.test.ts:790aea627d7dbc7437a01216b2f754aafb69a8fc7c81afe73e5e03a7f54e2dd4\npackages/workbench/src/agents/capture.ts:e782619d4e80a169696511a86f318581ccb7dc7b5479838de13aa5ae58e051c5\npackages/workbench/src/blackboard/claim-version.ts:228b81413c237c98a75120ad1e916a0e61d80f2ef9ef4cd965aa7eef447d3c4e\npackages/workbench/src/blackboard/footprint-sample.ts:bc06571e4f6c9c3d7da4b01d4b4e8fdd5ea40fd6aeb5537c654acb566b0297b7\npackages/workbench/src/blackboard/input-content.ts:08c47ba60658a3fa4ca420034c320bc01732a9a3105eaa710f6a4da1f45abaae\npackages/workbench/src/blackboard/input-origin.test.ts:c52b0ab0b8a7badf9da5c89ac0755ac8fca2983b28f1fdbb3e33cdc189d433a0\npackages/workbench/src/blackboard/session-types.ts:cc6901a3f494b84adbe52d70ebf365b8e29dcca699dd3a813b79858e0f46f4fd\npackages/workbench/src/blackboard/session-view.ts:489a3bfddf258562641c2655a703442c613b1e6c162932be94fa6632b7b59f09\npackages/workbench/src/blackboard/sessions.test.ts:0c93a08c116247f6f1fb59be1329656c51256e74e70cf145517056cd717a3327\npackages/workbench/src/chat/claude-input.ts:0bc2f9c4c72e628dc58013fafe5230355ce060262c5b512aa66615fff4fa1379\npackages/workbench/src/chat/claude-router.ts:3c804b59b572e7eb1b987cbe8f0eef0f6451a823fba1a6a8829f5d128badcc1d\npackages/workbench/src/chat/codex-footprint.test.ts:fa2e62d4a1c626d70cb8b1600808d21bf6d83ab7cfeb91329a5eb0a544f17020\npackages/workbench/src/chat/codex-footprint.ts:6f0e521bc891dac28eeba27aa5191f75c49b18fde755f4322ece0af25b65bc65\npackages/workbench/src/chat/codex-native-write.test.ts:caa29cf22903ec85194d53eb89bc8b9e2806d4595f3311cfb36d0d8a909798ac\npackages/workbench/src/chat/codex-router.ts:62e8f8937554ed3a8096350a3f615b62b737556eceb7a84f2bb52cf91f40895d\npackages/workbench/src/chat/fixtures/streams/claude/bash-and-edit.jsonl:cc846c5d3ed556aa9b9a85f03ec5aaacb3ad9be1ffa85cbdcd35a08efe2cfd27\npackages/workbench/src/chat/fixtures/streams/codex/command-with-delta.jsonl:e35aca8e53a73142b1c44bf2c1c00299058b0645614b7bd8bdb0659c8eefed12\npackages/workbench/src/chat/fork-inheritance.test.ts:ec9665c4f5af1f5802972f7d15f84ec2744e6aa67d13d8501b715ce0613a7c73\npackages/workbench/src/chat/input-capture-boundaries.test.ts:31fb4f8a7af61ae553e5b58a266e222b21c349b03eb0924c977269e9907e6b99\npackages/workbench/src/chat/input-capture.test.ts:94b0977b596ee23115e74a6c372d9f84a730f6235893d5f3358db5ba1708d12c\npackages/workbench/src/chat/tool-footprints.test.ts:8b1f5fea4b9a955ae4485ef4bc2cb3c4ca66f7e6e459d07572891b6438564666\npackages/workbench/src/runtime/read-fragments.test.ts:ce02b50b57447a37675cc71768abdefe6ee49bf8bd7bc3772ce03807a2014b7c",
+	"subject_sha": "813410fa6986073272fc6a9cffc2b6cef9fc68d9",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T10:45:42.616Z",
+	"measured_at": "2026-10-25T11:12:19.313Z",
 	"reading": {
 		"exit": 0,
-		"pass": 17,
+		"pass": 42,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:c0f3180663ac0334406b13cf9c737ce4063892b18b454fe1596a9cdcecbd52d9",
-	"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts --timeout 60000",
+	"raw_digest": "sha256:195ff1749ac382227bc153d35192af6c00b9ecdfec7aa5020e70aff9fd7455fb",
+	"reproduce": "bun test packages/workbench/src/blackboard/input-origin.test.ts packages/workbench/src/blackboard/sessions.test.ts packages/workbench/src/runtime/read-fragments.test.ts packages/workbench/src/chat/input-capture.test.ts packages/workbench/src/chat/input-capture-boundaries.test.ts packages/workbench/src/chat/fork-inheritance.test.ts packages/workbench/src/agents/capture.test.ts packages/workbench/src/chat/tool-footprints.test.ts packages/workbench/src/chat/codex-native-write.test.ts packages/workbench/src/chat/codex-footprint.test.ts --timeout 60000",
 	"class": "curated-evidence"
 }
