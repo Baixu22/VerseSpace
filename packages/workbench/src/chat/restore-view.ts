@@ -1,3 +1,4 @@
+import { artifactReviewProjection } from "../artifacts/projection";
 import type { Blackboard } from "../blackboard";
 import { inputCoverageView } from "../blackboard/input-coverage";
 import { diffReadSet } from "../runtime/read-set-diff";
@@ -40,6 +41,7 @@ export async function collectRestoreView(
 	});
 	return {
 		meta,
+		artifactReviews: await artifactReviewProjection(bb, threadId),
 		inputCoverage: await inputCoverageView(
 			bb,
 			threadId,

@@ -862,7 +862,7 @@
 		},
 		{
 			"id": "claim-moat-portable-evidence",
-			"statement": "TF-0301/0302 稳定清单不导出目录、配置值、命令或副作用；独立接收方在显式工位校验实际文件/报告/目标，使用自己的既有策略形成新检查并保留外部来源，原效果不重放",
+			"statement": "TF-0301/0302/0303：单产物清单、独立接收重验和 CLI/MCP/恢复的同一有限事实投影；查询不写有效性，摘要保留五状态计数/总量和展示 refs；发送者来源不替代本机检查或授权效果",
 			"instrument": [
 				"packages/workbench/src/artifacts/manifest.ts",
 				"packages/workbench/src/artifacts/manifest-codec.ts",
@@ -883,7 +883,14 @@
 				"packages/workbench/src/test/manifest-fixture.ts",
 				"packages/workbench/src/commands/checkpoint-receive.ts",
 				"packages/workbench/src/artifacts/revalidate.ts",
-				"packages/workbench/src/types/checkpoint.ts"
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/artifacts/projection.ts",
+				"packages/workbench/src/artifacts/projection.test.ts",
+				"packages/workbench/src/mcp/tools.ts",
+				"packages/workbench/src/mcp/resume-card.ts",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/chat/resume-card/l1-summary.ts",
+				"packages/workbench/src/commands/checkpoint.ts"
 			],
 			"subject_paths": [
 				"packages/workbench/src/artifacts/manifest.ts",
@@ -905,7 +912,14 @@
 				"packages/workbench/src/test/manifest-fixture.ts",
 				"packages/workbench/src/commands/checkpoint-receive.ts",
 				"packages/workbench/src/artifacts/revalidate.ts",
-				"packages/workbench/src/types/checkpoint.ts"
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/artifacts/projection.ts",
+				"packages/workbench/src/artifacts/projection.test.ts",
+				"packages/workbench/src/mcp/tools.ts",
+				"packages/workbench/src/mcp/resume-card.ts",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/chat/resume-card/l1-summary.ts",
+				"packages/workbench/src/commands/checkpoint.ts"
 			],
 			"reading_shape": {
 				"exit": "number",
@@ -913,13 +927,13 @@
 				"fail": "number"
 			},
 			"class": "L1",
-			"reproduce": "bun test packages/workbench/src/artifacts/manifest.test.ts packages/workbench/src/artifacts/receive.test.ts packages/workbench/src/cli.test.ts --timeout 60000",
+			"reproduce": "bun test packages/workbench/src/artifacts/manifest.test.ts packages/workbench/src/artifacts/receive.test.ts packages/workbench/src/artifacts/projection.test.ts packages/workbench/src/cli.test.ts --timeout 60000",
 			"expected": {
 				"exit": 0,
 				"fail": 0
 			},
 			"minimum": {
-				"pass": 42
+				"pass": 47
 			}
 		}
 	]
