@@ -1,0 +1,20 @@
+{
+	"claim_id": "claim-moat-artifact-origin",
+	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/src/artifacts/artifacts.test.ts:c1afc234ebe260997abbee9ef814e9f9256c0a60cbed5ba1f1a3280e0169c359\npackages/workbench/src/artifacts/input-origin.test.ts:e2e7b2b96ea69db951ca958a01696deb6d8590e3225276bc4e2b1c01cf1dd408\npackages/workbench/src/artifacts/input-origin.ts:eb8cb256d812146d2522baf6428125d1ea5061a0cda86343165f3db1761044ba\npackages/workbench/src/artifacts/revalidate.ts:2241111187e9b046dff41399105aaf733fc83877db596f439303117295f09d0c\npackages/workbench/src/artifacts/snapshot.ts:7294856f7349cd04d7b05239e734501ff80ef4fbe3f5161490282f45f56adb58\npackages/workbench/src/artifacts/status.ts:0f66aea5b438b0258fec8179ee66ecf90561fb5e56c0b5c0c88eae46e2b1b69e\npackages/workbench/src/blackboard/session-types.ts:81c476e1ab3d09591572835a8f5a5c2646f3a74657d1ba9406853838f8f20fa7\npackages/workbench/src/cli/workspace.ts:ce283a9e88a26b63d840dc416ea55c7762077828f8ca80c170b65a5a5b80bc75\npackages/workbench/src/commands/checkpoint.ts:817b5f73e155e9dce53625e0302145330946990c07c949f679d4d3de11e34160\npackages/workbench/src/runtime/verify-checkpoint.ts:09f20ac74272bbaa9d4cca3f1d4512ce1878310f584c1ac518e03805d0837469\npackages/workbench/src/types/artifact-evidence.ts:983a13806c7563e1e1b809d2a64c73eac241f458a10e15f62f992709abea65e1\npackages/workbench/src/types/checkpoint.ts:2102e5924e8fa13534a84bb5d42d37967e66e3b83e719500a1ce861b47eadf48",
+	"subject_sha": "56f019534d35c376bed7b39d70356c07159e96a6",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1"
+	},
+	"measured_at": "2026-10-25T11:41:55.913Z",
+	"reading": {
+		"exit": 0,
+		"pass": 6,
+		"fail": 0
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:eebbe1f12656be74db3208b548cd391c30bae579ef0219d2919bcda9a5f96182",
+	"reproduce": "bun test packages/workbench/src/artifacts/input-origin.test.ts packages/workbench/src/artifacts/artifacts.test.ts --timeout 60000",
+	"class": "curated-evidence"
+}
