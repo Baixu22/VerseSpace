@@ -408,7 +408,36 @@
 		},
 		{
 			"id": "claim-codex-native-seal",
-			"statement": "显式原生工具的隔离 Codex profile：own-fresh 放行且有写足迹，own-stale 封印阻断且无写足迹，两者无复读；不是全通道写保护保证",
+			"statement": "历史观测（Codex 0.159.0）：显式原生工具的隔离 profile 曾测得 own-fresh 放行且有写足迹、own-stale 封印阻断且无写足迹、两者无复读；仅解释该历史版本，不代表当前 Codex",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-native-pair.ts",
+				"packages/workbench/scripts/verify/codex-write-seal.ts",
+				"packages/workbench/scripts/verify/codex-seal-baseline.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/**",
+				"packages/workbench/scripts/verify/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": {
+				"passed": "number",
+				"total": "number"
+			},
+			"class": "L3",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
+			"retired_reason": "Codex 0.159.0 的正面对照保留为历史观测；当前 26.1021 隔离 profile 显示 stale 原生写仍落盘且无 seal 事件，另立当前缺口声明，不把旧版本读数升级为当前通过。",
+			"expected": {
+				"passed": 2,
+				"total": 2
+			},
+			"docs": ["docs/handoff/2026-10-01-issue-relay-closeout.md"]
+		},
+		{
+			"id": "claim-codex-native-seal-current-gap",
+			"statement": "当前 Codex 26.1021 + 隔离显式 freeform profile：own-fresh 原生写落盘且有 1 条写足迹，own-stale 原生写也落盘、无 seal 事件且冻结控制判 block；当前通道没有通过写保护声明",
 			"instrument": [
 				"packages/workbench/scripts/verify/codex-native-pair.ts",
 				"packages/workbench/scripts/verify/codex-write-seal.ts",
@@ -427,12 +456,13 @@
 				"total": "number"
 			},
 			"class": "L1",
+			"expects_nonzero_exit": true,
 			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
 			"expected": {
-				"passed": 2,
+				"passed": 0,
 				"total": 2
 			},
-			"docs": ["docs/handoff/2026-10-01-issue-relay-closeout.md"]
+			"docs": ["docs/handoff/2026-10-26-workbench-0.5.0-candidate.md"]
 		},
 		{
 			"id": "claim-upload-surface-tests",

@@ -10,6 +10,9 @@
 
 **方式二：npm 形态**（需要 Bun ≥ 1.3）——**尚未发布**。2026-09-16 核实公开 registry 上 `@baixu22/workbench` 返回 404，下列命令在包正式发布前不可用，请改用方式一。
 
+当前源码候选是 `0.5.0`，尚未打 tag 或发布；公开 Release 仍是 `0.4.1`。因此下载到的
+旧二进制不包含本 README 描述的流水线、便携证据与恢复卡产物事实能力。
+
 ```bash
 # 以下命令仅在包发布后可用；当前执行会 404
 bunx @baixu22/workbench --help
@@ -28,7 +31,7 @@ bun run release:tag:workbench
 bun run release:tag:workbench --push
 ```
 
-**本仓库不配置 CI**（[ADR-0021](../../docs/decisions/0021-retire-all-ci-channels.md)）：极狐的 verify 与 release 两个 stage 都已随 `.gitlab-ci.yml` 删除。发版分三步且顺序不能换：先推 tag（`bun run release:tag:workbench --push`，发布脚本带 `--verify-tag`），再构建，最后上传——在仓库根目录运行 `bun run --cwd packages/workbench build:all`，再跑 `node scripts/publish-workbench-release.mjs --tag workbench-v0.4.1`（0.4.0 就是这么发的）。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。向 `jihulab` 推同树快照 tag 的那段遗留逻辑已于 2026-09-26 删除（[ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)）；如果本机还配着 `jihulab` remote，仓库里已没有任何东西在用它。
+**本仓库不配置 CI**（[ADR-0021](../../docs/decisions/0021-retire-all-ci-channels.md)）：极狐的 verify 与 release 两个 stage 都已随 `.gitlab-ci.yml` 删除。发版分三步且顺序不能换：先推 tag（`bun run release:tag:workbench --push`，发布脚本带 `--verify-tag`），再构建，最后上传——在仓库根目录运行 `bun run --cwd packages/workbench build:all`，再跑 `node scripts/publish-workbench-release.mjs --tag workbench-v0.5.0`。该 `0.5.0` 命令只是候选版本的后续发布路径，本轮未执行 tag push 或 Release。**推送 tag 是真实发布动作**，先确认 `packages/workbench/package.json` 的 version 与 CHANGELOG 已经更新。根目录只保留 `release:tag:workbench`；旧 Helmor 的 `release:tag` 与 `v*` 发布流程已随 ADR-0015 退役。向 `jihulab` 推同树快照 tag 的那段遗留逻辑已于 2026-09-26 删除（[ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)）；如果本机还配着 `jihulab` remote，仓库里已没有任何东西在用它。
 
 ## 编排操作示例
 
@@ -75,6 +78,18 @@ workbench watch
 
 命令退出成功但报告未更新、损坏、零用例、缺用例或含跳过时，历史退出结果保留，当前验证不能满足声明范围。产物依赖来自明确声明，不从先读后写推断因果。输入、产物、执行条件变化后，`checkpoint list --json` 和恢复卡显示待重验；重读输入不能清除产物事项。
 
+`checkpoint export <id> --output evidence.json` 只导出严格 1 MB 内的相对路径、摘要、来源
+强度、完整固定文件范围、报告与目标身份；不携带 cwd、command、配置值或 effects。
+`checkpoint receive <manifest> --checkpoint <local-id> --workspot <id> --report <path>` 在
+接收方显式工位核对实际字节和本机策略；`--revalidate` 只运行接收方已有固定文件策略，
+不执行发送方命令或重放效果。外部来源只是待复核主张，不替代本机工具足迹。
+
+`checkpoint list --artifact-view --writer <writer-or-thread> --json`、MCP
+`resume_cards { "view": "artifacts" }` 与恢复 GET 的 `artifactReviews` 使用同一受限
+投影。每条分别保留 current / stale / pending / failed / unknown、来源强度、输入
+匹配、最近检查、目标状态与 `checkpoint revalidate` 命令；投影上限不是整个线程历史的
+容量保证。查看和复制命令不写有效性事实。
+
 `checkpoint revalidate <checkpoint-id> [--workspot <id>] [--target-ref <ref>] --json` 在明确工位执行同一声明检查，生成新 checkpoint，不重放旧账本效果。历史 applied/done 保留，产物当前状态独立显示；无需改代码而重验通过也是有效结果。交接保留原始来源与本次执行位置。`currentArtifact.targetStatus` 将目标输入匹配、不同与未知分开：旧工位检查通过不等于适用于已经推进的 main，即使输入匹配也未证明合并结果。
 
 `sessions show --writer <id> --json` 的 `readFragments[].strength` 区分内容 hash、size-only 与 unknown；恢复卡同样展示强度。超过 2 MB 仍只比大小，同尺寸改写不可测；64 KB / 每写者 20 份快照的上限不变，快照缺失保守提示。范围按坐标和版本处理，不保证符号移动追踪或未知工具覆盖。
@@ -90,7 +105,7 @@ workbench watch
 | `decision add` | 追加架构决策（不可改） |
 | `interface register/list/check` | 接口注册表与 hash 漂移检查 |
 | `ws create/list/reassign/status` | 工位（git worktree 绑定）管理 |
-| `checkpoint create/list/review/revalidate` | 三区 checkpoint 与独立产物重验 |
+| `checkpoint create/list/review/revalidate/export/receive/consume` | 三区 checkpoint、独立产物重验、便携证据核对与单次消费 |
 | `dispatch <goal> [ws]` | 派发就绪目标到空闲工位 |
 | `sync` | 手动跑一轮 Runtime 循环 |
 | `watch` | 后台监听，文件变化自动跑循环 |
@@ -162,7 +177,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 | --- | --- |
 | `premises` | 默认查询待投递通知；`view=current` 重新核对当前失效输入，独立于投递状态 |
 | `footprints` | agent 实际读/写了哪些文件（足迹账本） |
-| `resume_cards` | 线程在离开期间发生了什么（读集 diff、恢复笔记、分支动静） |
+| `resume_cards` | 线程在离开期间发生了什么；默认读集/恢复笔记/分支动静，`view=artifacts` 读取同一有限产物投影 |
 | `tribunal` | 裁决队列里有什么在等人类决策 |
 | `notices` | 通知投递情况（已投递 / 待投递） |
 

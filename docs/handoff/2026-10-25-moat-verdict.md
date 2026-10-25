@@ -56,7 +56,9 @@ tests、产物来源 9 tests、消费门 57 tests，均为 exit 0 / 0 fail。其
 - Windows 是本轮唯一的执行证据。四个交编二进制仍应保留和披露，但非 Windows 实机
   执行与自然真人研究按 ADR-0024 永久退役；退役不是 pass。
 - 历史 `claim-codex-write-unsealed` / `claim-codex-write-seal-gap` 仍是旧范围
-  observation，不升级为当前密封保证。
+  observation，不升级为当前密封保证。Codex 0.159 的原生正面对照同样保留为历史；
+  当前 26.1021 隔离 profile 的 fresh/stale 原生写均落盘且无 seal 事件，另以负向
+  `claim-codex-native-seal-current-gap` 记录。
 - 合成 1k/10k/50k ledger 是已测工作量，不是容量上限，也不证明索引/数据库方案。
 
 `node scripts/verify/moat-verdict.mjs` 当前 exit 0：9/9 moat claims valid。完整
