@@ -1,0 +1,11 @@
+{
+	"schemaVersion": 1,
+	"planDigest": "74d54253d768ff5074aa3e837c670c55be2ce70d578a477904acc18ab2f662ff",
+	"observerSha256": {
+		"run.ts": "ca2dd26bc92c734976c1b4e32d86f0041757eed3376b5c02674633f4f5459b3f",
+		"fixture.ts": "e0bcac56af6b6617c6e6e9b7b492835dff96ddeb26a64988703a4a4dc2514b2e",
+		"stats.ts": "5ddfa1cd9062fdb1c445112dc04aea90112898753180219b92a902c9b44efac2",
+		"../naive.mjs": "e23288bdedd2535d66adc094bd3ffdb63c6440bdaa6efcd587490d81439057eb",
+		"../../../../fixtures/artifact-use/check.cjs": "71a4109a9b9d20aba5fd6d8c4aefac816c474527508e8798d200286885bc5b2f"
+	}
+}
