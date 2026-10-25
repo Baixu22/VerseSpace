@@ -1,13 +1,13 @@
 {
 	"claim_id": "claim-moat-oracle",
 	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/fixtures/artifact-use/check.cjs:71a4109a9b9d20aba5fd6d8c4aefac816c474527508e8798d200286885bc5b2f\npackages/workbench/fixtures/artifact-use/freeze.json:064dc5f91e32df6f34e8852dec3de937be5b873ddd02a1b6f051baa522ffe4c7\npackages/workbench/scripts/verify/artifact-use/check-freeze.mjs:9991cfa239d799f07aefc3ac60300d17b82795e7d009b8f579aa21fb8f38ceeb\npackages/workbench/scripts/verify/artifact-use/frozen-source.mjs:1381671d379316e302a0207b77c4447472e29624d5b8312b070c9fd4e2090c82\npackages/workbench/scripts/verify/artifact-use/judge.mjs:1d578185d88bc50cb31be033c6a376107b15ad44ba3e841078ebfa04ea572d57\npackages/workbench/scripts/verify/artifact-use/judge.test.mjs:c4a54ec5c525528017dc232aa0f5e37cd962896c6f2b6ec1e7f6bf14bf09f334\npackages/workbench/scripts/verify/artifact-use/naive.mjs:e23288bdedd2535d66adc094bd3ffdb63c6440bdaa6efcd587490d81439057eb\npackages/workbench/scripts/verify/artifact-use/run.ts:301e73255843e2a6db57d5f16728e6d5f6df2ca1bcc0fdcb681ec6ee646ec5cd\npackages/workbench/scripts/verify/artifact-use/workbench.ts:0437d6df26cbd06ef1802782746d39fa0554724ea673bd2d89ea7f407d7e6d25",
-	"subject_sha": "05f3b3f306f3bbbe971190fedf0b973509789bb9",
+	"subject_sha": "ebdffbaf5b5ac774484c0fc81dd6eba61906012f",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T10:20:39.288Z",
+	"measured_at": "2026-10-25T15:39:01.630Z",
 	"reading": {
 		"exit": 0,
 		"cases": 16,
@@ -18,7 +18,7 @@
 		"repeatNativeChecks": 4
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:aa71a228a632a742a1c6968cfd3968c3cbf27d08f8ecf8949efae129e676d7d8",
+	"raw_digest": "sha256:c1a5a477a23027f67532cb2eebb40fef27d57effd6f1a2dfcbc29e67b328febc",
 	"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/run.ts --frozen-baseline",
 	"class": "curated-evidence"
 }
