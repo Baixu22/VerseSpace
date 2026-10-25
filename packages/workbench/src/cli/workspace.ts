@@ -100,6 +100,10 @@ export function registerWorkspace(program: Command): void {
 		)
 		.option("--artifact <path>", "single artifact relative to the workspot")
 		.option("--input <paths...>", "explicit artifact input dependencies")
+		.option(
+			"--input-records <json-file>",
+			"explicit path/writerId/footprintSeq/selector read-record selections",
+		)
 		.option("--target-ref <ref>", "explicit handoff target ref")
 		.option("--writer <id>", "writer responsible for this artifact")
 		.option("--thread <id>", "thread to show artifact evidence in")

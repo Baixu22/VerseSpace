@@ -669,6 +669,54 @@
 			"minimum": {
 				"pass": 49
 			}
+		},
+		{
+			"id": "claim-moat-artifact-origin",
+			"statement": "TF-0293 显式历史输入记录选择独立于 checkpoint 创建时采样；晚登记、复读和重验保留原记录，歧义选择未知，旧日志不升级",
+			"instrument": [
+				"packages/workbench/src/types/artifact-evidence.ts",
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/blackboard/session-types.ts",
+				"packages/workbench/src/artifacts/input-origin.ts",
+				"packages/workbench/src/artifacts/input-origin.test.ts",
+				"packages/workbench/src/artifacts/snapshot.ts",
+				"packages/workbench/src/artifacts/status.ts",
+				"packages/workbench/src/artifacts/revalidate.ts",
+				"packages/workbench/src/artifacts/artifacts.test.ts",
+				"packages/workbench/src/runtime/verify-checkpoint.ts",
+				"packages/workbench/src/commands/checkpoint.ts",
+				"packages/workbench/src/cli/workspace.ts",
+				"packages/workbench/fixtures/artifact-use/cases.json"
+			],
+			"subject_paths": [
+				"packages/workbench/src/types/artifact-evidence.ts",
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/blackboard/session-types.ts",
+				"packages/workbench/src/artifacts/input-origin.ts",
+				"packages/workbench/src/artifacts/input-origin.test.ts",
+				"packages/workbench/src/artifacts/snapshot.ts",
+				"packages/workbench/src/artifacts/status.ts",
+				"packages/workbench/src/artifacts/revalidate.ts",
+				"packages/workbench/src/artifacts/artifacts.test.ts",
+				"packages/workbench/src/runtime/verify-checkpoint.ts",
+				"packages/workbench/src/commands/checkpoint.ts",
+				"packages/workbench/src/cli/workspace.ts",
+				"packages/workbench/fixtures/artifact-use/cases.json"
+			],
+			"reading_shape": {
+				"fail": "number",
+				"pass": "number",
+				"exit": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/artifacts/input-origin.test.ts packages/workbench/src/artifacts/artifacts.test.ts --timeout 60000",
+			"expected": {
+				"fail": 0,
+				"exit": 0
+			},
+			"minimum": {
+				"pass": 6
+			}
 		}
 	]
 }

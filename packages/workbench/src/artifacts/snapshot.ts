@@ -60,6 +60,7 @@ export async function captureArtifactSnapshot(
 			};
 		}
 		return {
+			sampling: "checkpoint-file-sample",
 			repo,
 			cwd,
 			head: head.stdout.trim(),

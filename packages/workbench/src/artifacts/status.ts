@@ -13,6 +13,7 @@ export interface ArtifactReview {
 	reason: string;
 	inputs: string[];
 	origin: Checkpoint["artifactOrigin"];
+	inputOrigin?: Checkpoint["artifactInputOrigin"];
 	verifiedAt: Checkpoint["artifactBinding"];
 	checkedAt?: string;
 	writerId?: string;
@@ -85,6 +86,7 @@ export async function listArtifactReviews(
 				targetStatus,
 				inputs: artifact.inputs,
 				origin: root.artifactOrigin,
+				inputOrigin: root.artifactInputOrigin,
 				verifiedAt: cp.artifactBinding,
 				checkedAt: cp.verificationResult?.at,
 				writerId: cp.writerId,

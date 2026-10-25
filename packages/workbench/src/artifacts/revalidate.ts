@@ -42,6 +42,7 @@ export async function revalidateArtifact(
 				targetRef: options.targetRef ?? original.artifact.targetRef,
 			},
 			artifactOrigin: original.artifactOrigin,
+			artifactInputOrigin: original.artifactInputOrigin,
 			revalidates: rootId,
 			writerId: original.writerId,
 			threadId: original.threadId,

@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import type { Command } from "commander";
+import { z } from "zod";
+import { selectArtifactInputs } from "../artifacts/input-origin";
 import { captureArtifactSnapshot } from "../artifacts/snapshot";
 import { listArtifactReviews } from "../artifacts/status";
 import { CHECKPOINT_ZONES } from "../blackboard/checkpoints";
@@ -8,7 +10,10 @@ import { emitJson, type GlobalOptions } from "../output";
 import { reviewCheckpoint } from "../runtime/review";
 import { captureCodeRollback } from "../runtime/rollback";
 import { checkpointVerificationStatus } from "../runtime/verification-status";
-import { artifactDeclarationSchema } from "../types/artifact-evidence";
+import {
+	artifactDeclarationSchema,
+	artifactInputSelectionSchema,
+} from "../types/artifact-evidence";
 import type { Checkpoint } from "../types/checkpoint";
 import { verificationEvidenceSpecSchema } from "../types/verification-evidence";
 import { resolveBlackboard } from "./context";
@@ -24,6 +29,7 @@ export async function checkpointCreate(
 		evidence?: string;
 		artifact?: string;
 		input?: string[];
+		inputRecords?: string;
 		targetRef?: string;
 		writer?: string;
 		thread?: string;
@@ -44,10 +50,19 @@ export async function checkpointCreate(
 		throw new Error("--evidence 需要自动验证策略");
 	if (options.artifact && !evidence)
 		throw new Error("--artifact 需要 --evidence 声明检查范围");
+	if (options.inputRecords && !options.artifact)
+		throw new Error("--input-records 需要 --artifact");
+	const inputRecords = options.inputRecords
+		? z
+				.array(artifactInputSelectionSchema)
+				.min(1)
+				.parse(JSON.parse(await readFile(options.inputRecords, "utf8")))
+		: undefined;
 	const artifact = options.artifact
 		? artifactDeclarationSchema.parse({
 				path: options.artifact,
 				inputs: options.input ?? [],
+				inputRecords,
 				targetRef: options.targetRef,
 			})
 		: undefined;
@@ -105,6 +120,7 @@ export async function checkpointCreate(
 		rollback,
 	};
 	checkpoint.artifactOrigin = await captureArtifactSnapshot(bb, checkpoint);
+	checkpoint.artifactInputOrigin = await selectArtifactInputs(bb, checkpoint);
 	await bb.checkpoints.save(checkpoint, "staging");
 	await bb.goals.update(options.goal, {
 		checkpoints: [...goal.checkpoints, checkpoint.id],
