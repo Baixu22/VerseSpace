@@ -9,6 +9,7 @@ import type { Blackboard } from "../blackboard";
 import { parseDurationSeconds } from "../duration";
 import type { Checkpoint } from "../types/checkpoint";
 import { runVerification } from "../verifier";
+import { fixedObjectCurrentIssue } from "../verifier/fixed-object";
 import { event } from "./events";
 import type { RunOnceResult } from "./types";
 import {
@@ -86,6 +87,10 @@ export async function verifyCheckpoint(
 		checkpoint.verification,
 		worktree,
 		defaultTimeout,
+		{
+			artifact: checkpoint.artifact,
+			recordDir: join(bb.paths.checkpoints, "objects"),
+		},
 	);
 	const withResult: Checkpoint = {
 		...pending,
@@ -95,6 +100,7 @@ export async function verifyCheckpoint(
 			at: new Date().toISOString(),
 			exitCode: result.exitCode,
 			evidence: result.evidence,
+			object: result.object,
 		},
 	};
 
@@ -117,17 +123,40 @@ export async function verifyCheckpoint(
 				? "产物来源或声明输入未知"
 				: artifactSnapshotDifference(artifactBefore, artifactAfter)
 			: null;
-		const issue = artifactIssue
-			? artifactIssue
-			: result.evidence && result.evidence.status !== "satisfied"
-				? `验证范围未满足：${result.evidence.reason}`
-				: !before || !binding || !context || !afterContext
-					? "验证代码状态未知：无法完整采集检查前后的工作区，不能确认当前有效"
-					: !isDeepStrictEqual(context, afterContext)
-						? "验证期间执行条件或配置输入已变化，需要重新验证"
-						: comparison?.status === "invalidated"
-							? `验证期间代码状态变化：${comparison.reason}；需要重新验证`
-							: undefined;
+		const objectIssue = checkpoint.verification?.evidence?.fixedFiles
+			? result.object
+				? await fixedObjectCurrentIssue(
+						result.object,
+						worktree,
+						checkpoint.artifact && checkpoint.verification
+							? {
+									artifact: checkpoint.artifact,
+									verification: checkpoint.verification,
+								}
+							: undefined,
+					)
+				: "固定副本执行对象未测量"
+			: null;
+		const runnerIssue =
+			result.object &&
+			!isDeepStrictEqual(result.object.runner, context?.fixedRunner)
+				? "副本实际运行器与记录的检查执行条件不同"
+				: null;
+		const issue = runnerIssue
+			? runnerIssue
+			: objectIssue
+				? objectIssue
+				: artifactIssue
+					? artifactIssue
+					: result.evidence && result.evidence.status !== "satisfied"
+						? `验证范围未满足：${result.evidence.reason}`
+						: !before || !binding || !context || !afterContext
+							? "验证代码状态未知：无法完整采集检查前后的工作区，不能确认当前有效"
+							: !isDeepStrictEqual(context, afterContext)
+								? "验证期间执行条件或配置输入已变化，需要重新验证"
+								: comparison?.status === "invalidated"
+									? `验证期间代码状态变化：${comparison.reason}；需要重新验证`
+									: undefined;
 		await bb.checkpoints.save(
 			{
 				...withResult,
@@ -153,7 +182,11 @@ export async function verifyCheckpoint(
 		await event(bb, "verification_failed", { cpId, status: result.status });
 	} else if (result.status === "needs_human") {
 		await bb.checkpoints.save(
-			{ ...withResult, lifecycle: "awaiting_review" },
+			{
+				...withResult,
+				lifecycle: "awaiting_review",
+				verificationBindingIssue: result.reason,
+			},
 			"staging",
 		);
 		await event(bb, "verification_awaiting_review", { cpId });

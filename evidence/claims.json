@@ -785,6 +785,58 @@
 			"minimum": {
 				"pass": 57
 			}
+		},
+		{
+			"id": "claim-moat-verification-copy",
+			"statement": "TF-0298 可信声明的离线单产物检查在固定文件副本运行，记录实际输入和运行器/报告摘要；源变化、清单缺项、未声明访问、超时与预算反例不签发过强结论",
+			"instrument": [
+				"packages/workbench/src/verifier/isolated-files.ts",
+				"packages/workbench/src/verifier/isolated-files.test.ts",
+				"packages/workbench/src/verifier/isolated-runtime.test.ts",
+				"packages/workbench/src/verifier/fixed-node.ts",
+				"packages/workbench/src/verifier/fixed-object.ts",
+				"packages/workbench/src/verifier/fixed-runner.ts",
+				"packages/workbench/src/verifier/execute.ts",
+				"packages/workbench/src/verifier/index.ts",
+				"packages/workbench/src/verifier/verifier.test.ts",
+				"packages/workbench/src/runtime/verify-checkpoint.ts",
+				"packages/workbench/src/runtime/verification-context.ts",
+				"packages/workbench/src/runtime/verification-binding.ts",
+				"packages/workbench/src/artifacts/use-guard.ts",
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/types/verification-evidence.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/verifier/isolated-files.ts",
+				"packages/workbench/src/verifier/isolated-files.test.ts",
+				"packages/workbench/src/verifier/isolated-runtime.test.ts",
+				"packages/workbench/src/verifier/fixed-node.ts",
+				"packages/workbench/src/verifier/fixed-object.ts",
+				"packages/workbench/src/verifier/fixed-runner.ts",
+				"packages/workbench/src/verifier/execute.ts",
+				"packages/workbench/src/verifier/index.ts",
+				"packages/workbench/src/verifier/verifier.test.ts",
+				"packages/workbench/src/runtime/verify-checkpoint.ts",
+				"packages/workbench/src/runtime/verification-context.ts",
+				"packages/workbench/src/runtime/verification-binding.ts",
+				"packages/workbench/src/artifacts/use-guard.ts",
+				"packages/workbench/src/types/checkpoint.ts",
+				"packages/workbench/src/types/verification-evidence.ts"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"pass": "number",
+				"fail": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/verifier/isolated-files.test.ts packages/workbench/src/verifier/isolated-runtime.test.ts packages/workbench/src/verifier/verifier.test.ts --timeout 60000",
+			"expected": {
+				"exit": 0,
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 22
+			}
 		}
 	]
 }

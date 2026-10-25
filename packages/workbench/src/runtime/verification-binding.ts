@@ -8,6 +8,10 @@ import type { Blackboard } from "../blackboard";
 import { parseDurationSeconds } from "../duration";
 import { type GitRunner, git } from "../git";
 import type { Checkpoint, VerificationBinding } from "../types/checkpoint";
+import {
+	fixedObjectCurrentIssue,
+	fixedObjectReportIssue,
+} from "../verifier/fixed-object";
 import type { RuntimeNotification } from "./types";
 import { captureVerificationContext } from "./verification-context";
 
@@ -185,6 +189,29 @@ export async function verificationStalenessReason(
 			return "验证执行条件已变化（目录、命令、预期退出码、超时、声明范围或配置/运行时），需要重新验证";
 	}
 	if (checkpoint.artifact) {
+		if (checkpoint.verification?.evidence?.fixedFiles) {
+			const object = checkpoint.verificationResult?.object;
+			if (!object) return "固定副本检查缺少执行对象";
+			if (
+				object.reportHash !==
+					checkpoint.verificationResult?.evidence?.reportHash ||
+				!isDeepStrictEqual(
+					object.runner,
+					checkpoint.verificationBinding.context?.fixedRunner,
+				)
+			)
+				return "固定副本报告或实际运行器与检查记录不一致";
+			const issue =
+				(await fixedObjectCurrentIssue(object, worktree, {
+					artifact: checkpoint.artifact,
+					verification: checkpoint.verification,
+				})) ??
+				(await fixedObjectReportIssue(
+					object,
+					join(bb.paths.checkpoints, "objects"),
+				));
+			if (issue) return issue;
+		}
 		return checkpoint.artifactBinding
 			? artifactSnapshotDifference(
 					checkpoint.artifactBinding,

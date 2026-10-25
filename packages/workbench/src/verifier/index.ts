@@ -1,10 +1,14 @@
-import { spawnSupervised } from "../supervisor";
 import type {
 	VerificationStrategy,
 	VerificationStrategyName,
 } from "../types/goal";
-import type { VerificationEvidence } from "../types/verification-evidence";
+import type {
+	VerificationEvidence,
+	VerificationObject,
+} from "../types/verification-evidence";
 import { collectVerificationEvidence, reportStamp } from "./evidence-report";
+import { executeVerification } from "./execute";
+import { type FixedFileOptions, runIsolatedFiles } from "./isolated-files";
 
 export type VerifyResult = (
 	| { status: "passed" }
@@ -12,7 +16,11 @@ export type VerifyResult = (
 	| { status: "needs_human"; reason: string }
 	| { status: "timeout" }
 	| { status: "skipped"; reason: string }
-) & { exitCode?: number | null; evidence?: VerificationEvidence };
+) & {
+	exitCode?: number | null;
+	evidence?: VerificationEvidence;
+	object?: VerificationObject;
+};
 
 export const DEFAULT_VERIFICATION_TIMEOUT_SECONDS = 300;
 
@@ -28,9 +36,6 @@ export const DEFAULT_COMMANDS: Record<
 
 /** Failure output archived into the checkpoint keeps only the tail. */
 const MAX_KEPT_OUTPUT_CHARS = 20_000;
-/** Hard cap on accumulated output so a spewing process cannot eat memory. */
-const MAX_BUFFER_CHARS = 1_000_000;
-
 function truncateForArchive(output: string): string {
 	if (output.length <= MAX_KEPT_OUTPUT_CHARS) {
 		return output;
@@ -38,44 +43,6 @@ function truncateForArchive(output: string): string {
 	return `[输出已截断，仅保留末尾 ${MAX_KEPT_OUTPUT_CHARS} 字符]\n${output.slice(
 		-MAX_KEPT_OUTPUT_CHARS,
 	)}`;
-}
-
-function execute(
-	command: string,
-	cwd: string,
-	timeoutSeconds: number,
-): Promise<{
-	timedOut: boolean;
-	exitCode: number | null;
-	output: string;
-}> {
-	// the supervisor owns the spawn: argv-array (no shell:true), tree kill on
-	// timeout, and a bounded output buffer so a spewing process cannot eat
-	// memory
-	return new Promise((resolve) => {
-		let output = "";
-		const append = (chunk: string) => {
-			output += chunk;
-			if (output.length > MAX_BUFFER_CHARS) {
-				output = output.slice(-MAX_BUFFER_CHARS / 2);
-			}
-		};
-		const proc = spawnSupervised(command, {
-			label: "verify",
-			cwd,
-			timeoutSeconds,
-			onLine: (line, _kind) =>
-				append(`${line}
-`),
-		});
-		void proc.wait().then((outcome) => {
-			resolve({
-				timedOut: outcome.timedOut,
-				exitCode: outcome.exitCode,
-				output,
-			});
-		});
-	});
 }
 
 /**
@@ -114,6 +81,7 @@ export async function runVerification(
 	verification: VerificationStrategy | undefined,
 	cwd: string,
 	defaultTimeoutSeconds?: number,
+	fixedOptions: FixedFileOptions = {},
 ): Promise<VerifyResult> {
 	if (!verification) {
 		return {
@@ -123,6 +91,14 @@ export async function runVerification(
 	}
 	if (verification.strategy === "human-review") {
 		return { status: "needs_human", reason: "该 checkpoint 要求人工审查" };
+	}
+	if (verification.evidence?.fixedFiles) {
+		return runIsolatedFiles(
+			verification,
+			cwd,
+			resolveTimeoutSeconds(verification, defaultTimeoutSeconds),
+			fixedOptions,
+		);
 	}
 
 	const command =
@@ -136,7 +112,7 @@ export async function runVerification(
 	const previousStamp = verification.evidence
 		? await reportStamp(cwd, verification.evidence.report.path)
 		: null;
-	const { timedOut, exitCode, output } = await execute(
+	const { timedOut, exitCode, output } = await executeVerification(
 		command,
 		cwd,
 		timeoutSeconds,
