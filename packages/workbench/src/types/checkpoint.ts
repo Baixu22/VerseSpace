@@ -4,6 +4,7 @@ import {
 	artifactInputOriginSchema,
 	artifactSnapshotSchema,
 } from "./artifact-evidence";
+import { artifactManifestSchema } from "./artifact-manifest";
 import { verificationStrategySchema } from "./goal";
 import {
 	verificationEvidenceSchema,
@@ -154,6 +155,8 @@ export const checkpointSchema = z.object({
 	artifactOrigin: artifactSnapshotSchema.optional(),
 	/** Caller-selected historical read records, separate from current file sampling. */
 	artifactInputOrigin: artifactInputOriginSchema.optional(),
+	/** Unsigned external claim retained separately from this ledger's own origin records. */
+	artifactHandoff: artifactManifestSchema.optional(),
 	artifactBinding: artifactSnapshotSchema.optional(),
 	/** Explicit candidate checked on the declared target base; never inferred from hash equality. */
 	artifactTargetCandidate: z
