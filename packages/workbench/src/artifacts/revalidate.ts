@@ -1,7 +1,12 @@
+import { realpath } from "node:fs/promises";
+import { isDeepStrictEqual } from "node:util";
 import type { Blackboard } from "../blackboard";
 import { acquireRunLock } from "../fs/lockfile";
 import { newId } from "../ids";
+import { workspotWorktreePath } from "../runtime/verification-binding";
 import { verifyCheckpoint } from "../runtime/verify-checkpoint";
+import type { ArtifactManifest } from "../types/artifact-manifest";
+import type { Checkpoint } from "../types/checkpoint";
 import { checkpointSchema } from "../types/checkpoint";
 import { reconcileArtifacts } from "./status";
 
@@ -13,6 +18,9 @@ export async function revalidateArtifact(
 		workspot?: string;
 		targetRef?: string;
 		targetCandidate?: boolean;
+		handoff?: ArtifactManifest;
+		expectedCwd?: string;
+		expectedPolicy?: Pick<Checkpoint, "artifact" | "verification">;
 	} = {},
 ) {
 	const lock = await acquireRunLock(bb.paths.root);
@@ -28,6 +36,25 @@ export async function revalidateArtifact(
 		)
 			throw new Error("产物重验需要声明范围的自动检查");
 		const rootId = original.revalidates ?? original.id;
+		if (
+			options.expectedPolicy &&
+			!isDeepStrictEqual(options.expectedPolicy, {
+				artifact: original.artifact,
+				verification: original.verification,
+			})
+		)
+			throw new Error("本机检查声明在接收期间已变化");
+		if (options.expectedCwd) {
+			const cwd = await workspotWorktreePath(
+				bb,
+				options.workspot ?? original.workspot,
+			);
+			if (
+				!cwd ||
+				(await realpath(cwd)) !== (await realpath(options.expectedCwd))
+			)
+				throw new Error("接收工位在核对后已切换目录");
+		}
 		const targetRef = options.targetRef ?? original.artifact.targetRef;
 		if (
 			options.targetCandidate &&
@@ -57,6 +84,7 @@ export async function revalidateArtifact(
 			},
 			artifactOrigin: original.artifactOrigin,
 			artifactInputOrigin: original.artifactInputOrigin,
+			artifactHandoff: options.handoff ?? original.artifactHandoff,
 			artifactTargetCandidate: options.targetCandidate
 				? { ref: targetRef, workspot: options.workspot }
 				: undefined,

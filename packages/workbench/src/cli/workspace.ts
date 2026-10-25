@@ -6,6 +6,7 @@ import {
 } from "../commands/checkpoint";
 import { checkpointConsume } from "../commands/checkpoint-consume";
 import { checkpointExport } from "../commands/checkpoint-export";
+import { checkpointReceive } from "../commands/checkpoint-receive";
 import { checkpointRevalidate } from "../commands/checkpoint-revalidate";
 import { configSet, queueCommand } from "../commands/config";
 
@@ -128,6 +129,28 @@ export function registerWorkspace(program: Command): void {
 		)
 		.option("--output <path>", "write a new manifest file (never overwrite)")
 		.action(checkpointExport);
+	checkpoint
+		.command("receive <manifest-file>")
+		.description(
+			"check portable objects in an explicit workspot; revalidate with an existing local policy",
+		)
+		.requiredOption(
+			"--checkpoint <id>",
+			"receiver's existing local checkpoint policy",
+		)
+		.requiredOption(
+			"--workspot <id>",
+			"explicit relative-root mapping to a receiver workspot",
+		)
+		.requiredOption(
+			"--report <path>",
+			"sender report relative to the receiver workspot",
+		)
+		.option(
+			"--revalidate",
+			"run the receiver's local fixed-file policy and keep a new check",
+		)
+		.action(checkpointReceive);
 
 	checkpoint
 		.command("consume <id>")

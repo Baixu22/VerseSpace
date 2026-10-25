@@ -533,6 +533,29 @@ describe("argv execution", () => {
 			rejects: /没有声明产物/,
 		},
 		{
+			path: ["checkpoint", "receive"],
+			label: "checkpoint receive <manifest-file>",
+			build: async (ws) => {
+				await writeFile(join(ws.projectDir, "incoming.json"), "{}");
+				return [
+					"checkpoint",
+					"receive",
+					"incoming.json",
+					"--checkpoint",
+					CHECKPOINT_ID,
+					"--workspot",
+					WORKSPOT_ID,
+					"--report",
+					"report.json",
+					"--json",
+				];
+			},
+			exitCode: 2,
+			verify: async (_ws, out) => {
+				expect(out).toContain("unsupported-schema");
+			},
+		},
+		{
 			path: ["checkpoint", "consume"],
 			label: "checkpoint consume <id>",
 			build: async (ws) => {

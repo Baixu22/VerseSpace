@@ -1,10 +1,8 @@
 import { expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { verifyCheckpoint } from "../runtime/verify-checkpoint";
-import { seedArtifactUse } from "../test/artifact-use-fixture";
-import { targetGit } from "../test/target-artifact-fixture";
+import { seedPortableArtifact } from "../test/manifest-fixture";
 import {
 	type ArtifactManifest,
 	artifactManifestSchema,
@@ -18,53 +16,8 @@ import {
 	stableManifestJson,
 } from "./manifest-codec";
 
-async function seedManifest() {
-	const ws = await seedArtifactUse();
-	await writeFile(
-		join(ws.projectDir, ".gitignore"),
-		".workbench/\nreport.json\nmanifest.json\n",
-	);
-	await writeFile(
-		join(ws.projectDir, "config.json"),
-		'{"apiKey":"SENTINEL_SECRET_CONFIG"}',
-	);
-	targetGit(
-		ws.projectDir,
-		"add",
-		".gitignore",
-		"api.txt",
-		"consumer.txt",
-		"check.cjs",
-		"config.json",
-	);
-	targetGit(ws.projectDir, "commit", "-qm", "manifest baseline");
-	const root = (await ws.bb.checkpoints.scanZone("verified"))[0]!;
-	const draft = {
-		...root,
-		lifecycle: "draft" as const,
-		assertion: "SENTINEL_SECRET_ASSERTION",
-		artifact: { ...root.artifact!, targetRef: "main" },
-		verification: {
-			...root.verification!,
-			command: undefined,
-			evidence: {
-				...root.verification!.evidence!,
-				inputs: ["config.json"],
-				fixedFiles: {
-					mode: "node-offline-files-v1" as const,
-					complete: true as const,
-					script: "check.cjs",
-				},
-			},
-		},
-	};
-	await ws.bb.checkpoints.save(draft, "staging");
-	await verifyCheckpoint(ws.bb, "cp", []);
-	return ws;
-}
-
 test("real fixed check exports stable portable evidence, exact report and source identities without writing ledger", async () => {
-	const ws = await seedManifest();
+	const ws = await seedPortableArtifact();
 	try {
 		const before = await ws.bb.checkpoints.scanAll();
 		const events = await ws.bb.events.all();
@@ -161,7 +114,7 @@ test("real fixed check exports stable portable evidence, exact report and source
 }, 60_000);
 
 test("manifest decoder and assessment reject tampering, unknown basis and false passed labels", async () => {
-	const ws = await seedManifest();
+	const ws = await seedPortableArtifact();
 	try {
 		const original = await exportArtifactManifest(ws.bb, "cp");
 		const mutations: Array<(m: ArtifactManifest) => void> = [
