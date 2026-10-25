@@ -2,6 +2,36 @@
   "$comment": "声明注册表（TF-0274）。每条声明必须点名仓库内的仪器（instrument）、它覆盖的路径（subject_paths）、以及读数必须携带的数字形状（reading_shape）。读数在 evidence/readings/<id>.json；原始输出在 evidence/raw/（gitignored，ADR-0020 的 process-evidence）。门禁：node scripts/check-claims.mjs。失效规则：仪器内容变了、或 subject_paths 里有任何改动晚于读数的提交，读数立刻 stale。",
   "version": 1,
   "claims": [
+		{
+			"id": "claim-moat-baseline",
+			"statement": "ADR-0026 记录的四种事实与消费边界在文档、决策索引与 README 范围三处一致；检查器自身的负向对照全绿",
+			"instrument": [
+				"scripts/moat/check-scope-adr.mjs",
+				"scripts/moat/check-scope-adr.test.mjs",
+				"docs/decisions/0026-input-origin-and-artifact-use.md",
+				"docs/decisions/README.md"
+			],
+			"subject_paths": [
+				"docs/decisions/**",
+				"scripts/moat/**",
+				"README.md",
+				"evidence/claims.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"failures": "number",
+				"tests": "number"
+			},
+			"class": "L1",
+			"reproduce": "node scripts/moat/check-scope-adr.mjs --json && node --test scripts/moat/check-scope-adr.test.mjs",
+			"expected": {
+				"exit": 0,
+				"failures": 0
+			},
+			"minimum": {
+				"tests": 5
+			}
+		},
     {
       "id": "claim-catch-sites",
       "statement": "非测试 catch 站点与文件数由清点仪器生成；数字见对应读数",
