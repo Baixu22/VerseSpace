@@ -3,6 +3,8 @@ import { hashText } from "../hash";
 import { verificationStalenessReason } from "../runtime/verification-binding";
 import type { Checkpoint } from "../types/checkpoint";
 import { type ArtifactFacts, artifactFacts } from "./facts";
+import { captureArtifactSnapshot } from "./snapshot";
+import { targetCheckIssue, targetRangeUnchanged } from "./target-check";
 
 export interface ArtifactReview {
 	rootId: string;
@@ -10,7 +12,14 @@ export interface ArtifactReview {
 	path: string;
 	source: "declared";
 	status: "current" | "stale" | "pending" | "failed" | "unknown";
-	targetStatus: "inputs-match" | "inputs-differ" | "unknown";
+	targetStatus: "target-checked" | "inputs-match" | "inputs-differ" | "unknown";
+	targetCheck?: Checkpoint["artifactTargetCheck"];
+	targetNow?: NonNullable<Checkpoint["artifactBinding"]>["target"];
+	targetChange?:
+		| "none"
+		| "outside-declared-range"
+		| "revalidation-required"
+		| "unknown";
 	reason: string;
 	inputs: string[];
 	origin: Checkpoint["artifactOrigin"];
@@ -47,6 +56,7 @@ export async function listArtifactReviews(
 					b.timestamp.localeCompare(a.timestamp) || b.id.localeCompare(a.id),
 			)[0]!;
 			const artifact = cp.artifact!;
+			const currentSnapshot = await captureArtifactSnapshot(bb, cp);
 			const facts = await artifactFacts(bb, root, cp);
 			let status: ArtifactReview["status"] = "unknown";
 			let reason = "声明范围、来源或验证绑定不完整";
@@ -63,6 +73,8 @@ export async function listArtifactReviews(
 				reason = `最近检查 ${cp.verificationResult?.status ?? cp.lifecycle}`;
 			} else if (cp.verificationBindingIssue) {
 				reason = cp.verificationBindingIssue;
+			} else if (currentSnapshot?.target?.status === "unknown") {
+				reason = currentSnapshot.target.reason ?? "目标适用性未知";
 			} else if (
 				(cp.lifecycle === "verified" || cp.lifecycle === "applied") &&
 				cp.artifactBinding &&
@@ -83,19 +95,35 @@ export async function listArtifactReviews(
 						"所选历史输入来源不是完整工具观察；当前范围检查与来源未知分别保留";
 				}
 			}
-			const targetStatus =
-				status === "current" &&
-				cp.artifactBinding?.target?.inputsMatch !== undefined
-					? cp.artifactBinding.target.inputsMatch
-						? "inputs-match"
-						: "inputs-differ"
-					: "unknown";
+			const targetStatus: ArtifactReview["targetStatus"] =
+				status === "current" && cp.artifactTargetCheck && !targetCheckIssue(cp)
+					? "target-checked"
+					: status === "current" &&
+							cp.artifactBinding?.target?.inputsMatch !== undefined
+						? cp.artifactBinding.target.inputsMatch
+							? "inputs-match"
+							: "inputs-differ"
+						: "unknown";
 			reason +=
-				targetStatus === "inputs-match"
-					? "；声明输入与目标基线相同（未验证合并结果）"
-					: targetStatus === "inputs-differ"
-						? "；本工位输入不同于目标基线，目标适用性未验证"
-						: "；目标适用性未知";
+				targetStatus === "target-checked"
+					? "；显式目标候选已通过声明范围检查（不代表最终 ref 已合入）"
+					: targetStatus === "inputs-match"
+						? "；声明输入与目标基线相同（未验证合并结果）"
+						: targetStatus === "inputs-differ"
+							? "；本工位输入不同于目标基线，目标适用性未验证"
+							: "；目标适用性未知";
+			const targetNow = currentSnapshot?.target;
+			const targetBefore = cp.artifactBinding?.target;
+			const targetChange: ArtifactReview["targetChange"] =
+				!targetNow || targetNow.status === "unknown" || !targetBefore?.commit
+					? "unknown"
+					: targetNow.commit === targetBefore.commit
+						? "none"
+						: targetRangeUnchanged(targetBefore, targetNow)
+							? "outside-declared-range"
+							: "revalidation-required";
+			if (targetChange === "outside-declared-range")
+				reason += "；目标仅在声明文件范围外推进，未执行范围外检查";
 			return {
 				rootId: root.id,
 				checkpointId: cp.id,
@@ -104,6 +132,9 @@ export async function listArtifactReviews(
 				status,
 				reason,
 				targetStatus,
+				targetCheck: cp.artifactTargetCheck,
+				targetNow,
+				targetChange,
 				inputs: artifact.inputs,
 				origin: root.artifactOrigin,
 				inputOrigin: root.artifactInputOrigin,
@@ -140,6 +171,9 @@ export async function reconcileArtifacts(bb: Blackboard): Promise<void> {
 				review.reason,
 				review.facts,
 				review.evidenceStrength,
+				review.targetCheck,
+				review.targetNow,
+				review.targetChange,
 			]),
 		);
 		if (previous.get(review.rootId) === signature) continue;

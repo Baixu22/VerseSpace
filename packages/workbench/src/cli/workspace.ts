@@ -115,6 +115,10 @@ export function registerWorkspace(program: Command): void {
 		.description("run declared artifact checks again without repeating effects")
 		.option("--workspot <id>", "explicit execution workspot for this new check")
 		.option("--target-ref <ref>", "explicit new target baseline")
+		.option(
+			"--target-candidate",
+			"actually verify this explicit workspot as a candidate on the target base",
+		)
 		.action(checkpointRevalidate);
 	checkpoint
 		.command("consume <id>")

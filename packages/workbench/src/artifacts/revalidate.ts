@@ -9,7 +9,11 @@ import { reconcileArtifacts } from "./status";
 export async function revalidateArtifact(
 	bb: Blackboard,
 	id: string,
-	options: { workspot?: string; targetRef?: string } = {},
+	options: {
+		workspot?: string;
+		targetRef?: string;
+		targetCandidate?: boolean;
+	} = {},
 ) {
 	const lock = await acquireRunLock(bb.paths.root);
 	if (!lock.acquired) throw new Error("Runtime 忙，不能并发重验");
@@ -24,6 +28,16 @@ export async function revalidateArtifact(
 		)
 			throw new Error("产物重验需要声明范围的自动检查");
 		const rootId = original.revalidates ?? original.id;
+		const targetRef = options.targetRef ?? original.artifact.targetRef;
+		if (
+			options.targetCandidate &&
+			(!options.workspot ||
+				!targetRef ||
+				!original.verification.evidence.fixedFiles)
+		)
+			throw new Error(
+				"--target-candidate 需要显式 --workspot、目标 ref 和固定离线文件检查模式",
+			);
 		const latestTime = Math.max(
 			...all
 				.filter((cp) => cp.id === rootId || cp.revalidates === rootId)
@@ -43,6 +57,9 @@ export async function revalidateArtifact(
 			},
 			artifactOrigin: original.artifactOrigin,
 			artifactInputOrigin: original.artifactInputOrigin,
+			artifactTargetCandidate: options.targetCandidate
+				? { ref: targetRef, workspot: options.workspot }
+				: undefined,
 			revalidates: rootId,
 			writerId: original.writerId,
 			threadId: original.threadId,

@@ -5,7 +5,7 @@ import { resolveBlackboard } from "./context";
 
 export async function checkpointRevalidate(
 	id: string,
-	options: { workspot?: string; targetRef?: string },
+	options: { workspot?: string; targetRef?: string; targetCandidate?: boolean },
 	command: Command,
 ): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
