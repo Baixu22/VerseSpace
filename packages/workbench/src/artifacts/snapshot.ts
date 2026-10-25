@@ -10,6 +10,9 @@ import {
 } from "../types/artifact-evidence";
 import type { Checkpoint } from "../types/checkpoint";
 import { evidenceFilePath } from "../verifier/evidence-report";
+import { declaredFixedFiles } from "../verifier/isolated-files";
+import { targetRangeUnchanged } from "./target-check";
+import { targetSnapshot } from "./target-snapshot";
 
 /** Explicit files are content-addressed even if untracked or ignored by Git. */
 export async function captureArtifactSnapshot(
@@ -26,42 +29,11 @@ export async function captureArtifactSnapshot(
 		if (!common.ok || !head.ok) return undefined;
 		const repo = await realpath(resolve(cwd, common.stdout.trim()));
 		const files: Record<string, string> = {};
-		for (const path of new Set([cp.artifact.path, ...cp.artifact.inputs]))
+		for (const path of cp.verification?.evidence?.fixedFiles
+			? declaredFixedFiles(cp.verification, cp.artifact)
+			: new Set([cp.artifact.path, ...cp.artifact.inputs]))
 			files[path] = await hashFile(await evidenceFilePath(cwd, path));
-		let target: ArtifactSnapshot["target"];
-		if (cp.artifact.targetRef) {
-			const ref = cp.artifact.targetRef;
-			const commit = await git(
-				["rev-parse", "--verify", "--end-of-options", `${ref}^{commit}`],
-				cwd,
-			);
-			if (!commit.ok) return undefined;
-			const tree = await git(
-				["rev-parse", `${commit.stdout.trim()}^{tree}`],
-				cwd,
-			);
-			if (!tree.ok) return undefined;
-			let inputsMatch = true;
-			for (const path of cp.artifact.inputs) {
-				const blob = await git(
-					[
-						"rev-parse",
-						"--verify",
-						`${commit.stdout.trim()}:${path.replace(/\\/g, "/")}`,
-					],
-					cwd,
-				);
-				const local = await git(["hash-object", "--", path], cwd);
-				if (!blob.ok || !local.ok || blob.stdout.trim() !== local.stdout.trim())
-					inputsMatch = false;
-			}
-			target = {
-				ref,
-				commit: commit.stdout.trim(),
-				tree: tree.stdout.trim(),
-				inputsMatch,
-			};
-		}
+		const target = await targetSnapshot(cwd, cp);
 		return {
 			declarationHash: hashText(
 				JSON.stringify(artifactDeclarationSchema.parse(cp.artifact)),
@@ -91,7 +63,12 @@ export function artifactSnapshotDifference(
 	if (before.repo !== after.repo) return "仓库身份已变化";
 	if (before.cwd !== after.cwd) return "执行工位已变化，需在明确的新目录重验";
 	if (before.target?.ref !== after.target?.ref) return "交接目标 ref 已变化";
-	if (before.target?.tree !== after.target?.tree)
+	if (after.target?.status === "unknown")
+		return after.target.reason ?? "目标适用性未知";
+	if (
+		before.target?.tree !== after.target?.tree &&
+		!targetRangeUnchanged(before.target, after.target)
+	)
 		return `目标基线 ${before.target?.ref} 已推进，不能沿用原工位未变的结论`;
 	const paths = new Set([
 		...Object.keys(before.files),

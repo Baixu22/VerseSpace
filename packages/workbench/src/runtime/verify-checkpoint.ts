@@ -66,6 +66,7 @@ export async function verifyCheckpoint(
 				? undefined
 				: await selectArtifactInputs(bb, checkpoint)),
 		artifactBinding: undefined,
+		artifactTargetCheck: undefined,
 	};
 	await bb.checkpoints.save(pending, "staging");
 
@@ -142,21 +143,35 @@ export async function verifyCheckpoint(
 			!isDeepStrictEqual(result.object.runner, context?.fixedRunner)
 				? "副本实际运行器与记录的检查执行条件不同"
 				: null;
-		const issue = runnerIssue
-			? runnerIssue
-			: objectIssue
-				? objectIssue
-				: artifactIssue
-					? artifactIssue
-					: result.evidence && result.evidence.status !== "satisfied"
-						? `验证范围未满足：${result.evidence.reason}`
-						: !before || !binding || !context || !afterContext
-							? "验证代码状态未知：无法完整采集检查前后的工作区，不能确认当前有效"
-							: !isDeepStrictEqual(context, afterContext)
-								? "验证期间执行条件或配置输入已变化，需要重新验证"
-								: comparison?.status === "invalidated"
-									? `验证期间代码状态变化：${comparison.reason}；需要重新验证`
-									: undefined;
+		const targetCandidateIssue =
+			checkpoint.artifactTargetCandidate &&
+			(!result.object ||
+				!artifactBefore?.target?.commit ||
+				!artifactBefore.target.tree ||
+				artifactBefore.target.status === "unknown" ||
+				artifactBefore.head !== artifactBefore.target.commit ||
+				checkpoint.artifactTargetCandidate.ref !== artifactBefore.target.ref ||
+				checkpoint.artifactTargetCandidate.workspot !== checkpoint.workspot ||
+				artifactAfter?.target?.commit !== artifactBefore.target.commit)
+				? "显式目标候选的工位、HEAD 与目标基线不一致或不可读取"
+				: null;
+		const issue = targetCandidateIssue
+			? targetCandidateIssue
+			: runnerIssue
+				? runnerIssue
+				: objectIssue
+					? objectIssue
+					: artifactIssue
+						? artifactIssue
+						: result.evidence && result.evidence.status !== "satisfied"
+							? `验证范围未满足：${result.evidence.reason}`
+							: !before || !binding || !context || !afterContext
+								? "验证代码状态未知：无法完整采集检查前后的工作区，不能确认当前有效"
+								: !isDeepStrictEqual(context, afterContext)
+									? "验证期间执行条件或配置输入已变化，需要重新验证"
+									: comparison?.status === "invalidated"
+										? `验证期间代码状态变化：${comparison.reason}；需要重新验证`
+										: undefined;
 		await bb.checkpoints.save(
 			{
 				...withResult,
@@ -165,6 +180,23 @@ export async function verifyCheckpoint(
 					issue || !binding ? undefined : { ...binding, context },
 				verificationBindingIssue: issue,
 				artifactBinding: issue ? undefined : artifactAfter,
+				artifactTargetCheck:
+					!issue &&
+					checkpoint.artifactTargetCandidate &&
+					result.object &&
+					artifactBefore?.target?.commit &&
+					artifactBefore.target.tree
+						? {
+								ref: artifactBefore.target.ref,
+								baseCommit: artifactBefore.target.commit,
+								baseTree: artifactBefore.target.tree,
+								workspot: checkpoint.workspot,
+								candidateCwd: result.object.sourceCwd,
+								candidateHead: artifactBefore.head,
+								objectManifestHash: result.object.manifestHash,
+								at: new Date().toISOString(),
+							}
+						: undefined,
 			},
 			"staging",
 		);

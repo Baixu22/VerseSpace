@@ -75,8 +75,13 @@ export const artifactSnapshotSchema = z.object({
 	target: z
 		.object({
 			ref: z.string(),
-			commit: z.string(),
-			tree: z.string(),
+			commit: z.string().optional(),
+			tree: z.string().optional(),
+			status: z.enum(["available", "unknown"]).optional(),
+			reason: z.string().optional(),
+			/** Only fixed-file declarations can use this narrower target fingerprint. */
+			scope: z.literal("declared-files-v1").optional(),
+			blobs: z.record(z.string(), z.string().nullable()).optional(),
 			/** Declared input blobs only; never a claim of a merged build. */
 			inputsMatch: z.boolean().optional(),
 		})

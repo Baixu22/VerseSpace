@@ -4,6 +4,7 @@ import {
 	artifactSnapshotDifference,
 	captureArtifactSnapshot,
 } from "../artifacts/snapshot";
+import { targetCheckIssue } from "../artifacts/target-check";
 import type { Blackboard } from "../blackboard";
 import { parseDurationSeconds } from "../duration";
 import { type GitRunner, git } from "../git";
@@ -189,6 +190,8 @@ export async function verificationStalenessReason(
 			return "验证执行条件已变化（目录、命令、预期退出码、超时、声明范围或配置/运行时），需要重新验证";
 	}
 	if (checkpoint.artifact) {
+		const candidateIssue = targetCheckIssue(checkpoint);
+		if (candidateIssue) return candidateIssue;
 		if (checkpoint.verification?.evidence?.fixedFiles) {
 			const object = checkpoint.verificationResult?.object;
 			if (!object) return "固定副本检查缺少执行对象";

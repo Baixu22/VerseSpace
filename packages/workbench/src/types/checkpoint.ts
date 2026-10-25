@@ -155,6 +155,22 @@ export const checkpointSchema = z.object({
 	/** Caller-selected historical read records, separate from current file sampling. */
 	artifactInputOrigin: artifactInputOriginSchema.optional(),
 	artifactBinding: artifactSnapshotSchema.optional(),
+	/** Explicit candidate checked on the declared target base; never inferred from hash equality. */
+	artifactTargetCandidate: z
+		.object({ ref: z.string().min(1), workspot: z.string().min(1) })
+		.optional(),
+	artifactTargetCheck: z
+		.object({
+			ref: z.string(),
+			baseCommit: z.string(),
+			baseTree: z.string(),
+			workspot: z.string(),
+			candidateCwd: z.string(),
+			candidateHead: z.string(),
+			objectManifestHash: z.string().regex(/^[a-f0-9]{64}$/),
+			at: z.string(),
+		})
+		.optional(),
 	/** One accepted consumption, independently bound to the evidence that authorized effects. */
 	artifactConsumption: z
 		.object({
