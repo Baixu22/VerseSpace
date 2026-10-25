@@ -147,6 +147,20 @@ export const checkpointSchema = z.object({
 	/** Caller-selected historical read records, separate from current file sampling. */
 	artifactInputOrigin: artifactInputOriginSchema.optional(),
 	artifactBinding: artifactSnapshotSchema.optional(),
+	/** One accepted consumption, independently bound to the evidence that authorized effects. */
+	artifactConsumption: z
+		.object({
+			state: z.enum(["started", "applied"]),
+			evidenceCheckpointId: z.string().min(1),
+			at: z.string(),
+			mode: z.enum(["recorded-inputs-v1", "legacy-declared-scope"]),
+			manifestHash: z.string().regex(/^[a-f0-9]{64}$/),
+			artifactHash: z.string().regex(/^[a-f0-9]{64}$/),
+			reportHash: z.string().regex(/^[a-f0-9]{64}$/),
+		})
+		.optional(),
+	/** Rejected consumption stays pending until an explicit corrected consumption. */
+	artifactUseIssue: z.string().optional(),
 	/** Root checkpoint; rechecks never repeat its effects or complete another goal. */
 	revalidates: z.string().min(1).optional(),
 	blackboardEffects: blackboardEffectsSchema.optional(),

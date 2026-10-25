@@ -50,7 +50,12 @@ export async function listArtifactReviews(
 			const facts = await artifactFacts(bb, root, cp);
 			let status: ArtifactReview["status"] = "unknown";
 			let reason = "声明范围、来源或验证绑定不完整";
-			if (cp.lifecycle === "draft" || cp.lifecycle === "pending") {
+			if (root.artifactConsumption?.state === "started") {
+				status = root.lifecycle === "failed" ? "failed" : "unknown";
+				reason = "产物验收已开始但效果完成未确认，需核对恢复记录";
+			} else if (cp.artifactUseIssue) {
+				reason = `产物验收被拒绝：${cp.artifactUseIssue}`;
+			} else if (cp.lifecycle === "draft" || cp.lifecycle === "pending") {
 				status = "pending";
 				reason = "重验尚未完成";
 			} else if (["failed", "rejected"].includes(cp.lifecycle)) {

@@ -524,6 +524,22 @@ describe("argv execution", () => {
 			rejects: /没有声明产物依赖/,
 		},
 		{
+			path: ["checkpoint", "consume"],
+			label: "checkpoint consume <id>",
+			build: async (ws) => {
+				await seedCheckpoint(ws);
+				return [
+					"checkpoint",
+					"consume",
+					CHECKPOINT_ID,
+					"--evidence",
+					CHECKPOINT_ID,
+					"--json",
+				];
+			},
+			rejects: /原声明产物 checkpoint/,
+		},
+		{
 			path: ["dispatch"],
 			label: "dispatch <goal-id> [workspot-id]",
 			// a goal that does not exist is a structured refusal: the handler

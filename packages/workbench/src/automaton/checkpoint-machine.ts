@@ -49,7 +49,12 @@ export function evaluateCheckpoints(snapshot: WorldSnapshot): Transition[] {
 	}
 
 	for (const checkpoint of [...snapshot.checkpoints.verified].sort(byId)) {
-		if (checkpoint.lifecycle === "verified" && !checkpoint.revalidates) {
+		if (
+			checkpoint.lifecycle === "verified" &&
+			!checkpoint.revalidates &&
+			!checkpoint.artifactUseIssue &&
+			!checkpoint.artifactConsumption
+		) {
 			transitions.push({
 				type: "checkpoint_lifecycle",
 				cpId: checkpoint.id,

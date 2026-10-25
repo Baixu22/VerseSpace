@@ -2,9 +2,12 @@ import { realpath } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { Blackboard } from "../blackboard";
 import { git } from "../git";
-import { hashFile } from "../hash";
+import { hashFile, hashText } from "../hash";
 import { workspotWorktreePath } from "../runtime/verification-binding";
-import type { ArtifactSnapshot } from "../types/artifact-evidence";
+import {
+	type ArtifactSnapshot,
+	artifactDeclarationSchema,
+} from "../types/artifact-evidence";
 import type { Checkpoint } from "../types/checkpoint";
 import { evidenceFilePath } from "../verifier/evidence-report";
 
@@ -60,6 +63,9 @@ export async function captureArtifactSnapshot(
 			};
 		}
 		return {
+			declarationHash: hashText(
+				JSON.stringify(artifactDeclarationSchema.parse(cp.artifact)),
+			),
 			sampling: "checkpoint-file-sample",
 			repo,
 			cwd,
@@ -77,6 +83,11 @@ export function artifactSnapshotDifference(
 	after: ArtifactSnapshot | undefined,
 ): string | null {
 	if (!after) return "产物、输入、工位或目标基线不可读取";
+	if (
+		before.declarationHash &&
+		before.declarationHash !== after.declarationHash
+	)
+		return "产物输入、来源选择或目标声明已变化";
 	if (before.repo !== after.repo) return "仓库身份已变化";
 	if (before.cwd !== after.cwd) return "执行工位已变化，需在明确的新目录重验";
 	if (before.target?.ref !== after.target?.ref) return "交接目标 ref 已变化";

@@ -197,6 +197,21 @@ test("explicit sampled or unknown origins cannot be upgraded by an otherwise suc
 			artifactInputOrigin: undefined,
 		};
 		await ws.bb.checkpoints.save(legacy, "verified");
+		expect((await listArtifactReviews(ws.bb))[0]?.status).toBe("stale");
+		// A real legacy binding predates declarationHash. Removing the selection
+		// from a new binding is declaration drift, not a legacy compatibility case.
+		await ws.bb.checkpoints.save(
+			{
+				...legacy,
+				artifactOrigin: legacy.artifactOrigin
+					? { ...legacy.artifactOrigin, declarationHash: undefined }
+					: undefined,
+				artifactBinding: legacy.artifactBinding
+					? { ...legacy.artifactBinding, declarationHash: undefined }
+					: undefined,
+			},
+			"verified",
+		);
 		expect((await listArtifactReviews(ws.bb))[0]).toMatchObject({
 			status: "current",
 			evidenceStrength: "declared-scope",

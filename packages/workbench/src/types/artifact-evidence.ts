@@ -61,6 +61,11 @@ export const artifactInputOriginSchema = z.strictObject({
 export type ArtifactInputOrigin = z.infer<typeof artifactInputOriginSchema>;
 
 export const artifactSnapshotSchema = z.object({
+	/** Binds the exact declared paths and selected read identities to this check. */
+	declarationHash: z
+		.string()
+		.regex(/^[a-f0-9]{64}$/)
+		.optional(),
 	/** Sampling at capture time, never historical tool-return provenance. */
 	sampling: z.literal("checkpoint-file-sample").optional(),
 	repo: z.string(),
