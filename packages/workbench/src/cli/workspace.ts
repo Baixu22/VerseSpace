@@ -5,6 +5,7 @@ import {
 	checkpointReview,
 } from "../commands/checkpoint";
 import { checkpointConsume } from "../commands/checkpoint-consume";
+import { checkpointExport } from "../commands/checkpoint-export";
 import { checkpointRevalidate } from "../commands/checkpoint-revalidate";
 import { configSet, queueCommand } from "../commands/config";
 
@@ -120,6 +121,14 @@ export function registerWorkspace(program: Command): void {
 			"actually verify this explicit workspot as a candidate on the target base",
 		)
 		.action(checkpointRevalidate);
+	checkpoint
+		.command("export <id>")
+		.description(
+			"export a portable declared-scope artifact manifest without commands or local paths",
+		)
+		.option("--output <path>", "write a new manifest file (never overwrite)")
+		.action(checkpointExport);
+
 	checkpoint
 		.command("consume <id>")
 		.description(
