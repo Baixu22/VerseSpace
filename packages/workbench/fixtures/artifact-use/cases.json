@@ -1,0 +1,269 @@
+{
+	"version": 1,
+	"budget": {
+		"source": "Before production implementation: zero safety/source errors; four unchanged consumptions should reuse one completed check, matching existing Workbench behavior. Timing is comparative only.",
+		"falseCurrent": 0,
+		"sourceMisattribution": 0,
+		"samples": 5,
+		"warmups": 1,
+		"maxCaseSeconds": 60,
+		"repeatChecks": 4,
+		"netBenefit": "report medians, range, bytes and repeated executions; no benefit claim if total time is not lower",
+		"maxChecksForFourUnchangedConsumptions": 1
+	},
+	"cases": [
+		{
+			"id": "normal",
+			"category": "normal",
+			"input": "v1",
+			"artifact": "v1",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": true
+			}
+		},
+		{
+			"id": "cross-file",
+			"category": "cross-file",
+			"input": "v1",
+			"artifact": "v1",
+			"after": "v2",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "reread",
+			"category": "reread-without-repair",
+			"input": "v1",
+			"artifact": "v1",
+			"after": "v2",
+			"reread": true,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "late-origin",
+			"category": "late-registration",
+			"input": "v1",
+			"artifact": "*",
+			"beforeCheck": "v2",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": true,
+				"originInput": "v1"
+			}
+		},
+		{
+			"id": "capture-race",
+			"category": "capture-race",
+			"input": "v1",
+			"artifact": "*",
+			"beforeCapture": "v2",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": true,
+				"observedInput": "v1"
+			}
+		},
+		{
+			"id": "subset",
+			"category": "report-scope",
+			"input": "v1",
+			"artifact": "v1",
+			"report": "subset",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "zero",
+			"category": "report-scope",
+			"input": "v1",
+			"artifact": "v1",
+			"report": "zero",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "broken",
+			"category": "report-scope",
+			"input": "v1",
+			"artifact": "v1",
+			"report": "broken",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "aba",
+			"category": "verification-ABA",
+			"input": "v1",
+			"artifact": "v2",
+			"transient": "v2",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "target-advance",
+			"category": "target-change",
+			"input": "v1",
+			"artifact": "v1",
+			"targetAdvance": "v2",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": false,
+				"targetChecked": false
+			}
+		},
+		{
+			"id": "no-edit-recheck",
+			"category": "no-edit-revalidation",
+			"input": "v1",
+			"artifact": "*",
+			"after": "v2",
+			"recheck": true,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": true
+			}
+		},
+		{
+			"id": "unobserved",
+			"category": "unknown-control",
+			"input": "v1",
+			"artifact": "v1",
+			"toolCoverage": "unknown",
+			"externalWriter": true,
+			"consume": true,
+			"expected": {
+				"consumable": true,
+				"observedInput": null
+			}
+		},
+		{
+			"id": "repeat-consume",
+			"category": "unchanged-consumption",
+			"input": "v1",
+			"artifact": "v1",
+			"repeatConsumes": 4,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": true,
+				"repeatedChecks": 1
+			}
+		},
+		{
+			"id": "normal-capture",
+			"category": "capture-race",
+			"input": "v1",
+			"artifact": "v1",
+			"beforeCapture": "v1",
+			"reread": false,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": true,
+				"observedInput": "v1",
+				"originInput": "v1"
+			}
+		},
+		{
+			"id": "normal-late",
+			"category": "late-registration",
+			"input": "v1",
+			"artifact": "v1",
+			"beforeCheck": "v1",
+			"reread": false,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": true,
+				"observedInput": "v1",
+				"originInput": "v1"
+			}
+		},
+		{
+			"id": "normal-reread",
+			"category": "reread-without-repair",
+			"input": "v1",
+			"artifact": "v1",
+			"reread": true,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": false,
+			"expected": {
+				"consumable": true,
+				"observedInput": "v1",
+				"originInput": "v1"
+			}
+		},
+		{
+			"id": "held-cross-reread",
+			"category": "cross-file",
+			"partition": "heldout",
+			"input": "alpha",
+			"artifact": "alpha",
+			"after": "beta",
+			"reread": true,
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": false
+			}
+		},
+		{
+			"id": "held-late-race",
+			"category": "late-registration",
+			"partition": "heldout",
+			"input": "alpha",
+			"artifact": "*",
+			"beforeCapture": "beta",
+			"beforeCheck": "gamma",
+			"consume": true,
+			"toolCoverage": "full",
+			"externalWriter": true,
+			"expected": {
+				"consumable": true,
+				"originInput": "alpha",
+				"observedInput": "alpha"
+			}
+		}
+	]
+}
