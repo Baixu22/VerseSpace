@@ -1,0 +1,26 @@
+{
+	"schemaVersion": 1,
+	"timing": {
+		"warmups": 1,
+		"samples": 5,
+		"maxSampleMs": 60000,
+		"cold": "First measured fixture/call after untimed setup; not an OS or disk-cache cold start.",
+		"hot": "Five subsequent independent fixtures or repeated calls after one discarded warmup.",
+		"serial": true
+	},
+	"ledgerRows": [1000, 10000, 50000],
+	"repeatConsumptions": 4,
+	"budget": {
+		"maxChecksForFourUnchangedConsumptions": 1,
+		"maxVerificationRequests": 1,
+		"falseCurrent": 0,
+		"unknown": 0,
+		"maxTimedSampleMs": 60000
+	},
+	"netBenefitRule": "Report a timing advantage only when the enhanced median is lower and every enhanced sample is below every strong-naive sample. Otherwise report no-net-time-benefit. Never infer a general speedup from a sample mean.",
+	"scales": "Synthetic ledger sizes exercise the existing JSONL query path. They are workload scales, not capacity promises.",
+	"fixedCopy": "Report copyMs/copyBytes/runMs from the real fixed-file verifier separately from total consumption time.",
+	"nativeBaseline": "The strong native checker is ledger-independent and is measured once with the same four-consumption workload; its distribution is compared with every Workbench ledger scale.",
+	"modelUsage": "No provider is called. Token and monetary usage remain unmeasured and must not be reported as zero.",
+	"decisionOnBudget": "Record every over-budget sample and stop expansion at the frozen definition. Never raise a budget after measuring."
+}

@@ -1,13 +1,14 @@
 {
 	"claim_id": "claim-moat-controlled-comparison",
-	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/fixtures/artifact-use/check.cjs:71a4109a9b9d20aba5fd6d8c4aefac816c474527508e8798d200286885bc5b2f\npackages/workbench/fixtures/artifact-use/freeze.json:064dc5f91e32df6f34e8852dec3de937be5b873ddd02a1b6f051baa522ffe4c7\npackages/workbench/fixtures/artifact-use/replay-plan-freeze.json:53d5d8336a4b5c2375781b6b2d26d0e42e5346ac5f0de9628019a44e8fb0d501\npackages/workbench/fixtures/artifact-use/replay-plan.json:14032d3b06c7a1f8cfc7c264c8b187f112ec7e4edb215525ab19b52e1ef8edff\npackages/workbench/scripts/verify/artifact-use/check-freeze.mjs:9991cfa239d799f07aefc3ac60300d17b82795e7d009b8f579aa21fb8f38ceeb\npackages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs:c57d1268011454d1c446ad8e11c9cedf75b820143131b47576ee532c228023f1\npackages/workbench/scripts/verify/artifact-use/enhanced.ts:54f5d436047cd19014f2a9d3f8ef5acc1c3de8371f83983984a9c253f41ad01a\npackages/workbench/scripts/verify/artifact-use/frozen-source.mjs:1381671d379316e302a0207b77c4447472e29624d5b8312b070c9fd4e2090c82\npackages/workbench/scripts/verify/artifact-use/judge.mjs:1d578185d88bc50cb31be033c6a376107b15ad44ba3e841078ebfa04ea572d57\npackages/workbench/scripts/verify/artifact-use/judge.test.mjs:c4a54ec5c525528017dc232aa0f5e37cd962896c6f2b6ec1e7f6bf14bf09f334\npackages/workbench/scripts/verify/artifact-use/naive.mjs:e23288bdedd2535d66adc094bd3ffdb63c6440bdaa6efcd587490d81439057eb\npackages/workbench/scripts/verify/artifact-use/probe.ts:a7aa4306e9130fe5392dbc4d685c0f7dbe366970bd195489d6f326871dcec0ce\npackages/workbench/scripts/verify/artifact-use/replay.ts:5cb0cfa76122e0fa5454c17d152aa75be16af8fd54d86082df11ab71478a9efc\npackages/workbench/scripts/verify/artifact-use/workbench.ts:0437d6df26cbd06ef1802782746d39fa0554724ea673bd2d89ea7f407d7e6d25",
-	"subject_sha": "ebdffbaf5b5ac774484c0fc81dd6eba61906012f",
+	"instrument_sha256": "packages/workbench/fixtures/artifact-use/cases.json:d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515\npackages/workbench/fixtures/artifact-use/check.cjs:71a4109a9b9d20aba5fd6d8c4aefac816c474527508e8798d200286885bc5b2f\npackages/workbench/fixtures/artifact-use/cost-freeze.json:7ee19c06cd8504912bc6bee8958f6be89d7ad33a1079fb64b8e43ef9027ac47a\npackages/workbench/fixtures/artifact-use/cost-plan.json:74d54253d768ff5074aa3e837c670c55be2ce70d578a477904acc18ab2f662ff\npackages/workbench/fixtures/artifact-use/freeze.json:064dc5f91e32df6f34e8852dec3de937be5b873ddd02a1b6f051baa522ffe4c7\npackages/workbench/fixtures/artifact-use/replay-plan-freeze.json:53d5d8336a4b5c2375781b6b2d26d0e42e5346ac5f0de9628019a44e8fb0d501\npackages/workbench/fixtures/artifact-use/replay-plan.json:14032d3b06c7a1f8cfc7c264c8b187f112ec7e4edb215525ab19b52e1ef8edff\npackages/workbench/scripts/verify/artifact-use/check-freeze.mjs:9991cfa239d799f07aefc3ac60300d17b82795e7d009b8f579aa21fb8f38ceeb\npackages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs:c57d1268011454d1c446ad8e11c9cedf75b820143131b47576ee532c228023f1\npackages/workbench/scripts/verify/artifact-use/cost/check-freeze.mjs:dd2603ecaff07a31abc7ffeabcf3f0d71784324921305ccd1ffa142b8acd628f\npackages/workbench/scripts/verify/artifact-use/cost/fixture.ts:e0bcac56af6b6617c6e6e9b7b492835dff96ddeb26a64988703a4a4dc2514b2e\npackages/workbench/scripts/verify/artifact-use/cost/run.ts:ca2dd26bc92c734976c1b4e32d86f0041757eed3376b5c02674633f4f5459b3f\npackages/workbench/scripts/verify/artifact-use/cost/stats.test.ts:529b5b4fd0b0b8ea82b7c806b088bd28a10f0e4cddc9e6c94853072e105e4287\npackages/workbench/scripts/verify/artifact-use/cost/stats.ts:5ddfa1cd9062fdb1c445112dc04aea90112898753180219b92a902c9b44efac2\npackages/workbench/scripts/verify/artifact-use/enhanced.ts:54f5d436047cd19014f2a9d3f8ef5acc1c3de8371f83983984a9c253f41ad01a\npackages/workbench/scripts/verify/artifact-use/frozen-source.mjs:1381671d379316e302a0207b77c4447472e29624d5b8312b070c9fd4e2090c82\npackages/workbench/scripts/verify/artifact-use/judge.mjs:1d578185d88bc50cb31be033c6a376107b15ad44ba3e841078ebfa04ea572d57\npackages/workbench/scripts/verify/artifact-use/judge.test.mjs:c4a54ec5c525528017dc232aa0f5e37cd962896c6f2b6ec1e7f6bf14bf09f334\npackages/workbench/scripts/verify/artifact-use/naive.mjs:e23288bdedd2535d66adc094bd3ffdb63c6440bdaa6efcd587490d81439057eb\npackages/workbench/scripts/verify/artifact-use/probe.ts:a7aa4306e9130fe5392dbc4d685c0f7dbe366970bd195489d6f326871dcec0ce\npackages/workbench/scripts/verify/artifact-use/replay.ts:5cb0cfa76122e0fa5454c17d152aa75be16af8fd54d86082df11ab71478a9efc\npackages/workbench/scripts/verify/artifact-use/workbench.ts:0437d6df26cbd06ef1802782746d39fa0554724ea673bd2d89ea7f407d7e6d25",
+	"subject_sha": "1d330abd5e11dbd99b1d058dfe035dea0f251745",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
-		"node": "v24.22.1"
+		"node": "v24.22.1",
+		"memoryBytes": 16295432192
 	},
-	"measured_at": "2026-10-25T15:38:14.421Z",
+	"measured_at": "2026-10-25T16:12:02.187Z",
 	"reading": {
 		"exit": 0,
 		"cases": 18,
@@ -27,10 +28,19 @@
 		"processFailures": 0,
 		"timedOut": 0,
 		"naiveRepeatChecks": 4,
-		"enhancedRepeatChecks": 1
+		"enhancedRepeatChecks": 1,
+		"costScales": 3,
+		"costWarmups": 1,
+		"costSamples": 5,
+		"costBudgetExceeded": 0,
+		"costSafetyViolations": 0,
+		"enhancedChecks": 1,
+		"naiveChecks": 4,
+		"manifestBound": 3,
+		"noNetTimeBenefitScales": 3
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:7fb06e4a23c1e8c0881bdcd6196fad38c4610355c42a8b545bfae504a03eefdb",
-	"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/replay.ts --final --output evidence/raw/claim-moat-controlled-comparison.json",
+	"raw_digest": "sha256:30c57e5409736ea139c02152c59c9feee68823c2232b4fcd76003fbcb8942e3a",
+	"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/replay.ts --final --output evidence/raw/claim-moat-controlled-comparison-replay.json && node packages/workbench/scripts/verify/artifact-use/cost/check-freeze.mjs && bun test packages/workbench/scripts/verify/artifact-use/cost/stats.test.ts && bun packages/workbench/scripts/verify/artifact-use/cost/run.ts --output evidence/raw/claim-moat-controlled-comparison-cost.json",
 	"class": "curated-evidence"
 }

@@ -575,7 +575,7 @@
 		},
 		{
 			"id": "claim-moat-controlled-comparison",
-			"statement": "TF-0306 在冻结 18 例和同一 fixture/judge 摘要上串行重放强朴素、冻结旧主线、增强生产与三项消融；增强声明范围零错误/未知，旧组和消融差异按实测保留，模型用量未测",
+			"statement": "TF-0306/0307 在冻结 18 例和同一 fixture/judge 摘要上串行重放七组对照，并在 1k/10k/50k 合成 ledger 上以 1 预热 + 5 新鲜样本量测抓取、查询、固定副本、清单和四次消费；增强零安全错误/未知，但三个尺度均未优于强朴素，模型用量未测",
 			"instrument": [
 				"packages/workbench/scripts/verify/artifact-use/check-freeze.mjs",
 				"packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs",
@@ -591,12 +591,20 @@
 				"packages/workbench/fixtures/artifact-use/check.cjs",
 				"packages/workbench/fixtures/artifact-use/freeze.json",
 				"packages/workbench/fixtures/artifact-use/replay-plan.json",
-				"packages/workbench/fixtures/artifact-use/replay-plan-freeze.json"
+				"packages/workbench/fixtures/artifact-use/replay-plan-freeze.json",
+				"packages/workbench/scripts/verify/artifact-use/cost/check-freeze.mjs",
+				"packages/workbench/scripts/verify/artifact-use/cost/fixture.ts",
+				"packages/workbench/scripts/verify/artifact-use/cost/run.ts",
+				"packages/workbench/scripts/verify/artifact-use/cost/stats.ts",
+				"packages/workbench/scripts/verify/artifact-use/cost/stats.test.ts",
+				"packages/workbench/fixtures/artifact-use/cost-plan.json",
+				"packages/workbench/fixtures/artifact-use/cost-freeze.json"
 			],
 			"subject_paths": [
 				"packages/workbench/scripts/verify/artifact-use/**",
 				"packages/workbench/fixtures/artifact-use/**",
-				"docs/handoff/2026-10-25-controlled-replay.md"
+				"docs/handoff/2026-10-25-controlled-replay.md",
+				"docs/handoff/2026-10-25-artifact-cost.md"
 			],
 			"reading_shape": {
 				"exit": "number",
@@ -617,10 +625,19 @@
 				"processFailures": "number",
 				"timedOut": "number",
 				"naiveRepeatChecks": "number",
-				"enhancedRepeatChecks": "number"
+				"enhancedRepeatChecks": "number",
+				"costScales": "number",
+				"costWarmups": "number",
+				"costSamples": "number",
+				"costBudgetExceeded": "number",
+				"costSafetyViolations": "number",
+				"enhancedChecks": "number",
+				"naiveChecks": "number",
+				"manifestBound": "number",
+				"noNetTimeBenefitScales": "number"
 			},
 			"class": "L1",
-			"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/replay.ts --final --output evidence/raw/claim-moat-controlled-comparison.json",
+			"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node packages/workbench/scripts/verify/artifact-use/check-replay-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/replay.ts --final --output evidence/raw/claim-moat-controlled-comparison-replay.json && node packages/workbench/scripts/verify/artifact-use/cost/check-freeze.mjs && bun test packages/workbench/scripts/verify/artifact-use/cost/stats.test.ts && bun packages/workbench/scripts/verify/artifact-use/cost/run.ts --output evidence/raw/claim-moat-controlled-comparison-cost.json",
 			"expected": {
 				"exit": 0,
 				"cases": 18,
@@ -640,11 +657,21 @@
 				"processFailures": 0,
 				"timedOut": 0,
 				"naiveRepeatChecks": 4,
-				"enhancedRepeatChecks": 1
+				"enhancedRepeatChecks": 1,
+				"costScales": 3,
+				"costWarmups": 1,
+				"costSamples": 5,
+				"costBudgetExceeded": 0,
+				"costSafetyViolations": 0,
+				"enhancedChecks": 1,
+				"naiveChecks": 4,
+				"manifestBound": 3,
+				"noNetTimeBenefitScales": 3
 			},
 			"minimum": {
 				"cases": 18,
-				"groups": 7
+				"groups": 7,
+				"costScales": 3
 			}
 		},
 		{
