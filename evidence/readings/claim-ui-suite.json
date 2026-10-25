@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-ui-suite",
 	"instrument_sha256": "apps/workbench-ui/package.json:6b33d47311d53d60d2d8d459ea7d1fbf5d94493c224334c18663fcd27d847a4b\npackage.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857",
-	"subject_sha": "dd186cdf24b3c4680a7e2c7cc9b033309dfc2ae9",
+	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T16:54:44.224Z",
+	"measured_at": "2026-10-25T17:56:06.734Z",
 	"reading": {
 		"pass": 75,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:bde925ef14aeb7ce39d1b034916c06f188ded906c486e75177ec852cef346e52",
+	"raw_digest": "sha256:175e5b698b9aa84aead50666fe8a2ecc4b5d332aa329d20637be7ac2172ad142",
 	"reproduce": "bun run test:workbench-ui",
 	"class": "curated-evidence"
 }

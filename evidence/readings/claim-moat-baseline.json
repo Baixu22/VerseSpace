@@ -1,20 +1,20 @@
 {
 	"claim_id": "claim-moat-baseline",
 	"instrument_sha256": "docs/decisions/0026-input-origin-and-artifact-use.md:0f3fbfa9964e0569d3cc1b2f84b4fd32205720021e5d94ae37b9342972275801\ndocs/decisions/README.md:a9082d2b1f26a03960638ade41c7df61f676dc05b129d4f2db6ce6160330f4d5\nscripts/moat/check-scope-adr.mjs:3a1069bdd05f220be4dafb6ad3ee7a4f938a867701c5ff382e94aadd83272f6d\nscripts/moat/check-scope-adr.test.mjs:accd751d558c563d82392cad30bbbbeebcd876847c5b1c48fb44d4883d30bb2c",
-	"subject_sha": "e487aa7f64a23ba365330aa7b8b62d252c15fa39",
+	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T16:17:28.371Z",
+	"measured_at": "2026-10-25T17:50:54.046Z",
 	"reading": {
 		"exit": 0,
 		"failures": 0,
 		"tests": 5
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:340ece6f8d07fc0cbbc0722a01ac210effbd53c46f71ac82a2089f037c6333dd",
+	"raw_digest": "sha256:07a6fb5550f7b6d8a171285f68d61cde7df2abeff35e0710fcd0b8d71ab17043",
 	"reproduce": "node scripts/moat/check-scope-adr.mjs --json && node --test scripts/moat/check-scope-adr.test.mjs",
 	"class": "curated-evidence"
 }

@@ -1,15 +1,19 @@
 {
 	"claim_id": "claim-upload-surface-tests",
-	"instrument_sha256": "scripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/classify.test.mjs:26e3916e17b18d44d2258b178637af3e4d3d97f10c2969b0c4ca2e1867ff5f71\nscripts/upload-surface/links.mjs:9f1352df9aa86bd72a08d59301fca3c8e52537ad50f0042c2b883f8afb419e47\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d\nscripts/upload-surface/policy.json:8a4b5bb2a4e3e1119d13c76bd8ba710434f3fabacfefe44e1053b2ac857057a9",
-	"subject_sha": "b11dedaa531a207ffee9f3f9c7b58545c2a25c00",
-	"environment": {},
-	"measured_at": "2026-10-25T09:17:20.444Z",
+	"instrument_sha256": "scripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/classify.test.mjs:fc85334d69c97b039fa5e581ac880dfa6e60749d8b33b2ab8ae73cdb84b3fbad\nscripts/upload-surface/links.mjs:9f1352df9aa86bd72a08d59301fca3c8e52537ad50f0042c2b883f8afb419e47\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d\nscripts/upload-surface/policy.json:c8600682561528c26536703721318589b7c1e6b1b71e9d376b606c9ce3ecd4bd",
+	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1"
+	},
+	"measured_at": "2026-10-25T17:57:17.649Z",
 	"reading": {
-		"pass": 31,
+		"pass": 15,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:35d53c0fcd3f3de9c51a18317bc69accc285f0f03aec872e65b2f3d4178b1f68",
+	"raw_digest": "sha256:27ca7d998fbdbb4ae1a32081810a271caa117278e1beb2c52052df537d20fec4",
 	"reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
 	"class": "curated-evidence"
 }

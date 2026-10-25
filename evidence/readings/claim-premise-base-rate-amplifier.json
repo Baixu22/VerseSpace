@@ -1,27 +1,20 @@
 {
 	"claim_id": "claim-premise-base-rate-amplifier",
 	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:d557892e4a7a66532fd43b4a1c420b96b7af8649d654d2785e728dddd033592c",
-	"subject_sha": "b11dedaa531a207ffee9f3f9c7b58545c2a25c00",
-	"environment": {},
-	"measured_at": "2026-10-25T09:25:46.862Z",
+	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1"
+	},
+	"measured_at": "2026-10-25T17:57:18.025Z",
 	"reading": {
-		"eventLines": 5063,
-		"premiseStale": 128,
-		"premiseNoticeQueued": 80,
-		"premiseNoticeDelivered": 14,
-		"premiseNoticeOutcome": 128,
-		"deliveredFootprint": 14,
-		"threadNotices": 45,
-		"threadInvalidationNotices": 45,
-		"threadsWithNotices": 20,
-		"footprintWriters": 22,
 		"premisePassEvents": 3516,
 		"premisePassOverlaps": 88252,
 		"premisePassSuppressedDedup": 87982,
 		"premisePassSuppressedL1": 830,
-		"premisePassSuppressedL3": 0,
 		"premisePassNotified": 248,
-		"premisePassWriters": 10705
+		"footprintWriters": 10722
 	},
 	"instrument_exit": 0,
 	"raw_digest": "sha256:d821796ca9137394d61189ca5de81209be5d2fb54b665d0bbc03a7e041c7f94f",
