@@ -524,6 +524,15 @@ describe("argv execution", () => {
 			rejects: /没有声明产物依赖/,
 		},
 		{
+			path: ["checkpoint", "export"],
+			label: "checkpoint export <id>",
+			build: async (ws) => {
+				await seedCheckpoint(ws);
+				return ["checkpoint", "export", CHECKPOINT_ID, "--json"];
+			},
+			rejects: /没有声明产物/,
+		},
+		{
 			path: ["checkpoint", "consume"],
 			label: "checkpoint consume <id>",
 			build: async (ws) => {
