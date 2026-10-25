@@ -1,0 +1,11 @@
+{
+	"version": 1,
+	"baseline": "a7197bacd7159e704278a0dd5cf2233952d4e0fe",
+	"sha256": {
+		"packages/workbench/fixtures/artifact-use/cases.json": "d10eeba5e28ab9ea689d23f1d60fbff342eed1d42730302df80fe4de07e36515",
+		"packages/workbench/fixtures/artifact-use/check.cjs": "71a4109a9b9d20aba5fd6d8c4aefac816c474527508e8798d200286885bc5b2f",
+		"packages/workbench/scripts/verify/artifact-use/judge.mjs": "1d578185d88bc50cb31be033c6a376107b15ad44ba3e841078ebfa04ea572d57",
+		"packages/workbench/scripts/verify/artifact-use/naive.mjs": "e23288bdedd2535d66adc094bd3ffdb63c6440bdaa6efcd587490d81439057eb",
+		"packages/workbench/scripts/verify/artifact-use/workbench.ts": "0437d6df26cbd06ef1802782746d39fa0554724ea673bd2d89ea7f407d7e6d25"
+	}
+}

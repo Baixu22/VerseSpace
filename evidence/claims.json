@@ -529,6 +529,49 @@
 			"minimum": {
 				"files": 7
 			}
+		},
+		{
+			"id": "claim-moat-oracle",
+			"statement": "TF-0286 独立冻结场景和真实 Windows 原生/旧主线基线可重放；朴素安全零错误，旧主线测得三项差异，成本预算在实现前固定",
+			"instrument": [
+				"packages/workbench/scripts/verify/artifact-use/check-freeze.mjs",
+				"packages/workbench/scripts/verify/artifact-use/judge.mjs",
+				"packages/workbench/scripts/verify/artifact-use/judge.test.mjs",
+				"packages/workbench/scripts/verify/artifact-use/naive.mjs",
+				"packages/workbench/scripts/verify/artifact-use/workbench.ts",
+				"packages/workbench/scripts/verify/artifact-use/run.ts",
+				"packages/workbench/scripts/verify/artifact-use/frozen-source.mjs",
+				"packages/workbench/fixtures/artifact-use/cases.json",
+				"packages/workbench/fixtures/artifact-use/check.cjs",
+				"packages/workbench/fixtures/artifact-use/freeze.json"
+			],
+			"subject_paths": [
+				"packages/workbench/scripts/verify/artifact-use/**",
+				"packages/workbench/fixtures/artifact-use/**",
+				"docs/handoff/2026-10-25-artifact-use-oracle.md"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"cases": "number",
+				"tests": "number",
+				"naiveErrors": "number",
+				"oldFalseCurrent": "number",
+				"oldSourceErrors": "number",
+				"repeatNativeChecks": "number"
+			},
+			"class": "L1",
+			"reproduce": "node packages/workbench/scripts/verify/artifact-use/check-freeze.mjs && node --test packages/workbench/scripts/verify/artifact-use/judge.test.mjs && bun packages/workbench/scripts/verify/artifact-use/run.ts --frozen-baseline",
+			"expected": {
+				"exit": 0,
+				"naiveErrors": 0,
+				"oldFalseCurrent": 1,
+				"oldSourceErrors": 2,
+				"repeatNativeChecks": 4
+			},
+			"minimum": {
+				"cases": 16,
+				"tests": 3
+			}
 		}
 	]
 }
