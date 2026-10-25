@@ -169,6 +169,11 @@ export function registerWorkspace(program: Command): void {
 		.option("--staging", "list only the staging zone")
 		.option("--verified", "list only the verified zone")
 		.option("--failed", "list only the failed zone")
+		.option(
+			"--artifact-view",
+			"bounded artifact facts shared with MCP and restore",
+		)
+		.option("--writer <id>", "filter the artifact view by writer or thread")
 		.action(checkpointList);
 
 	checkpoint

@@ -1,4 +1,4 @@
-import { listArtifactReviews } from "../artifacts/status";
+import { artifactProjectionText } from "../artifacts/projection";
 import type { Blackboard } from "../blackboard";
 import { collectRestoreView } from "../chat/restore-view";
 import type { ChatThreads } from "../chat/threads";
@@ -8,14 +8,8 @@ export async function resumeCardText(
 	chat: ChatThreads,
 	threadId: string,
 ): Promise<string> {
-	const artifacts = await listArtifactReviews(bb, threadId);
-	const artifactText = artifacts
-		.map(
-			(item) =>
-				`- 产物 ${item.path}：${item.status}；${item.reason}；checkpoint revalidate ${item.checkpointId}`,
-		)
-		.join("\n");
 	const view = await collectRestoreView(bb, chat, threadId);
+	const artifactText = artifactProjectionText(view.artifactReviews);
 	if (!view.resumeCard)
 		return `线程 ${threadId} 没有恢复卡。\n${artifactText}\n${view.inputCoverage.text}`;
 	const card = view.resumeCard;

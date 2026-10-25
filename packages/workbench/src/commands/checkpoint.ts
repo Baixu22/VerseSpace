@@ -2,6 +2,10 @@ import { readFile } from "node:fs/promises";
 import type { Command } from "commander";
 import { z } from "zod";
 import { selectArtifactInputs } from "../artifacts/input-origin";
+import {
+	artifactProjectionText,
+	artifactReviewProjection,
+} from "../artifacts/projection";
 import { captureArtifactSnapshot } from "../artifacts/snapshot";
 import { listArtifactReviews } from "../artifacts/status";
 import { CHECKPOINT_ZONES } from "../blackboard/checkpoints";
@@ -135,11 +139,23 @@ export async function checkpointCreate(
 }
 
 export async function checkpointList(
-	options: { staging?: boolean; verified?: boolean; failed?: boolean },
+	options: {
+		staging?: boolean;
+		verified?: boolean;
+		failed?: boolean;
+		artifactView?: boolean;
+		writer?: string;
+	},
 	command: Command,
 ): Promise<void> {
 	const opts = command.optsWithGlobals() as GlobalOptions;
 	const bb = await resolveBlackboard();
+	if (options.artifactView) {
+		const view = await artifactReviewProjection(bb, options.writer);
+		if (opts.json) emitJson(view);
+		else if (!opts.quiet) console.log(artifactProjectionText(view));
+		return;
+	}
 	const zones = options.staging
 		? (["staging"] as const)
 		: options.verified

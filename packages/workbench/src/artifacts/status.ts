@@ -14,6 +14,12 @@ export interface ArtifactReview {
 	status: "current" | "stale" | "pending" | "failed" | "unknown";
 	targetStatus: "target-checked" | "inputs-match" | "inputs-differ" | "unknown";
 	targetCheck?: Checkpoint["artifactTargetCheck"];
+	handoff?: {
+		digest: string;
+		checkpointHash: string;
+		originStrength: string;
+		targetStatus: string;
+	};
 	targetNow?: NonNullable<Checkpoint["artifactBinding"]>["target"];
 	targetChange?:
 		| "none"
@@ -133,6 +139,14 @@ export async function listArtifactReviews(
 				reason,
 				targetStatus,
 				targetCheck: cp.artifactTargetCheck,
+				handoff: cp.artifactHandoff
+					? {
+							digest: cp.artifactHandoff.digest,
+							checkpointHash: cp.artifactHandoff.context.checkpointHash,
+							originStrength: cp.artifactHandoff.origin.strength,
+							targetStatus: cp.artifactHandoff.target.status,
+						}
+					: undefined,
 				targetNow,
 				targetChange,
 				inputs: artifact.inputs,
@@ -149,7 +163,13 @@ export async function listArtifactReviews(
 						: facts.origin.strength === "tool-observed"
 							? "observed-origin-and-scope"
 							: "declared-scope",
-				refs: [...new Set([root.id, cp.id])],
+				refs: [
+					...new Set([
+						root.id,
+						cp.id,
+						...(cp.artifactHandoff ? [cp.artifactHandoff.digest] : []),
+					]),
+				],
 			};
 		}),
 	);
@@ -174,6 +194,8 @@ export async function reconcileArtifacts(bb: Blackboard): Promise<void> {
 				review.targetCheck,
 				review.targetNow,
 				review.targetChange,
+				review.handoff,
+				review.refs,
 			]),
 		);
 		if (previous.get(review.rootId) === signature) continue;

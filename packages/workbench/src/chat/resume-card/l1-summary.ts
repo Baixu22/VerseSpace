@@ -16,7 +16,10 @@
  * 没有边界后活动的分支产出零行，调用方据此不建恢复卡行。
  */
 
-import { listArtifactReviews } from "../../artifacts/status";
+import {
+	artifactProjectionText,
+	artifactReviewProjection,
+} from "../../artifacts/projection";
 import type { Blackboard } from "../../blackboard";
 import { claimVersion } from "../../blackboard/claim-version";
 import { currentPremiseNotices } from "../../runtime/premises";
@@ -270,11 +273,12 @@ export async function buildBranchL1Summary(input: {
 		}
 	}
 
-	for (const artifact of await listArtifactReviews(bb, branch.id)) {
+	const artifactView = await artifactReviewProjection(bb, branch.id);
+	if (artifactView.total) {
 		summary.lines.push({
 			kind: "verifier",
-			text: `产物 ${artifact.path}：${artifact.status}；${artifact.reason}；checkpoint revalidate ${artifact.checkpointId}`,
-			refs: artifact.refs,
+			text: artifactProjectionText(artifactView),
+			refs: [...new Set(artifactView.items.flatMap((item) => item.refs))],
 		});
 	}
 	return summary;

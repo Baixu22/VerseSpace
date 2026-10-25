@@ -7,6 +7,7 @@
  * 直接塞进模型上下文，体积不设上限会让一次查询把预算吃光。
  */
 
+import { artifactReviewProjection } from "../artifacts/projection";
 import type { Blackboard } from "../blackboard";
 import { inputCoverageView } from "../blackboard/input-coverage";
 import { ChatThreads } from "../chat/threads";
@@ -183,6 +184,11 @@ export const MCP_TOOLS: McpTool[] = [
 		inputSchema: {
 			type: "object",
 			properties: {
+				view: {
+					type: "string",
+					enum: ["card", "artifacts"],
+					description: "恢复卡文字或有体积上限的产物事实 JSON。",
+				},
 				threadId: {
 					type: "string",
 					description: "指定线程 id；不传则列出所有带恢复笔记的线程。",
@@ -200,6 +206,8 @@ export const MCP_TOOLS: McpTool[] = [
 					? params.threadId
 					: undefined;
 			if (threadId) {
+				if (params.view === "artifacts")
+					return JSON.stringify(await artifactReviewProjection(bb, threadId));
 				return truncate(await resumeCardText(bb, chat, threadId));
 			}
 			const metas = await chat.list();
