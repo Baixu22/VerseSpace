@@ -19,24 +19,17 @@
 		},
 		{
 			"referrer": "docs/decisions/0006-advisory-concurrency-control.md",
-			"localPaths": [
-				"docs/positioning-v5.md"
-			],
+			"localPaths": ["docs/positioning-v5.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
 			"referrer": "docs/decisions/0007-monotonicity-first.md",
-			"localPaths": [
-				"docs/positioning-v5.md"
-			],
+			"localPaths": ["docs/positioning-v5.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
 			"referrer": "docs/decisions/0008-structure-from-execution.md",
-			"localPaths": [
-				"docs/positioning-v5.md",
-				"docs/positioning-v6.md"
-			],
+			"localPaths": ["docs/positioning-v5.md", "docs/positioning-v6.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
@@ -50,9 +43,7 @@
 		},
 		{
 			"referrer": "docs/decisions/0023-research-prototype-closeout.md",
-			"localPaths": [
-				"docs/positioning-v5.md"
-			],
+			"localPaths": ["docs/positioning-v5.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
@@ -66,37 +57,27 @@
 		},
 		{
 			"referrer": "docs/decisions/0013-workbench-identity-and-compliance.md",
-			"localPaths": [
-				"docs/helmor-absorption-deep-exploration-2026-09-17.md"
-			],
+			"localPaths": ["docs/helmor-absorption-deep-exploration-2026-09-17.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
 			"referrer": "docs/decisions/0014-legacy-retirement-gate.md",
-			"localPaths": [
-				"docs/helmor-absorption-deep-exploration-2026-09-17.md"
-			],
+			"localPaths": ["docs/helmor-absorption-deep-exploration-2026-09-17.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
 			"referrer": "docs/decisions/0016-retirement-closeout.md",
-			"localPaths": [
-				"docs/retirement-closeout-validation-2026-09-21.md"
-			],
+			"localPaths": ["docs/retirement-closeout-validation-2026-09-21.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
 			"referrer": "docs/handoff/2026-09-26-research-closeout.md",
-			"localPaths": [
-				"docs/positioning-v5.md"
-			],
+			"localPaths": ["docs/positioning-v5.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		},
 		{
 			"referrer": "docs/handoff/2026-09-26-upload-surface-links.md",
-			"localPaths": [
-				"docs/positioning-v5.md"
-			],
+			"localPaths": ["docs/positioning-v5.md"],
 			"why": "这些材料是设计原稿/收尾报告/研究过程记录，按 ADR-0020 的 class 定义属 process-evidence（本机留、换机不可复算），不进上传面；引用来自已上传的 ADR/handoff 文档，逐条接受而非删除引用，保持读者可在同仓定位原稿。"
 		}
 	],
@@ -129,78 +110,52 @@
 	},
 	"rules": [
 		{
-			"globs": [
-				"evidence/raw/**"
-			],
+			"globs": ["evidence/raw/**"],
 			"class": "process-evidence",
 			"why": "证据账本的原始输出（测试日志、探针 dump）：本机留，只有哈希与精选读数入库（TF-0274 / ADR-0020）"
 		},
 		{
-			"globs": [
-				"evidence/readings/**"
-			],
+			"globs": ["evidence/readings/**"],
 			"class": "curated-evidence",
 			"why": "读数：体量小、被 docs 与森林节点引用，换机可复算（TF-0274）"
 		},
 		{
-			"globs": [
-				"evidence/claims.json"
-			],
+			"globs": ["evidence/claims.json"],
 			"class": "outcome",
 			"why": "声明注册表：它是「我们声称什么」的单一权威，属于源码级交付物"
 		},
 		{
-			"globs": [
-				"**/node_modules/**"
-			],
+			"globs": ["**/node_modules/**"],
 			"class": "machine-state",
 			"why": "依赖树，由 bun install 重建"
 		},
 		{
-			"globs": [
-				"%SystemDrive%/ProgramData/Microsoft/Windows/Caches/**"
-			],
+			"globs": ["%SystemDrive%/ProgramData/Microsoft/Windows/Caches/**"],
 			"class": "machine-state",
 			"why": "Windows 主机缓存误落入未展开的 SystemDrive 字面路径；仅此缓存子树留本机，误纳入上传面仍应失败（2026-09-30）"
 		},
 		{
-			"globs": [
-				"**/.agent-workbench/**"
-			],
+			"globs": ["**/.agent-workbench/**"],
 			"class": "machine-state",
 			"why": "task-forest：维护者的个人编排脚手架，非工程交付物（2026-09-24 出仓）"
 		},
 		{
-			"globs": [
-				"**/dist/**",
-				"dist-ssr/**",
-				"**/.vite/**"
-			],
+			"globs": ["**/dist/**", "dist-ssr/**", "**/.vite/**"],
 			"class": "machine-state",
 			"why": "构建产物，由 bun run build 重建"
 		},
 		{
-			"globs": [
-				".workbench/**",
-				"**/.workbench/**"
-			],
+			"globs": [".workbench/**", "**/.workbench/**"],
 			"class": "machine-state",
 			"why": "workbench 运行时状态（黑板/检查点/事件/锁）"
 		},
 		{
-			"globs": [
-				"worktrees/**",
-				".claude/worktrees/**"
-			],
+			"globs": ["worktrees/**", ".claude/worktrees/**"],
 			"class": "machine-state",
 			"why": "dispatch 产生的链接工作树"
 		},
 		{
-			"globs": [
-				".claude/skills/**",
-				".agents/skills/**",
-				"agent/skills/**"
-			],
+			"globs": [".claude/skills/**", ".agents/skills/**", "agent/skills/**"],
 			"class": "machine-state",
 			"why": "第三方 vendored skills，由 skills-lock.json 重装"
 		},
@@ -221,10 +176,7 @@
 			"why": "agent/工具本机状态与临时区"
 		},
 		{
-			"globs": [
-				"**/.evidence-sites/**",
-				"**/.live-logs/**"
-			],
+			"globs": ["**/.evidence-sites/**", "**/.live-logs/**"],
 			"class": "machine-state",
 			"why": "live-model E2E 现场（黑板 + 临时 git 仓库 + transcript）"
 		},
@@ -267,46 +219,32 @@
 			"why": "密钥与本机/编辑器私有文件，永不进入上传面"
 		},
 		{
-			"globs": [
-				".agent-contexts/**",
-				"**/.agent-contexts/**"
-			],
+			"globs": [".agent-contexts/**", "**/.agent-contexts/**"],
 			"class": "process-evidence",
 			"why": "每轮会话的证据与草稿；只有被引用的精选材料才提升为 curated-evidence（TF-0220）"
 		},
 		{
-			"globs": [
-				".husky/_/**"
-			],
+			"globs": [".husky/_/**"],
 			"class": "machine-state",
 			"why": "husky 内部运行时，由 husky 安装生成"
 		},
 		{
-			"globs": [
-				".husky/pre-commit"
-			],
+			"globs": [".husky/pre-commit"],
 			"class": "outcome",
 			"why": "提交门禁本体，属于工程交付物"
 		},
 		{
-			"globs": [
-				".husky/**"
-			],
+			"globs": [".husky/**"],
 			"class": "machine-state",
 			"why": "husky 目录的其余部分为生成物"
 		},
 		{
-			"globs": [
-				".vscode/extensions.json",
-				".vscode/settings.json"
-			],
+			"globs": [".vscode/extensions.json", ".vscode/settings.json"],
 			"class": "outcome",
 			"why": "团队共享的编辑器配置（.gitignore 显式白名单）"
 		},
 		{
-			"globs": [
-				".vscode/**"
-			],
+			"globs": [".vscode/**"],
 			"class": "machine-state",
 			"why": "个人编辑器状态"
 		},
@@ -324,84 +262,57 @@
 			"why": "原始 chrome-devtools trace（单份约 250MB），聚合摘要才入库"
 		},
 		{
-			"globs": [
-				"docs/*-evidence-*.json",
-				"docs/*.json"
-			],
+			"globs": ["docs/*-evidence-*.json", "docs/*.json"],
 			"class": "process-evidence",
 			"why": "按日期的证据 dump；复核后的读数写进 docs 报告与节点 evidence"
 		},
 		{
-			"globs": [
-				"docs/handoff/**"
-			],
+			"globs": ["docs/handoff/**"],
 			"class": "outcome",
 			"why": "接力交接记录的唯一入库位：换机后据此复算本轮结论。整目录白名单，杜绝逐文件漂移"
 		},
 		{
-			"globs": [
-				"docs/decisions/**"
-			],
+			"globs": ["docs/decisions/**"],
 			"class": "outcome",
 			"why": "ADR 集，项目权威决定，追加式"
 		},
 		{
-			"globs": [
-				"docs/assets/**"
-			],
+			"globs": ["docs/assets/**"],
 			"class": "outcome",
 			"why": "README / 文档插图：结果性文档的一部分，换机克隆后随文档一起复核（不按日期漂移，不进 raw）"
 		},
 		{
-			"globs": [
-				"docs/user/**"
-			],
+			"globs": ["docs/user/**"],
 			"class": "outcome",
 			"why": "退役 Helmor 指南，作为记录保留"
 		},
 		{
-			"globs": [
-				"docs/fable-brief/**"
-			],
+			"globs": ["docs/fable-brief/**"],
 			"class": "outcome",
 			"why": "被 ADR-0010 / ADR-0016 与 docs/user/README.md 引用"
 		},
 		{
-			"globs": [
-				"docs/reicon-icons.md",
-				"docs/fit-ledger.md"
-			],
+			"globs": ["docs/reicon-icons.md", "docs/fit-ledger.md"],
 			"class": "outcome",
 			"why": "分别被 AGENTS.md 与 packages/workbench/README.md 引用"
 		},
 		{
-			"globs": [
-				"docs/phase4-human-usage-window-*.md"
-			],
+			"globs": ["docs/phase4-human-usage-window-*.md"],
 			"class": "outcome",
 			"why": "ADR-0019 称为 durable 且可重跑：出仓会让唯一真人门不可复现"
 		},
 		{
-			"globs": [
-				"docs/engineering-defect-localization-and-qa-plan-*.md"
-			],
+			"globs": ["docs/engineering-defect-localization-and-qa-plan-*.md"],
 			"class": "outcome",
 			"why": "本轮整改的验收规划，是分支执行依据"
 		},
 		{
-			"globs": [
-				"docs/perf/*-trace-summary.json",
-				"docs/perf/*.md"
-			],
+			"globs": ["docs/perf/*-trace-summary.json", "docs/perf/*.md"],
 			"class": "curated-evidence",
 			"why": "聚合后的 trace 摘要与性能分析（体量小、可复算）"
 		},
 		{
-			"globs": [
-				"packages/**",
-				"apps/**",
-				"scripts/**"
-			],
+			"globs": ["packages/**", "apps/**", "scripts/**"],
 			"class": "outcome",
 			"why": "三个包的源码、测试与构建脚本"
 		},
@@ -415,24 +326,17 @@
 			"why": "footprint/seal 钩子与 Claude Code 集成配置（CLAUDE.md 记录的集成面）"
 		},
 		{
-			"globs": [
-				".claude/**"
-			],
+			"globs": [".claude/**"],
 			"class": "machine-state",
 			"why": ".claude 目录的其余部分为本机会话状态"
 		},
 		{
-			"globs": [
-				".github/**",
-				".cursor/**"
-			],
+			"globs": [".github/**", ".cursor/**"],
 			"class": "outcome",
 			"why": "PR 模板、Issue 模板与 MCP 注册"
 		},
 		{
-			"globs": [
-				"*"
-			],
+			"globs": ["*"],
 			"class": "outcome",
 			"why": "仓库根文件（README/AGENTS/LICENSE/配置/锁文件）"
 		}

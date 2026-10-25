@@ -303,7 +303,10 @@ test("real policy: adjudicated references are recorded, reasoned, and still loca
 		inventoryPath: join(HERE, "legacy-local-docs.json"),
 	});
 	const accepted = real.acceptedLocalReferences ?? [];
-	assert.ok(accepted.length >= 1, "at least the 2026-09-25 adjudication exists");
+	assert.ok(
+		accepted.length >= 1,
+		"at least the 2026-09-25 adjudication exists",
+	);
 	// The original 2026-09-25 adjudication must remain intact (regression guard).
 	const original = accepted.find(
 		(e) => e.referrer === "docs/handoff/2026-09-25-upload-surface-round.md",
@@ -326,4 +329,3 @@ test("real policy: adjudicated references are recorded, reasoned, and still loca
 		}
 	}
 });
-
