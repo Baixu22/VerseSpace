@@ -1,4 +1,4 @@
-import { claimVersion } from "./claim-version";
+import { claimObservation, claimVersion } from "./claim-version";
 import type { FootprintLine, FootprintUsed } from "./session-types";
 
 export type ObservedRead = FootprintUsed & {
@@ -18,6 +18,14 @@ export interface ReadSetView {
 function supersedes(next: ObservedRead, previous: ObservedRead): boolean {
 	// An unmeasured read cannot erase a measured premise.
 	if (claimVersion(next) == null) return false;
+	if (next.observation) {
+		const evidence = claimObservation(next);
+		if (
+			evidence.source === "unknown" ||
+			(evidence.source === "tool-observed" && evidence.binding !== "matched")
+		)
+			return false;
+	}
 	if (previous.version != null && next.version == null) return false;
 	if (next.span?.start === 1 && next.span.end === Number.MAX_SAFE_INTEGER)
 		return true;

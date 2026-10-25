@@ -1,6 +1,8 @@
 import { extractFootprint, hashPathClaim } from "../blackboard/footprint";
+import { captureReturnedInput } from "../blackboard/footprint-sample";
 import { writerSpoolDir } from "../blackboard/sessions";
 import { acknowledgeClaudeNotices } from "./claude-ack";
+import { claudeReturnedInput } from "./claude-input";
 import { reduceClaudeRenderEvent } from "./claude-render-state";
 import type { LiveClaudeSession } from "./claude-types";
 import type { ThreadContext } from "./thread-context";
@@ -50,10 +52,10 @@ export function registerTurnRouter(
 		}
 		for (const emitted of render.events) turn.emit(emitted);
 		for (const block of render.newToolBlocks) {
-			recordToolCallFootprint(context, id, turn, event, block);
+			recordToolCallFootprint(id, turn, event, block);
 		}
 		for (const block of render.toolResultBlocks) {
-			recordToolResultFootprint(context, id, turn, block);
+			recordToolResultFootprint(context, id, turn, block, event);
 		}
 
 		if (event.type === "result") {
@@ -105,7 +107,6 @@ function startInheritanceObservation(
 }
 
 function recordToolCallFootprint(
-	context: ThreadContext,
 	id: string,
 	turn: Turn,
 	event: Record<string, unknown>,
@@ -117,19 +118,6 @@ function recordToolCallFootprint(
 	);
 	if (!footprint) return;
 	turn.pendingFootprints.set(footprint.activity, footprint);
-	turn.fpQueue = turn.fpQueue.then(async () => {
-		for (const used of footprint.used) {
-			Object.assign(
-				used,
-				await hashPathClaim(
-					context.bb.projectRoot,
-					used.path,
-					writerSpoolDir(context.bb.paths, id),
-					used.span,
-				),
-			);
-		}
-	});
 }
 
 function recordToolResultFootprint(
@@ -137,13 +125,32 @@ function recordToolResultFootprint(
 	id: string,
 	turn: Turn,
 	block: Record<string, unknown>,
+	event: Record<string, unknown>,
 ): void {
 	const toolCallId = String(block.tool_use_id ?? "");
 	const footprint = turn.pendingFootprints.get(toolCallId);
 	if (!footprint) return;
 	turn.pendingFootprints.delete(toolCallId);
 	if (block.is_error === true) return;
+	const returned = claudeReturnedInput(
+		context.bb.projectRoot,
+		footprint,
+		block,
+		event,
+	);
 	turn.fpQueue = turn.fpQueue.then(async () => {
+		for (const used of footprint.used) {
+			Object.assign(
+				used,
+				await captureReturnedInput(
+					context.bb.projectRoot,
+					used.path,
+					returned,
+					writerSpoolDir(context.bb.paths, id),
+					used.span,
+				),
+			);
+		}
 		for (const generated of footprint.generated) {
 			Object.assign(
 				generated,

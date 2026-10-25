@@ -1,7 +1,9 @@
+import { resolve } from "node:path";
 import type { ParsedStreamFootprint } from "../blackboard/footprint";
 import { hashPathClaim } from "../blackboard/footprint";
+import { captureReturnedInput } from "../blackboard/footprint-sample";
 import { writerSpoolDir } from "../blackboard/sessions";
-import { extractCodexFootprint } from "./codex-footprint";
+import { codexReturnedInput, extractCodexFootprint } from "./codex-footprint";
 import {
 	type CodexRenderState,
 	reduceCodexRenderEvent,
@@ -40,10 +42,9 @@ export function routeCodexEvent(
 	}
 	for (const emitted of result.events) turn.emit(emitted);
 
-	// A newly-seen command item: capture its footprint claim (file versions are
-	// hashed asynchronously, exactly as the claude router does).
+	// Keep path claims pending until a successful result supplies the receipt.
 	for (const { item } of result.newToolItems) {
-		recordCommandFootprint(context, id, turn, item);
+		recordCommandFootprint(id, turn, item);
 	}
 	// The completed command item carries success/failure — a failed command is
 	// not a proven read/write, so drop its pending footprint.
@@ -61,7 +62,6 @@ export function routeCodexEvent(
 }
 
 function recordCommandFootprint(
-	context: ThreadContext,
 	id: string,
 	turn: CodexTurnState,
 	item: Record<string, unknown>,
@@ -69,21 +69,6 @@ function recordCommandFootprint(
 	const footprint = extractCodexFootprint(item, id);
 	if (!footprint) return;
 	turn.pendingFootprints.set(footprint.activity, footprint);
-	// Hash the read side now (content at observation time), same as the claude
-	// path: reads are versioned when seen, writes when the result confirms them.
-	turn.fpQueue = turn.fpQueue.then(async () => {
-		for (const used of footprint.used) {
-			Object.assign(
-				used,
-				await hashPathClaim(
-					context.bb.projectRoot,
-					used.path,
-					writerSpoolDir(context.bb.paths, id),
-					used.span,
-				),
-			);
-		}
-	});
 }
 
 function settleCommandFootprint(
@@ -101,7 +86,24 @@ function settleCommandFootprint(
 		item.status === "failed" ||
 		(typeof item.exitCode === "number" && item.exitCode !== 0);
 	if (failed) return; // a failed command did not prove a read/write
+	const returned = codexReturnedInput(context.bb.projectRoot, footprint, item);
+	const cwd =
+		typeof item.cwd === "string" && item.cwd
+			? item.cwd
+			: context.bb.projectRoot;
 	turn.fpQueue = turn.fpQueue.then(async () => {
+		for (const used of footprint.used) {
+			Object.assign(
+				used,
+				await captureReturnedInput(
+					context.bb.projectRoot,
+					resolve(cwd, used.path),
+					returned,
+					writerSpoolDir(context.bb.paths, id),
+					used.span,
+				),
+			);
+		}
 		for (const generated of footprint.generated) {
 			Object.assign(
 				generated,

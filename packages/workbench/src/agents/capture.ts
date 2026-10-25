@@ -5,7 +5,9 @@ import {
 	hashPathClaim,
 	type ParsedStreamFootprint,
 } from "../blackboard/footprint";
+import { captureReturnedInput } from "../blackboard/footprint-sample";
 import { writerSpoolDir } from "../blackboard/sessions";
+import { claudeReturnedInput } from "../chat/claude-input";
 import { foldAndAssess } from "../tribunal/lane-distress";
 import { extractUsage } from "./usage";
 
@@ -17,6 +19,7 @@ export async function createAgentCapture(
 	worktree: string,
 ) {
 	const pending = new Map<string, ParsedStreamFootprint>();
+	const seen = new Set<string>();
 	let queue: Promise<void> = Promise.resolve();
 	let laneMetrics = await bb.metrics.get(workspotId);
 	let dirty = false;
@@ -76,20 +79,9 @@ export async function createAgentCapture(
 					writerId,
 				);
 				if (!fp) continue;
+				if (seen.has(fp.activity)) continue;
+				seen.add(fp.activity);
 				pending.set(fp.activity, fp);
-				enqueue(async () => {
-					for (const used of fp.used) {
-						Object.assign(
-							used,
-							await hashPathClaim(
-								bb.projectRoot,
-								resolve(worktree, used.path),
-								writerSpoolDir(bb.paths, writerId),
-								used.span,
-							),
-						);
-					}
-				});
 			}
 		} else if (event.type === "user") {
 			for (const block of content) {
@@ -100,7 +92,20 @@ export async function createAgentCapture(
 				pending.delete(toolCallId);
 				// A rejected tool did not observe or generate the requested file.
 				if (block.is_error === true) continue;
+				const returned = claudeReturnedInput(worktree, fp, block, event);
 				enqueue(async () => {
+					for (const used of fp.used) {
+						Object.assign(
+							used,
+							await captureReturnedInput(
+								bb.projectRoot,
+								resolve(worktree, used.path),
+								returned,
+								writerSpoolDir(bb.paths, writerId),
+								used.span,
+							),
+						);
+					}
 					for (const gen of fp.generated) {
 						Object.assign(
 							gen,
