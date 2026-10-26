@@ -23,6 +23,8 @@
   根 `test:gates` 串行执行五组门禁自测，UI Vitest 固定一个 worker。
 - 清理五项无生产调用的帮助函数、17 项无引用类型和四张旧图；保留生产 schema、
   回退快照、协议与验收守卫。独占锁有界重试 Windows 短暂分享冲突，持续权限错误仍报错。
+- 监督进程取消后停止延迟 stdin fallback，退出/错误清理定时器，取消开始后拒绝新的 stdin
+  写入；真实子进程回归覆盖取消后的写入尝试，避免 EPIPE 竞态。
 - Codex 仍是实验通道。0.164.0-alpha.11.1 的 read-only/on-request 原生审批对照中，
   fresh 成功、stale 和声明只读区分别被一次 seal 拒绝，故障/取消后同线程重启恢复已测；
   danger-full-access 的 fresh/stale 原生写仍都落盘、seal 为零。只证明这些有限路径，

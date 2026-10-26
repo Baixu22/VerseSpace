@@ -18,6 +18,12 @@ TF-0312 扩展现有三包严格 TypeScript 入口，纳入活动工具、配置
 现在独占创建会有界重试短暂分享冲突，持续权限错误仍抛出，锁互斥与陈旧锁接管保持。
 该阶段完整复跑为 1243 pass / 0 fail、204 文件、34 snapshots、5575 expect、358.06 秒。
 
+最终取证的第一轮全套为 1241 pass / 1 fail、204 文件、34 snapshots、5585 expect、
+342.45 秒；失败在 UI 取消用例的延迟 stdin fallback 写入已经关闭的管道，触发 EPIPE。
+记录器拒绝这轮读数。监督层现在在发送、退出和错误路径清除 fallback 定时器，取消开始后
+拒绝新的 stdin 写入。独立真实子进程回归在旧代码测得取消后仍尝试写入一次，修复后为零；
+监督层与 UI 路由 25 项通过、0 失败，严格类型检查通过。最终全套另在修复后的源码重录。
+
 TF-0313 重新扫描生产、测试和重导出消费者后，完成以下清理：
 
 | 对象 | 最终处置 |
@@ -39,6 +45,10 @@ CheckpointZone、WriterStatus、QueueFile、ConflictsFile 和 ResumeNotePatch。
 兼容迁移、ALL_PROVIDERS_OFFERED、resetHostFilesystemProbe、FORBIDDEN_CARD_PHRASES 和
 构建 assets manifest。没有新增直接依赖，没有删除本地工作树、现场、个人技能或历史 Git。
 图片 bytes 只表示当前树变化，不表示历史体积缩减。
+
+清理提交实际为 26 个文件，1 行新增、181 行删除，净减 180 行。真实流量计数器本轮重数
+原捕获账本得到 22 个不同 footprint 写者和 10,705 个累计写者实例；两者保持独立，
+不沿用先前读数中错误的 footprintWriters=10,722。
 
 ## Codex 真实写侧与生命周期
 

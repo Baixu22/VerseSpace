@@ -103,6 +103,7 @@ export function spawnSupervised(
 				: null;
 
 		let timer: ReturnType<typeof setTimeout> | null = null;
+		let stdinTimer: ReturnType<typeof setTimeout> | null = null;
 		if (options.timeoutSeconds !== undefined) {
 			timer = setTimeout(() => {
 				timedOut = true;
@@ -117,10 +118,11 @@ export function spawnSupervised(
 			if (options.stdinGate || options.stdinAfterFirstOutput) {
 				let sent = false;
 				const send = () => {
-					if (sent) {
+					if (sent || killed || settled || !liveStdin) {
 						return;
 					}
 					sent = true;
+					if (stdinTimer) clearTimeout(stdinTimer);
 					child.stdin?.write(options.stdin);
 					if (!options.keepStdinOpen) {
 						child.stdin?.end();
@@ -143,7 +145,7 @@ export function spawnSupervised(
 				} else {
 					child.stdout?.once("data", send);
 				}
-				setTimeout(send, options.stdinFallbackMs ?? 500);
+				stdinTimer = setTimeout(send, options.stdinFallbackMs ?? 500);
 			} else {
 				child.stdin?.write(options.stdin);
 				if (!options.keepStdinOpen) {
@@ -160,6 +162,7 @@ export function spawnSupervised(
 		child.stderr?.on("data", emitLines("err"));
 
 		child.on("close", async (exitCode) => {
+			if (stdinTimer) clearTimeout(stdinTimer);
 			if (timer) {
 				clearTimeout(timer);
 			}
@@ -185,6 +188,7 @@ export function spawnSupervised(
 			settle({ exitCode, timedOut, killed });
 		});
 		child.on("error", (error) => {
+			if (stdinTimer) clearTimeout(stdinTimer);
 			if (timer) {
 				clearTimeout(timer);
 			}
@@ -209,7 +213,7 @@ export function spawnSupervised(
 				}
 			},
 			writeStdin: (line: string) => {
-				if (settled || !liveStdin) {
+				if (killed || settled || !liveStdin) {
 					throw new Error("stdin 不可写（进程已退出或流已关闭）");
 				}
 				liveStdin.write(line);

@@ -49,7 +49,7 @@
 
 | 维度 | 现状 |
 | --- | --- |
-| 工程门 | 当前 `0.5.0` 候选源码包含 Workbench 1242、UI 75、context-rot 69、五份根门禁自测 52 项与真实 Windows 浏览器 15 项验收；实际命令、构建、读数及落地边界见[四节点接力验收](docs/handoff/2026-10-26-all-nodes-relay.md)，未发布新 Release |
+| 工程门 | 当前 `0.5.0` 候选源码包含 Workbench 1243、UI 75、context-rot 69、五份根门禁自测 52 项与真实 Windows 浏览器 15 项验收；实际命令、构建、读数及落地边界见[四节点接力验收](docs/handoff/2026-10-26-all-nodes-relay.md)，未发布新 Release |
 | 声明与读数 | [`evidence/claims.json`](evidence/claims.json) 登记当前命题及历史观测，读数在 `evidence/readings/`；`bun run check:claims` 核对注册范围内的仪器、输入与读数。有效不代表整个产品已验收，历史观测不充当当前通过证据 |
 | 产品证据 | **不足**：真人自然使用与非 Windows 实机验证已永久关闭（[ADR-0024](docs/decisions/0024-retire-external-validation.md)），不再作为待办；相关收益与跨平台执行仍未验证。Codex CLI 0.164.0-alpha.11.1 在 read-only/on-request 原生审批对照中可关联正常写、失效前提拒绝与只读区拒绝；danger-full-access 的 stale 原生写仍落盘、seal 为零。Codex 保持 experimental/limited，不提供全通道保护保证 |
 | 发行 | 当前公开 Release 仍是 Workbench `0.4.1`；源码候选为未发布的 `0.5.0`，没有 `workbench-v0.5.0` tag 或 Release。**仓库目前为私有，访问源码和 Release 需要仓库权限**；发布不等于公开可下载 |
