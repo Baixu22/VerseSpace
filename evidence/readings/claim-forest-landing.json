@@ -1,13 +1,13 @@
 {
 	"claim_id": "claim-forest-landing",
 	"instrument_sha256": "scripts/check-forest-landing.mjs:601c7688b24af34bcb581715af33a35ac1f1ebc685ac86592c8ccac7bbff5e35",
-	"subject_sha": "0967992d0fd9b28f6d8723f9542a1e363288095f",
+	"subject_sha": "5a2502d6e9531c2a4ff89fab2dfb51132d98ea52",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-26T06:43:44.595Z",
+	"measured_at": "2026-10-26T07:50:07.179Z",
 	"reading": {
 		"exit": 0,
 		"problems": 0
