@@ -51,14 +51,14 @@
 | --- | --- |
 | 工程门 | 当前 `0.5.0` 候选源码包含 Workbench 1242、UI 75、context-rot 69 与真实 Windows 浏览器 15 项验收；静态、两形态构建、声明、归属与默认分支落地读数记录在最终交接，未发布新 Release |
 | 声明与读数 | [`evidence/claims.json`](evidence/claims.json) 登记当前命题及历史观测，读数在 `evidence/readings/`；`bun run check:claims` 核对注册范围内的仪器、输入与读数。有效不代表整个产品已验收，历史观测不充当当前通过证据 |
-| 产品证据 | **不足**：真人自然使用与非 Windows 实机验证已永久关闭（[ADR-0024](docs/decisions/0024-retire-external-validation.md)），不再作为待办；相关收益与跨平台执行仍未验证。Codex 仅显式原生工具 profile 的 fresh/stale 封印对照已验，不是全通道保护保证 |
+| 产品证据 | **不足**：真人自然使用与非 Windows 实机验证已永久关闭（[ADR-0024](docs/decisions/0024-retire-external-validation.md)），不再作为待办；相关收益与跨平台执行仍未验证。Codex 0.159 的显式原生 profile 只有历史正面对照；当前 26.1021 隔离 profile 已测得 fresh/stale 原生写均落盘且无 seal 事件，因此当前 Codex 写保护未通过，也不是全通道保护保证 |
 | 发行 | 当前公开 Release 仍是 Workbench `0.4.1`；源码候选为未发布的 `0.5.0`，没有 `workbench-v0.5.0` tag 或 Release。**仓库目前为私有，访问源码和 Release 需要仓库权限**；发布不等于公开可下载 |
 | 平台覆盖 | 只有 **windows-x64** 跑过完整测试套件；其余三个平台目前只有交叉编译产物 |
 | CI | **没有 CI**（[ADR-0021](docs/decisions/0021-retire-all-ci-channels.md)）：GitHub Actions 与极狐 JihuLab 通道都已退役，PR 上不会出现任何状态检查，门禁一律本机手跑 |
 
 > **读表须知**：工程门的绿灯只覆盖「本机能跑的仪器」；产品维度（生产率、真实用户、跨平台）没有被证明，也不要在引用本仓库时把它们说成已证明。
 
-本 README 对应当前主线源码。[2026-09-30 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md)是修复前的历史记录；[实现记录](docs/handoff/2026-10-01-all-issues-implementation.md)和[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)说明 #31、#45–#57 的最终落地结果。后续 #70–#77 的产物证据、受控对照与恢复卡交接见 [最终候选收口](docs/handoff/2026-10-26-workbench-0.5.0-candidate.md)。源码候选 `0.5.0` 尚未发布；`0.4.1` 发行物不自动包含这些改动。
+本 README 对应当前主线源码。[2026-09-30 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md)是修复前的历史记录；[实现记录](docs/handoff/2026-10-01-all-issues-implementation.md)和[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)说明 #31、#45–#57 的最终落地结果。后续 #70–#79 的产物证据、受控对照、恢复卡与候选收口见 [最终候选收口](docs/handoff/2026-10-26-workbench-0.5.0-candidate.md)。源码候选 `0.5.0` 尚未发布；`0.4.1` 发行物不自动包含这些改动。
 
 ### 最近落地的修复与能力
 
@@ -69,10 +69,11 @@
 | #51–#52：产物与交接 | 显式绑定单产物、输入版本、工位和目标 ref；输入变化产生独立重验事项，复读不能清除；原工位通过不等于适用于已推进的 main |
 | #53–#54：证据强度与指标 | 区分内容 hash、size-only、unknown；分别统计重读、新版本观察、产物修改和范围验证。重复写同一版本不计为本次修改 |
 | #55–#56：成本与模型实测 | 已测合成 JSONL 的 1千/1万/5万条规模，仅去掉恢复查询的一次重复读取；GLM 默认 120 秒请求预算的完整 live 场景通过，历史失败保留 |
-| #31：原生 Codex 审批 | Codex 0.159.0 + 本地 GLM + 显式原生工具 profile 的 fresh/stale 对照通过；补留协议夹具和严格成对仪器，仍不保证所有工具路径受保护 |
+| #31：原生 Codex 审批（历史） | Codex 0.159.0 + 本地 GLM + 显式原生工具 profile 的 fresh/stale 对照曾通过；当前 26.1021 对照未通过，旧结果只保留为历史 observation |
 | #70–#73：产物事实 | 显式历史输入、固定副本、目标范围、便携清单、接收方复核与 CLI/MCP/恢复同一有限投影；未知、来源弱、目标和范围外推进分别保留 |
 | #74–#76：受控裁决 | 冻结强朴素/旧主线/增强与消融重放；增强声明范围零错误，旧主线差异保留，四次消费检查 4→1；三尺度总体时间均未优于朴素，不宣称净收益 |
 | #77：现有恢复卡 | 显示五状态、来源、输入、检查、目标与复制重验命令；真实浏览器 current/stale/unknown 截图通过，查看/复制不清除待重验 |
+| #78–#79：候选收口 | Workbench `0.5.0` 的两形态/四平台构建、29 条 claims、默认分支 landing 与未发布状态收口；当前 Codex 原生写 gap 单列而非刷绿 |
 
 这些结果的受测提交、命令、计数和限制见上面的两份记录；性能样本不是容量保证，模型成功样本不是通用可靠性保证。
 
@@ -291,9 +292,11 @@ workbench --json premises pending
 - 判定会记录 `seal.decided`。Claude hook 命中时通过 stderr 返回原因；Codex 审批适配器目前只把阻断结果转换为 accept/cancel，并没有同样回传完整原因文本。不能把共同调用判定函数说成两条车道具有相同的反馈闭环。
 - `premises review-seal` 记录人工对判定的复核，不会自动修复文件、重规划或覆盖工具权限。
 
-Codex seal 与带 `--writer` 的 Claude hook 按当前写者的读集和磁盘重新判断前提，不再以 pending 通知作有效性来源。通知送达不解除仍失效的前提，当前版本的重读也不再被未确认的旧通知误阻断。`premises current --writer <id> --json` 查询当前失效输入，`premises pending` 仍只查询待投递通知；两者都不证明派生产物已经修复。该修复不扩大审批或足迹覆盖范围，Codex 的显式原生工具 profile 已通过 fresh/stale 对照（[#31](https://github.com/Baixu22/VerseSpace/issues/31)），未归因和无审批路径仍不保证受保护。
+Codex seal 与带 `--writer` 的 Claude hook 按当前写者的读集和磁盘重新判断前提，不再以 pending 通知作有效性来源。通知送达不解除仍失效的前提，当前版本的重读也不再被未确认的旧通知误阻断。`premises current --writer <id> --json` 查询当前失效输入，`premises pending` 仍只查询待投递通知；两者都不证明派生产物已经修复。该修复不扩大审批或足迹覆盖范围。Codex 0.159 的显式原生 profile 曾有 fresh/stale 正面对照（[#31](https://github.com/Baixu22/VerseSpace/issues/31)）；当前 26.1021 对照显示 stale 原生写仍落盘且无 seal 事件，因此当前写保护未通过，未归因和无审批路径仍不保证受保护。
 
-直接实测使用 Codex 0.159.0、本地 GLM、显式原生 apply_patch 工具目录、on-request 审批及 read-only Windows elevated sandbox：fresh 记录一次 pass 并落下一条写足迹；stale 记录一次 block，文件未变且无写足迹，两者均没有写回合复读。可复跑入口是 `bun packages/workbench/scripts/verify/codex-native-pair.ts`，需要隔离的 CODEX_HOME 与匹配的本地配置。模型自行拒写、补丁上下文失配或仅 CLI 沙箱拒写都不能充当 Workbench 封印通过；实验配置和非通过样本见[接力验收记录](docs/handoff/2026-10-01-issue-relay-closeout.md)。
+历史实测使用 Codex 0.159.0、本地 GLM、显式原生 apply_patch 工具目录、on-request 审批及 read-only Windows elevated sandbox：fresh 记录一次 pass 并落下一条写足迹；stale 记录一次 block，文件未变且无写足迹，两者均没有写回合复读。该结果只解释 0.159。
+
+当前 Codex 26.1021 使用隔离 freeform profile 与本机非敏感模型 catalog 重跑后，两轮读取均完成；fresh 与 stale 的 native write 都实际落盘，`writeFootprints=1`、`sealEventsAfterCodex=0`，只有冻结控制对 stale 判 block。仪器因此为 `passed=0 / total=2`，当前 Codex 写保护未通过。可复跑入口是 `bun packages/workbench/scripts/verify/codex-native-pair.ts`，需要隔离的 `CODEX_HOME` 与匹配的本地配置。模型自行拒写、补丁上下文失配或仅 CLI 沙箱拒写都不能充当 Workbench 封印通过；两次实验边界见[历史接力](docs/handoff/2026-10-01-issue-relay-closeout.md)和[0.5.0 候选收口](docs/handoff/2026-10-26-workbench-0.5.0-candidate.md)。
 
 ---
 
@@ -596,7 +599,7 @@ node packages/context-rot/scripts/install-hooks.mjs /absolute/path/to/managed-pr
 | 前提与计划 | 检测文件变化，不证明语义依赖或计划正确；没有完整跨文件失效传播或自动重规划保证 |
 | 声明产物与验证 | 已支持单产物显式依赖与独立重验；遗漏的依赖、声明范围之外的缺陷、外部服务变化和合并结果不自动获得验证保证 |
 | 通知确认 | Codex 已按成功终态确认，失败通知保留以供重投；各通道的送达记录都不证明模型理解或修复了前提，也不保证 exactly-once |
-| 写保护 | seal 不覆盖所有工具、Git 或编辑器；Codex 已按写者过滤前提，但目标归因/审批缺口及封印故障放行仍存在，只验证了显式原生工具 profile 的封印对照 |
+| 写保护 | seal 不覆盖所有工具、Git 或编辑器；Codex 已按写者过滤前提，但目标归因/审批缺口及封印故障放行仍存在。0.159 只有历史正面对照；当前 26.1021 实测 stale 原生写仍落盘且无 seal 事件，当前写保护未通过 |
 | 分叉与跨 provider 历史 | UI 消息前缀、CLI 内部 session、文件读集是三件事；普通 CLI 分叉或切换 provider 不保证把可见历史传给新模型 |
 | 计划模式 | permissionMode 只作为 Claude **新进程**的参数读取；界面以“规划已选”和常驻提示说明生效边界。切换不重启当前 CLI，下一回合可能仍复用它，不能当作所有 provider 的即时只读权限切换 |
 | reload / restore | 重试不回退副作用；Codex reload 未同步回滚内部 session。checkpoint restore 仅处理其记录的 Git/接口快照，非全仓或会话回滚 |
