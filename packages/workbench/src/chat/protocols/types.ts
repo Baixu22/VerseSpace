@@ -134,9 +134,3 @@ export function finalizeUsage(
 		outputTokens: patch.outputTokens ?? 0,
 	};
 }
-
-/** Share of the prompt served from cache, or null when there was no prompt. */
-export function cacheHitRatio(usage: TurnUsage): number | null {
-	if (usage.promptTokens <= 0) return null;
-	return usage.cachedTokens / usage.promptTokens;
-}

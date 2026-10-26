@@ -32,4 +32,3 @@ export type RegistryUpdate = z.infer<typeof registryUpdateSchema>;
 export const registrySchema = z.object({
 	entries: z.array(registryEntrySchema).default([]),
 });
-export type Registry = z.infer<typeof registrySchema>;

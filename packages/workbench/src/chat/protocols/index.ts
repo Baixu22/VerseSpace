@@ -8,7 +8,6 @@ export type { HttpProvider, ProtocolCodec } from "./types.ts";
 export {
 	type CodecRequest,
 	type CodecTurn,
-	cacheHitRatio,
 	type FailureKind,
 	finalizeUsage,
 	mergeUsage,
@@ -27,8 +26,6 @@ const CODECS: Record<HttpProvider, ProtocolCodec> = {
 export function codecFor(provider: HttpProvider): ProtocolCodec {
 	return CODECS[provider];
 }
-
-export const HTTP_PROVIDERS = Object.keys(CODECS) as HttpProvider[];
 
 export function isHttpProvider(value: string): value is HttpProvider {
 	return Object.hasOwn(CODECS, value);

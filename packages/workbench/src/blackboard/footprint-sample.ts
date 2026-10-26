@@ -164,22 +164,6 @@ export async function captureReturnedInput(
 	return claim;
 }
 
-/** Legacy premise line hashes keep their original byte/newline semantics. */
-export async function hashLines(
-	absPath: string,
-	start: number,
-	end: number,
-): Promise<string | null> {
-	try {
-		const lines = (await readFile(absPath, "utf8"))
-			.split("\n")
-			.slice(Math.max(0, start - 1), end);
-		return lines.length ? hashText(lines.join("\n")) : null;
-	} catch {
-		return null;
-	}
-}
-
 async function spoolRead(
 	spoolDir: string,
 	content: string,

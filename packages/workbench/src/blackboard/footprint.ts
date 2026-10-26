@@ -1,6 +1,6 @@
 import type { FootprintUsed, ReadSpan } from "./sessions";
 
-export { hashLines, hashPathClaim } from "./footprint-sample";
+export { hashPathClaim } from "./footprint-sample";
 
 /**
  * stream-json footprint extraction (R1): claude's stream-json output is the

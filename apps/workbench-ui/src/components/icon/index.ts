@@ -16,4 +16,3 @@
 
 export * from "./compat";
 export * from "./reicon";
-export type { AppIcon, AppIconProps } from "./types";

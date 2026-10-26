@@ -4,7 +4,6 @@ import { classifyFailure, kindFromStatus } from "./errors";
 import { openAiChatCodec } from "./openai-chat";
 import { openAiResponsesCodec } from "./openai-responses";
 import {
-	cacheHitRatio,
 	finalizeUsage,
 	mergeUsage,
 	type ParsedFrame,
@@ -164,7 +163,6 @@ describe("Anthropic codec", () => {
 			cacheWriteTokens: 150,
 			outputTokens: 88,
 		});
-		expect(cacheHitRatio(usage!)).toBeCloseTo(0.9);
 	});
 
 	test("error types map to classes without guessing from the message", () => {
@@ -255,16 +253,5 @@ describe("usage normalisation", () => {
 		expect(
 			finalizeUsage({ promptTokens: 10, cachedTokens: 99 })!.cachedTokens,
 		).toBe(10);
-	});
-
-	test("a zero-length prompt has no hit rate", () => {
-		expect(
-			cacheHitRatio({
-				promptTokens: 0,
-				cachedTokens: 0,
-				cacheWriteTokens: 0,
-				outputTokens: 0,
-			}),
-		).toBeNull();
 	});
 });

@@ -4,7 +4,6 @@ import {
 	type AttemptOutcome,
 	buildAttemptPlan,
 	decideAfterFailure,
-	isTransientStreamError,
 	type PlannedTarget,
 	retryDelayMs,
 	runWithFailover,
@@ -72,10 +71,6 @@ test("a malformed stream is not transient; a cut stream is", () => {
 	expect(
 		decideAfterFailure({ ...base, status: undefined, transient: false }).kind,
 	).toBe("fail");
-	expect(isTransientStreamError("Overloaded, please try again")).toBe(true);
-	expect(isTransientStreamError("messages.0.content: field required")).toBe(
-		false,
-	);
 });
 
 test("backoff grows, is capped, and honours Retry-After up to a ceiling", () => {

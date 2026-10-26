@@ -200,5 +200,4 @@ export const artifactManifestBodySchema = z.strictObject({
 export const artifactManifestSchema = artifactManifestBodySchema.extend({
 	digest: manifestHashSchema,
 });
-export type ArtifactManifestBody = z.infer<typeof artifactManifestBodySchema>;
 export type ArtifactManifest = z.infer<typeof artifactManifestSchema>;

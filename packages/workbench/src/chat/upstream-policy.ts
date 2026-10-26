@@ -140,14 +140,6 @@ export function decideAfterFailure(input: PolicyInput): FailoverDecision {
 	return { kind: "fail" };
 }
 
-/** Phrases that mark an in-stream error as worth retrying rather than a bad request. */
-const TRANSIENT_MESSAGE =
-	/overload|rate.?limit|too many requests|timeout|timed out|temporar|unavailable|internal|try again|capacity/i;
-
-export function isTransientStreamError(message: string): boolean {
-	return TRANSIENT_MESSAGE.test(message);
-}
-
 export interface PlannedTarget extends AdaptationTarget {
 	/** Resolved credential. Empty means the target cannot be called. */
 	apiKey: string;

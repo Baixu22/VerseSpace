@@ -109,27 +109,6 @@ export async function captureCodeRollback(
 	return { commit, paths, hashes };
 }
 
-/**
- * 采集上下文面快照：effects 将要改动的键，在改动前的值。
- * 键原本不存在时记 null（回退时删除）。
- *
- * **当前没有生产调用方**——这条注释以前写着「这是回退的唯一依据」，而事实
- * 相反：真正在跑的采集内联在 `checkpoint-effects.ts`，存的是整个
- * `RegistryEntry` 而不是「缺失记 null」，语义与本函数不同。这里保留导出是
- * 因为它被单测覆盖、形状更严格，且是 ADR-0011 删除流程的候选。在删除之前
- * 请不要把它当成回退的承重件。
- */
-export async function captureContextRollback(
-	store: ContextStore,
-	keys: string[],
-): Promise<Record<string, unknown>> {
-	const before: Record<string, unknown> = {};
-	for (const key of keys) {
-		before[key] = (await store.get(key)) ?? null;
-	}
-	return before;
-}
-
 function hasCode(rollback: Rollback | undefined): boolean {
 	return Boolean(rollback?.code?.commit);
 }

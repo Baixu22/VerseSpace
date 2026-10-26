@@ -27,8 +27,6 @@ export const resumeNotePatchSchema = z.object({
 	confirmed: z.boolean().optional(),
 });
 
-export type ResumeNotePatch = z.infer<typeof resumeNotePatchSchema>;
-
 export async function leave(
 	context: ThreadContext,
 	id: string,

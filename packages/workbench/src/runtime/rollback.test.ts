@@ -17,7 +17,6 @@ import {
 	applyRollback,
 	type ContextStore,
 	captureCodeRollback,
-	captureContextRollback,
 	planRollback,
 } from "./rollback";
 
@@ -239,25 +238,6 @@ describe("applyRollback", () => {
 		const result = await applyRollback(plan, cp, { worktreePath: root });
 		expect(result.ok).toBe(false);
 		expect(result.reason).toContain("没有代码回退快照");
-	});
-});
-
-describe("captureContextRollback", () => {
-	test("记录改动前的旧值，不存在的键记 null", async () => {
-		const store = memoryStore({ "k:1": "v1" });
-		const before = await captureContextRollback(store, ["k:1", "k:missing"]);
-		expect(before["k:1"]).toBe("v1");
-		expect(before["k:missing"]).toBeNull();
-	});
-
-	test("在改动前采集，回退能还原", async () => {
-		const store = memoryStore({ "k:1": "v1" });
-		const before = await captureContextRollback(store, ["k:1"]);
-		await store.set("k:1", "v2"); // effect 生效
-		const cp = cpWith({ rollback: { context: before } });
-		const plan = await planRollback(cp, "context", { store });
-		await applyRollback(plan, cp, { store });
-		expect(store.data["k:1"]).toBe("v1");
 	});
 });
 

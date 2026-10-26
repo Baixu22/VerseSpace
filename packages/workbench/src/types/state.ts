@@ -7,8 +7,6 @@ import { z } from "zod";
 export const queueFileSchema = z.object({
 	queue: z.array(z.string()).default([]),
 });
-/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
-export type QueueFile = z.infer<typeof queueFileSchema>;
 
 /** One queue entry file: blackboard/state/queue/<goalId>.yaml. */
 export const queueEntrySchema = z.object({
@@ -34,5 +32,3 @@ export type Conflict = z.infer<typeof conflictSchema>;
 export const conflictsFileSchema = z.object({
 	conflicts: z.array(conflictSchema).default([]),
 });
-/** 预留导出（契约面）：当前无生产引用，保留为公共 API（issue #4，2026-09-13）。 */
-export type ConflictsFile = z.infer<typeof conflictsFileSchema>;
