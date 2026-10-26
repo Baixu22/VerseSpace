@@ -4,7 +4,7 @@
 	"observerSha256": {
 		"enhanced.ts": "54f5d436047cd19014f2a9d3f8ef5acc1c3de8371f83983984a9c253f41ad01a",
 		"probe.ts": "a7aa4306e9130fe5392dbc4d685c0f7dbe366970bd195489d6f326871dcec0ce",
-		"replay.ts": "5cb0cfa76122e0fa5454c17d152aa75be16af8fd54d86082df11ab71478a9efc",
+		"replay.ts": "c4980e78a6c761cda7e33d60ddc61cff590e59791932c194f563021b2b72ea52",
 		"check-replay-freeze.mjs": "c57d1268011454d1c446ad8e11c9cedf75b820143131b47576ee532c228023f1"
 	}
 }
