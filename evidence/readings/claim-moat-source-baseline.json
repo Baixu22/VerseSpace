@@ -1,13 +1,13 @@
 {
 	"claim_id": "claim-moat-source-baseline",
 	"instrument_sha256": "docs/handoff/2026-10-25-moat-baseline.md:292075db444b7ca74f28ab7783fc88b40e1b4db3666fcc847a996f4fb0898147\npackages/workbench/scripts/verify/moat-baseline.mjs:cdf6e23f3f605b1f1f4a70e308825de48562882765adcee271e0a29600e08410",
-	"subject_sha": "765dc540e3d5bfe795f123d73a81fdae4ed87171",
+	"subject_sha": "d029f5cc10224921423ba993484657cb2b0a8b15",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T10:04:48.126Z",
+	"measured_at": "2026-10-26T05:50:05.971Z",
 	"reading": {
 		"exit": 0,
 		"files": 7

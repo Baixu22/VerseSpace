@@ -1,0 +1,29 @@
+{
+	"claim_id": "claim-codex-live-lifecycle",
+	"instrument_sha256": "packages/workbench/scripts/verify/codex-lifecycle.ts:114a032814d112030aae1b13b2dea6ccceebca52784961ed8580c135cbaed957\npackages/workbench/scripts/verify/codex-rpc-tap.mjs:4d5b89083476036cfe979d732d26ecf524ef2fab61c471a19ed717ff63e6224e",
+	"subject_sha": "0c537e67eb66e5a31eb7d6fa22bc5e303cea9d6e",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1",
+		"codex": "0.164.0-alpha.11.1",
+		"model": "ccs-404/deepseek-v4.1-flash",
+		"sandbox": "danger-full-access",
+		"approvalPolicy": "on-request",
+		"codexHome": "D:\\helmor-main\\.agent-contexts\\all-nodes-relay-2026-10-26\\codex-profile-current",
+		"profile_sha256": "4d01b06d6ef93d32e8d1478a8ea600f27c624d82cd0ac92b140094549fe18805",
+		"codex_binary_sha256": "1103e9e09c71fa2cd0afd6d8f3b9a2d63174fe8efd7cb5bd09f1cb14ef58a098"
+	},
+	"measured_at": "2026-10-26T06:22:14.230Z",
+	"reading": {
+		"exit": 0,
+		"measured": true,
+		"passed": 5,
+		"total": 5,
+		"attributedReadTurns": 3
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:84676e1d4bcf42073cd21c36f8742f4254a95b99af7e480140ee4cfdfbdcfcb4",
+	"reproduce": "bun packages/workbench/scripts/verify/codex-lifecycle.ts",
+	"class": "curated-evidence"
+}

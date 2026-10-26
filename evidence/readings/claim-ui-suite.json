@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-ui-suite",
-	"instrument_sha256": "apps/workbench-ui/package.json:6b33d47311d53d60d2d8d459ea7d1fbf5d94493c224334c18663fcd27d847a4b\npackage.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857",
-	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"instrument_sha256": "apps/workbench-ui/package.json:6b33d47311d53d60d2d8d459ea7d1fbf5d94493c224334c18663fcd27d847a4b\npackage.json:ceb8c686a9b38ede2091ff12e1a59c76c0eca7c7ae28044592fd500fbae08a10",
+	"subject_sha": "d029f5cc10224921423ba993484657cb2b0a8b15",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T17:56:06.734Z",
+	"measured_at": "2026-10-26T05:41:18.386Z",
 	"reading": {
 		"pass": 75,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:175e5b698b9aa84aead50666fe8a2ecc4b5d332aa329d20637be7ac2172ad142",
+	"raw_digest": "sha256:40d17c35a63079da191dd728f0c590616fbf973c0ad67180b5c84b4958cd4a2d",
 	"reproduce": "bun run test:workbench-ui",
 	"class": "curated-evidence"
 }

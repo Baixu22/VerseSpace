@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-workbench-suite",
-	"instrument_sha256": "package.json:64c9de97fa13b171e41363bcb466f8e1afc3d39a79b1bd3d467f10f1d8c0f857\npackages/workbench/package.json:cb5c4d246a01c5308b5b6f6ad32a72dc896f9269dab85750c58378f5f6843ae9",
-	"subject_sha": "eea83ed215cc5e63fcdc660ceec1bdc5da6dcf99",
+	"instrument_sha256": "package.json:ceb8c686a9b38ede2091ff12e1a59c76c0eca7c7ae28044592fd500fbae08a10\npackages/workbench/package.json:cb5c4d246a01c5308b5b6f6ad32a72dc896f9269dab85750c58378f5f6843ae9",
+	"subject_sha": "0c537e67eb66e5a31eb7d6fa22bc5e303cea9d6e",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-26T02:03:19.223Z",
+	"measured_at": "2026-10-26T06:05:55.951Z",
 	"reading": {
-		"pass": 1242,
+		"pass": 1243,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:fdd7e975ed195da68e3731c261036ffb9847f06d7954ac9c1578884d7866c3c8",
+	"raw_digest": "sha256:4435fcbc0724e14f207de40c17f8a51074c66c7d323959ecd05bb6a1073b77d4",
 	"reproduce": "bun run test:workbench",
 	"class": "curated-evidence"
 }

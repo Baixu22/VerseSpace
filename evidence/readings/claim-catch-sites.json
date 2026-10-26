@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-catch-sites",
 	"instrument_sha256": "scripts/audit/catch-sites.mjs:c0bb86ce04a7df4355278f2ec07b0820a638a394908fcd4718314f23d530aa20",
-	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"subject_sha": "d029f5cc10224921423ba993484657cb2b0a8b15",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T17:50:54.281Z",
+	"measured_at": "2026-10-26T05:41:33.374Z",
 	"reading": {
 		"files": 72,
-		"sites": 159
+		"sites": 158
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:180c7966cbf012e0f62a82cac8e1a8847111ebd2356702a2dba328f82c2dc9e0",
+	"raw_digest": "sha256:7cf1110d8f7d7d28e9cf74b228ecc0741ef4b2027fab451d072999602aed757e",
 	"reproduce": "node scripts/audit/catch-sites.mjs --json",
 	"class": "curated-evidence"
 }

@@ -1,20 +1,20 @@
 {
 	"claim_id": "claim-premise-base-rate-amplifier",
-	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:d557892e4a7a66532fd43b4a1c420b96b7af8649d654d2785e728dddd033592c",
-	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:abfc31cc0125c0ad16910bcd623d061077a251a9f3d6848605e711c51760eae3",
+	"subject_sha": "d029f5cc10224921423ba993484657cb2b0a8b15",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T17:57:18.025Z",
+	"measured_at": "2026-10-26T05:50:04.699Z",
 	"reading": {
 		"premisePassEvents": 3516,
 		"premisePassOverlaps": 88252,
 		"premisePassSuppressedDedup": 87982,
 		"premisePassSuppressedL1": 830,
 		"premisePassNotified": 248,
-		"footprintWriters": 10722
+		"footprintWriters": 22
 	},
 	"instrument_exit": 0,
 	"raw_digest": "sha256:d821796ca9137394d61189ca5de81209be5d2fb54b665d0bbc03a7e041c7f94f",

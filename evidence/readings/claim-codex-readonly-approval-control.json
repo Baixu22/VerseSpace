@@ -1,0 +1,27 @@
+{
+	"claim_id": "claim-codex-readonly-approval-control",
+	"instrument_sha256": "packages/workbench/scripts/verify/codex-native-pair.ts:4103b21f23482dbb6985635f0ae9127daf03294fc690bbfaa229fed942f0b449\npackages/workbench/scripts/verify/codex-rpc-tap.mjs:4d5b89083476036cfe979d732d26ecf524ef2fab61c471a19ed717ff63e6224e\npackages/workbench/scripts/verify/codex-seal-baseline.ts:61d1e50e1d8ad963b234278b513cf4dff8df8e7db4cc5011bf6aa629e82257e1\npackages/workbench/scripts/verify/codex-write-seal.ts:2f7392ebc9e0e6ebd3d1527c79a82ef08b420bc75925b6a13fa481ac734262c0",
+	"subject_sha": "0c537e67eb66e5a31eb7d6fa22bc5e303cea9d6e",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1",
+		"codex": "0.164.0-alpha.11.1",
+		"model": "ccs-404/deepseek-v4.1-flash",
+		"sandbox": "read-only",
+		"approvalPolicy": "on-request",
+		"codexHome": "D:\\helmor-main\\.agent-contexts\\all-nodes-relay-2026-10-26\\codex-profile-approval",
+		"profile_sha256": "259708633a796e8022bc4202f5f5400504cc1781631093173009e80a5f329725",
+		"codex_binary_sha256": "1103e9e09c71fa2cd0afd6d8f3b9a2d63174fe8efd7cb5bd09f1cb14ef58a098"
+	},
+	"measured_at": "2026-10-26T06:20:44.141Z",
+	"reading": {
+		"exit": 0,
+		"passed": 1,
+		"total": 1
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:13949326788ed6ee9879fe498c349daa254e01779251a6ca65886f1400d5c22f",
+	"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts --readonly-area",
+	"class": "curated-evidence"
+}

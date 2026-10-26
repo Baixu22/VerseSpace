@@ -109,6 +109,65 @@ idle 终态；只读对照还要求 live `readonly_area` 分类。读回合、�
 
 ## 最终门禁与落地
 
-最终读数正在通过 `scripts/claims/record-reading.mjs --run` 采集；完成后本段记录实际
-exit、数量、源码提交、构建资产、浏览器现场与任务提案状态。当前没有以旧读数替代本轮
-最终验收，也没有把仍待确认的提案写作已应用。
+产品源码受测提交为 `0c537e67eb66e5a31eb7d6fa22bc5e303cea9d6e`。登记由
+`scripts/claims/record-reading.mjs --run` 实际执行各声明仪器；本机汇总再对原始输出、
+注册字段和 raw digest 逐项复核。新增交接与读数提交不改变该产品源码。
+
+| 读数 | 本轮实际结果 |
+| --- | --- |
+| Workbench 完整套件 | 1243 pass / 0 fail，205 文件，34 snapshots，5589 expect，310.35 秒 |
+| dashboard 常规入口 | 75 pass / 0 fail，20 文件，单 worker，37.88 秒 |
+| context-rot | 69 pass / 0 fail，6 文件，171 expect |
+| 严格 typecheck | exit 0；24/24 原漏检活动文件已纳入，1 份历史探针保留 |
+| 五组根门禁自测 | 5 文件，52 pass / 0 fail / 0 skip |
+| upload surface 自测 | 两组实际合计 31 pass / 0 fail |
+| Windows Chromium | 15 pass / 0 fail / 0 skip，42.1 秒 |
+| 产物契约子套件 | 输入来源 49、产物来源 9、消费 59、固定副本 29、便携证据 47，均 0 fail |
+| 冻结受控对照 | 18 例、7 组，增强零安全错误/unknown，进程失败与超时为零 |
+| 四次不变消费 | `repeat-consume`：朴素检查 4 次，增强检查 1 次 |
+| 合成成本 | 3 尺度，1 预热 + 5 样本，无预算超限或安全违规；三个尺度均无总时间净收益 |
+| Codex 全权限负向读数 | measured=true，写保护 passed=0；实际不受保护 unsealed=2/2，负向仪 exit 0 |
+| Codex 原生审批对照 | 正常/失效前提 2/2，只读区 1/1；对应仪器均 exit 0 |
+| Codex 生命周期 | measured=true，5/5，3 次读取可归因，exit 0 |
+
+浏览器现场保留在本机 `D:/tmp/workbench-e2e-586b052b`；current/stale/unknown 的截图
+由同一 UI 源码生成，既有[恢复卡记录](2026-10-25-resume-artifact-card.md)继续保留。
+检查只覆盖 Windows 执行；非 Windows 执机与自然真人研究维持 ADR-0024 的 deprecated。
+
+接力汇总遇到两处口径错误，原输出均保留。本地汇总原本对所有场景取最大检查次数，
+因此把 `no-edit-recheck` 的两次显式重验错算进不变消费；已改为只读取冻结
+`repeat-consume`，其 4→1 与注册读数及原始摘要一致。消费子套件本轮实际 59 项，
+旧值 57 被汇总拒绝后重新实际执行并登记为 59；没有改场景、预期值或裁判。
+
+本轮最终仓库门禁另登记 `claim-root-gates`、`claim-doctor-clean`、`claim-lint`、
+`claim-upload-surface-clean` 和 `claim-forest-landing`。结果以对应
+`evidence/readings/` 文件的 instrument_exit、受测提交和 raw digest 为准；
+claims 最终目标为 30 valid、3 historical observation、0 problems，任何 exit 2 均不作通过。
+森林的本地默认分支落地门与远端同步状态分开报告；本轮不发布版本。
+
+## 构建资产
+
+四平台编译与 Windows native/Bun JS 两形态隔离冒烟均已实际通过，覆盖 init、doctor、
+stats、headless UI 和 bundled UI。首次冒烟误用默认 `workbench.exe` 而失败；改为显式
+指定本轮 `workbench-windows-x64.exe` 后重录成功，失败原输出仍留本地。
+
+| 资产 | bytes | SHA256 |
+| --- | ---: | --- |
+| `workbench-windows-x64.exe` | 101491712 | `5b0241b99b57f227298312b5149c4bd35d387ff8e12360d693713a1fafabc696` |
+| `workbench-linux-x64` | 97601664 | `ec719dbec57d6af658714127edabdba3c8509e7f965688f3c119bc10a94b03b9` |
+| `workbench-macos-arm64` | 66484322 | `f6fbc52ec4ebb806739eb9b7fac040c15b7e9f41be658c73db49ff313476b6e4` |
+| `workbench-macos-x64` | 72187984 | `46486c77d8b3fed8e5ec6f64892dc7015db9fe02adebeef925044918defb09fd` |
+| `workbench.js` | 1703279 | `8a410946a21227dc55d28a9b0dfc5202c29515c1c6878b1663070b3965dd0bb0` |
+
+前三类平台文件头分别为 PE、ELF、Mach-O；只有 Windows 资产有执行证据。资产保存在
+本机 dist，本轮没有上传资产或创建 tag/Release/npm 发布。早先候选收口记录的旧摘要
+保留为当时读数，不代表本轮资产。
+
+## 森林结案提案
+
+canonical 森林仍为 313 节点：292 done、17 deprecated、4 个开放；51 条历史偏差均已
+结案，validate exit 0。四个开放节点的实施和验收已完成，结案提案分别补上注册读数、
+源码提交、直接或间接覆盖说明和本交接，完整保留原 evidence 数组、父子关系与验收条件。
+提案 `TFP-2026-10-26-all-nodes-closeout` 等待维护者确认后由 CLI 应用；尚未把它写成
+已应用。确认后预期为 296 done、17 deprecated、0 开放；Codex 的 experimental/limited
+边界保持。导出的 HTML 在应用前仍应显示这四项开放状态。

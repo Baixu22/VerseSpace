@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-upload-surface-tests",
 	"instrument_sha256": "scripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/classify.test.mjs:fc85334d69c97b039fa5e581ac880dfa6e60749d8b33b2ab8ae73cdb84b3fbad\nscripts/upload-surface/links.mjs:9f1352df9aa86bd72a08d59301fca3c8e52537ad50f0042c2b883f8afb419e47\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d\nscripts/upload-surface/policy.json:c8600682561528c26536703721318589b7c1e6b1b71e9d376b606c9ce3ecd4bd",
-	"subject_sha": "a6d92afdbdcf1dceb36e6fce2dc034d1a337d4d3",
+	"subject_sha": "d029f5cc10224921423ba993484657cb2b0a8b15",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-25T17:57:17.649Z",
+	"measured_at": "2026-10-26T05:41:33.174Z",
 	"reading": {
-		"pass": 15,
+		"pass": 31,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:27ca7d998fbdbb4ae1a32081810a271caa117278e1beb2c52052df537d20fec4",
+	"raw_digest": "sha256:c320e2bf3d80dc0add9a41f1d994d3d95a9e1baded22328a58f4f428ef14c5a0",
 	"reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
 	"class": "curated-evidence"
 }
