@@ -136,12 +136,12 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 | 车道 | provider | 读集（agent 读了哪些文件） | 前提失效时 |
 | --- | --- | --- | --- |
 | 工具车道 | `claude`（本机 Claude Code） | **可观测**：工具调用留下足迹，可追溯到具体文件 | 能定位受影响的消息，并给出证据 |
-| 实验工具车道 | `codex` | 部分可观测：结构化路径与有限 cat 后备解析；无路径的 Get-Content 不被捕获 | 可归因写审批会咨询 seal；缺足迹、无审批或无法归因时不受保护，**仅显式原生工具 profile 的 fresh/stale 对照已验**（见[接力记录](../../docs/handoff/2026-10-01-issue-relay-closeout.md)） |
+| 实验工具车道 | `codex` | 部分可观测：结构化路径与有限 cat 后备解析；无路径的 Get-Content 不被捕获 | 可归因写审批会咨询 seal；缺足迹、无审批或无法归因时不受保护。0.159 的显式原生 profile 只有历史正面对照；当前 26.1021 实测 fresh/stale 原生写均落盘且无 seal 事件，**当前写保护未通过**（见[0.5.0 候选收口](../../docs/handoff/2026-10-26-workbench-0.5.0-candidate.md)） |
 | 纯文本车道 | `openai-chat` / `openai-responses` / `anthropic` | **不可观测**：没有工具通道，读过什么无从得知 | 只能标注「读集不可观测、不参与继承」，不给证据 |
 
 选择建议：要让前提链成立（读集继承、失效定位、分叉时的读集来源），用 `claude`；只做对话、不在意前提链，HTTP 车道可用且不需要本机 Claude 登录。面板线程头按**每一轮实际使用的 provider** 标注可观测性——provider 是全局配置，同一条线程换过 provider 时，标注跟着最后一轮走，不回头改写历史轮次。
 
-封印不是仓库级写守卫：Claude Code 仅覆盖安装了 PreToolUse hook 且命中 matcher 的工具；git、普通编辑器及未被拦截的命令不会因此被阻断。Codex 审批接线是实验性的，失败时仍可能放行。边界见 [ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)，读数见[研究收尾记录](../../docs/handoff/2026-09-26-research-closeout.md)。
+封印不是仓库级写守卫：Claude Code 仅覆盖安装了 PreToolUse hook 且命中 matcher 的工具；git、普通编辑器及未被拦截的命令不会因此被阻断。Codex 审批接线仍是实验性的；当前 26.1021 的 fresh/stale 原生写都实际落盘且没有 seal 事件，只有冻结控制判 stale 为 block。因此当前版本不宣称 Codex 写保护通过。边界见 [ADR-0023](../../docs/decisions/0023-research-prototype-closeout.md)，历史和当前读数见[研究收尾记录](../../docs/handoff/2026-09-26-research-closeout.md)与[0.5.0 候选收口](../../docs/handoff/2026-10-26-workbench-0.5.0-candidate.md)。
 
 ### 以分支为主线（收养 adopt）
 
