@@ -143,12 +143,14 @@ idle 终态；只读对照还要求 live `readonly_area` 分类。读回合、�
 `claim-upload-surface-clean` 和 `claim-forest-landing`。前四项实际 exit 0：根自测 52/0/0，
 doctor 118 条架构断言中 0 条失效，lint 无 error，严格上传面 0 违规。结果以对应
 `evidence/readings/` 文件的 instrument_exit、受测提交和 raw digest 为准；
-claims 最终目标为 30 valid、3 historical observation、0 problems，任何 exit 2 均不作通过。
+claims 实际为 30 valid、3 historical observation、0 problems，任何 exit 2 均不作通过。
 森林的仓内权威落地门读取本地默认分支 main；它与外部 CLI 的远端拓扑检查分别量测。
 `git fetch origin` 实际 exit 0，`342ba59` 上外部 `check-landing` 实际 exit 1：HEAD 的
 6 个提交尚不可达 origin/main，并因此报告 main 的代码差异；该次还看到 4 份待提交读数。
-本轮后续只补交接和读数，远端同步仍待维护者确认。正式应用结案提案前须普通推送本轮
-main、刷新 origin 并复核外部落地检查；不能把本地 main 的通过说成远端已同步。
+维护者确认后，9 个接力提交已通过普通 `git push origin main` 推送，刷新 origin 后
+HEAD 与 origin/main 同为 `e9d6a117a4c80c728e05648f5efb640c9dfff480`。外部
+`check-landing` 实际 exit 0：dirty_count=0、problem_count=0；据此再应用结案提案。
+后续提交只补本交接及其受影响的仓库门禁读数，继续普通推送并复核最终远端一致性。
 历史归档孤立提交与未归因节点仍是该 CLI 的 notes，不记成新回归。本轮不发布版本。
 
 ## 构建资产
@@ -169,11 +171,13 @@ Windows、Linux、macOS 文件头分别为 PE、ELF、Mach-O；只有 Windows �
 本机 dist，本轮没有上传资产或创建 tag/Release/npm 发布。早先候选收口记录的旧摘要
 保留为当时读数，不代表本轮资产。
 
-## 森林结案提案
+## 森林结案结果
 
-canonical 森林仍为 313 节点：292 done、17 deprecated、4 个开放；51 条历史偏差均已
-结案，validate exit 0。四个开放节点的实施和验收已完成，结案提案分别补上注册读数、
-源码提交、直接或间接覆盖说明和本交接，完整保留原 evidence 数组、父子关系与验收条件。
-提案 `TFP-2026-10-26-all-nodes-closeout` 等待维护者确认后由 CLI 应用；尚未把它写成
-已应用。确认、远端同步及落地复核后预期为 296 done、17 deprecated、0 开放；Codex 的 experimental/limited
-边界保持。导出的 HTML 在应用前仍应显示这四项开放状态。
+2026-10-26 维护者明确确认推送与结案。外部落地复核通过后，CLI 实际应用提案
+`TFP-2026-10-26-all-nodes-closeout`，exit 0。TF-0312、TF-0313、TF-0264、TF-0262
+均为 done；各 evidence 数量为 4、5、23、6，完整保留原证据数组、父子关系与验收条件。
+
+canonical 森林实际共 313 节点：296 done、17 deprecated、0 开放；`todo --json` 返回
+空数组，validate exit 0，51 条历史偏差均已结案。17 个退役节点保持退役，Codex 的
+experimental/limited 边界保持。HTML 由应用后的 canonical 状态重新导出；任务森林、
+提案、原始日志与现场均留本地，仅交接与注册读数进入仓库。
