@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-upload-surface-clean",
 	"instrument_sha256": "scripts/check-upload-surface.mjs:0ba41ef3b1033fdb34657188c8cff2fe8ac818ee1d7f97f8a9b28910d0a301a4\nscripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/policy.json:c8600682561528c26536703721318589b7c1e6b1b71e9d376b606c9ce3ecd4bd",
-	"subject_sha": "342ba5994e690e6db4f22cefee3d58d1f99d0d1f",
+	"subject_sha": "3796b8062586c46b678e5222996f1776a0f6ad53",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-26T06:25:01.661Z",
+	"measured_at": "2026-10-26T06:29:50.621Z",
 	"reading": {
 		"exit": 0,
 		"violations": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:f077712f00a50fdea8bf736fe44ae96d9ef18291d2271f3f2d8708e04e66a8be",
+	"raw_digest": "sha256:a90c6b5176a6799e3bdcd6f01dee59afaa403c97f29f2dfae80e228d27e3b19f",
 	"reproduce": "node scripts/check-upload-surface.mjs --strict-references",
 	"class": "curated-evidence"
 }
