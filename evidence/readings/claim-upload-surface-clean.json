@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-upload-surface-clean",
 	"instrument_sha256": "scripts/check-upload-surface.mjs:0ba41ef3b1033fdb34657188c8cff2fe8ac818ee1d7f97f8a9b28910d0a301a4\nscripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/policy.json:c8600682561528c26536703721318589b7c1e6b1b71e9d376b606c9ce3ecd4bd",
-	"subject_sha": "04d976e60656655b73b3585617dfa483259ccc8c",
+	"subject_sha": "5f637d7a8fd38615a940d46531794590ce675c34",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-26T07:49:10.989Z",
+	"measured_at": "2026-10-26T07:51:29.223Z",
 	"reading": {
 		"exit": 0,
 		"violations": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:251b486a4a171dd739ca604ac126b5e1c8531c6bf2995d224d740d62d63954e4",
+	"raw_digest": "sha256:393ebf05039ee4e042bec4b0b81b4a70fec03746a669eab31227c21a51e5827a",
 	"reproduce": "node scripts/check-upload-surface.mjs --strict-references",
 	"class": "curated-evidence"
 }
