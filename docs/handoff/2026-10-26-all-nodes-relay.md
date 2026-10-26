@@ -140,10 +140,16 @@ idle 终态；只读对照还要求 live `readonly_area` 分类。读回合、�
 旧值 57 被汇总拒绝后重新实际执行并登记为 59；没有改场景、预期值或裁判。
 
 本轮最终仓库门禁另登记 `claim-root-gates`、`claim-doctor-clean`、`claim-lint`、
-`claim-upload-surface-clean` 和 `claim-forest-landing`。结果以对应
+`claim-upload-surface-clean` 和 `claim-forest-landing`。前四项实际 exit 0：根自测 52/0/0，
+doctor 118 条架构断言中 0 条失效，lint 无 error，严格上传面 0 违规。结果以对应
 `evidence/readings/` 文件的 instrument_exit、受测提交和 raw digest 为准；
 claims 最终目标为 30 valid、3 historical observation、0 problems，任何 exit 2 均不作通过。
-森林的本地默认分支落地门与远端同步状态分开报告；本轮不发布版本。
+森林的仓内权威落地门读取本地默认分支 main；它与外部 CLI 的远端拓扑检查分别量测。
+`git fetch origin` 实际 exit 0，`342ba59` 上外部 `check-landing` 实际 exit 1：HEAD 的
+6 个提交尚不可达 origin/main，并因此报告 main 的代码差异；该次还看到 4 份待提交读数。
+本轮后续只补交接和读数，远端同步仍待维护者确认。正式应用结案提案前须普通推送本轮
+main、刷新 origin 并复核外部落地检查；不能把本地 main 的通过说成远端已同步。
+历史归档孤立提交与未归因节点仍是该 CLI 的 notes，不记成新回归。本轮不发布版本。
 
 ## 构建资产
 
@@ -159,7 +165,7 @@ stats、headless UI 和 bundled UI。首次冒烟误用默认 `workbench.exe` �
 | `workbench-macos-x64` | 72187984 | `46486c77d8b3fed8e5ec6f64892dc7015db9fe02adebeef925044918defb09fd` |
 | `workbench.js` | 1703279 | `8a410946a21227dc55d28a9b0dfc5202c29515c1c6878b1663070b3965dd0bb0` |
 
-前三类平台文件头分别为 PE、ELF、Mach-O；只有 Windows 资产有执行证据。资产保存在
+Windows、Linux、macOS 文件头分别为 PE、ELF、Mach-O；只有 Windows 资产有执行证据。资产保存在
 本机 dist，本轮没有上传资产或创建 tag/Release/npm 发布。早先候选收口记录的旧摘要
 保留为当时读数，不代表本轮资产。
 
@@ -169,5 +175,5 @@ canonical 森林仍为 313 节点：292 done、17 deprecated、4 个开放；51 
 结案，validate exit 0。四个开放节点的实施和验收已完成，结案提案分别补上注册读数、
 源码提交、直接或间接覆盖说明和本交接，完整保留原 evidence 数组、父子关系与验收条件。
 提案 `TFP-2026-10-26-all-nodes-closeout` 等待维护者确认后由 CLI 应用；尚未把它写成
-已应用。确认后预期为 296 done、17 deprecated、0 开放；Codex 的 experimental/limited
+已应用。确认、远端同步及落地复核后预期为 296 done、17 deprecated、0 开放；Codex 的 experimental/limited
 边界保持。导出的 HTML 在应用前仍应显示这四项开放状态。
