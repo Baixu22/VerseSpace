@@ -181,3 +181,32 @@ canonical 森林实际共 313 节点：296 done、17 deprecated、0 开放；`to
 空数组，validate exit 0，51 条历史偏差均已结案。17 个退役节点保持退役，Codex 的
 experimental/limited 边界保持。HTML 由应用后的 canonical 状态重新导出；任务森林、
 提案、原始日志与现场均留本地，仅交接与注册读数进入仓库。
+
+## 独立复验与收尾（2026-10-26 第二轮）
+
+维护者随后要求“做好收尾并尝试完整卫生处理、修改提交、合并”。在 `main` /
+`origin/main` 同为 `04d976e`、原始读数与森林未改写的前提下，本轮重新实跑了一次仓库门禁；
+原始输出保存在本机 `.agent-contexts/all-nodes-relay-final/`。
+
+| 复跑项 | 本轮读数 |
+| --- | --- |
+| `lint` | exit 0；812 文件，仅 1 条既有 info |
+| `typecheck` | exit 0；三包严格 TypeScript |
+| Workbench | 1243 pass / 0 fail，205 文件，34 snapshots，5589 expect |
+| dashboard | 20 文件、75 tests 全通过 |
+| context-rot | 69 pass / 0 fail，6 文件，171 expect |
+| 根门禁自测 | 52 pass / 0 fail / 0 skip |
+| `doctor` | exit 0；118 条架构断言 0 失效 |
+| Windows Chromium | 15 pass / 0 fail / 0 skip |
+| upload surface | 0 违规、541 条相对链接 0 断链；自测 16 + 15 全通过 |
+| native + Bun JS | native 与 JS 两形态均通过 init、doctor、stats、headless UI、bundled UI |
+
+这次复跑**不替换** `evidence/readings/` 中的注册读数，也不把 3 条 Codex 历史 observation
+升级为当前通过；它只证明在本轮 HEAD 上，现有已登记的工作仍可复现。复跑后 `check:claims`
+仍为 30 valid、3 historical observation、0 problems，`check-forest-landing` 与外部
+`check-landing` 均为 exit 0。
+
+同步检查到两类可整理存量：除 `main` 外仅 `chore/phase1-closeout-20260921` 含 1 个未合入
+提交（森林/文档记账），其余 34 个远程任务分支均已包含于 `main`；`D:\tmp` 下 5 个
+`workbench-e2e-*` 为已结束的隔离现场。历史孤立提交、未归因节点、任务森林与原始证据
+不因“卫生处理”而删除。
