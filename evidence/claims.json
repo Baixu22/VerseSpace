@@ -259,15 +259,21 @@
 		},
 		{
 			"id": "claim-typecheck",
-			"statement": "三个包的 tsc --noEmit 全过（exit 0）",
-			"instrument": ["package.json"],
+			"statement": "现有三包严格 tsc --noEmit 覆盖源码、活动工具、配置与 E2E（exit 0）；历史交接探针保留为旧行为对照",
+			"instrument": [
+				"package.json",
+				"packages/workbench/tsconfig.json",
+				"packages/context-rot/tsconfig.json",
+				"apps/workbench-ui/tsconfig.json"
+			],
 			"subject_paths": [
 				"packages/workbench/**",
 				"packages/context-rot/**",
 				"apps/workbench-ui/**",
 				"evidence/claims.json",
 				"bun.lock",
-				"package.json"
+				"package.json",
+				"scripts/verify/**"
 			],
 			"reading_shape": {
 				"exit": "number"
@@ -437,11 +443,12 @@
 		},
 		{
 			"id": "claim-codex-native-seal-current-gap",
-			"statement": "当前 Codex 26.1021 + 隔离显式 freeform profile：own-fresh 原生写落盘且有 1 条写足迹，own-stale 原生写也落盘、无 seal 事件且冻结控制判 block；当前通道没有通过写保护声明",
+			"statement": "2026-10-26 Codex CLI 0.164.0-alpha.11.1 + 隔离 danger-full-access/on-request/freeform profile：fresh 与 stale 原生写均落盘、无 seal 事件，stale 冻结控制判 block；此配置下写保护未通过",
 			"instrument": [
 				"packages/workbench/scripts/verify/codex-native-pair.ts",
 				"packages/workbench/scripts/verify/codex-write-seal.ts",
-				"packages/workbench/scripts/verify/codex-seal-baseline.ts"
+				"packages/workbench/scripts/verify/codex-seal-baseline.ts",
+				"packages/workbench/scripts/verify/codex-rpc-tap.mjs"
 			],
 			"subject_paths": [
 				"packages/workbench/src/chat/**",
@@ -452,17 +459,22 @@
 				"package.json"
 			],
 			"reading_shape": {
+				"exit": "number",
+				"measured": "boolean",
 				"passed": "number",
+				"unsealed": "number",
 				"total": "number"
 			},
 			"class": "L1",
-			"expects_nonzero_exit": true,
-			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts --expect-unsealed",
 			"expected": {
+				"exit": 0,
+				"measured": true,
 				"passed": 0,
+				"unsealed": 2,
 				"total": 2
 			},
-			"docs": ["docs/handoff/2026-10-26-workbench-0.5.0-candidate.md"]
+			"docs": ["docs/handoff/2026-10-26-all-nodes-relay.md"]
 		},
 		{
 			"id": "claim-upload-surface-tests",
@@ -1066,6 +1078,136 @@
 			"minimum": {
 				"pass": 47
 			}
+		},
+		{
+			"id": "claim-root-gates",
+			"statement": "统一 test:gates 实际串行执行五份根门禁测试，52 项通过且无失败/跳过",
+			"instrument": [
+				"package.json",
+				"scripts/upload-surface/classify.test.mjs",
+				"scripts/upload-surface/links.test.mjs",
+				"scripts/claims/ledger.test.mjs",
+				"scripts/check-forest-landing.test.mjs",
+				"scripts/moat/check-scope-adr.test.mjs"
+			],
+			"subject_paths": ["**"],
+			"reading_shape": {
+				"exit": "number",
+				"files": "number",
+				"pass": "number",
+				"fail": "number",
+				"skipped": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun run test:gates",
+			"expected": {
+				"exit": 0,
+				"files": 5,
+				"fail": 0,
+				"skipped": 0
+			},
+			"minimum": {
+				"pass": 52
+			},
+			"docs": ["docs/handoff/2026-10-26-all-nodes-relay.md"]
+		},
+		{
+			"id": "claim-codex-native-approval-control",
+			"statement": "2026-10-26 Codex CLI 0.164.0-alpha.11.1 隔离 read-only/on-request/freeform 对照：同写者、目标路径、读足迹与 seal 事件可关联，fresh 写入成功，stale 被一次原生审批封印拒绝，线程均 idle；只证明该审批路径",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-native-pair.ts",
+				"packages/workbench/scripts/verify/codex-write-seal.ts",
+				"packages/workbench/scripts/verify/codex-seal-baseline.ts",
+				"packages/workbench/scripts/verify/codex-rpc-tap.mjs"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/**",
+				"packages/workbench/src/supervisor/**",
+				"packages/workbench/scripts/verify/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"passed": "number",
+				"total": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts",
+			"expected": {
+				"exit": 0,
+				"passed": 2,
+				"total": 2
+			},
+			"docs": ["docs/handoff/2026-10-26-all-nodes-relay.md"]
+		},
+		{
+			"id": "claim-codex-readonly-approval-control",
+			"statement": "2026-10-26 同一 read-only/on-request/freeform profile：声明只读 src 的新鲜写者被一次 readonly_area seal 拒绝，无写足迹，冻结控制同为 block，线程 idle；无审批路径仍不受保护",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-native-pair.ts",
+				"packages/workbench/scripts/verify/codex-write-seal.ts",
+				"packages/workbench/scripts/verify/codex-seal-baseline.ts",
+				"packages/workbench/scripts/verify/codex-rpc-tap.mjs"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/**",
+				"packages/workbench/src/supervisor/**",
+				"packages/workbench/scripts/verify/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"passed": "number",
+				"total": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-native-pair.ts --readonly-area",
+			"expected": {
+				"exit": 0,
+				"passed": 1,
+				"total": 1
+			},
+			"docs": ["docs/handoff/2026-10-26-all-nodes-relay.md"]
+		},
+		{
+			"id": "claim-codex-live-lifecycle",
+			"statement": "2026-10-26 真实 Codex 读取、强制进程故障、Workbench 取消及两次重启恢复共五项：三次读取有归因足迹，故障/取消各一错误且进程退出、线程 idle，重启保持 Codex 会话身份；取消机制为监督进程树结束",
+			"instrument": [
+				"packages/workbench/scripts/verify/codex-lifecycle.ts",
+				"packages/workbench/scripts/verify/codex-rpc-tap.mjs"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/**",
+				"packages/workbench/src/runtime/**",
+				"packages/workbench/src/supervisor/**",
+				"packages/workbench/scripts/verify/**",
+				"evidence/claims.json",
+				"bun.lock",
+				"package.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"measured": "boolean",
+				"passed": "number",
+				"total": "number",
+				"attributedReadTurns": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun packages/workbench/scripts/verify/codex-lifecycle.ts",
+			"expected": {
+				"exit": 0,
+				"measured": true,
+				"passed": 5,
+				"total": 5,
+				"attributedReadTurns": 3
+			},
+			"docs": ["docs/handoff/2026-10-26-all-nodes-relay.md"]
 		}
 	]
 }

@@ -30,6 +30,8 @@ const verdict = {
 	writeMode: process.argv.includes("--native-write") ? "native" : "shell",
 	writeFootprints: 0,
 	readDuringWrite: 0,
+	readonlyArea: process.argv.includes("--readonly-area"),
+	finalThreadState: "",
 };
 async function measure() {
 	const scenario = probeCase(process.argv.slice(2));
@@ -44,7 +46,11 @@ async function measure() {
 		const path = join(ws.projectDir, target);
 		await mkdir(join(ws.projectDir, "src"), { recursive: true });
 		await writeFile(path, "export const target = 1;\n// append-anchor\n");
-		await ws.bb.config.save({ project: "", chat: { provider: "codex" } });
+		await ws.bb.config.save({
+			project: "",
+			chat: { provider: "codex" },
+			protection: { readonlyAreas: verdict.readonlyArea ? ["src"] : [] },
+		});
 		const thread = await chat.create();
 		threadId = thread.id;
 		const readEvents: RunEvent[] = [];
@@ -111,11 +117,22 @@ async function measure() {
 		verdict.readDuringWrite = footprints.filter((line) =>
 			line.used.some((claim) => claim.path === target),
 		).length;
+		verdict.finalThreadState = (await chat.get(thread.id)).status;
 		if (process.env.WB_VERIFY_TRACE_DIR) {
 			await mkdir(process.env.WB_VERIFY_TRACE_DIR, { recursive: true });
 			await writeFile(
 				join(process.env.WB_VERIFY_TRACE_DIR, `${scenario}.json`),
-				JSON.stringify({ readEvents, writeEvents, footprints }, null, 2),
+				JSON.stringify(
+					{
+						readEvents,
+						writeEvents,
+						footprints,
+						thread: await chat.get(thread.id),
+						ledgerEvents: await ws.bb.events.all(),
+					},
+					null,
+					2,
+				),
 			);
 		}
 		// Frozen pre-write baseline: same writer and claims, even if the model reread

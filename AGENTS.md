@@ -35,7 +35,7 @@ bun install                  # Install deps (bun 1.3.14, pinned in `packageManag
 bun run typecheck            # tsc --noEmit across all three packages
 bun run lint                 # biome check .
 bun run lint:fix             # biome check --write
-bun run test                 # all three suites: workbench -> workbench-ui -> context-rot
+bun run test                 # workbench -> workbench-ui -> context-rot -> root gate self-tests
 bun run dev:ui               # vite dev server for the dashboard
 bun run build:ui             # build the dashboard, then embed it into the workbench package
 bun run icons                # regenerate the shared icon layer
@@ -74,6 +74,7 @@ them by hand:
 ```bash
 bun run lint && bun run typecheck
 bun run test:workbench && bun run test:workbench-ui && bun run test:context-rot
+bun run test:gates
 bun packages/workbench/src/index.ts doctor
 bun run check:upload-surface
 pwsh -NoProfile -File scripts/win/e2e-browser.ps1   # real browser suite (isolated workspace)
