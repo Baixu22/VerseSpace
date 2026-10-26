@@ -102,7 +102,10 @@ for (const group of groups) {
 			...row,
 			actualExit: run.status,
 			wallMs: performance.now() - begin,
-			timedOut: run.error?.code === "ETIMEDOUT",
+			timedOut:
+				run.error && "code" in run.error
+					? run.error.code === "ETIMEDOUT"
+					: false,
 		});
 		console.log(
 			JSON.stringify({

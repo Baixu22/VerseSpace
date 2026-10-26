@@ -11,10 +11,10 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"noEmit": true,
-		"types": ["vite/client"],
+		"types": ["vite/client", "node"],
 		"paths": {
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src"]
+	"include": ["src", "e2e", "*.config.ts"]
 }

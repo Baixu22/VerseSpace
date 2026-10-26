@@ -4,6 +4,7 @@
  */
 
 import { afterEach, describe, expect, test } from "bun:test";
+import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import {
 	mkdirSync,
@@ -88,6 +89,7 @@ describe("Claude Code 事件格式", () => {
 		);
 		expect(code).toBe(0);
 		const [rec] = readFootprints(root) as Record<string, unknown>[];
+		assert(rec);
 		expect(rec.kind).toBe("read");
 		expect(rec.path).toBe("src/a.ts");
 		expect(rec.tool).toBe("Read");
@@ -128,6 +130,7 @@ describe("Claude Code 事件格式", () => {
 		const root = makeRepo();
 		await runHook(root, claudeEvent("Grep", { pattern: "foo" }));
 		const [rec] = readFootprints(root) as Record<string, unknown>[];
+		assert(rec);
 		expect(rec.kind).toBe("read");
 		expect(rec.path).toBe(".");
 	});
@@ -147,6 +150,7 @@ describe("Cursor 兼容（同一份配置）", () => {
 			CURSOR_TRACE_ID: "trace-1",
 		});
 		const [rec] = readFootprints(root) as Record<string, unknown>[];
+		assert(rec);
 		expect(rec.kind).toBe("write");
 		expect(rec.host).toBe("cursor");
 	});
@@ -172,6 +176,7 @@ describe("Cursor 兼容（同一份配置）", () => {
 			{ CLAUDE_PROJECT_DIR: "", CURSOR_TRACE_ID: "trace-1" },
 		);
 		const [rec] = readFootprints(root) as Record<string, unknown>[];
+		assert(rec);
 		expect(rec.kind).toBe("read");
 		expect(rec.path).toBe("src/a.ts");
 		expect(rec.host).toBe("cursor");
@@ -183,6 +188,7 @@ describe("Cursor 兼容（同一份配置）", () => {
 			CLAUDE_PROJECT_DIR: "",
 		});
 		const [rec] = readFootprints(root) as Record<string, unknown>[];
+		assert(rec);
 		expect(rec.path).toBe("src/a.ts");
 	});
 });
@@ -215,6 +221,7 @@ describe("健壮性", () => {
 		const root = makeRepo();
 		await runHook(root, claudeEvent("Read", { file_path: "../../etc/passwd" }));
 		const [rec] = readFootprints(root) as Record<string, unknown>[];
+		assert(rec);
 		expect(String(rec.path)).toContain("etc");
 		expect(String(rec.path)).not.toContain("..");
 	});

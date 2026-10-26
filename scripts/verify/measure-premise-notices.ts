@@ -57,19 +57,28 @@ function countEvents(eventsPath: string) {
 		} catch {
 			continue;
 		}
-		const t = ev?.type;
-		if (!t) continue;
+		if (!ev || typeof ev !== "object" || !("type" in ev)) continue;
+		const t = ev.type;
+		if (typeof t !== "string" || !t) continue;
+		const payload = "payload" in ev ? ev.payload : undefined;
 		types[t] = (types[t] ?? 0) + 1;
 		if (t === "premise_notice_outcome") {
-			const o = ev?.payload?.outcome;
-			if (o) outcomes[o] = (outcomes[o] ?? 0) + 1;
+			const o =
+				payload && typeof payload === "object" && "outcome" in payload
+					? payload.outcome
+					: undefined;
+			if (typeof o === "string" && o) outcomes[o] = (outcomes[o] ?? 0) + 1;
 		}
 		if (t === "premise_notice_delivered") {
-			const obs = ev?.payload?.readObservability;
-			if (obs) deliveredObs[obs] = (deliveredObs[obs] ?? 0) + 1;
+			const obs =
+				payload && typeof payload === "object" && "readObservability" in payload
+					? payload.readObservability
+					: undefined;
+			if (typeof obs === "string" && obs)
+				deliveredObs[obs] = (deliveredObs[obs] ?? 0) + 1;
 		}
 		if (t === "premise_pass") {
-			const p = (ev?.payload ?? {}) as PassPayload;
+			const p = (payload ?? {}) as PassPayload;
 			pass.events += 1;
 			pass.overlaps += p.overlaps ?? 0;
 			pass.suppressedL1 += p.suppressedL1 ?? 0;

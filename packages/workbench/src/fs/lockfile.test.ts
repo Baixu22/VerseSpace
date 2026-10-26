@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
+import * as fs from "node:fs/promises";
 import { mkdir, rm, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,6 +17,29 @@ function makeTempDir(): Promise<{ dir: string; cleanup(): Promise<void> }> {
 }
 
 describe("acquirePidLock", () => {
+	test("a vanished Windows lock is retried without hiding persistent permission errors", async () => {
+		const { dir, cleanup } = await makeTempDir();
+		const lockPath = join(dir, "m.lock");
+		const permission = Object.assign(new Error("sharing violation"), {
+			code: "EPERM",
+		});
+		const open = fs.open;
+		const probe = spyOn(fs, "open").mockImplementationOnce(() =>
+			Promise.reject(permission),
+		);
+		try {
+			const recovered = await acquirePidLock(lockPath);
+			expect(recovered.acquired).toBe(true);
+			await recovered.release();
+			probe.mockImplementation(() => Promise.reject(permission));
+			await expect(acquirePidLock(lockPath, 2)).rejects.toBe(permission);
+		} finally {
+			probe.mockRestore();
+			expect(fs.open).toBe(open);
+			await cleanup();
+		}
+	});
+
 	test("O_EXCL: concurrent acquirers cannot both win", async () => {
 		const { dir, cleanup } = await makeTempDir();
 		try {

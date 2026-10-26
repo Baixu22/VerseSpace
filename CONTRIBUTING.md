@@ -15,9 +15,9 @@ bun install --frozen-lockfile
 ## 提交前必跑
 
 ```bash
-bun run typecheck     # tsc --noEmit，三个包
+bun run typecheck     # 严格检查三包源码、活动工具、配置与 E2E
 bun run lint          # biome check .
-bun run test          # workbench → workbench-ui → context-rot 三套
+bun run test          # workbench → workbench-ui → context-rot → 根门禁自测
 ```
 
 单跑一套：
@@ -26,6 +26,7 @@ bun run test          # workbench → workbench-ui → context-rot 三套
 bun run test:workbench      # cd packages/workbench && bun test --timeout 60000
 bun run test:workbench-ui   # cd apps/workbench-ui && vitest run
 bun run test:context-rot    # cd packages/context-rot && bun test --timeout 60000
+bun run test:gates          # 五份根门禁自测，串行执行并传递失败
 ```
 
 单跑一个文件：
@@ -46,7 +47,7 @@ cd apps/workbench-ui && bunx vitest run src/App.test.tsx
   NO_PROXY="127.0.0.1,localhost,::1" bun test
   ```
 - **实时扫描拖住测试收尾。** 新建的 git 仓库目录可能被句柄占住，`rm` 在断言早已通过之后仍报 `EBUSY` 十几秒。孤立的一次收尾 `EBUSY` 属环境问题。
-- **重活不要并行。** 16 GB 主机上，全套面板测试与构建同时跑会超时。本仓库没有 CI（见下），也就没有排队机制——重活只能自己串行；当年流水线用的 `resource_group: heavy` 已随 [ADR-0021](docs/decisions/0021-retire-all-ci-channels.md) 退役。
+- **重活不要并行。** 16 GB 主机上，面板 jsdom 测试固定 `maxWorkers: 1`，避免默认并发超过内存预算；全套面板测试仍须与构建串行。本仓库没有 CI（见下），也就没有排队机制——重活只能自己串行；当年流水线用的 `resource_group: heavy` 已随 [ADR-0021](docs/decisions/0021-retire-all-ci-channels.md) 退役。
 - **Git 的空父目录清理缺陷**会让含斜杠的分支名、`git rm` 目录、remote-tracking ref 出现异常行为。判断依据是**行为**而不是加载了哪个模块，用 `powershell.exe -NoProfile -File scripts/win/check-git-filesystem.ps1` 实测。
 
 ## CI
@@ -64,6 +65,7 @@ git push origin <branch>   # GitHub，更新 PR；PR 上不会出现任何状态
 ```bash
 bun run lint && bun run typecheck
 bun run test:workbench && bun run test:workbench-ui && bun run test:context-rot
+bun run test:gates
 bun packages/workbench/src/index.ts doctor
 bun run check:upload-surface
 ```

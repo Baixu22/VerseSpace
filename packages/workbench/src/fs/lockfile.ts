@@ -43,7 +43,7 @@ const INCOMPLETE_LOCK_GRACE_MS = 1000;
  */
 export async function acquirePidLock(
 	lockPath: string,
-	/** Bounded takeover retries; the takeover window is tiny, 5 is generous. */
+	/** Bounded retries for stale takeover and transient sharing violations. */
 	maxAttempts = 5,
 ): Promise<PidLock> {
 	for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
@@ -53,16 +53,15 @@ export async function acquirePidLock(
 			handle = await open(lockPath, "wx");
 		} catch (error) {
 			const code = (error as NodeJS.ErrnoException).code;
-			// Windows can surface an existing O_EXCL target as EPERM/EACCES while
-			// another process still has the handle open. Treat it as contention only
-			// when the target really exists; unrelated permission failures still throw.
-			if (
-				code !== "EEXIST" &&
-				!(
-					(code === "EPERM" || code === "EACCES") &&
-					(await lockPathExists(lockPath))
-				)
-			) {
+			// A Windows sharing violation can outlive the lock's removal. Retry
+			// the exclusive open briefly; persistent permission failures still throw.
+			if (code === "EPERM" || code === "EACCES") {
+				if (!(await lockPathExists(lockPath))) {
+					if (attempt === maxAttempts - 1) throw error;
+					await sleep(10);
+					continue;
+				}
+			} else if (code !== "EEXIST") {
 				throw error;
 			}
 		}

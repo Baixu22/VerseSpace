@@ -8,28 +8,12 @@
 		"noImplicitOverride": true,
 		"noFallthroughCasesInSwitch": true,
 		"allowImportingTsExtensions": true,
+		"allowJs": true,
 		"types": ["node", "bun"],
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"noEmit": true
 	},
-	"include": [
-		"src",
-		"scripts/build.ts",
-		"scripts/build-single.ts",
-		"scripts/ui-prepare.ts",
-		"scripts/measure-fork-inheritance.ts",
-		"scripts/fork-inheritance",
-		"scripts/e2e",
-		"scripts/benchmark-premises.ts",
-		"scripts/check-built.ts",
-		"scripts/fit-ledger.ts",
-		"scripts/fit-ledger",
-		"scripts/fit-monitor.ts",
-		"scripts/fit-monitor",
-		"scripts/measure-ask-costs.ts",
-		"scripts/measure-bc.ts",
-		"scripts/suite-total.ts"
-	]
+	"include": ["src", "scripts", "../../scripts/verify"]
 }
