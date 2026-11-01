@@ -2,6 +2,7 @@ import {
 	readAllSessionContinuity,
 	readSessionContinuity,
 	type SessionContinuity,
+	unknownLine,
 } from "../../chat/continuity";
 import { limitOf, type McpTool, truncate } from "./types";
 
@@ -20,6 +21,13 @@ const STATE_LABEL: Record<SessionContinuity["state"], string> = {
 	intact: "无待办观察",
 	review: "需要人看一眼",
 	unknown: "材料不足",
+};
+
+/** 联合判读（TF-0331）：断点与积压两维不合并成单一分数。 */
+const PRIORITY_LABEL: Record<SessionContinuity["priority"], string> = {
+	"break-first": "先看断点",
+	"backlog-only": "只有投递积压",
+	neither: "无待办",
 };
 
 /** 行首标记：`!` 断点 / `?` 材料不足 / `~` 仅投递积压 / `-` 无待办。 */
@@ -78,13 +86,18 @@ export const continuityTool: McpTool = {
 					`线程 ${row.threadId} · ${STATE_LABEL[row.state]}`,
 					`身份：${row.identity.lane ?? "未绑定车道"}；provider 会话 ${row.identity.providerSessionId ?? "无"}；${row.identity.resumable ? "可续" : "不可续"}`,
 					`回合：完成 ${row.turns.completed} 轮，最近一条 ${row.turns.lastAt ?? "无"}${row.turns.open ? "（末条是人类消息，未获回复）" : ""}`,
+					`联合判读：${PRIORITY_LABEL[row.priority]}`,
 					`投递：待投递 ${row.delivery.pendingNotices} 条，已投递 ${row.delivery.deliveredNotices} 次`,
 					...row.turns.interruptions.map(
 						(interruption) =>
 							`中断：${interruption.at}（${interruption.reason}，${interruption.messageCount === null ? "条数未记录" : `${interruption.messageCount} 条消息`}）· ${interruption.recovered ? "之后已回复" : "之后没有回复"}`,
 					),
 					...row.because.map((reason) => `! ${reason}`),
-					...row.unknowns.map((unknown) => `? ${unknown}`),
+					...row.turns.cancellations.map(
+						(cancellation) =>
+							`用户终止：${cancellation.at}（${cancellation.messageCount === null ? "条数未记录" : `当时 ${cancellation.messageCount} 条消息`}）`,
+					),
+					...row.unknowns.map((unknown) => `? ${unknownLine(unknown)}`),
 					...(row.refs.length > 0 ? [`可核对：${row.refs.join("、")}`] : []),
 				];
 				return truncate(lines.join("\n"));
@@ -98,7 +111,7 @@ export const continuityTool: McpTool = {
 			return "（还没有对话线程）";
 		}
 		const top = rows.slice(0, limitOf(params.limit, 20));
-		const header = `共 ${summary.total} 条会话：无待办观察 ${summary.intact} · 需要人看一眼 ${summary.review} · 材料不足 ${summary.unknown} · 有未投递通知 ${summary.pending}（展示 ${top.length}）`;
+		const header = `共 ${summary.total} 条会话：无待办观察 ${summary.intact} · 需要人看一眼 ${summary.review} · 材料不足 ${summary.unknown} · 有未投递通知 ${summary.pending}（展示 ${top.length}）；先看断点 ${summary.breakFirst} · 只有积压 ${summary.backlogOnly} · 无待办 ${summary.neither}`;
 		return truncate(`${header}\n${top.map(describeRow).join("\n")}`);
 	},
 };

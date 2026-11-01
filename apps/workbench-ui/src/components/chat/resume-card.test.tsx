@@ -433,7 +433,9 @@ describe("ResumeCard 交互", () => {
 		const calls = installRoutes();
 		// 卡片渲染 + 积压：头部出现 `~ N` 计数，但事实区没有多出行。
 		seedCard(cardWith([readSetFact("src/alpha.ts")]));
-		useChatStore.setState({ continuityDelivery: { pendingNotices: 3 } });
+		useChatStore.setState({
+			continuityDelivery: { pendingNotices: 3, priority: "backlog-only" },
+		});
 		const view = render(<ResumeCard />, { wrapper: TooltipProvider });
 		expect(screen.getByTestId("resume-pending-notices")).toBeDefined();
 		expect(screen.queryByText(/待通知/)).not.toBeNull();
@@ -448,7 +450,7 @@ describe("ResumeCard 交互", () => {
 		cleanup();
 		useChatStore.setState({
 			resumeCard: null,
-			continuityDelivery: { pendingNotices: 3 },
+			continuityDelivery: { pendingNotices: 3, priority: "backlog-only" },
 		});
 		render(<ResumeCard />, { wrapper: TooltipProvider });
 		expect(screen.queryByTestId("resume-pending-notices")).toBeNull();

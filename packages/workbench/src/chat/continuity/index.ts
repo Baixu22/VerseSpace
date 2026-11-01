@@ -5,8 +5,12 @@ export {
 	readSessionContinuity,
 } from "./read";
 export type {
+	ContinuityCancellation,
 	ContinuityFacts,
 	ContinuityInterruption,
+	ContinuityPriority,
 	ContinuityState,
+	ContinuityUnknown,
 	SessionContinuity,
 } from "./types";
+export { unknownLine } from "./types";

@@ -87,7 +87,11 @@ export async function collectRestoreView(
 		}),
 		resumeCardDismissed,
 		// 与卡片分开下发：intact 会话卡片不新增任何元素，但「有未投递积压」
-		// 仍是可从载荷读到的独立事实（与 CLI 的 `~` 同一维度）。
-		continuityDelivery: continuityCard.delivery,
+		// 仍是可从载荷读到的独立事实（与 CLI 的 `~` 同一维度）。`priority`
+		// 是断点 × 积压的联合判读（TF-0331），两维各自可核对。
+		continuityDelivery: {
+			...continuityCard.delivery,
+			priority: continuityCard.priority,
+		},
 	};
 }

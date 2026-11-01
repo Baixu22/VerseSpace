@@ -72,7 +72,10 @@ export interface ChatState {
 	 * 会话投递积压（TF-0324）：与恢复卡分开下发的一条独立事实。只在卡片本来
 	 * 就渲染时进头部计数——健康会话不因为它而多出任何元素。
 	 */
-	continuityDelivery: { pendingNotices: number } | null;
+	continuityDelivery: {
+		pendingNotices: number;
+		priority: "break-first" | "backlog-only" | "neither";
+	} | null;
 	/**
 	 * TF-0092 手动晋升手势是否可见。由服务端判定（无名且有内容），客户端只渲染
 	 * ——不复制「无名」这个判断（2026-09-13 收尾 §4.4）。
@@ -154,6 +157,10 @@ export interface ThreadGetResponse {
 	 * 会话投递积压计数（TF-0324）：与恢复卡分开下发——intact 会话的卡片不新增
 	 * 任何元素，但「有未投递积压」仍是一条独立事实（与 CLI 的 `~` 同一维度）。
 	 */
-	continuityDelivery?: { pendingNotices: number } | null;
+	continuityDelivery?: {
+		pendingNotices: number;
+		/** TF-0331 联合判读：`interruption-first` / `backlog-only` / `neither`。 */
+		priority?: "break-first" | "backlog-only" | "neither";
+	} | null;
 	canPromote?: boolean;
 }

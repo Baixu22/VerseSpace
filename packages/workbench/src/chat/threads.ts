@@ -108,8 +108,8 @@ export class ChatThreads {
 		return reset;
 	}
 
-	cancel(id: string): void {
-		cancel(this.context, id);
+	async cancel(id: string): Promise<boolean> {
+		return cancel(this.context, id);
 	}
 
 	async update(

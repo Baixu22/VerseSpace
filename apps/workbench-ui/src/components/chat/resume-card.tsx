@@ -39,6 +39,10 @@ export function ResumeCard() {
 	const pendingNotices = useChatStore(
 		(s) => s.continuityDelivery?.pendingNotices ?? 0,
 	);
+	// TF-0331：联合判读只影响「积压徽标」的措辞，不新增第二个分数或第二块 UI。
+	const backlogOnly = useChatStore(
+		(s) => s.continuityDelivery?.priority === "backlog-only",
+	);
 	const consume = useChatStore((s) => s.consumeResumeNote);
 	const dismiss = useChatStore((s) => s.dismissResumeCard);
 	const reportShown = useChatStore((s) => s.reportResumeCardShown);
@@ -121,7 +125,13 @@ export function ResumeCard() {
 						{/* TF-0323 判据 3：投递积压只占头部一个计数，不变成事实行。
 						    卡片本来不渲染时也不会因此出现（健康不占空间）。 */}
 						{showCard && pendingNotices > 0 ? (
-							<Tooltip content="这些前提通知还没投递到本条会话；它是全局投递积压，不代表这条会话被切断。">
+							<Tooltip
+								content={
+									backlogOnly
+										? "这条会话只有未投递的前提通知，没有未恢复的断点；积压是全局的，不急。"
+										: "这些前提通知还没投递到本条会话；它是全局投递积压，与上面的断点分开计。"
+								}
+							>
 								<Badge
 									variant="outline"
 									className="h-4 px-1.5 font-mono text-small font-normal text-fg-subtle"

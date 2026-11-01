@@ -1,6 +1,8 @@
 import type {
 	ContinuityFacts,
 	ContinuityInterruption,
+	ContinuityPriority,
+	ContinuityUnknown,
 	SessionContinuity,
 } from "./types";
 
@@ -32,7 +34,7 @@ export function deriveSessionContinuity(
 	facts: ContinuityFacts,
 ): SessionContinuity {
 	const because: string[] = [];
-	const unknowns: string[] = [];
+	const unknowns: ContinuityUnknown[] = [];
 	const refs: string[] = [];
 
 	const open = facts.messages.lastRole === "user";
@@ -41,25 +43,59 @@ export function deriveSessionContinuity(
 			refs.push(interruption.eventId);
 		}
 		if (interruption.messageCount === null) {
-			unknowns.push("有中断事件没有记录当时的消息条数");
+			// 缺口指名去哪核对：这条中断事件本身就缺 atMessageCount 字段。
+			unknowns.push({
+				text: "有中断事件没有记录当时的消息条数",
+				pointer: interruption.eventId
+					? `event:${interruption.eventId}`
+					: "eventType:thread.turn_interrupted",
+			});
 		}
-		if (!interruption.recovered) {
+		// 用户自己按停的那一轮不是待办（TF-0330）：有人主动终止，就不是
+		// 「需要别人看一眼的断点」。记录保留，可从 `turns.cancellations` 读到。
+		if (!interruption.recovered && !interruption.userStopped) {
 			because.push(interruptionLine(interruption));
 		}
 	}
 
 	if (open) {
 		const unanswered = facts.interruptions.find(
-			(interruption) => !interruption.recovered,
+			(interruption) => !interruption.recovered && !interruption.userStopped,
 		);
-		// 未回复的人类消息已经由中断行说明原因时，不再重复计一条。
-		if (!unanswered) {
+		// 用户自己按停、没有回复的那一轮不是待办（TF-0330）：终止观察落在末条
+		// 消息之后，就说明「没有回复」是有人主动停的，不是被切断。取最后一次终止
+		// 观察与末条消息比时间，只用事件事实，不推断因果。
+		const lastMessageAt = facts.messages.lastAt
+			? Date.parse(facts.messages.lastAt)
+			: Number.NaN;
+		const lastCancelAt = facts.cancellations
+			.map((cancel) => Date.parse(cancel.at))
+			.filter((at) => Number.isFinite(at))
+			.reduce<number | null>(
+				(max, at) => (max === null || at > max ? at : max),
+				null,
+			);
+		const stoppedByUser =
+			lastCancelAt !== null &&
+			(!Number.isFinite(lastMessageAt) || lastCancelAt >= lastMessageAt);
+		// 未回复的人类消息已经由中断行说明原因、或是用户主动停的，不再重复计一条。
+		if (!unanswered && !stoppedByUser) {
 			because.push("最后一条是人类消息，没有助手回复");
+		}
+		if (stoppedByUser && lastCancelAt !== null) {
+			for (const cancel of facts.cancellations) {
+				if (cancel.eventId) {
+					refs.push(cancel.eventId);
+				}
+			}
 		}
 	}
 
 	if (facts.status === "running") {
-		unknowns.push("线程仍标记为运行中：这一轮是否结束没有被记录");
+		unknowns.push({
+			text: "线程仍标记为运行中：这一轮是否结束没有被记录",
+			pointer: "meta.status",
+		});
 	}
 
 	if (
@@ -68,20 +104,42 @@ export function deriveSessionContinuity(
 		facts.messages.total > 0 &&
 		facts.providerSessionId === null
 	) {
-		unknowns.push("缺少 provider 会话 id：下一轮能否接上同一会话无法确认");
+		// TF-0334：两种成因（reload 后、跨 provider 切换后）体现在同一个字段上，
+		// 读数只指字段，不推断是哪一种——原因要由那次操作的事件回答。
+		const field =
+			facts.lane === "codex" ? "meta.codexSessionId" : "meta.claudeSessionId";
+		unknowns.push({
+			text: `缺少 provider 会话 id（车道 ${facts.lane}）：下一轮能否接上同一会话无法确认`,
+			pointer: `${field} / meta.hasResumableSession`,
+		});
 	}
 
 	if (facts.messages.total > 0 && facts.messages.lastAt === null) {
-		unknowns.push("有消息但没有记录最近一条的时间");
+		unknowns.push({
+			text: "有消息但没有记录最近一条的时间",
+			pointer: "messages.jsonl:at",
+		});
 	}
 
 	const state =
 		because.length > 0 ? "review" : unknowns.length > 0 ? "unknown" : "intact";
 
+	// 「先处理哪一个」的联合判读（TF-0331）：只依赖已有两维事实（`because` 与
+	// 积压计数），不合成单一分数、也不新增采集。断点 = 有任何需要人处理的具体
+	// 事实（未恢复中断，或没有回复的人类消息）；它优先于积压——积压常常是同一个
+	// 后端在几十条旧会话上的同一个事实。用 `because` 判定，保证与 state 一致。
+	const priority: ContinuityPriority =
+		because.length > 0
+			? "break-first"
+			: facts.pendingNotices > 0
+				? "backlog-only"
+				: "neither";
+
 	return {
 		threadId: facts.threadId,
 		title: facts.title,
 		archived: facts.archived,
+		priority,
 		identity: {
 			lane: facts.lane,
 			providerSessionId: facts.providerSessionId,
@@ -93,6 +151,7 @@ export function deriveSessionContinuity(
 			lastAt: facts.messages.lastAt,
 			open,
 			interruptions: facts.interruptions,
+			cancellations: facts.cancellations,
 		},
 		delivery: {
 			pendingNotices: facts.pendingNotices,
@@ -115,6 +174,12 @@ export interface ContinuitySummary {
 	unknown: number;
 	/** 仍有未投递前提通知的会话数；与 state 是两个维度，不互相覆盖。 */
 	pending: number;
+	/** 断点优先（有任何需要人处理的具体事实）的会话数。 */
+	breakFirst: number;
+	/** 只有未投递积压、没有断点的会话数。 */
+	backlogOnly: number;
+	/** 两维都没有的会话数。 */
+	neither: number;
 	/** 需要人看一眼的会话 id，按 id 排序。 */
 	reviewThreads: string[];
 	/** 材料不够的会话 id，按 id 排序。 */
@@ -141,6 +206,9 @@ export function summarizeContinuity(
 	return {
 		total: rows.length,
 		intact: rows.filter((row) => row.state === "intact").length,
+		breakFirst: rows.filter((row) => row.priority === "break-first").length,
+		backlogOnly: rows.filter((row) => row.priority === "backlog-only").length,
+		neither: rows.filter((row) => row.priority === "neither").length,
 		review: reviewThreads.length,
 		unknown: unknownThreads.length,
 		pending: pendingThreads.length,

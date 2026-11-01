@@ -1286,6 +1286,53 @@
 				"cont_rc": 12,
 				"mcp_pass": 19
 			}
+		},
+		{
+			"id": "claim-continuity-cause-and-join",
+			"statement": "ADR-0029：中断原因只写可观测取值（host-restarted / unknown，不新增猜测性枚举）；用户主动停止落 thread.turn_cancelled 并从待办中排除；断点×积压联合判读三态且两维不合并成分数；每条 unknown 指名字段或事件",
+			"instrument": [
+				"packages/workbench/src/chat/continuity/types.ts",
+				"packages/workbench/src/chat/continuity/derive.ts",
+				"packages/workbench/src/chat/continuity/read.ts",
+				"packages/workbench/src/chat/continuity/derive.test.ts",
+				"packages/workbench/src/chat/continuity.test.ts",
+				"packages/workbench/src/chat/resume-card/continuity.ts",
+				"packages/workbench/src/chat/resume-card/continuity.test.ts",
+				"packages/workbench/src/chat/thread-lifecycle.ts",
+				"packages/workbench/src/commands/session-continuity.ts",
+				"packages/workbench/src/mcp/tools/continuity.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/continuity/**",
+				"packages/workbench/src/chat/resume-card/**",
+				"packages/workbench/src/chat/thread-lifecycle.ts",
+				"packages/workbench/src/chat/threads.ts",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/commands/session-continuity.ts",
+				"packages/workbench/src/mcp/**",
+				"packages/workbench/src/types/event.ts",
+				"apps/workbench-ui/src/chat/**",
+				"apps/workbench-ui/src/components/chat/**",
+				"evidence/claims.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"derive_pass": "number",
+				"derive_fail": "number",
+				"e2e_pass": "number",
+				"e2e_fail": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/chat/continuity/derive.test.ts packages/workbench/src/chat/continuity.test.ts packages/workbench/src/chat/resume-card/continuity.test.ts --timeout 60000",
+			"expected": {
+				"exit": 0,
+				"derive_fail": 0,
+				"e2e_fail": 0
+			},
+			"minimum": {
+				"derive_pass": 15,
+				"e2e_pass": 26
+			}
 		}
 	]
 }

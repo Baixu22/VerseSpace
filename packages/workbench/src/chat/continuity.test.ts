@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { chatContext } from "../test/chat-context";
 import { makeTempWorkbench } from "../test/fixtures";
 import { deriveSessionContinuity } from "./continuity/derive";
 import {
@@ -31,6 +32,7 @@ function facts(overrides: Partial<ContinuityFacts> = {}): ContinuityFacts {
 			lastRole: "assistant",
 		},
 		interruptions: [],
+		cancellations: [],
 		pendingNotices: 0,
 		pendingPaths: [],
 		deliveredNotices: 0,
@@ -81,6 +83,7 @@ describe("deriveSessionContinuity", () => {
 						messageCount: 1,
 						reason: "host-restarted",
 						recovered: false,
+						userStopped: false,
 					},
 				],
 			}),
@@ -100,6 +103,7 @@ describe("deriveSessionContinuity", () => {
 						messageCount: 1,
 						reason: "host-restarted",
 						recovered: true,
+						userStopped: false,
 					},
 				],
 			}),
@@ -122,7 +126,9 @@ describe("deriveSessionContinuity", () => {
 	test("仍标记 running 时是 unknown，不把沉默读成健康", () => {
 		const row = deriveSessionContinuity(facts({ status: "running" }));
 		expect(row.state).toBe("unknown");
-		expect(row.unknowns.join(" ")).toContain("运行中");
+		// TF-0334：每条缺口都指名字段/事件，不能只说「材料不足」
+		expect(row.unknowns.map((u) => u.text).join(" ")).toContain("运行中");
+		expect(row.unknowns.map((u) => u.pointer)).toEqual(["meta.status"]);
 	});
 
 	test("本地 CLI 车道缺少 provider 会话 id 时是 unknown；HTTP 车道不算缺", () => {
@@ -130,7 +136,12 @@ describe("deriveSessionContinuity", () => {
 			facts({ providerSessionId: null, resumable: false }),
 		);
 		expect(missing.state).toBe("unknown");
-		expect(missing.unknowns.join(" ")).toContain("provider 会话 id");
+		expect(missing.unknowns.map((u) => u.text).join(" ")).toContain(
+			"provider 会话 id",
+		);
+		// 指针落到车道的具体字段上，而不是一句笼统的「缺 id」
+		expect(missing.unknowns[0]?.pointer).toContain("meta.claudeSessionId");
+		expect(missing.unknowns[0]?.pointer).toContain("hasResumableSession");
 
 		const http = deriveSessionContinuity(
 			facts({
@@ -250,6 +261,79 @@ describe("readSessionContinuity", () => {
 			const row = await readSessionContinuity(ws.bb, thread.id, NOW);
 			expect(row.state).toBe("review");
 			expect(row.because[0]).toContain("host-restarted");
+		} finally {
+			await ws.cleanup();
+		}
+	});
+
+	test("TF-0330 现场：用户调 cancel 会落一条终止观察，该轮不再排进待办", async () => {
+		const ws = await makeTempWorkbench();
+		try {
+			const chat = new ChatThreads(ws.bb);
+			const thread = await chat.create("用户主动停下的会话");
+			const store = new ThreadRepository(ws.bb);
+			await store.appendMessage(thread.id, {
+				id: "m-1",
+				role: "user",
+				text: "跑一个很长的东西",
+				at: "2026-11-01T00:01:00.000Z",
+			});
+			// 模拟「有一个在跑的回合」：给 running 放一个可被 abort 的 handle。
+			// cancel 走的是同一个代码路径（abort + 落 thread.turn_cancelled）。
+			expect(await chat.cancel(thread.id)).toBe(false); // 没有在跑 → 不写观察
+			const none = await ws.bb.events.all();
+			expect(
+				none.filter((e) => e.type === "thread.turn_cancelled"),
+			).toHaveLength(0);
+
+			// 真正的在跑回合：把 handle 放进 running 映射（测试用的既有接入点），
+			// 再走同一条 cancel 代码路径——abort + 落 thread.turn_cancelled。
+			const controller = new AbortController();
+			chatContext(chat).running.set(thread.id, controller);
+			const cancelled = await chat.cancel(thread.id);
+			expect(cancelled).toBe(true);
+			expect(controller.signal.aborted).toBe(true);
+
+			const events = await ws.bb.events.all();
+			const records = events.filter((e) => e.type === "thread.turn_cancelled");
+			expect(records).toHaveLength(1);
+			expect(records[0]?.payload).toMatchObject({
+				threadId: thread.id,
+				source: "user",
+				atMessageCount: 1,
+			});
+
+			// 回合一收尾就从 running 映射里删除（真实路径里是 turn 的 finally）。
+			// 之后再停就没有东西可停：不写第二条观察。
+			chatContext(chat).running.delete(thread.id);
+			expect(await chat.cancel(thread.id)).toBe(false);
+			expect(
+				(await ws.bb.events.all()).filter(
+					(e) => e.type === "thread.turn_cancelled",
+				),
+			).toHaveLength(1);
+
+			// 投影：用户主动停的那一轮不是待办。末条是人类消息 + 终止观察落在
+			// 它之后 = 「没有回复」是有人主动停的，不是被切断，故不报 review。
+			const row = await readSessionContinuity(ws.bb, thread.id, NOW);
+			expect(row.turns.cancellations).toHaveLength(1);
+			expect(row.because).toEqual([]);
+			expect(row.state).toBe("intact");
+			expect(row.priority).toBe("neither");
+			// 终止记录可核对
+			expect(row.refs.some((r) => r.includes("e-"))).toBe(true);
+
+			// 对照：没有终止观察时，同样的末条人类消息仍然是 review（不是被停）。
+			const other = await chat.create("被切断的对照");
+			await new ThreadRepository(ws.bb).appendMessage(other.id, {
+				id: "m-1",
+				role: "user",
+				text: "问了没答",
+				at: "2026-11-01T00:01:00.000Z",
+			});
+			const brokeRow = await readSessionContinuity(ws.bb, other.id, NOW);
+			expect(brokeRow.state).toBe("review");
+			expect(brokeRow.priority).toBe("break-first");
 		} finally {
 			await ws.cleanup();
 		}

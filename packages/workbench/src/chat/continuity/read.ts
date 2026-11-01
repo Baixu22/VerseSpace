@@ -57,24 +57,38 @@ function payloadOf(event: WorkbenchEvent): Record<string, unknown> {
 		: {};
 }
 
-function interruptionsOf(
+function messageCountOf(payload: Record<string, unknown>): number | null {
+	const raw = payload.atMessageCount;
+	return typeof raw === "number" && Number.isSafeInteger(raw) ? raw : null;
+}
+
+/**
+ * 装配一份读数的输入事实：把两件事分开收集，不混成一种。
+ *
+ * - `interruptions`（`thread.turn_interrupted`）：宿主清扫在 `status` 仍停
+ *   `running` 时落下的观察——「这一轮没被收尾就消失了」，原因由生产者写入。
+ * - `cancellations`（`thread.turn_cancelled`）：用户主动按停（TF-0330）。
+ *   它带自己的 `atMessageCount` 与事件 id，用来回答「这条中断是不是其实
+ *   是被主动停的」。
+ */
+function continuityObservationsOf(
 	events: readonly WorkbenchEvent[],
 	threadId: string,
 	messages: StoredMessage[],
 ) {
-	return events
-		.filter(
-			(event) =>
-				event.type === "thread.turn_interrupted" &&
-				payloadOf(event).threadId === threadId,
-		)
+	const mine = events.filter((event) => payloadOf(event).threadId === threadId);
+	const cancellations = mine
+		.filter((event) => event.type === "thread.turn_cancelled")
+		.map((event) => ({
+			at: event.timestamp,
+			eventId: event.id ?? null,
+			messageCount: messageCountOf(payloadOf(event)),
+		}));
+	const interruptions = mine
+		.filter((event) => event.type === "thread.turn_interrupted")
 		.map((event) => {
 			const payload = payloadOf(event);
-			const rawCount = payload.atMessageCount;
-			const messageCount =
-				typeof rawCount === "number" && Number.isSafeInteger(rawCount)
-					? rawCount
-					: null;
+			const messageCount = messageCountOf(payload);
 			// 中断之后有没有人替这轮说过话：消息条数是最准的切点，缺它时退回
 			// 时间比较（旧记录没有条数，仍然可以回答「之后有没有助手消息」）。
 			const after =
@@ -84,6 +98,11 @@ function interruptionsOf(
 								Date.parse(message.at) >= Date.parse(event.timestamp),
 						)
 					: messages.slice(messageCount);
+			// 用户主动停在这次中断之后 = 这一轮其实是被人停的，不是被切断。
+			// 判定只用事件的事实（时间戳），不推断因果。
+			const userStopped = cancellations.some(
+				(cancel) => Date.parse(cancel.at) >= Date.parse(event.timestamp),
+			);
 			return {
 				at: event.timestamp,
 				eventId: event.id ?? null,
@@ -93,8 +112,10 @@ function interruptionsOf(
 						? payload.reason
 						: "unknown",
 				recovered: after.some((message) => message.role === "assistant"),
+				userStopped,
 			};
 		});
+	return { interruptions, cancellations };
 }
 
 async function safeMessages(
@@ -148,6 +169,7 @@ export async function readSessionContinuity(
 			payloadOf(event).writer === threadId,
 	).length;
 	const provider = providerSessionOf(meta);
+	const observations = continuityObservationsOf(events, threadId, messages);
 	return deriveSessionContinuity({
 		threadId,
 		title: meta.title,
@@ -163,7 +185,8 @@ export async function readSessionContinuity(
 		},
 		status: meta.status,
 		messages: messageFacts(messages),
-		interruptions: interruptionsOf(events, threadId, messages),
+		interruptions: observations.interruptions,
+		cancellations: observations.cancellations,
 		pendingNotices: notice ? 1 : 0,
 		pendingPaths: notice
 			? [...new Set(notice.claims.map((claim) => claim.path))].sort()
@@ -197,6 +220,7 @@ export async function readAllSessionContinuity(
 				payloadOf(event).writer === meta.id,
 		).length;
 		const provider = providerSessionOf(meta);
+		const observations = continuityObservationsOf(events, meta.id, messages);
 		rows.push(
 			deriveSessionContinuity({
 				threadId: meta.id,
@@ -213,7 +237,8 @@ export async function readAllSessionContinuity(
 				},
 				status: meta.status,
 				messages: messageFacts(messages),
-				interruptions: interruptionsOf(events, meta.id, messages),
+				interruptions: observations.interruptions,
+				cancellations: observations.cancellations,
 				pendingNotices: notice ? 1 : 0,
 				pendingPaths: notice
 					? [...new Set(notice.claims.map((claim) => claim.path))].sort()

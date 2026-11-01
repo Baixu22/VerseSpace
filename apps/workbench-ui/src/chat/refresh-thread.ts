@@ -19,7 +19,12 @@ export async function refreshThread(
 					resumeCard: data.resumeCard ?? null,
 					resumeCardDismissed: Boolean(data.resumeCardDismissed),
 					resumeDelta: data.resumeDelta ?? 0,
-					continuityDelivery: data.continuityDelivery ?? null,
+					continuityDelivery: data.continuityDelivery
+						? {
+								pendingNotices: data.continuityDelivery.pendingNotices,
+								priority: data.continuityDelivery.priority ?? "neither",
+							}
+						: null,
 					canPromote: Boolean(data.canPromote),
 				}
 			: {}),

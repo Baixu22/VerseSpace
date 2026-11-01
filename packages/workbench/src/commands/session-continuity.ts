@@ -3,6 +3,7 @@ import {
 	readAllSessionContinuity,
 	readSessionContinuity,
 	type SessionContinuity,
+	unknownLine,
 } from "../chat/continuity";
 import { emitJson, type GlobalOptions } from "../output";
 import { resolveBlackboard } from "./context";
@@ -21,6 +22,13 @@ const STATE_LABEL: Record<SessionContinuity["state"], string> = {
 	intact: "无待办观察",
 	review: "需要人看一眼",
 	unknown: "无法判定（材料不足）",
+};
+
+/** 联合判读的文案（TF-0331）：两维各自可核对，不合成单一分数。 */
+const PRIORITY_LABEL: Record<SessionContinuity["priority"], string> = {
+	"break-first": "先看断点",
+	"backlog-only": "只有投递积压（不急）",
+	neither: "无待办",
 };
 
 /**
@@ -75,6 +83,16 @@ function printDetail(row: SessionContinuity): void {
 	if (row.delivery.pendingPaths.length > 5) {
 		console.log(`    …另 ${row.delivery.pendingPaths.length - 5} 个文件`);
 	}
+	console.log(`  联合判读：${PRIORITY_LABEL[row.priority]}`);
+	for (const cancellation of row.turns.cancellations) {
+		console.log(
+			`  用户终止：${cancellation.at}（${
+				cancellation.messageCount === null
+					? "条数未记录"
+					: `当时 ${cancellation.messageCount} 条消息`
+			}）`,
+		);
+	}
 	for (const interruption of row.turns.interruptions) {
 		console.log(
 			`  中断：${interruption.at}（${interruption.reason}，${
@@ -89,7 +107,7 @@ function printDetail(row: SessionContinuity): void {
 		console.log(`    · ${reason}`);
 	}
 	for (const unknown of row.unknowns) {
-		console.log(`    ? ${unknown}`);
+		console.log(`    ? ${unknownLine(unknown)}`);
 	}
 	if (row.refs.length > 0) {
 		console.log(`  可核对：${row.refs.join("、")}`);
@@ -143,5 +161,8 @@ export async function sessionsContinuityCommand(
 	}
 	console.log(
 		`共 ${summary.total} 条会话：无待办观察 ${summary.intact} · 需要人看一眼 ${summary.review} · 材料不足 ${summary.unknown} · 有未投递通知 ${summary.pending}`,
+	);
+	console.log(
+		`其中先看断点 ${summary.breakFirst} · 只有投递积压 ${summary.backlogOnly} · 无待办 ${summary.neither}`,
 	);
 }

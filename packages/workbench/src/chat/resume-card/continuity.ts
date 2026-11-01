@@ -1,5 +1,6 @@
 import type {
 	ContinuityInterruption,
+	ContinuityPriority,
 	ContinuityState,
 } from "../continuity/types";
 import type { FactRow } from "./types";
@@ -33,6 +34,8 @@ export interface ContinuityDeliveryBadge {
 
 export interface ContinuityCardProjection {
 	state: ContinuityState;
+	/** 断点 × 积压的联合判读（TF-0331）：两维不合并成单一分数。 */
+	priority: ContinuityPriority;
 	/** 要渲染的事实行（intact / 无未恢复中断时为空）。 */
 	rows: FactRow[];
 	/** 头部积压计数；0 表示不显示徽标。 */
@@ -86,7 +89,9 @@ export function continuityCardRows(input: {
 	if (input.state !== "review") {
 		// intact / unknown 不新增行：unknown 的材料缺口由 CLI 与 MCP 报告，
 		// 卡片只在有具体待办事实时说话（健康与不确定都不占注意力）。
-		return { state: input.state, rows: [], delivery };
+		const priority: ContinuityPriority =
+			input.pendingNotices > 0 ? "backlog-only" : "neither";
+		return { state: input.state, priority, rows: [], delivery };
 	}
 	const rows: FactRow[] = [];
 	for (const interruption of input.interruptions) {
@@ -95,5 +100,12 @@ export function continuityCardRows(input: {
 	}
 	// 最新的断点排最前：人在卡片上先看到「最近一次被切断」。
 	rows.sort((a, b) => (a.summary < b.summary ? 1 : -1));
-	return { state: input.state, rows, delivery };
+	// 断点行存在 = 先看断点（TF-0331）；没有断点但卡片有积压时才可能是仅积压。
+	const priority: ContinuityPriority =
+		rows.length > 0
+			? "break-first"
+			: input.pendingNotices > 0
+				? "backlog-only"
+				: "neither";
+	return { state: input.state, priority, rows, delivery };
 }

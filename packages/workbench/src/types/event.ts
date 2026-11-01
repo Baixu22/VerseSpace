@@ -58,6 +58,10 @@ export const THREAD_EVENT_TYPES = new Set([
 	// 会随着 status 复位一起被抹掉，恢复面只剩一条没有回复的人类消息。
 	// 仍然只是观察：中断不代表失败，之后有助手消息回答即视为已回来。
 	"thread.turn_interrupted",
+	// 用户主动停止（阶段三 TF-0330）：UI 或 CLI 调 `cancel` 中止了当前回合。
+	// 这条是**有意终止**而不是被切断——它让「末条是人类消息、没有回复」不再
+	// 一律读成待办：人自己按了停，就不是需要别人看一眼的断点。仍只是观察。
+	"thread.turn_cancelled",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([

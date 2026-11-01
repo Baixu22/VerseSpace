@@ -22,11 +22,41 @@ function interruption(
 		messageCount: 1,
 		reason: "host-restarted",
 		recovered: false,
+		userStopped: false,
 		...overrides,
 	};
 }
 
 describe("TF-0323 判据：恢复卡上的会话断点行", () => {
+	test("TF-0331：四类组合的联合判读各有用例（仅断点 / 仅积压 / 都有 / 都没有）", () => {
+		const onlyBreak = continuityCardRows({
+			state: "review",
+			interruptions: [interruption()],
+			pendingNotices: 0,
+		});
+		expect(onlyBreak.priority).toBe("break-first");
+		const onlyBacklog = continuityCardRows({
+			state: "intact",
+			interruptions: [],
+			pendingNotices: 3,
+		});
+		expect(onlyBacklog.priority).toBe("backlog-only");
+		expect(onlyBacklog.rows).toEqual([]);
+		const both = continuityCardRows({
+			state: "review",
+			interruptions: [interruption()],
+			pendingNotices: 3,
+		});
+		expect(both.priority).toBe("break-first");
+		expect(both.delivery.pendingNotices).toBe(3);
+		const neither = continuityCardRows({
+			state: "intact",
+			interruptions: [],
+			pendingNotices: 0,
+		});
+		expect(neither.priority).toBe("neither");
+	});
+
 	test("判据 1：intact 不产生任何行（健康不占空间）", () => {
 		const projection = continuityCardRows({
 			state: "intact",
