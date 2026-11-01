@@ -1,15 +1,15 @@
 {
 	"claim_id": "claim-forest-landing",
 	"instrument_sha256": "scripts/check-forest-landing.mjs:601c7688b24af34bcb581715af33a35ac1f1ebc685ac86592c8ccac7bbff5e35",
-	"subject_sha": "41431b2ae32f222a9858236c3d1787f10f7c6108",
+	"subject_sha": "f2fc105443b915895d75d95800e9a99ebe2cc9a8",
 	"environment": {},
-	"measured_at": "2026-11-01T14:53:28.746Z",
+	"measured_at": "2026-11-01T16:11:23.948Z",
 	"reading": {
 		"exit": 0,
 		"problems": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:c970c598d3651ceb08cf57482dfe52f1660edb2d91ef0e688eac95adee8a0f3c",
+	"raw_digest": "sha256:ce87689053b424e9e674defcd7adbab66c31bbe28ae2faa68241943ebbc84980",
 	"reproduce": "node scripts/check-forest-landing.mjs --json",
 	"class": "curated-evidence"
 }

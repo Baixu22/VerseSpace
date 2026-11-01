@@ -1,16 +1,16 @@
 {
 	"claim_id": "claim-browser-e2e",
 	"instrument_sha256": "apps/workbench-ui/playwright.config.ts:01636f750de315852c3c675b693b0da1cc4bea5fc70d9da470a551bb7ee48148\nscripts/win/e2e-browser.ps1:cd1851a3cf1b3d11b037e766fc7d5d4e09ae7f05a5ee3b6cf25cdcc85dfcc6b4",
-	"subject_sha": "0135a86241026ff43a9ca1e11ee03872dd1246b0",
+	"subject_sha": "f2fc105443b915895d75d95800e9a99ebe2cc9a8",
 	"environment": {},
-	"measured_at": "2026-11-01T16:07:12.605Z",
+	"measured_at": "2026-11-01T16:13:45.493Z",
 	"reading": {
 		"passed": 15,
 		"failed": 0,
 		"skipped": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:c4789bf2afbd470ec0c1b11a0182d704028dc15aa53218242aa71136c4e8dd09",
+	"raw_digest": "sha256:74c110ec5bea693e3ee4e23d3f09293548242d7456cfe2eba81b7b39bd9cff48",
 	"reproduce": "pwsh -NoProfile -File scripts/win/e2e-browser.ps1",
 	"class": "curated-evidence"
 }

@@ -1,15 +1,15 @@
 {
 	"claim_id": "claim-premise-contract",
 	"instrument_sha256": "packages/workbench/scripts/benchmark-premises.ts:eeed0a8f84cbf0ff3bfc7e75e4e436483c4c2585bd0c22617101b194df8118ad",
-	"subject_sha": "1049668bee2a71576e55356b2074602f1916cbb6",
+	"subject_sha": "f2fc105443b915895d75d95800e9a99ebe2cc9a8",
 	"environment": {},
-	"measured_at": "2026-11-01T15:47:55.469Z",
+	"measured_at": "2026-11-01T16:12:03.639Z",
 	"reading": {
 		"passed": 14,
 		"total": 14
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:c66283fa68267d15ba711679440f065ca80cd31efb1244fc6ee55a5ea38b9ff6",
+	"raw_digest": "sha256:93a9fce8dc57817250b6ce271c559d1ff45c563ed8951e6794ec11e391ab9f02",
 	"reproduce": "bun packages/workbench/scripts/benchmark-premises.ts --json",
 	"class": "curated-evidence"
 }
