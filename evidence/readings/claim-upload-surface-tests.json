@@ -1,15 +1,15 @@
 {
 	"claim_id": "claim-upload-surface-tests",
 	"instrument_sha256": "scripts/upload-surface/classify.mjs:5d25b25ba994ea82c921e5764987ad2a18ef39ceb0508c99aaa59ff70dabc2f7\nscripts/upload-surface/classify.test.mjs:fc85334d69c97b039fa5e581ac880dfa6e60749d8b33b2ab8ae73cdb84b3fbad\nscripts/upload-surface/links.mjs:9f1352df9aa86bd72a08d59301fca3c8e52537ad50f0042c2b883f8afb419e47\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d\nscripts/upload-surface/policy.json:c8600682561528c26536703721318589b7c1e6b1b71e9d376b606c9ce3ecd4bd",
-	"subject_sha": "ca4d020fbdb8fc45daee58ce9c8db39ac20acdcb",
+	"subject_sha": "41431b2ae32f222a9858236c3d1787f10f7c6108",
 	"environment": {},
-	"measured_at": "2026-11-01T14:44:02.754Z",
+	"measured_at": "2026-11-01T14:53:31.643Z",
 	"reading": {
 		"pass": 30,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:10b541f327470dc0e6297af590eb450624d24b0573bc5cd5f2fb742914a1a59f",
+	"raw_digest": "sha256:09acb0b5d9a433f30b650469696407757bd18bf3a072b68e75b253f86ce3a093",
 	"reproduce": "node scripts/upload-surface/classify.test.mjs && node scripts/upload-surface/links.test.mjs",
 	"class": "curated-evidence"
 }
