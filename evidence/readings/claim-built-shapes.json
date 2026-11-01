@@ -1,18 +1,14 @@
 {
 	"claim_id": "claim-built-shapes",
 	"instrument_sha256": "packages/workbench/scripts/build.ts:08d6527ce22db21914535fba21e680046e07a3a37cdb3a2787e7cf09d7ca3656\npackages/workbench/scripts/check-built.ts:2592b97987a2df9a1f9a1583fe18f6d9aef1f86470a7a3c8c871c3dca8f71b42",
-	"subject_sha": "0c537e67eb66e5a31eb7d6fa22bc5e303cea9d6e",
-	"environment": {
-		"os": "windows",
-		"bun": "1.3.14",
-		"node": "v24.22.1"
-	},
-	"measured_at": "2026-10-26T06:06:15.499Z",
+	"subject_sha": "0135a86241026ff43a9ca1e11ee03872dd1246b0",
+	"environment": {},
+	"measured_at": "2026-11-01T15:56:30.105Z",
 	"reading": {
 		"exit": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:45bb444a8591da94f7236d75f9d48faadc1e21cf3bdd708bf74ef72d46804242",
-	"reproduce": "bun run --cwd packages/workbench build:all && bun run --cwd packages/workbench test:build --native D:/helmor-main/packages/workbench/dist/workbench-windows-x64.exe --js D:/helmor-main/packages/workbench/dist/workbench.js",
+	"raw_digest": "sha256:151baef4cc523bdf31acb140fb620f4b52c18edb7ad56ce2ea45accbdc25d204",
+	"reproduce": "cd packages/workbench && bun run build && bun run test:build",
 	"class": "curated-evidence"
 }

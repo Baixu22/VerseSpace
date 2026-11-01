@@ -10,7 +10,7 @@ import a8 from "../../../../apps/workbench-ui/dist/assets/geist-mono-symbols2-wg
 import a9 from "../../../../apps/workbench-ui/dist/assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2" with { type: "file" };
 import a10 from "../../../../apps/workbench-ui/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2" with { type: "file" };
 import a11 from "../../../../apps/workbench-ui/dist/assets/index-BlQNE8_a.css" with { type: "file" };
-import a12 from "../../../../apps/workbench-ui/dist/assets/index-DvkvsPUD.js" with { type: "file" };
+import a12 from "../../../../apps/workbench-ui/dist/assets/index-Dt4DNZyQ.js" with { type: "file" };
 import a13 from "../../../../apps/workbench-ui/dist/index.html" with { type: "file" };
 export const files = {
 	"assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2": a0,
@@ -25,6 +25,6 @@ export const files = {
 	"assets/geist-mono-vietnamese-wght-normal-D8KDMBhC.woff2": a9,
 	"assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2": a10,
 	"assets/index-BlQNE8_a.css": a11,
-	"assets/index-DvkvsPUD.js": a12,
+	"assets/index-Dt4DNZyQ.js": a12,
 	"index.html": a13,
 };

@@ -80,7 +80,21 @@ CLI 汇总：共 4 条会话：… 其中先看断点 2 · 只有投递积压 0 
 ## 5. 下一步与遗留风险
 
 1. **原因细分的真实样本仍为 0**：本机真实账本 `thread.turn_interrupted` 事件数为 0（测量：对 `.workbench/events/events.jsonl` 统计）。要细分原因，必须先让宿主真的在回合中途死掉并留下样本；在那之前 `unknown` 是诚实的答案。
-2. **TF-0333**：`check-claims` 的 stale 集合仍是本机不可测的那 7 条（整套 workbench 套件 / Playwright / 完整 build / 4 条 codex），需在可 spawn 的环境重取。
+2. **TF-0333**：`check-claims` 的 stale 集合从 7 条降到 **5 条**——本轮实测发现其中两条其实能测：
+   - `claim-built-shapes`：`bun run build && bun run test:build` 实跑 exit 0（native + js 两种形态都通过），已 `--run` 记录。
+   - `claim-browser-e2e`：`pwsh -NoProfile -File scripts/win/e2e-browser.ps1`。第一次跑 15 条全失败，原因是 **Playwright 浏览器构建缺失**（`browserType.launch: Executable doesn't exist at …chromium_headless_shell-1223`），`bunx playwright install chromium` 装上后重跑 **15 passed**，已 `--run` 记录。
+
+   剩下 5 条**逐条**说明为什么本机不能给出合规读数：
+
+   | 声明 | 本机实测 | 为什么不能记录 |
+   | --- | --- | --- |
+   | `claim-workbench-suite` | 整套并行跑：**1285 pass / 1 fail**；`src/supervisor` 单独连跑 2 次：**23 pass / 0 fail** | 声明 `expected.fail = 0`。唯一失败是 `spawnSupervised > pid registry…` 这条 spawn 类用例在整套并行下的抖动，本机拿不到稳定的 fail=0，就不写 |
+   | `claim-codex-native-approval-control` | 未跑 | 本机 `codex --version` = **0.165.0-alpha.1.2**；该声明的读数是在 **0.164.0-alpha.11.1** + 专用隔离 profile（`.agent-contexts/all-nodes-relay-2026-10-26/codex-profile-approval`）上取的。换版本重跑会悄悄改变声明衡量的对象 |
+   | `claim-codex-readonly-approval-control` | 未跑 | 同上（版本与 profile 绑定） |
+   | `claim-codex-native-seal-current-gap` | 未跑 | 同上；且它判的是「**应当**未封印」的反向对照，换版本后要么变成另一种结论、要么无法复现 |
+   | `claim-codex-live-lifecycle` | 未跑 | 同上 |
+
+   这 5 条仍是 `stale`，**没有用 0 代替**，也没有为了让门禁变绿而放宽判据。
 3. **面板上没有真人读数**：断点行与联合判读谁看、看完做什么，仍无观测（ADR-0024 不恢复真人研究）。
 4. **`cancel` 的 await 化**：`remove` / `reload` 现在会等终止观察落盘（毫秒级）。如果将来发现取消变慢，先量再改——不要为了快把观测改回 fire-and-forget，那会让「按停」重新变成不可核对。
 
