@@ -1,19 +1,19 @@
 {
 	"claim_id": "claim-context-rot-suite",
 	"instrument_sha256": "package.json:ceb8c686a9b38ede2091ff12e1a59c76c0eca7c7ae28044592fd500fbae08a10\npackages/context-rot/package.json:a74f6f8149fa8dfb65292b3fb358d8144dd66ae2c12c0184a6442101048fc82d",
-	"subject_sha": "d029f5cc10224921423ba993484657cb2b0a8b15",
+	"subject_sha": "83a2637eccc53dccd77411eeaf8a79e2e56c9de6",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-10-26T05:41:20.369Z",
+	"measured_at": "2026-11-01T10:32:18.797Z",
 	"reading": {
 		"pass": 69,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:4c1bae8f8081ddd5edc1feb443b6dd569e5f3a86c5e0f5b139a55768ab0a761c",
+	"raw_digest": "sha256:29e7b2a250cbde1f978828cd45733fef6b45a72b144cb9898ee9a9a447d3eeac",
 	"reproduce": "bun run test:context-rot",
 	"class": "curated-evidence"
 }
