@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import type { Command } from "commander";
+import { ChatThreads } from "./chat/threads";
 import { buildProgram } from "./cli";
 import { initGitFixture, makeTempWorkbench } from "./test/fixtures";
 
@@ -330,6 +331,19 @@ describe("argv execution", () => {
 			},
 			verify: async (_ws, out) => {
 				expect(out).toContain(WRITER_ID);
+			},
+		},
+		{
+			path: ["sessions", "continuity"],
+			label: "sessions continuity [thread]",
+			build: async (ws) => {
+				// 一条真实线程：新线程没有消息，读数应为 intact 而不是「无数据」
+				const thread = await new ChatThreads(ws.bb).create("argv continuity");
+				return ["sessions", "continuity", thread.id, "--json"];
+			},
+			verify: async (_ws, out) => {
+				expect(out).toContain("continuity");
+				expect(out).toContain("intact");
 			},
 		},
 		{

@@ -8,6 +8,7 @@ import {
 } from "../commands/premises";
 
 import { registerSealReviewCommand } from "../commands/seal-review";
+import { sessionsContinuityCommand } from "../commands/session-continuity";
 import {
 	sessionsListCommand,
 	sessionsRecordCommand,
@@ -94,6 +95,27 @@ export function registerAgents(program: Command): void {
 				command: Command,
 			) => {
 				await sessionsRecordCommand(options, command);
+			},
+		);
+
+	sessions
+		.command("continuity [thread]")
+		.summary("read a thread's session continuity (identity, turns, delivery)")
+		.description(
+			"fold the three writers that already record a session's life — thread meta, " +
+				"the message log and the event ledger — into one reading: which provider " +
+				"session it is on, which turns completed, whether a turn was interrupted " +
+				"and never answered, and which premise notices never reached it. " +
+				"With no thread id it lists every thread and counts them. " +
+				"Read-only: it never re-runs, re-delivers or edits a thread.",
+		)
+		.action(
+			async (
+				thread: string | undefined,
+				_options: Record<string, unknown>,
+				command: Command,
+			) => {
+				await sessionsContinuityCommand(thread, command);
 			},
 		);
 

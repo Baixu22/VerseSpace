@@ -1,0 +1,20 @@
+{
+	"claim_id": "claim-session-continuity",
+	"instrument_sha256": "packages/workbench/src/chat/continuity.test.ts:9e9bf68b6701f16903fd33afe5b492522707880acc1065aeb88661964ef6bdfc\npackages/workbench/src/chat/continuity/derive.ts:1504382c46fd08a246bd8da91d73af217ba34fa64c093018ed4c8d19c98d3d3d\npackages/workbench/src/chat/continuity/index.ts:693f03229af380262634d8a35da533bc87a4984630c1531607204d315bb9bdb5\npackages/workbench/src/chat/continuity/read.ts:54008824d745ac64f69c2f4c58dcb72ea419ae07219d701629e260d17d43691d\npackages/workbench/src/chat/continuity/types.ts:ced5f9f0b5d4020557331960dfdb8f88a57727a6c3612775b573ef76c8050067\npackages/workbench/src/chat/threads.ts:dfb3f67a0585600efcc4a6552dff055033fec792b18aa626f764c2844d8f8fc7\npackages/workbench/src/cli/agents.ts:35caba5eb2b5dbc94df8c8103036ad51c58e9cc876f9eaa82fb891904d0dd87a\npackages/workbench/src/commands/session-continuity.ts:3bfef26a4029afe79c142448d4cdb54e69011cbd73234cb82e4da821f4580751\npackages/workbench/src/types/event.ts:4c4a58976e825ae792d71c3deb82d97c55f267484520ca18e56e51ca779549f7",
+	"subject_sha": "b9c8bfee35650a56441390a15ee67956cee44142",
+	"environment": {
+		"os": "windows",
+		"bun": "1.3.14",
+		"node": "v24.22.1"
+	},
+	"measured_at": "2026-11-01T10:21:37.807Z",
+	"reading": {
+		"exit": 0,
+		"pass": 12,
+		"fail": 0
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:41e9639feb3c611b07f4cf1e8ea8ec267c4752a271abd7f22c1f4483a52638fd",
+	"reproduce": "bun test packages/workbench/src/chat/continuity.test.ts --timeout 60000",
+	"class": "curated-evidence"
+}

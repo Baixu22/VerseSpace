@@ -53,6 +53,11 @@ export const THREAD_EVENT_TYPES = new Set([
 	// 收养反转（TF-0200）：观察「快照被消费、双方身份复归」这一事实。与
 	// thread.adopted 对称——仍是观察，snapshotId 回指被消费的快照。
 	"thread.adoption_reverted",
+	// 回合中断（会话延续性）：启动清扫发现 meta 仍停在 running，说明上一个
+	// 宿主进程在回合中途消失。复位之前先落这条观察——否则「这一轮被切断」
+	// 会随着 status 复位一起被抹掉，恢复面只剩一条没有回复的人类消息。
+	// 仍然只是观察：中断不代表失败，之后有助手消息回答即视为已回来。
+	"thread.turn_interrupted",
 ]);
 
 const FORBIDDEN_THREAD_KEYS = new Set([

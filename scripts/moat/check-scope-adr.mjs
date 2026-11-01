@@ -13,7 +13,7 @@
  *
  * Usage: node scripts/moat/check-scope-adr.mjs [--json] [--root <dir>]
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -114,12 +114,30 @@ if (indexText) {
 }
 
 if (readmeText) {
-	const highest = existsSync(ADR) ? "0026" : null;
+	// The README states the ADR range as a single span, so the range has to
+	// reach the highest ADR on disk. Pinning it to 0026 made every later ADR
+	// register as drift in the one check that is supposed to notice a stale
+	// range — measured 2026-11-01 when 0027 landed. The bound is read from the
+	// directory rather than typed, so the check keeps asking the same question.
+	const decisionDir = join(root, "docs", "decisions");
+	const numbers = existsSync(decisionDir)
+		? (() => {
+				try {
+					return readdirSync(decisionDir)
+						.map((name) => /^(\d{4})-.+\.md$/.exec(name)?.[1])
+						.filter((value) => typeof value === "string");
+				} catch {
+					return [];
+				}
+			})()
+		: [];
+	const highest = numbers.sort().at(-1) ?? null;
 	if (highest) {
+		const span = new RegExp(`ADR 0001[–-]${highest}`);
 		check(
 			"readme-range",
-			/ADR 0001[–-]0026/.test(readmeText),
-			"README 的 ADR 范围覆盖到 0026",
+			span.test(readmeText),
+			`README 的 ADR 范围覆盖到 ${highest}`,
 		);
 	}
 }

@@ -1208,6 +1208,43 @@
 				"attributedReadTurns": 3
 			},
 			"docs": ["docs/handoff/2026-10-26-all-nodes-relay.md"]
+		},
+		{
+			"id": "claim-session-continuity",
+			"statement": "ADR-0027：会话延续性是账本的只读投影——启动清扫先记 thread.turn_interrupted 再复位状态，三态读数（intact/review/unknown）按事实与缺口分开列，投递积压单列不改 state，恢复判据是中断后有无助手回复",
+			"instrument": [
+				"packages/workbench/src/chat/continuity/types.ts",
+				"packages/workbench/src/chat/continuity/derive.ts",
+				"packages/workbench/src/chat/continuity/read.ts",
+				"packages/workbench/src/chat/continuity/index.ts",
+				"packages/workbench/src/chat/continuity.test.ts",
+				"packages/workbench/src/chat/threads.ts",
+				"packages/workbench/src/types/event.ts",
+				"packages/workbench/src/commands/session-continuity.ts",
+				"packages/workbench/src/cli/agents.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/continuity/**",
+				"packages/workbench/src/chat/continuity.test.ts",
+				"packages/workbench/src/chat/threads.ts",
+				"packages/workbench/src/types/event.ts",
+				"packages/workbench/src/commands/session-continuity.ts",
+				"packages/workbench/src/cli/agents.ts"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"pass": "number",
+				"fail": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/chat/continuity.test.ts --timeout 60000",
+			"expected": {
+				"exit": 0,
+				"fail": 0
+			},
+			"minimum": {
+				"pass": 12
+			}
 		}
 	]
 }

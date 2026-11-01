@@ -747,7 +747,7 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 | [AGENTS.md](AGENTS.md) | 架构总览、模块表、代码组织规则、本机环境坑 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献流程、门禁清单、Windows 注意事项 |
 | [SECURITY.md](SECURITY.md) | 安全边界与报告渠道 |
-| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0026（先读这些再提架构改动） |
+| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0027（先读这些再提架构改动） |
 | [docs/handoff/](docs/handoff/README.md) | 每轮交接：改了什么、实测读数、刻意没做什么 |
 | [本轮 README 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md) | 2026-09-30 修复前的能力核查与探针结果；当前结论以接力记录为准 |
 | [#45–#48 修复与验收记录](docs/handoff/2026-09-30-issue-batch.md) | 通知确认、封印写者归属、大文件比较与规划提示的本地修复；当时测试结果及历史 #31 未验收边界 |

@@ -32,3 +32,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0024](./0024-retire-external-validation.md) | 永久关闭非 Windows 实机验证与真人研究；保留四平台交叉编译、Windows 工程验证与 Codex 实验 | 已接受 | TF-0237 / TF-0251 / TF-0265 / TF-0267 |
 | [0025](./0025-declared-verification-and-artifact-revalidation.md) | 声明验证范围、单产物重验与目标基线身份；有限扩展 ADR-0023 | 已接受 | GitHub #49–#57 |
 | [0026](./0026-input-origin-and-artifact-use.md) | 输入来源、产物来源与目标适用性拆成四种独立事实；只放开声明范围内的验收消费，保留 ADR-0023/0024 边界 | 已接受 | TF-0284（阶段 TF-0283） |
+| [0027](./0027-session-continuity-projection.md) | 会话延续性 = 账本的第四个投影：中断先记观察再复位，三态读数（intact / review / unknown），投递积压单列，只读不接管 | 已接受 | 本轮（2026-11-01） |

@@ -70,6 +70,12 @@ export class ChatThreads {
 	 * 启动清扫：ui 服务器进程若在回合中途死亡，线程 meta 会永久卡在
 	 * status=running——重启后没有恢复路径，busy 判定再也回不去。建 server
 	 * 时扫一遍 list，把 running 复位 idle 并落盘，返回复位数量（0 表示无孤儿）。
+	 *
+	 * 复位之前先落 `thread.turn_interrupted`：status 是唯一记录了「这一轮
+	 * 还没结束」的字段，抹掉它而只留一条没有回复的人类消息，就把「被切断」
+	 * 和「用户问了没等回答」压成了同一种样子。中断是观察，不是失败判定——
+	 * 之后有助手消息回答即视为已回来（`chat/continuity`）。
+	 * 写事件失败不能让清扫失败：卡在 running 比少一条观察更糟，所以只报错不退。
 	 */
 	async reconcileRunningOnStartup(): Promise<number> {
 		const threads = await this.context.store.list();
@@ -78,6 +84,23 @@ export class ChatThreads {
 			if (meta.status !== "running") {
 				continue;
 			}
+			const messages = await this.context.store
+				.messages(meta.id)
+				.catch(() => []);
+			await this.context.store
+				.appendThreadEvent("thread.turn_interrupted", meta.id, {
+					at: new Date().toISOString(),
+					atMessageCount: messages.length,
+					lastMessageId: messages.at(-1)?.id ?? null,
+					lastMessageRole: messages.at(-1)?.role ?? null,
+					reason: "host-restarted",
+				})
+				.catch((error: unknown) => {
+					console.error(
+						`[chat] 线程 ${meta.id} 的中断观察写入失败（仍继续复位）:`,
+						error,
+					);
+				});
 			meta.status = "idle";
 			await this.context.store.saveMeta(meta);
 			reset += 1;
