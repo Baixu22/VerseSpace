@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-typecheck",
 	"instrument_sha256": "apps/workbench-ui/tsconfig.json:b38627969c2cf1602d527d2108d529f749428ceac9e23194435579804e1617d5\npackage.json:ceb8c686a9b38ede2091ff12e1a59c76c0eca7c7ae28044592fd500fbae08a10\npackages/context-rot/tsconfig.json:5d54579f5991a82992d03c0ec36cee2d578c757f3d9408fdb0e9e84f2a72e51e\npackages/workbench/tsconfig.json:716fb450a7f995b0c0015b0f4d7ee2285f6214ae7776f7534ae09bca177ed02a",
-	"subject_sha": "ca4d020fbdb8fc45daee58ce9c8db39ac20acdcb",
+	"subject_sha": "5e020921f1e828f0b8f022c782e9f413fbdfc526",
 	"environment": {},
-	"measured_at": "2026-11-01T14:43:48.487Z",
+	"measured_at": "2026-11-01T14:44:34.379Z",
 	"reading": {
 		"exit": 0
 	},

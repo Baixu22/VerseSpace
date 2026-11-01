@@ -1,13 +1,9 @@
 {
 	"claim_id": "claim-root-gates",
 	"instrument_sha256": "package.json:ceb8c686a9b38ede2091ff12e1a59c76c0eca7c7ae28044592fd500fbae08a10\nscripts/check-forest-landing.test.mjs:ade17f71f5973ba0e0b0bef91ba9590c7b625815a8dd3a1b007dc069a2afc6c4\nscripts/claims/ledger.test.mjs:5d1ea413bb260770071f1b68a1d33b31626a6209844d5234fbd9abb8ff5816dd\nscripts/moat/check-scope-adr.test.mjs:accd751d558c563d82392cad30bbbbeebcd876847c5b1c48fb44d4883d30bb2c\nscripts/upload-surface/classify.test.mjs:fc85334d69c97b039fa5e581ac880dfa6e60749d8b33b2ab8ae73cdb84b3fbad\nscripts/upload-surface/links.test.mjs:f84176471d519bf804355f29af26ae5bcd48e22cd8cf51b4851680091318d59d",
-	"subject_sha": "83a2637eccc53dccd77411eeaf8a79e2e56c9de6",
-	"environment": {
-		"os": "windows",
-		"bun": "1.3.14",
-		"node": "v24.22.1"
-	},
-	"measured_at": "2026-11-01T10:38:36.200Z",
+	"subject_sha": "5e020921f1e828f0b8f022c782e9f413fbdfc526",
+	"environment": {},
+	"measured_at": "2026-11-01T14:44:41.971Z",
 	"reading": {
 		"exit": 0,
 		"files": 5,
@@ -16,7 +12,7 @@
 		"skipped": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:a59398a95e61aa044794fd659af4ef0178ff8aad96bcbb97a0a62b232e12f3e0",
+	"raw_digest": "sha256:4c06e2da94eef5643777f5e5b5047345467417d47e006534f79a560a4d5b34b0",
 	"reproduce": "bun run test:gates",
 	"class": "curated-evidence"
 }
