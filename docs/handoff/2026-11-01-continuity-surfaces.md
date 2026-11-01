@@ -41,7 +41,7 @@
 | `bun test src/mcp/tools src/mcp/tools.test.ts` | **13 + 7 pass / 0 fail**（目录 6 条、逐条可调用、截断、continuity 三形态） |
 | `bun test src/artifacts/projection.test.ts` | **5 pass / 0 fail**（三处表面一致） |
 | `bun test src/chat` 相关（restore-view / resume-card / continuity） | 36 pass / 0 fail |
-| `bun run test:workbench` | **1266 pass / 8 fail**（8 条见下，全部非本切片） |
+| `bun run test:workbench` | **1273 pass / 1 fail**（该条见下，非本切片） |
 | `bun run test:workbench-ui` | **78 pass / 0 fail**（20 files） |
 | `bun run test:context-rot` | 69 pass / 0 fail |
 | `bun run test:gates` | 52 pass / 0 fail |
@@ -65,8 +65,9 @@ MCP 详情:  中断：…（host-restarted，1 条消息）· 之后没有回复
 
 **哪些读数在本机无效、为什么**（不是本切片引入）：
 
-- `test:workbench` 整体跑出 8 条失败：`claude 静默挂死收尾`、`codex 车道端到端`、`空闲关闭计时器`、`前提通知折入 codex prompt`、`回合中压缩不终结回合`，加上最初 3 条 `CLI, read-only MCP and real restore HTTP agree for current/stale/unknown`。**后 3 条是本切片引入的真实漂移**（那份测试硬编码了五条工具清单），已修好并单独跑绿（5 pass / 0 fail）。
-- 前 5 条是 AGENTS.md 记录的沙箱/注入代理环境下 spawn 类用例超时。**测量方式**：把这 5 条所在的 3 个文件单独跑，改前（`git stash` 到基线）**13 pass / 0 fail**，改后**13 pass / 0 fail**——同样的命令、同样的结果，说明是整套并行时的负载抖动，不是回归。没有把它们写成通过。
+- `test:workbench` 第一轮整体跑出 8 条失败。其中 **3 条是本切片引入的真实漂移**：`CLI, read-only MCP and real restore HTTP agree for current/stale/unknown` 硬编码了五条工具清单——已修（清单加 `continuity`）并单独跑绿（5 pass / 0 fail）。另 5 条（claude 静默挂死、codex 车道端到端、空闲关闭、前提通知折入 codex prompt、回合中压缩）是 AGENTS.md 记录的 spawn 类用例在整套并行下的超时。
+- 在修好那 3 条、并跑完全部提交后，再完整重跑一次：**1273 pass / 1 fail**。唯一一条是 `spawnSupervised > pid registry records a running process and reapOrphans kills it`（supervisor 测试，需要 spawn 一个 sleeper 子进程，本切片没有改动 `src/supervisor/**`——`git diff 257746f -- packages/workbench/src/supervisor packages/workbench/src/fs` 为空）。
+- **测量方式（不是假设）**：这类用例单独跑时全绿——那 3 个文件 13 pass / 0 fail，`src/supervisor` 连跑 3 次都是 23 pass / 0 fail。同样的命令、同样的结果，说明是整套并行时的负载抖动。没有把任何一条写成「通过」。
 - 没有跑：Playwright 浏览器套件、`bun run build:all`、`test:build`、真机 provider E2E（ADR-0024 与 AGENTS.md 的既有边界）。
 
 ## 4. 刻意没做什么
@@ -82,7 +83,7 @@ MCP 详情:  中断：…（host-restarted，1 条消息）· 之后没有回复
 
 1. **TF-0329 / TF-0330 / TF-0331（阶段三）仍 `proposed`**：中断原因细分（provider-exit / user-kill / host-crash）与「断点 × 前提积压」联合判读视图。当前 `reason` 只有生产者写入的 `host-restarted`，其它取值尚无真实观测——按判据应记 `unknown` 而不是就近归类。
 2. **TF-0332（风险）**：本轮及后续一轮不得引入授权/派工概念。本切片未引入。
-3. **TF-0333**：`check-claims` 里仍有历史 stale 集合（本机不可测的 spawn/build/codex 读数），需在可 spawn 的环境重取；本轮新增声明 `claim-continuity-surfaces` 已 `--run` 真跑。
+3. **TF-0333**：`check-claims` 的 stale 集合收敛到 7 条，全部是本机**不可测**的：`claim-workbench-suite`（整套并行下有 1 条 spawn 类抖动，无法把 1273/1 写成 fail=0）、`claim-browser-e2e`（Playwright）、`claim-built-shapes`（需完整 build）、4 条 `codex-*`（需 codex 车道）。本轮新增声明 `claim-continuity-surfaces` 与其余 28 条已 `--run` 真跑并通过。
 4. **TF-0334**：provider 会话身份缺失时 `unknown` 只能回指「缺 claude/codex session id」这条事实，不能推断原因。
 5. **面板上的断点行没有真人读数**：谁看、看不看、看完做什么，仍未有观测（ADR-0024 不恢复真人研究）。
 
