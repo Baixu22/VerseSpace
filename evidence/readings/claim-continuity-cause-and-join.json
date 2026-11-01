@@ -1,0 +1,18 @@
+{
+	"claim_id": "claim-continuity-cause-and-join",
+	"instrument_sha256": "packages/workbench/src/chat/continuity.test.ts:1bb0c0236afd371ea4d6dc23883f72bbda4ca916ecec0c6a6326a61cdd8cd733\npackages/workbench/src/chat/continuity/derive.test.ts:3ba6dfb74c8b062e4717fca1b262130a8211c663961ca0a7eb943cd55487334f\npackages/workbench/src/chat/continuity/derive.ts:a4622dc3b5ebab57a2646f4f89d5b9da4a5f3e894f603ef6be965dbf63449b8c\npackages/workbench/src/chat/continuity/read.ts:dc7c301ce9dfe8d8124ddc34a313db8800be9acf5bee4ca80df46d914a5df89f\npackages/workbench/src/chat/continuity/types.ts:ea69aed41a76bcb0cf7fa483ef3afdd5e08032acad9f341b806acccb1b72bf0a\npackages/workbench/src/chat/resume-card/continuity.test.ts:ff24055895f3f556982f6daa1101e624b5bc679e3fecaab8d7879803c240cfa3\npackages/workbench/src/chat/resume-card/continuity.ts:abd1421fa0b9a47a3f54e432e5f29704357202f500fa0c493a919227db1a8ebd\npackages/workbench/src/chat/thread-lifecycle.ts:8d39df39af6bd4c720079429475ea1310993e1781177da8eb554e197ddd08d54\npackages/workbench/src/commands/session-continuity.ts:aaf6c29fb55595fe98383f589f6d57fb63c218119c6071a3233c6b29d71ad0c6\npackages/workbench/src/mcp/tools/continuity.ts:a0b3c57bfc787fb3a3da8c00a9b7a7efe2404880ddb43367cd277c16f32e7cbf",
+	"subject_sha": "1049668bee2a71576e55356b2074602f1916cbb6",
+	"environment": {},
+	"measured_at": "2026-11-01T15:45:14.464Z",
+	"reading": {
+		"exit": 0,
+		"derive_pass": 15,
+		"derive_fail": 0,
+		"e2e_pass": 26,
+		"e2e_fail": 0
+	},
+	"instrument_exit": 0,
+	"raw_digest": "sha256:f2bce2d6665e153dc2bd5373d4ba49822e300772ba0c614962f7150128ef5119",
+	"reproduce": "bun test packages/workbench/src/chat/continuity/derive.test.ts packages/workbench/src/chat/continuity.test.ts packages/workbench/src/chat/resume-card/continuity.test.ts --timeout 60000",
+	"class": "curated-evidence"
+}

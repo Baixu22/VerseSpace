@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-premise-notice-realtraffic",
 	"instrument_sha256": "scripts/verify/measure-premise-notices.ts:abfc31cc0125c0ad16910bcd623d061077a251a9f3d6848605e711c51760eae3",
-	"subject_sha": "41431b2ae32f222a9858236c3d1787f10f7c6108",
+	"subject_sha": "1049668bee2a71576e55356b2074602f1916cbb6",
 	"environment": {},
-	"measured_at": "2026-11-01T14:56:53.716Z",
+	"measured_at": "2026-11-01T15:52:49.881Z",
 	"reading": {
 		"eventLines": 5063,
 		"premiseStale": 128,

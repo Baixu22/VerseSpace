@@ -1,20 +1,16 @@
 {
 	"claim_id": "claim-session-continuity",
-	"instrument_sha256": "packages/workbench/src/chat/continuity.test.ts:9e9bf68b6701f16903fd33afe5b492522707880acc1065aeb88661964ef6bdfc\npackages/workbench/src/chat/continuity/derive.ts:1504382c46fd08a246bd8da91d73af217ba34fa64c093018ed4c8d19c98d3d3d\npackages/workbench/src/chat/continuity/index.ts:693f03229af380262634d8a35da533bc87a4984630c1531607204d315bb9bdb5\npackages/workbench/src/chat/continuity/read.ts:3d4287f3a7a64b7082c2919aa13935b185484b27403fb4cf21b04c72f4598da0\npackages/workbench/src/chat/continuity/types.ts:ced5f9f0b5d4020557331960dfdb8f88a57727a6c3612775b573ef76c8050067\npackages/workbench/src/chat/threads.ts:dfb3f67a0585600efcc4a6552dff055033fec792b18aa626f764c2844d8f8fc7\npackages/workbench/src/cli/agents.ts:35caba5eb2b5dbc94df8c8103036ad51c58e9cc876f9eaa82fb891904d0dd87a\npackages/workbench/src/commands/session-continuity.ts:3bfef26a4029afe79c142448d4cdb54e69011cbd73234cb82e4da821f4580751\npackages/workbench/src/types/event.ts:4c4a58976e825ae792d71c3deb82d97c55f267484520ca18e56e51ca779549f7",
-	"subject_sha": "ca4d020fbdb8fc45daee58ce9c8db39ac20acdcb",
-	"environment": {
-		"os": "windows",
-		"bun": "1.3.14",
-		"node": "v24.22.1"
-	},
-	"measured_at": "2026-11-01T14:42:36.036Z",
+	"instrument_sha256": "packages/workbench/src/chat/continuity.test.ts:1bb0c0236afd371ea4d6dc23883f72bbda4ca916ecec0c6a6326a61cdd8cd733\npackages/workbench/src/chat/continuity/derive.ts:a4622dc3b5ebab57a2646f4f89d5b9da4a5f3e894f603ef6be965dbf63449b8c\npackages/workbench/src/chat/continuity/index.ts:21502c7b30e42f61e5e7b4efc0df8e3114292cca75f8dd52bd15518e64e0ba2b\npackages/workbench/src/chat/continuity/read.ts:dc7c301ce9dfe8d8124ddc34a313db8800be9acf5bee4ca80df46d914a5df89f\npackages/workbench/src/chat/continuity/types.ts:ea69aed41a76bcb0cf7fa483ef3afdd5e08032acad9f341b806acccb1b72bf0a\npackages/workbench/src/chat/threads.ts:1dbc397060bff2fe763be0f1f509d2a88841b982d8c6eea87f80bb260b11d55e\npackages/workbench/src/cli/agents.ts:35caba5eb2b5dbc94df8c8103036ad51c58e9cc876f9eaa82fb891904d0dd87a\npackages/workbench/src/commands/session-continuity.ts:aaf6c29fb55595fe98383f589f6d57fb63c218119c6071a3233c6b29d71ad0c6\npackages/workbench/src/types/event.ts:c803151260a4161d19289ed5112830f5556489f34085d1530195de32ab443108",
+	"subject_sha": "1049668bee2a71576e55356b2074602f1916cbb6",
+	"environment": {},
+	"measured_at": "2026-11-01T15:45:15.138Z",
 	"reading": {
 		"exit": 0,
-		"pass": 12,
+		"pass": 13,
 		"fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:fdba7ede71bd391068e3dd8ddd4d0c970334e19e4863026298bd0d4fea17aed4",
+	"raw_digest": "sha256:1f71d0c6a293ebebbfe5f6b3f0ac3c825c79603c38a5c485995c1567b698ae3e",
 	"reproduce": "bun test packages/workbench/src/chat/continuity.test.ts --timeout 60000",
 	"class": "curated-evidence"
 }

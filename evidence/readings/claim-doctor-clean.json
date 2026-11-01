@@ -1,9 +1,9 @@
 {
 	"claim_id": "claim-doctor-clean",
 	"instrument_sha256": "packages/context-rot/src/file-index.ts:b36b4b6b09b1e7e814dcea154637f80e103074bb2dfe9cbe5ac715c4c8351302\npackages/context-rot/src/scan.ts:4a91a4aa0df5ee4389d0d6a47db3777623093776ffeb1201c32d816365a69454\npackages/context-rot/src/verify.ts:744b822609bb5ead02ec5e340d2248c7ef7e8cbaa23ac87a9c896a6f7c61f6c3\npackages/workbench/src/commands/doctor.ts:848168741fe6de83d1e8eaa95635d3b724b751d1ad180beb0315e4ee9a2c457f\npackages/workbench/src/rot/scan.ts:c589cc38d7e30aac8d229fa35e52415c6928b277d1e9faef783c4bd1a7861135",
-	"subject_sha": "5e020921f1e828f0b8f022c782e9f413fbdfc526",
+	"subject_sha": "1049668bee2a71576e55356b2074602f1916cbb6",
 	"environment": {},
-	"measured_at": "2026-11-01T14:44:56.908Z",
+	"measured_at": "2026-11-01T15:47:04.599Z",
 	"reading": {
 		"exit": 0,
 		"stale": 0
