@@ -19,6 +19,7 @@ export async function refreshThread(
 					resumeCard: data.resumeCard ?? null,
 					resumeCardDismissed: Boolean(data.resumeCardDismissed),
 					resumeDelta: data.resumeDelta ?? 0,
+					continuityDelivery: data.continuityDelivery ?? null,
 					canPromote: Boolean(data.canPromote),
 				}
 			: {}),

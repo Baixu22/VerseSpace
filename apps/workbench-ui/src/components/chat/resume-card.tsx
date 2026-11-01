@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { RotateCcw, X } from "@/components/icon";
+import type { ResumeCardFactRow } from "../../chat/store";
 import { useChatStore } from "../../chat/store";
 import { FADE_IN, STAGGER_PARENT, TWEEN_DISCLOSURE } from "../../lib/motion";
 import { cn } from "../../lib/utils";
@@ -9,6 +10,22 @@ import { Button } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";
 import { ResumeArtifactRows } from "./resume-card-artifacts";
 import { ResumeFactRow, ResumeNarrativeRow } from "./resume-card-rows";
+
+/**
+ * 展示观察的行标签（TF-0199 / TF-0325）：
+ * - 分支行动静 → `branch:<threadId>`（fit 指标 7 的原有分子/分母）；
+ * - 会话断点行 → `interruption:<eventId>`（同一套观察，不另开一条事件）。
+ * 只给「真的渲染出来」的行贴标签：被折叠到「及另 N 条」之后的文件行不在这里。
+ */
+function trackedRowLabels(fact: ResumeCardFactRow): string[] {
+	if (fact.source === "branch" && fact.branch) {
+		return [`branch:${fact.branch.threadId}`];
+	}
+	if (fact.source === "interruption") {
+		return fact.refs.map((ref) => `interruption:${ref.replace(/^event:/, "")}`);
+	}
+	return [];
+}
 
 /** Dual-channel restore card: facts first, narrative second (TF-0128). */
 export function ResumeCard() {
@@ -19,40 +36,49 @@ export function ResumeCard() {
 	const revealed = useChatStore((s) => s.resumeCardRevealed);
 	const readSetDiff = useChatStore((s) => s.readSetDiff);
 	const artifactReviews = useChatStore((s) => s.artifactReviews);
+	const pendingNotices = useChatStore(
+		(s) => s.continuityDelivery?.pendingNotices ?? 0,
+	);
 	const consume = useChatStore((s) => s.consumeResumeNote);
 	const dismiss = useChatStore((s) => s.dismissResumeCard);
 	const reportShown = useChatStore((s) => s.reportResumeCardShown);
 	const [factsExpanded, setFactsExpanded] = useState(false);
-	// TF-0199 展示观测：渲染出带分支行的卡片就上报（fit 指标 7 的分母）。
-	// 按恢复边界去重——同一 baseline + 同一组行只报一次，后台刷新与
-	// StrictMode 双跑都不会重复计数；换恢复基线（新一次离开）才再报。
+	// TF-0199 / TF-0325 展示观察：渲染出带可追踪行的卡片就上报（fit 指标 7 的
+	// 分母）。行标签是通用的 `rows`——分支行 `branch:<threadId>`、会话断点行
+	// `interruption:<eventId>`。按恢复边界去重：同一 baseline + 同一组行只报
+	// 一次，后台刷新与 StrictMode 双跑都不会重复计数；换恢复基线才再报。
 	const shownKeyRef = useRef<string | null>(null);
 	useEffect(() => {
 		if (!card || dismissed) return;
-		const branchRows = card.facts.filter(
-			(fact) => fact.source === "branch" && fact.branch,
-		);
-		if (branchRows.length === 0) return;
+		const trackedRows = card.facts.flatMap(trackedRowLabels);
+		if (trackedRows.length === 0) return;
 		const threadId = useChatStore.getState().activeId;
-		const key = `${threadId}|${readSetDiff?.baseline?.eventId ?? ""}|${branchRows
-			.map((fact) => fact.branch!.threadId)
-			.join(",")}`;
+		const key = `${threadId}|${readSetDiff?.baseline?.eventId ?? ""}|${trackedRows.join(",")}`;
 		if (shownKeyRef.current === key) return;
 		shownKeyRef.current = key;
-		void reportShown(
-			branchRows.map((fact) => `branch:${fact.branch!.threadId}`),
-		);
+		void reportShown(trackedRows);
 	}, [card, dismissed, readSetDiff, reportShown]);
 	const showCard = Boolean(card && (!dismissed || revealed));
 	const showArtifacts = Boolean(artifactReviews?.total);
 	if (!showCard && !showArtifacts) return null;
 
 	// 预览条数随卡片载荷下发（服务端 FACTS_PREVIEW_COUNT 是唯一来源）——
-	// 客户端不再自带一份同值常量（2026-09-13 收尾 §5.6）
+	// 客户端不再自带一份同值常量（2026-09-13 收尾 §5.6）。
+	// TF-0323 判据 4：`pinnedFacts` 行（会话断点）钉在折叠之外——断点永远
+	// 看得见，折叠只作用于文件事实。旧载荷没有该字段时按 0 读。
+	const pinnedFacts = card
+		? Math.min(card.facts.length, card.pinnedFacts ?? 0)
+		: 0;
 	const visibleFacts = card
 		? factsExpanded
 			? card.facts
-			: card.facts.slice(0, card.factsPreviewCount)
+			: [
+					...card.facts.slice(0, pinnedFacts),
+					...card.facts.slice(
+						pinnedFacts,
+						pinnedFacts + card.factsPreviewCount,
+					),
+				]
 		: [];
 	const hiddenCount = card
 		? Math.max(0, card.facts.length - visibleFacts.length)
@@ -91,6 +117,19 @@ export function ResumeCard() {
 							>
 								新增 {delta} 条
 							</Badge>
+						) : null}
+						{/* TF-0323 判据 3：投递积压只占头部一个计数，不变成事实行。
+						    卡片本来不渲染时也不会因此出现（健康不占空间）。 */}
+						{showCard && pendingNotices > 0 ? (
+							<Tooltip content="这些前提通知还没投递到本条会话；它是全局投递积压，不代表这条会话被切断。">
+								<Badge
+									variant="outline"
+									className="h-4 px-1.5 font-mono text-small font-normal text-fg-subtle"
+									data-testid="resume-pending-notices"
+								>
+									~ {pendingNotices} 个文件待通知
+								</Badge>
+							</Tooltip>
 						) : null}
 					</div>
 					<p className="mt-0.5 truncate text-small text-fg-subtle">

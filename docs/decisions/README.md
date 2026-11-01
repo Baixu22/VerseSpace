@@ -33,3 +33,4 @@ VerseSpace/Workbench 的重大技术决策以 ADR 形式记录在本目录：一
 | [0025](./0025-declared-verification-and-artifact-revalidation.md) | 声明验证范围、单产物重验与目标基线身份；有限扩展 ADR-0023 | 已接受 | GitHub #49–#57 |
 | [0026](./0026-input-origin-and-artifact-use.md) | 输入来源、产物来源与目标适用性拆成四种独立事实；只放开声明范围内的验收消费，保留 ADR-0023/0024 边界 | 已接受 | TF-0284（阶段 TF-0283） |
 | [0027](./0027-session-continuity-projection.md) | 会话延续性 = 账本的第四个投影：中断先记观察再复位，三态读数（intact / review / unknown），投递积压单列，只读不接管 | 已接受 | 本轮（2026-11-01） |
+| [0028](./0028-continuity-surface-integration.md) | 延续性接入既有表面：三处读同一份投影；恢复卡的断点行判据（健康零新增、断点恰一行且钉在折叠外、积压只作头部计数）；MCP 第六个只读工具 `continuity` + 表面漂移测试 | 已接受 | TF-0321（阶段）；TF-0323–TF-0328 |

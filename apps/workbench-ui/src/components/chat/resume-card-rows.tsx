@@ -27,7 +27,14 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 	// TF-0197 的分支行摘要是多行 L1 结构摘要；折叠面按设计只露一行指针，
 	// 其余行进展开区（「叙事永远折叠并标注来源」）。文件行摘要本来就是单行。
 	const isBranchRow = fact.source === "branch" && fact.branch != null;
-	const rowLabel = fact.branch ? `branch:${fact.branch.threadId}` : fact.path;
+	// TF-0324/TF-0325：会话断点行与文件事实共用行形状，但标签按事件身份记
+	// （`interruption:<eventId>`），这样「渲染了什么、展开了什么」可配对。
+	const isInterruption = fact.source === "interruption";
+	const rowLabel = fact.branch
+		? `branch:${fact.branch.threadId}`
+		: isInterruption
+			? `interruption:${(fact.refs[0] ?? fact.path).replace(/^event:/, "")}`
+			: fact.path;
 	const l1Lines = fact.summary
 		.split("\n")
 		.map((line) => line.trim())
@@ -115,6 +122,14 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 					{fact.annotation.label}
 				</div>
 			) : null}
+			{isInterruption ? (
+				<div
+					className="mx-2.5 mb-2 rounded-md bg-status-warning/10 px-2 py-1 text-status-warning"
+					data-testid="resume-continuity-row"
+				>
+					这一轮被切断且没有回复
+				</div>
+			) : null}
 			<AnimatedDisclosure open={open}>
 				<div className="border-t border-border-subtle px-3 py-2 text-fg-subtle">
 					{isBranchRow && l1Lines.length > 0 ? (
@@ -128,7 +143,12 @@ export function ResumeFactRow({ fact }: { fact: ResumeCardFactRow }) {
 							<p className="mt-1 text-nano text-fg-subtle/70">由足迹拼接</p>
 						</div>
 					) : null}
-					{fact.branch ? (
+					{isInterruption ? (
+						<div>
+							这一轮在中断之后没有助手回复，记录仍在账本里；这条行不会触发任何
+							重跑、重投或归档。
+						</div>
+					) : fact.branch ? (
 						<ul className="max-h-40 space-y-1 overflow-auto">
 							{fact.branch.paths.map((path) => (
 								<li key={path} className="font-mono">

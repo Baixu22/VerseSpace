@@ -111,11 +111,21 @@ async function safeMessages(
 	}
 }
 
-/** 一个线程的延续性读数。线程不存在时抛出，调用方决定怎么报告。 */
+/**
+ * 一个线程的延续性读数。线程不存在时抛出，调用方决定怎么报告。
+ *
+ * 调用方已经持有 `events` 与 `pending` 时传进来（`RestoreView` 与聊天 GET 都要
+ * 读同一份事件日志）——否则一次 GET 会把账本读两遍，且两份读法出现分叉时
+ * 卡片与读数会互相矛盾。
+ */
 export async function readSessionContinuity(
 	bb: Blackboard,
 	threadId: string,
 	now: Date = new Date(),
+	preloaded?: {
+		events?: readonly WorkbenchEvent[];
+		pending?: Awaited<ReturnType<typeof pendingPremiseNotices>>;
+	},
 ): Promise<SessionContinuity> {
 	const store = new ThreadRepository(bb);
 	const meta = await store.get(threadId).catch((error: unknown) => {
@@ -128,8 +138,8 @@ export async function readSessionContinuity(
 	});
 	const messages = await safeMessages(store, threadId);
 	const [events, pending] = await Promise.all([
-		bb.events.all(),
-		pendingPremiseNotices(bb),
+		preloaded?.events ?? bb.events.all(),
+		preloaded?.pending ?? pendingPremiseNotices(bb),
 	]);
 	const notice = pending.find((entry) => entry.writerId === threadId);
 	const deliveredNotices = events.filter(

@@ -83,12 +83,15 @@ test.each([
 		expect(line.refs).toEqual(view.items[0]!.refs);
 		expect(await ws.bb.checkpoints.scanAll()).toEqual(before);
 		expect(await ws.bb.events.all()).toEqual(events);
+		// 工具目录是对模型的承诺表面：这份清单是刻意硬编码的第二个读法，
+		// 目录里少一条或多一条都必须在这里红（TF-0321 / TF-0328）。
 		expect(MCP_TOOLS.map((tool) => tool.name)).toEqual([
 			"premises",
 			"footprints",
 			"resume_cards",
 			"tribunal",
 			"notices",
+			"continuity",
 		]);
 	} finally {
 		await server.stop(true);

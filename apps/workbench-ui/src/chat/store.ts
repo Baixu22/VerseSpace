@@ -37,6 +37,7 @@ export const useChatStore = create<ChatState>((...args) => ({
 	resumeCardDismissed: false,
 	resumeCardRevealed: false,
 	noticesDelivered: null,
+	continuityDelivery: null,
 	canPromote: false,
 	...createSelectionSlice(...args),
 	...createDraftSlice(...args),

@@ -171,7 +171,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 
 ### MCP（前提账本只读通道）
 
-`workbench mcp` 在 stdio 上以 MCP 协议暴露**五条只读工具**（JSON-RPC 2.0，零 SDK 依赖）：
+`workbench mcp` 在 stdio 上以 MCP 协议暴露**六条只读工具**（JSON-RPC 2.0，零 SDK 依赖）：
 
 | 工具 | 回答的问题 |
 | --- | --- |
@@ -180,6 +180,7 @@ HTTP provider 可从 `WORKBENCH_CHAT_API_KEY` 环境变量读取密钥，不必�
 | `resume_cards` | 线程在离开期间发生了什么；默认读集/恢复笔记/分支动静，`view=artifacts` 读取同一有限产物投影 |
 | `tribunal` | 裁决队列里有什么在等人类决策 |
 | `notices` | 通知投递情况（已投递 / 待投递） |
+| `continuity` | 会话延续性：这一轮是否被切断且没有回复（`intact` / `review` / `unknown`），投递积压单列 |
 
 工具只读账本，不暴露编排动作；每个响应默认截断到 ≤2000 字符，防止把模型上下文吃光。运行目录需要有 `.workbench/`（`workbench init` 初始化）。
 

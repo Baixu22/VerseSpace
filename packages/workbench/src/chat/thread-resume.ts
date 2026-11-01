@@ -131,22 +131,29 @@ export async function recordResumeAction(
 }
 
 /**
- * 恢复卡展示观测（TF-0199）：UI 在渲染出带分支行的恢复卡时报告本次展示了
- * 哪些行（`branch:<threadId>` 标签）。这是 fit 指标 7 的分母来源——服务端
- * GET 只读不落事件，渲染发生在客户端，所以由 UI 落这条观察。重复刷新由
- * UI 侧按恢复边界去重；折叠只做形状消毒，不替 UI 判断真假。
+ * 恢复卡展示观测（TF-0199，TF-0325 泛化）：UI 在渲染出恢复卡时报告本次展示了
+ * 哪些行。这是 fit 指标 7 的分母来源——服务端 GET 只读不落事件，渲染发生在
+ * 客户端，所以由 UI 落这条观察。重复刷新由 UI 侧按恢复边界去重；折叠只做
+ * 形状消毒，不替 UI 判断真假。
+ *
+ * `rows` 是兼容扩展（TF-0325）：`branch:<threadId>` / `interruption:<eventId>`
+ * 等行标签的通用列表。`branchRows` 保留为**由 rows 派生的只读视图**，旧的读数
+ * 折叠器（branch-engagement）与旧事件照常可读——两种形状落在同一条事件里，
+ * 不是两套记录。
  */
 export async function recordResumeCardShown(
 	context: ThreadContext,
 	threadId: string,
-	branchRows: string[],
+	rows: string[],
 ): Promise<void> {
-	const rows = [...new Set(branchRows.filter((row) => row.trim()))].slice(
-		0,
-		32,
-	);
+	const cleaned = [
+		...new Set(rows.map((row) => row.trim()).filter(Boolean)),
+	].slice(0, 32);
+	const branchRows = cleaned.filter((row) => row.startsWith("branch:"));
 	await context.store.appendThreadEvent("thread.resume_card_shown", threadId, {
-		branchRows: rows,
+		rows: cleaned,
+		// 派生视图：既有读者按 branchRows 读，不需要认识新前缀。
+		branchRows,
 	});
 }
 

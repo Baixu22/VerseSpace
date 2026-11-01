@@ -147,13 +147,13 @@ export async function chatRoute(
 			return Response.json({ ok: true });
 		}
 		if (sub === "resume-card/shown" && request.method === "POST") {
-			// TF-0199：恢复卡展示观测——fit 指标 7 的分母（渲染了才计数）。
+			// TF-0199 / TF-0325：恢复卡展示观测——fit 指标 7 的分母（渲染了才
+			// 计数）。`rows` 是兼容扩展后的通用行标签；旧客户端仍发 branchRows。
 			const body = await jsonObjectBody(request);
 			if (body instanceof Response) return body;
-			const rows = Array.isArray(body.branchRows)
-				? body.branchRows.filter(
-						(row): row is string => typeof row === "string",
-					)
+			const source = Array.isArray(body.rows) ? body.rows : body.branchRows;
+			const rows = Array.isArray(source)
+				? source.filter((row): row is string => typeof row === "string")
 				: [];
 			await chat.recordResumeCardShown(threadId, rows);
 			return Response.json({ ok: true });

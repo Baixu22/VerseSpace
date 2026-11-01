@@ -4,9 +4,9 @@ import { writeFileAtomic } from "../fs/atomic";
 /**
  * Wiring the premise ledger into the spawned Claude session (TF-0241).
  *
- * The same five read-only tools that `workbench mcp` exposes to external agents
+ * The same six read-only tools that `workbench mcp` exposes to external agents
  * are handed to the CLI this lane spawns, so the model can check premises,
- * footprints, resume cards, the tribunal queue and notices mid-turn instead of
+ * footprints, resume cards, the tribunal queue, notices and session continuity\n * mid-turn instead of
  * waiting for a human to paste them. The stream already renders
  * `mcp_tool_use` / `mcp_tool_result` blocks, so the tool cards come for free.
  *

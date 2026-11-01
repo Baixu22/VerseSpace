@@ -13,6 +13,11 @@ import {
 	type ResumeCardView,
 } from "./types";
 
+export {
+	type ContinuityCardProjection,
+	type ContinuityDeliveryBadge,
+	continuityCardRows,
+} from "./continuity";
 export { FORBIDDEN_CARD_PHRASES } from "./coverage";
 export { isResumeCardDismissed } from "./dismissal";
 export * from "./types";
@@ -176,6 +181,11 @@ export function buildResumeCard(input: {
 	diff: ReadSetDiff | null;
 	dismissed?: boolean;
 	branchFacts?: FactRow[];
+	/**
+	 * 会话延续性的增量行（TF-0324）：由 `continuityCardRows` 判定，这里只负责
+	 * 排序与钉住。它们排在事实区最前并计入 `pinnedFacts`，不参与预览折叠。
+	 */
+	continuityFacts?: FactRow[];
 }): ResumeCardView | null {
 	const dismissed = Boolean(input.dismissed);
 	const stale = input.diff?.stale ?? [];
@@ -278,7 +288,12 @@ export function buildResumeCard(input: {
 
 	facts.push(...(input.branchFacts ?? []).filter((row) => row.refs.length > 0));
 
-	if (narrative.length === 0 && facts.length === 0) {
+	// TF-0323 判据 4：会话断点先于文件事实，并且不参与预览折叠。
+	const pinned = (input.continuityFacts ?? []).filter(
+		(row) => row.source === "interruption",
+	);
+
+	if (narrative.length === 0 && facts.length === 0 && pinned.length === 0) {
 		// TF-0128 still holds: no note and no disagreement renders nothing. The
 		// coverage line is the facts section's header, not a reason to render a
 		// card that has no content.
@@ -288,7 +303,8 @@ export function buildResumeCard(input: {
 	return {
 		coverage: coverageOf(input.diff, stale.length),
 		narrative,
-		facts: gatedFacts,
+		facts: [...pinned, ...gatedFacts],
+		pinnedFacts: pinned.length,
 		dismissed,
 		inject: !dismissed,
 		// 预览条数随载荷下发：客户端直接读它，不再自带一份同值常量

@@ -69,6 +69,11 @@ export interface ChatState {
 	 */
 	noticesDelivered: { count: number; at: string } | null;
 	/**
+	 * 会话投递积压（TF-0324）：与恢复卡分开下发的一条独立事实。只在卡片本来
+	 * 就渲染时进头部计数——健康会话不因为它而多出任何元素。
+	 */
+	continuityDelivery: { pendingNotices: number } | null;
+	/**
 	 * TF-0092 手动晋升手势是否可见。由服务端判定（无名且有内容），客户端只渲染
 	 * ——不复制「无名」这个判断（2026-09-13 收尾 §4.4）。
 	 */
@@ -98,7 +103,7 @@ export interface ChatState {
 	 * 行标签（`branch:<threadId>`）。fit 指标 7 的分母，重复刷新由调用方
 	 * 按恢复边界去重。
 	 */
-	reportResumeCardShown(branchRows: string[]): Promise<void>;
+	reportResumeCardShown(rows: string[]): Promise<void>;
 	/**
 	 * TF-0200「以分支为主线」：收养一个分支线程使其成为主线——POST 到该
 	 * 分支线程的 adopt 路由（threadId 是被收养的分支，不是当前活动线程），
@@ -145,5 +150,10 @@ export interface ThreadGetResponse {
 	artifactReviews?: ArtifactReviewProjectionView | null;
 	resumeCard?: ResumeCardView | null;
 	resumeCardDismissed?: boolean;
+	/**
+	 * 会话投递积压计数（TF-0324）：与恢复卡分开下发——intact 会话的卡片不新增
+	 * 任何元素，但「有未投递积压」仍是一条独立事实（与 CLI 的 `~` 同一维度）。
+	 */
+	continuityDelivery?: { pendingNotices: number } | null;
 	canPromote?: boolean;
 }

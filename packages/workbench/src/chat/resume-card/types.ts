@@ -51,7 +51,11 @@ export interface FactRow {
 	writerLabel?: string | null;
 	diff?: string;
 	annotation?: ConflictAnnotation;
-	source: "read-set" | "shifted" | "branch";
+	/**
+	 * `interruption` = 会话回合被切断且没有回复（TF-0324）。它与文件事实共用
+	 * `FactRow` 形状，所以 refs/展开/证据接口全部复用，不另造一种行。
+	 */
+	source: "read-set" | "shifted" | "branch" | "interruption";
 	branch?: {
 		threadId: string;
 		anchorMessageId: string;
@@ -70,6 +74,12 @@ export interface ResumeCardView {
 	coverage: CoverageRow;
 	narrative: NarrativeRow[];
 	facts: FactRow[];
+	/**
+	 * 钉在预览之外的事实行数（TF-0323 判据 4）：会话断点必须先于文件事实
+	 * 可见，不能被 `factsPreviewCount` 折叠掉。客户端按这个数字只在
+	 * 「及另 N 条」之外单独渲染前 N 条，折叠规则其余部分不变。
+	 */
+	pinnedFacts: number;
 	dismissed: boolean;
 	/** Auto-inject into the restore surface. False after one dismiss. */
 	inject: boolean;

@@ -1,11 +1,17 @@
 import { artifactReviewProjection } from "../artifacts/projection";
 import type { Blackboard } from "../blackboard";
 import { inputCoverageView } from "../blackboard/input-coverage";
+import { pendingPremiseNotices } from "../runtime/delivery";
 import { diffReadSet } from "../runtime/read-set-diff";
+import { readSessionContinuity } from "./continuity";
 import { collectDecisionPoints } from "./ledger";
 import { UNNAMED_TITLE } from "./promote";
 import { resumeDelta } from "./resume";
-import { buildResumeCard, isResumeCardDismissed } from "./resume-card";
+import {
+	buildResumeCard,
+	continuityCardRows,
+	isResumeCardDismissed,
+} from "./resume-card";
 import { branchResumeFacts } from "./resume-card/branches";
 import { suggestNext } from "./suggest";
 import type { ChatThreads } from "./threads";
@@ -20,11 +26,23 @@ export async function collectRestoreView(
 		chat.get(threadId),
 		chat.messages(threadId),
 	]);
-	const [readSetDiff, events, threads] = await Promise.all([
+	// TF-0324：延续性投影与读集 diff 并行取——两者都从已有事实推导，GET 仍然
+	// 不落任何事件（ADR-0027 的只读边界）。
+	const [readSetDiff, events, threads, pending] = await Promise.all([
 		diffReadSet(bb, threadId, meta.resumeNote?.leaveSignature),
 		bb.events.all(),
 		chat.list(),
+		pendingPremiseNotices(bb),
 	]);
+	const continuity = await readSessionContinuity(bb, threadId, undefined, {
+		events,
+		pending,
+	});
+	const continuityCard = continuityCardRows({
+		state: continuity.state,
+		interruptions: continuity.turns.interruptions,
+		pendingNotices: continuity.delivery.pendingNotices,
+	});
 	const resumeCardDismissed = isResumeCardDismissed(
 		events,
 		threadId,
@@ -65,7 +83,11 @@ export async function collectRestoreView(
 			diff: readSetDiff,
 			dismissed: resumeCardDismissed,
 			branchFacts,
+			continuityFacts: continuityCard.rows,
 		}),
 		resumeCardDismissed,
+		// 与卡片分开下发：intact 会话卡片不新增任何元素，但「有未投递积压」
+		// 仍是可从载荷读到的独立事实（与 CLI 的 `~` 同一维度）。
+		continuityDelivery: continuityCard.delivery,
 	};
 }

@@ -91,7 +91,13 @@ export function foldBranchEngagement(
 		if (event.type === "thread.resume_card_shown") {
 			const window = open.get(threadId);
 			if (!window) continue;
-			for (const label of labelsOf(payload.branchRows)) {
+			// TF-0325：事件现在带通用的 `rows`，`branchRows` 是其派生子集。
+			// 这个折叠器只关心分支行，所以两种形状都接受、只收 branch: 前缀
+			// ——旧事件（只有 branchRows）与新事件（rows + branchRows）同读。
+			const labels = labelsOf(payload.rows ?? payload.branchRows).filter(
+				(label) => label.startsWith("branch:"),
+			);
+			for (const label of labels) {
 				window.shown.add(label);
 			}
 			continue;

@@ -120,15 +120,17 @@ export const createResumeSlice: StateCreator<
 		}).catch(() => {});
 	},
 
-	async reportResumeCardShown(branchRows) {
+	async reportResumeCardShown(rows) {
 		const threadId = get().activeId;
-		if (!threadId || branchRows.length === 0) {
+		if (!threadId || rows.length === 0) {
 			return;
 		}
+		// TF-0325：发通用 `rows`（服务端同时派生 branchRows 供旧折叠器读）；
+		// 服务端仍接受旧的 `branchRows` 字段，客户端与旧服务端可混跑。
 		await apiFetch(`/api/chat/threads/${threadId}/resume-card/shown`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ branchRows }),
+			body: JSON.stringify({ rows }),
 		}).catch(() => {});
 	},
 

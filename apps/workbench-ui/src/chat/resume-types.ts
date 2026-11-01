@@ -52,7 +52,11 @@ export interface ResumeCardFactRow {
 	writerLabel?: string | null;
 	diff?: string;
 	annotation?: ResumeCardAnnotation;
-	source: "read-set" | "shifted" | "branch";
+	/**
+	 * `interruption` = 会话回合被切断且没有回复（TF-0324）。与文件事实共用
+	 * 同一行形状，refs / 展开 / 证据面板全部复用。
+	 */
+	source: "read-set" | "shifted" | "branch" | "interruption";
 	branch?: {
 		threadId: string;
 		anchorMessageId: string;
@@ -131,6 +135,11 @@ export interface ResumeCardView {
 	coverage: { status: "available" | "unknown"; text: string };
 	narrative: ResumeCardNarrativeRow[];
 	facts: ResumeCardFactRow[];
+	/**
+	 * 钉在预览之外的行数（TF-0323 判据 4）：会话断点先于文件事实可见，不被
+	 * `factsPreviewCount` 折叠。旧载荷没有该字段时按 0 读。
+	 */
+	pinnedFacts?: number;
 	dismissed: boolean;
 	inject: boolean;
 	/**

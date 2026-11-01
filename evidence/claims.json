@@ -1245,6 +1245,47 @@
 			"minimum": {
 				"pass": 12
 			}
+		},
+		{
+			"id": "claim-continuity-surfaces",
+			"statement": "ADR-0028：会话延续性在 CLI / MCP 第六工具 / 恢复卡三处读同一份投影——恢复卡断点行判据可执行（健康零新增、断点恰一行且钉在折叠外、积压只作头部计数、已恢复不进卡片），MCP 目录恰 6 条逐条可调用且调用不写账本",
+			"instrument": [
+				"packages/workbench/src/chat/resume-card/continuity.ts",
+				"packages/workbench/src/chat/resume-card/continuity.test.ts",
+				"packages/workbench/src/chat/resume-card/index.ts",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/mcp/tools/continuity.ts",
+				"packages/workbench/src/mcp/tools/index.ts",
+				"packages/workbench/src/mcp/tools/surface.test.ts",
+				"packages/workbench/src/mcp/tools.test.ts",
+				"packages/workbench/src/artifacts/projection.test.ts"
+			],
+			"subject_paths": [
+				"packages/workbench/src/chat/resume-card/**",
+				"packages/workbench/src/chat/restore-view.ts",
+				"packages/workbench/src/mcp/**",
+				"packages/workbench/src/artifacts/projection.test.ts",
+				"packages/workbench/src/chat/continuity/**",
+				"evidence/claims.json"
+			],
+			"reading_shape": {
+				"exit": "number",
+				"cont_rc": "number",
+				"cont_rc_fail": "number",
+				"mcp_pass": "number",
+				"mcp_fail": "number"
+			},
+			"class": "L1",
+			"reproduce": "bun test packages/workbench/src/chat/resume-card/continuity.test.ts packages/workbench/src/mcp/tools packages/workbench/src/mcp/tools.test.ts --timeout 60000",
+			"expected": {
+				"exit": 0,
+				"cont_rc_fail": 0,
+				"mcp_fail": 0
+			},
+			"minimum": {
+				"cont_rc": 12,
+				"mcp_pass": 19
+			}
 		}
 	]
 }

@@ -169,6 +169,10 @@ export async function resolveThreadEvidence(
 			(item) =>
 				item.id === ref.slice("footprint:".length) && item.type === "footprint",
 		);
+	} else if (ref.startsWith("event:")) {
+		// 恢复卡的会话断点行用 `event:<id>` 显式标明种类（TF-0324）：与裸 id
+		// 指向同一个事件，只是让读者一眼看出这是一条事件引用。
+		event = events.find((item) => item.id === ref.slice("event:".length));
 	} else if (ref.startsWith("eventSeq:")) {
 		const sequence = ref.slice("eventSeq:".length);
 		event = /^\d+$/.test(sequence)

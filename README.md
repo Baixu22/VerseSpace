@@ -85,7 +85,7 @@
 - **三种界面**：
   - **CLI** — 提供全局 `--json` / `--quiet`；长驻服务及 hook 使用各自的协议与退出码；
   - **本地面板** — `workbench ui` 启动聊天面板（线程、分叉、恢复卡、证据与裁决）；目标 DAG、工位与 checkpoint 通过 CLI 管理；
-  - **MCP 只读投影** — `premises` / `footprints` / `resume_cards` / `tribunal` / `notices` 五个工具。
+  - **MCP 只读投影** — `premises` / `footprints` / `resume_cards` / `tribunal` / `notices` / `continuity` 六个工具。
 - **编排原语**：目标 DAG、工位（git worktree）、三区 checkpoint、派发与 watch 循环、裁决队列。
 - **声明范围与产物重验**：将一份产物绑定到明确输入及检查集合，区分历史通过、当前有效性与目标主线适用性；通过 CLI 发起独立重验，或导出有限 manifest 由接收方按本机策略复核。CLI JSON、MCP 恢复卡和聊天恢复卡读取同一有限产物投影；查看与复制命令不写有效性事实。
 - **封印（seal）拦截点**：检查只读区域与已有失效前提并留痕。`seal.mode`（`block` 默认 / `warn` / `off`）控制失效前提的处理；只读区域拒写不受该模式及连续命中降级影响。Claude Code 需安装 PreToolUse hook；Codex 是实验通道，覆盖范围与证据返回方式均不同，见下文。
@@ -97,7 +97,7 @@
 | --- | --- | --- |
 | CLI | 目标、工位、派发、checkpoint、接口、决策、体检、足迹、上下文、裁决与统计 | 编排主入口；`dispatch` 和 `agent run` 是两步 |
 | 本地面板 | 聊天、取消/重试、分叉、命名/归档/删除、恢复卡、证据、聊天配置、裁决 resolve/shelve | 聊天表面；没有目标 DAG/工位管理页面；单个页面一次只允许一个发送中的回合 |
-| MCP | 前提、足迹、恢复卡、裁决、通知查询 | 只读查询；不会派发、执行工具、后台扫描或主动推送 |
+| MCP | 前提、足迹、恢复卡、裁决、通知、会话延续性查询 | 只读查询；不会派发、执行工具、后台扫描或主动推送 |
 | HTTP API | 面板使用的聊天/配置/裁决接口，另有 state/sync/dispatch/agent/run/review 等路由 | 部分路由供脚本与调试使用；存在 API 不等于 SPA 有按钮 |
 
 ---
@@ -145,7 +145,7 @@ flowchart LR
   subgraph surfaces [表面]
     CLI[CLI<br/>--json]
     UI[本地面板<br/>workbench ui]
-    MCP[MCP 只读<br/>5 tools]
+    MCP[MCP 只读<br/>6 tools]
   end
 
   A -->|足迹 + 写入| BB
@@ -660,7 +660,7 @@ node packages/context-rot/scripts/install-hooks.mjs /absolute/path/to/managed-pr
 | 界面是否真的有某项功能 | [App.tsx](apps/workbench-ui/src/App.tsx) → [workbench-shell.tsx](apps/workbench-ui/src/components/chat/workbench-shell.tsx) → [chat store](apps/workbench-ui/src/chat/store.ts) → 对应 HTTP 路由 |
 | 分叉/恢复/重试改变了什么 | [thread-fork.ts](packages/workbench/src/chat/thread-fork.ts)、[thread-inheritance.ts](packages/workbench/src/chat/thread-inheritance.ts)、[restore-view.ts](packages/workbench/src/chat/restore-view.ts)、[thread-lifecycle.ts](packages/workbench/src/chat/thread-lifecycle.ts) |
 | 模型参数是否真的发出去 | [http-request.ts](packages/workbench/src/chat/http-request.ts)、[claude-session.ts](packages/workbench/src/chat/claude-session.ts)、[codex-session.ts](packages/workbench/src/chat/codex-session.ts) |
-| 外部 Agent 能查询哪些内容 | [mcp/server.ts](packages/workbench/src/mcp/server.ts) → [mcp/tools.ts](packages/workbench/src/mcp/tools.ts) |
+| 外部 Agent 能查询哪些内容 | [mcp/server.ts](packages/workbench/src/mcp/server.ts) → [mcp/tools/](packages/workbench/src/mcp/tools/index.ts) |
 
 ---
 
@@ -747,7 +747,7 @@ node scripts/publish-workbench-release.mjs --tag workbench-v<version>
 | [AGENTS.md](AGENTS.md) | 架构总览、模块表、代码组织规则、本机环境坑 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献流程、门禁清单、Windows 注意事项 |
 | [SECURITY.md](SECURITY.md) | 安全边界与报告渠道 |
-| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0027（先读这些再提架构改动） |
+| [docs/decisions/](docs/decisions/README.md) | ADR 0001–0028（先读这些再提架构改动） |
 | [docs/handoff/](docs/handoff/README.md) | 每轮交接：改了什么、实测读数、刻意没做什么 |
 | [本轮 README 调用链复核](docs/handoff/2026-09-30-readme-callchain-review.md) | 2026-09-30 修复前的能力核查与探针结果；当前结论以接力记录为准 |
 | [#45–#48 修复与验收记录](docs/handoff/2026-09-30-issue-batch.md) | 通知确认、封印写者归属、大文件比较与规划提示的本地修复；当时测试结果及历史 #31 未验收边界 |

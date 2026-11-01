@@ -16,14 +16,15 @@ function longPath(tag: string, index: number): string {
 }
 
 /**
- * 把账本填到「五个工具各自的自然响应都远超过 2000 字符」——空账本会让五个
+ * 把账本填到「六个工具各自的自然响应都远超过 2000 字符」——空账本会让六个
  * 工具全部走空态早退，`truncate` 一次都不执行，体积上限这条 AC 就变成空转。
- * 每个工具靠什么变长（见 src/mcp/tools.ts）：
+ * 每个工具靠什么变长（见 src/mcp/tools/）：
  * - premises：premise_stale 事件（每个写者一条通知，claims 越多越长）；
  * - notices：premise_notice_delivered 投递记录（默认取最近 10 条）；
  * - footprints：footprint 事件的 used/generated 路径（默认取最近 20 条）；
  * - resume_cards：带恢复笔记的线程标题（默认取 10 条）；
- * - tribunal：裁决项的 subject/causeKey（默认取 10 条）。
+ * - tribunal：裁决项的 subject/causeKey（默认取 10 条）；
+ * - continuity：逐条会话读数（默认取 20 条），每条带中断原因长句与事件引用。
  */
 async function seedOversizedLedger(ws: TempWorkbench): Promise<void> {
 	const at = new Date().toISOString();
@@ -92,6 +93,14 @@ async function seedOversizedLedger(ws: TempWorkbench): Promise<void> {
 			"utf8",
 		);
 		await chat.leave(meta.id);
+		// continuity：每个线程一条未恢复的中断，让每行读数带上原因长句与事件
+		// 引用（默认取 20 行；12 行 × 约 200 字符已经顶过上限）。
+		await ws.bb.events.appendThread("thread.turn_interrupted", {
+			threadId: meta.id,
+			at,
+			atMessageCount: 1,
+			reason: "host-restarted",
+		});
 	}
 	// tribunal：12 条待裁决项，subject 很长（默认取 10 条）。
 	for (let i = 0; i < 12; i += 1) {
@@ -120,8 +129,8 @@ test("truncate：超长文本截断到上限并标注", () => {
 });
 
 test("每个工具的响应都不超过体积上限（TF-0211 AC）", async () => {
-	// 五个工具都是只读的（不写账本），所以一份「足够大」的账本可以依次喂给
-	// 五个工具——每个工具都必须在真实数据上触发截断，而不是走空态早退。
+	// 六个工具都是只读的（不写账本），所以一份「足够大」的账本可以依次喂给
+	// 六个工具——每个工具都必须在真实数据上触发截断，而不是走空态早退。
 	const ws = await makeTempWorkbench();
 	try {
 		await seedOversizedLedger(ws);
