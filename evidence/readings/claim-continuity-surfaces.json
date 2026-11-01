@@ -1,13 +1,13 @@
 {
 	"claim_id": "claim-continuity-surfaces",
 	"instrument_sha256": "packages/workbench/src/artifacts/projection.test.ts:c0659306e7eb8fbb83e7ec2291248ad7194dd79af26736ba9723ccb2747e5dee\npackages/workbench/src/chat/restore-view.ts:a40b232d11bcca7bb15f6ffe1b95f57a64b2aea359e7c03a903752118de08c60\npackages/workbench/src/chat/resume-card/continuity.test.ts:32fc09ab9bd5e3f3c9873a167333efb218fb4ca5fea8faaa807bb5f8206b7257\npackages/workbench/src/chat/resume-card/continuity.ts:864cbaa72b652ec3f65f4290b5e377163a19959db6022de0cd73aa8f1db1828a\npackages/workbench/src/chat/resume-card/index.ts:676e2908191df67499853f254da1cfdbaab0784958ccc4191dd1cc6bc4fcdabb\npackages/workbench/src/mcp/tools.test.ts:29ab56905e397bc2b35782abaa83a5e256c9bbe265655347cbc21688eafa89e3\npackages/workbench/src/mcp/tools/continuity.ts:6cd86480916856d488b6181b41076ce59b2af16d33c3c9770e627fba67bdf13c\npackages/workbench/src/mcp/tools/index.ts:affec000792bd7f703dd06d6483a09b6d52342c4209120bb4e84de8243cf5aaf\npackages/workbench/src/mcp/tools/surface.test.ts:7abbf5babe6f871d094f32161d98359df621f5366168a1d2a911d2bb932fab63",
-	"subject_sha": "257746f2d7d8e65de17063704873aca83d693e9f",
+	"subject_sha": "ca4d020fbdb8fc45daee58ce9c8db39ac20acdcb",
 	"environment": {
 		"os": "windows",
 		"bun": "1.3.14",
 		"node": "v24.22.1"
 	},
-	"measured_at": "2026-11-01T14:41:48.992Z",
+	"measured_at": "2026-11-01T14:42:29.296Z",
 	"reading": {
 		"exit": 0,
 		"cont_rc": 12,
@@ -16,7 +16,7 @@
 		"mcp_fail": 0
 	},
 	"instrument_exit": 0,
-	"raw_digest": "sha256:34c233a56fc9be0f75c3c3e5ee30a127f6118adf48c330bc45d6637f3cf3e186",
+	"raw_digest": "sha256:80664f3f8112b6e0c74363624941f5c60904d92ce8dce6936ea85a9c277e35f3",
 	"reproduce": "bun test packages/workbench/src/chat/resume-card/continuity.test.ts packages/workbench/src/mcp/tools packages/workbench/src/mcp/tools.test.ts --timeout 60000",
 	"class": "curated-evidence"
 }
