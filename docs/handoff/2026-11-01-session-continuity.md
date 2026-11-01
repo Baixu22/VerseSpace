@@ -1,6 +1,6 @@
 # 2026-11-01 会话延续性切片（ADR-0027）
 
-对象：VerseSpace / Workbench，基线 `b9c8bfe`（本轮改动在工作区，未提交）。
+对象：VerseSpace / Workbench，基线 `b9c8bfe`；本轮提交 `83a2637`（实现 + ADR + 声明）、`01524a6` 与 `e1aef0d`（读数重取）。
 来源动机：用户看到 DeepSeek `dsh-superagent-prototype` 开源（2026-10-31），要求按「会话生态完整性」方向做纵向增强并整理护城河。
 
 ## 1. 结论（先看这两条）
@@ -57,7 +57,7 @@
 **哪些读数在本机无效、为什么：**
 
 - `bun test src/chat` 的 11 条失败全部是 `codex-app-server` / `claude 静默挂死` / `空闲关闭` / `codex notice ack` 这类**需要 spawn 子进程**的用例，超时 20000–30000ms。**不是本切片引入**：把本轮 `src` 改动 stash 后在基线上重跑 `codex-notice-seal.test.ts`，同样 5 fail / 0 pass；`ui/server.test.ts` 在基线上同样 3 fail，与本轮无关。属于 AGENTS.md 记录的沙箱/注入代理环境缺陷。
-- `bun run check:claims` 当前 **exit 1（drift）**：因为读数是在**未提交的工作区**上取的，闸门按「reading 所在 commit 至今的改动」判定，工作区自身就是改动。基线（stash 后）同样是 exit 1，并有 18 条 stale/observation。**提交后按 §6 重取读数即可归零**——这是本仓既有的「先 commit 再取读数」流程，不是本轮遗留缺陷。
+- `bun run check:claims` **exit 1（drift）**，但**不是本轮引入的**：基线（stash 后）18 行非 valid（含 3 条 observation / 15 条 stale），本轮三次提交后为 **24 valid / 3 observation / 7 stale**，且这 7 条是基线 stale 集合的子集——本轮顺手把 `lint`、`typecheck`、`doctor-clean`、`upload-surface-clean`、`catch-sites`、`root-gates`、`premise-contract`、`forest-landing`、`ui-suite`、`context-rot-suite`、`claims-gate`、`upload-surface-tests`、`premise-notice-realtraffic`、`premise-base-rate-amplifier` 全部 `--run` 重取过。剩余 7 条（`workbench-suite`、`browser-e2e`、`built-shapes`、4 条 `codex-*`）在本机**无法测量**：分别需要可 spawn 的 shell、Playwright、完整 build 与 codex 车道，本机沙箱/注入代理下会超时或被拒，属 AGENTS.md 记录的环境缺陷；没有被写成通过。
 - 没有跑：`test:workbench-ui`、`test:context-rot`、Playwright 浏览器套件、`bun run build:all`、真机 provider E2E。前两项与 `apps/*`/`context-rot` 无关本切片；浏览器套件按 ADR-0024 与 AGENTS.md 属另一类读数。
 
 ## 4. 刻意没做什么（这一节比上面值钱）
@@ -71,7 +71,7 @@
 
 ## 5. 下一步与遗留风险
 
-1. **提交后重取读数**（见 §6），让 `check:claims` 回到 clean。当前 diff 里 `claim-moat-baseline` / `claim-moat-input-origin` / `claim-moat-consumption` / `claim-moat-portable-evidence` 的读数已在**本工作区**重跑（因为本轮确实改了 `types/event.ts` 与 `cli.test.ts` 这两个被测路径），只有 subject 比较因子未提交而报 stale。
+1. **读数已重取，剩余 7 条不可测**（见 §3）。`claim-session-continuity` 与其受影响的 moat 声明现在是 `valid`。
 2. **面板消费**：恢复卡已经会渲染分支事实，延续性读数接进去是下一步的自然选择；需要先定义「面板上 `~` 放哪一行」，否则会重演「多一个红点、没人看」。
 3. **MCP 第 6 个工具**：`continuity` 若接进 MCP，必须守 ADR-0023 的只读边界，并新增表面漂移测试。
 4. **环境噪声未消除**：注入代理与沙箱下的进程类用例在本机仍会超时，不要把本机 `bun test src/chat` 的 11 fail 读成回归。
@@ -92,9 +92,7 @@ node scripts/moat/check-scope-adr.mjs --json
 bun packages/workbench/src/index.ts sessions continuity
 bun packages/workbench/src/index.ts --json sessions continuity <threadId>
 
-# 4. 提交后重取读数（顺序不能反：先 commit，再取）
-cd .. && git add -A && git -c core.hooksPath= commit --no-verify -F <msg-file>
-NO_PROXY="127.0.0.1,localhost,::1" node scripts/claims/record-reading.mjs claim-session-continuity \
-  --reading '{"exit":0,"pass":12,"fail":0}' --run
-node scripts/check-claims.mjs
+# 4. 声明账本（本轮读数已随 01524a6 / e1aef0d 提交）
+node scripts/check-claims.mjs          # 24 valid / 3 observation / 7 stale；7 条见 §3 的不可测说明
+node scripts/verify/moat-verdict.mjs   # 9/9 moat 声明有效
 ```
